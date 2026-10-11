@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MercadoZap Pro - Caixa & Vendas</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f6f8; padding: 12px; color: #333; }
+    h1 { font-size: 1.1rem; margin-bottom: 8px; text-align: center; color: #1a252f; display: flex; justify-content: space-between; align-items: center; }
+    .card { background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 12px; }
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+    .tab-btn { flex: 1; padding: 10px 4px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; color: #475569; }
+    .tab-btn.active { background: #25d366; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .quick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .quick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; }
+    .btn-quick-edit { background: #f1f5f9; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+    .custom-item { display: flex; gap: 6px; margin-bottom: 10px; }
+    .custom-item input, .input-field { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; width: 100%; }
+    .custom-item input[type="text"] { flex: 2; }
+    .custom-item input[type="number"] { flex: 1; }
+    .btn-add { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: bold; }
+    .cart-list { max-height: 160px; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid #eee; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    .qty-controls { display: flex; align-items: center; gap: 6px; }
+    .btn-qty { background: #e2e8f0; border: none; width: 26px; height: 26px; border-radius: 4px; font-weight: bold; font-size: 1rem; }
+    .total-box { font-size: 1.2rem; font-weight: bold; text-align: right; color: #16a34a; margin-bottom: 10px; }
+    .pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .pay-btn { padding: 10px 4px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; }
+    .pay-btn.selected { background: #16a34a; color: white; border-color: #16a34a; }
+    .pay-btn.fiado { color: #d97706; border-color: #f59e0b; }
+    .pay-btn.fiado.selected { background: #d97706; color: white; }
+    .troco-box { background: #fef3c7; border: 1px solid #fde047; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; }
+    .btn-finish { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; }
+    .btn-client-receipt { width: 100%; background: #25d366; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; }
+    .btn-clear { width: 100%; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
+    .socio-section { background: #e0f2fe; border: 1px solid #bae6fd; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding: 16px; box-sizing: border-box; overflow-y: auto; z-index: 100; }
+    .modal-content { background: white; padding: 16px; border-radius: 10px; max-width: 500px; margin: 10px auto; }
+    .btn-help { background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+    .filter-btn-group { display: flex; gap: 4px; margin: 8px 0; }
+    .btn-filter { flex: 1; padding: 6px; border: 1px solid #0284c7; background: white; color: #0284c7; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+    .btn-filter.selected { background: #0284c7; color: white; }
+    .faq-item { border-bottom: 1px solid #cbd5e1; padding: 8px 0; }
+    .faq-question { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 4px; }
+    .faq-answer { font-size: 0.8rem; color: #475569; line-height: 1.3; }
+    .badge-plus { background: #7c3aed; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+    .alert-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: none; }
+    .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>
+    <span>⚡ MercadoZap Pro</span>
+    <button class="btn-help" onclick="abrirModalAjuda()">❓ Ajuda & Guia</button>
+  </h1>
+
+  <div class="alert-banner" id="bannerAlerta">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong style="color:#991b1b; font-size:0.85rem;">🔔 ALERTA DE VENCIMENTO PRÓXIMO!</strong>
+      <button onclick="desativarAlertaVibracao()" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✅ Ciente / Pausar Alerta</button>
+    </div>
+    <p style="font-size:0.8rem; color:#7f1d1d; margin-top:4px;" id="textoBannerAlerta"></p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa / Vendas</button>
+    <button class="tab-btn" id="btn-tab-validade" onclick="mudarAba('validade')">⚠️ Validades <span class="badge-plus">PLUS</span></button>
+  </div>
+
+  <div class="tab-content active" id="tab-caixa">
+    <div class="card">
+      <strong style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #64748b;">ATENDIMENTO:</strong>
+      <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)" style="margin-bottom: 10px;" onchange="salvarEstado()">
+      
+      <div class="quick-header">
+        <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
+        <button class="btn-small-edit" onclick="abrirModalAtalhos()">⚙️ Personalizar Atalhos</button>
+      </div>
+
+      <!-- BOTÕES DE ATALHO GERADOS DINAMICAMENTE -->
+      <div class="quick-buttons" id="containerAtalhos"></div>
+
+      <strong style="display:block; margin-top:10px; margin-bottom:6px; font-size:0.85rem; color:#64748b;">ITEM FORA DOS ATALHOS:</strong>
+      <div class="custom-item">
+        <input type="text" id="nomeManual" placeholder="Outro produto...">
+        <input type="number" id="valorManual" placeholder="R$" step="0.01">
+        <button class="btn-add" onclick="adicionarManual()">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #64748b;">VENDA ATUAL:</strong>
+      <div class="cart-list" id="listaCarrinho"></div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size:0.9rem;">Desconto (R$):</span>
+        <input type="number" id="valorDesconto" value="0" step="0.5" style="width: 80px; padding: 4px; text-align: right;" onchange="renderizar()">
+      </div>
+
+      <div class="total-box">Total: R$ <span id="valorTotal">0.00</span></div>
+
+      <strong style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #64748b;">FORMA DE PAGAMENTO:</strong>
+      <div class="pay-methods">
+        <button class="pay-btn selected" id="pag-Dinheiro" onclick="selecionarPagamento('Dinheiro')">💵 Dinheiro</button>
+        <button class="pay-btn" id="pag-PIX" onclick="selecionarPagamento('PIX')">📱 PIX</button>
+        <button class="pay-btn" id="pag-Cartao" onclick="selecionarPagamento('Cartão')">💳 Cartão</button>
+        <button class="pay-btn fiado" id="pag-Fiado" onclick="selecionarPagamento('Fiado')">📝 FIADO / Caderno</button>
+      </div>
+
+      <div class="troco-box" id="boxTroco">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Valor Recebido em Dinheiro:</span>
+          <input type="number" id="valorPago" placeholder="R$" style="width:80px; padding:4px;" oninput="calcularTroco()">
+        </div>
+        <div style="margin-top:6px; font-weight:bold; color:#b45309;" id="textoTroco">Troco: R$ 0,00</div>
+      </div>
+
+      <button class="btn-client-receipt" onclick="enviarComprovanteCliente()">📲 Finalizar & Enviar Comprovante no WhatsApp</button>
+      <button class="btn-finish" onclick="finalizarVenda(false)">✅ Finalizar Apenas (Sem Zap)</button>
+      <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
+    </div>
+
+    <div class="card socio-section">
+      <strong>📊 Fechamento do Caixa (Sócio)</strong>
+      
+      <div class="filter-btn-group">
+        <button class="btn-filter selected" id="flt-hoje" onclick="selecionarFiltro('hoje')">Hoje</button>
+        <button class="btn-filter" id="flt-semana" onclick="selecionarFiltro('semana')">Esta Semana</button>
+        <button class="btn-filter" id="flt-mes" onclick="selecionarFiltro('mes')">Este Mês</button>
+      </div>
+
+      <p style="font-size:0.85rem; margin-top:4px; color: #0369a1;">
+        Total Selecionado (<span id="nomeFiltro">Hoje</span>): <strong>R$ <span id="totalFiltrado">0.00</span></strong>
+      </p>
+
+      <input type="text" id="telSocio" placeholder="WhatsApp do Sócio (com DDD)" style="width:100%; padding:8px; margin-top:8px; border-radius:6px; border:1px solid #cbd5e1;">
+      <button class="btn-client-receipt" style="background:#0284c7; margin-top:6px;" onclick="enviarWhatsappSocio()">📊 Enviar Relatório Selecionado ao Sócio</button>
+      <button class="btn-clear" style="background:#475569; margin-top:8px;" onclick="zerarHistoricoCompleto()">🧹 Zerar Caixa / Iniciar Novo Período</button>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-validade">
+    <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong style="color:#6b21a8; font-size:1rem;">⚠️ Alerta de Validades Sequencial (30d / 15d / 7d)</strong>
+        <span class="badge-plus" style="font-size:0.8rem;">RECURSO PLUS</span>
+      </div>
+      <p style="font-size:0.85rem; color:#581c87; margin-bottom:10px;">
+        O sistema acompanha a validade em 3 fases: <strong>30 dias</strong> (Alerta Amarelo), <strong>15 dias</strong> (Atenção Laranja) e <strong>7 dias</strong> (Urgência Vermelha).
+      </p>
+
+      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
+        <strong style="font-size:0.85rem; display:block; margin-bottom:6px;">+ Cadastrar Item com Validade:</strong>
+        <input type="text" id="valNome" class="input-field" placeholder="Nome do produto (ex: Iogurte)" style="margin-bottom:6px;">
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+          <input type="date" id="valData" class="input-field">
+          <input type="number" id="valQtd" class="input-field" placeholder="Qtd" style="width:70px;">
+        </div>
+        <button class="btn-finish" style="background:#7c3aed; margin-bottom:0;" onclick="cadastrarValidade()">Adicionar ao Monitor de Validades</button>
+      </div>
+
+      <strong style="font-size:0.85rem; color:#4c1d95;">📋 Itens Monitorados:</strong>
+      <div id="listaValidades" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE GERENCIAMENTO DE ATALHOS DA TELA INICIAL -->
+  <div class="modal" id="modalAtalhos">
+    <div class="modal-content">
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos do Balcão</h2>
+      
+      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Adicione, altere os preços ou remova os botões da tela inicial para colocar os produtos que mais vendem no seu comércio:</p>
+
+      <div id="listaAtalhosEdit" style="max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+
+      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Adicionar Novo Botão de Atalho:</strong>
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Gelo 5kg)">
+        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="R$" step="0.01" style="width:90px;">
+        <button class="btn-add" onclick="adicionarNovoAtalho()">+</button>
+      </div>
+
+      <button class="btn-finish" onclick="fecharModalAtalhos()" style="background:#0284c7; margin-bottom:0;">Done / Salvar Alterações</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE DÚVIDAS E GUIA COMPLETO -->
+  <div class="modal" id="modalAjuda">
+    <div class="modal-content">
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">❓ Central de Dúvidas - MercadoZap</h2>
+      
+      <div style="max-height:320px; overflow-y:auto; padding-right:4px;">
+        <div class="faq-item">
+          <div class="faq-question">1. Como alterar o preço ou o nome dos botões de atalho?</div>
+          <div class="faq-answer">Clique no botão azul '⚙️ Personalizar Atalhos' no topo dos botões da tela inicial. Você pode mudar o preço, trocar o nome ou criar novos botões para os produtos que mais vendem no seu mercado.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">2. Como passar uma venda rapidamente?</div>
+          <div class="faq-answer">Clique nos botões de atalho para adicionar itens na hora. Se for um produto fora dos atalhos, digite o nome e valor no campo 'Item fora dos atalhos' e aperte '+'.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">3. Como funcionam os alertas sequenciais de validade?</div>
+          <div class="faq-answer">O sistema avisa em 3 etapas: aos 30 dias (organizar estoque), aos 15 dias (preparar promoção) e aos 7 dias (alerta urgente). Quando o produto for vendido, basta clicar no botão 'Vendi' para apagar o aviso.</div>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
+      
+      <button class="btn-client-receipt" style="background:#059669;" onclick="enviarFeedback()">💬 Enviar Dúvida no WhatsApp</button>
+      <button class="btn-client-receipt" style="background:#7c3aed;" onclick="solicitarUpgradePlus()">⭐ Assinar MercadoZap PLUS</button>
+      <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#64748b; margin-top:6px;">Fechar Central de Dúvidas</button>
+    </div>
+  </div>
+
+  <script>
+    // LISTA PADRÃO DE ATALHOS INICIAIS
+    const atalhosPadrao = [
+      { id: 1, nome: '🎱 Sinuca', preco: 2.00 },
+      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50 },
+      { id: 3, nome: '🍺 Devassa 600ml', preco: 7.00 },
+      { id: 4, nome: '🧊 Gelado / Geladinho', preco: 2.50 },
+      { id: 5, nome: '🔥 Botijão de Gás', preco: 105.00 },
+      { id: 6, nome: '🌾 Arroz 5kg', preco: 28.00 }
+    ];
+
+    let atalhos = JSON.parse(localStorage.getItem('atalhos_custom_v1')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('carrinho_atual')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('vendas_dia_v2')) || [];
+    let listaValidade = JSON.parse(localStorage.getItem('lista_validade')) || [];
+    let formaPagamento = 'Dinheiro';
+    let filtroAtual = 'hoje';
+    let intervaloVibracao = null;
+
+    function salvarEstado() {
+      localStorage.setItem('atalhos_custom_v1', JSON.stringify(atalhos));
+      localStorage.setItem('carrinho_atual', JSON.stringify(carrinho));
+      localStorage.setItem('vendas_dia_v2', JSON.stringify(vendasDoDia));
+      localStorage.setItem('lista_validade', JSON.stringify(listaValidade));
+      renderizar();
+    }
+
+    function renderizarAtalhos() {
+      const container = document.getElementById('containerAtalhos');
+      container.innerHTML = '';
+
+      atalhos.forEach(item => {
+        container.innerHTML += `
+          <button class="btn-quick" onclick="adicionarItem('${item.nome}', ${item.preco})">
+            ${item.nome}<br>
+            <span style="font-size:0.8rem; color:#2563eb;">R$ ${item.preco.toFixed(2)}</span>
+          </button>
+        `;
+      });
+    }
+
+    function renderizarEdicaoAtalhos() {
+      const listaEl = document.getElementById('listaAtalhosEdit');
+      listaEl.innerHTML = '';
+
+      atalhos.forEach((item, index) => {
+        listaEl.innerHTML += `
+          <div class="btn-quick-edit">
+            <div>
+              <strong>${item.nome}</strong> — <span style="color:#16a34a; font-weight:bold;">R$ ${item.preco.toFixed(2)}</span>
+            </div>
+            <div>
+              <button onclick="editarPrecoAtalho(${index})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">Preço</button>
+              <button onclick="removerAtalho(${index})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">✕</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function editarPrecoAtalho(index) {
+      const novoPreco = prompt(`Digite o novo preço para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
+      const valor = parseFloat(novoPreco);
+      if (!isNaN(valor) && valor >= 0) {
+        atalhos[index].preco = valor;
+        salvarEstado();
+        renderizarEdicaoAtalhos();
+      }
+    }
+
+    function removerAtalho(index) {
+      if (confirm(`Remover o botão '${atalhos[index].nome}' da tela inicial?`)) {
+        atalhos.splice(index, 1);
+        salvarEstado();
+        renderizarEdicaoAtalhos();
+      }
+    }
+
+    function adicionarNovoAtalho() {
+      const nome = document.getElementById('novoAtalhoNome').value.trim();
+      const preco = parseFloat(document.getElementById('novoAtalhoPreco').value);
+
+      if (!nome || isNaN(preco) || preco < 0) return alert('Digite um nome e um valor válido!');
+
+      atalhos.push({ id: Date.now(), nome, preco });
+      document.getElementById('novoAtalhoNome').value = '';
+      document.getElementById('novoAtalhoPreco').value = '';
+      salvarEstado();
+      renderizarEdicaoAtalhos();
+    }
+
+    function abrirModalAtalhos() {
+      renderizarEdicaoAtalhos();
+      document.getElementById('modalAtalhos').style.display = 'block';
+    }
+
+    function fecharModalAtalhos() {
+      document.getElementById('modalAtalhos').style.display = 'none';
+      renderizarAtalhos();
+    }
+
+    function mudarAba(aba) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      document.getElementById('btn-tab-' + aba).classList.add('active');
+      document.getElementById('tab-' + aba).classList.add('active');
+    }
+
+    function adicionarItem(nome, preco) {
+      const itemExistente = carrinho.find(it => it.nome === nome);
+      if (itemExistente) {
+        itemExistente.qtd += 1;
+      } else {
+        carrinho.push({ nome, preco: parseFloat(preco), qtd: 1 });
+      }
+      salvarEstado();
+    }
+
+    function alterarQtd(index, delta) {
+      carrinho[index].qtd += delta;
+      if (carrinho[index].qtd <= 0) carrinho.splice(index, 1);
+      salvarEstado();
+    }
+
+    function adicionarManual() {
+      const nomeInput = document.getElementById('nomeManual');
+      const valorInput = document.getElementById('valorManual');
+      const nome = nomeInput.value.trim() || 'Item Diverso';
+      const preco = parseFloat(valorInput.value);
+
+      if (isNaN(preco) || preco <= 0) return alert('Digite um valor válido!');
+
+      adicionarItem(nome, preco);
+      nomeInput.value = '';
+      valorInput.value = '';
+    }
+
+    function limparCarrinho() {
+      carrinho = [];
+      document.getElementById('nomeCliente').value = '';
+      document.getElementById('valorDesconto').value = '0';
+      document.getElementById('valorPago').value = '';
+      salvarEstado();
+    }
+
+    function selecionarPagamento(tipo) {
+      formaPagamento = tipo;
+      document.querySelectorAll('.pay-btn').forEach(btn => btn.classList.remove('selected'));
+      const idMap = { 'Dinheiro': 'pag-Dinheiro', 'PIX': 'pag-PIX', 'Cartão': 'pag-Cartao', 'Fiado': 'pag-Fiado' };
+      document.getElementById(idMap[tipo]).classList.add('selected');
+      document.getElementById('boxTroco').style.display = tipo === 'Dinheiro' ? 'block' : 'none';
+    }
+
+    function calcularTotal() {
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
+      return Math.max(0, subtotal - desconto);
+    }
+
+    function calcularTroco() {
+      const total = calcularTotal();
+      const pago = parseFloat(document.getElementById('valorPago').value) || 0;
+      const troco = Math.max(0, pago - total);
+      document.getElementById('textoTroco').innerText = `Troco: R$ ${troco.toFixed(2)}`;
+    }
+
+    function finalizarVenda(silencioso = false) {
+      if (carrinho.length === 0) return alert('Carrinho vazio!');
+      
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
+      const totalFinal = Math.max(0, subtotal - desconto);
+      const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
+
+      vendasDoDia.push({
+        dataTimestamp: new Date().getTime(),
+        cliente: cliente,
+        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        itens: JSON.parse(JSON.stringify(carrinho)),
+        subtotal: subtotal,
+        desconto: desconto,
+        total: totalFinal,
+        pagamento: formaPagamento
+      });
+
+      carrinho = [];
+      document.getElementById('nomeCliente').value = '';
+      document.getElementById('valorDesconto').value = '0';
+      document.getElementById('valorPago').value = '';
+      salvarEstado();
+
+      if (!silencioso) alert('Venda registrada com sucesso!');
+    }
+
+    function enviarComprovanteCliente() {
+      if (carrinho.length === 0) return alert('Carrinho vazio!');
+
+      const cliente = document.getElementById('nomeCliente').value.trim() || 'Cliente';
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
+      const totalFinal = Math.max(0, subtotal - desconto);
+      const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      let texto = `🛒 *MERCADINHO E CONVENIÊNCIA*\n`;
+      texto += `👤 *Cliente:* ${cliente}\n`;
+      texto += `⏰ *Horário:* ${hora}\n`;
+      texto += `----------------------------------\n`;
+
+      carrinho.forEach(it => {
+        texto += `• ${it.qtd}x ${it.nome} — R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
+      });
+
+      texto += `----------------------------------\n`;
+      if (desconto > 0) {
+        texto += `Subtotal: R$ ${subtotal.toFixed(2)}\n`;
+        texto += `Desconto: R$ ${desconto.toFixed(2)}\n`;
+      }
+      texto += `💰 *TOTAL PAGO: R$ ${totalFinal.toFixed(2)}*\n`;
+      texto += `💳 Forma: ${formaPagamento}\n`;
+      texto += `----------------------------------\n`;
+      texto += `*Obrigado pela preferência, ${cliente}! Volte sempre!* 😊`;
+
+      finalizarVenda(true);
+
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    }
+
+    function selecionarFiltro(tipo) {
+      filtroAtual = tipo;
+      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('selected'));
+      document.getElementById('flt-' + tipo).classList.add('selected');
+      
+      const nomes = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' };
+      document.getElementById('nomeFiltro').innerText = nomes[tipo];
+      renderizar();
+    }
+
+    function obterVendasFiltradas() {
+      const agora = new Date().getTime();
+      const umDia = 24 * 60 * 60 * 1000;
+
+      return vendasDoDia.filter(v => {
+        const diffDias = (agora - (v.dataTimestamp || agora)) / umDia;
+        if (filtroAtual === 'hoje') return diffDias <= 1;
+        if (filtroAtual === 'semana') return diffDias <= 7;
+        if (filtroAtual === 'mes') return diffDias <= 30;
+        return true;
+      });
+    }
+
+    function cadastrarValidade() {
+      const nome = document.getElementById('valNome').value.trim();
+      const data = document.getElementById('valData').value;
+      const qtd = parseInt(document.getElementById('valQtd').value) || 1;
+
+      if (!nome || !data) return alert('Preencha o nome do produto e a data de validade!');
+
+      listaValidade.push({ nome, data, qtd });
+      document.getElementById('valNome').value = '';
+      document.getElementById('valData').value = '';
+      document.getElementById('valQtd').value = '';
+      salvarEstado();
+    }
+
+    function removerValidade(index) {
+      listaValidade.splice(index, 1);
+      salvarEstado();
+    }
+
+    function checarAlertasEemiteVibracao(itensUrgentes) {
+      const banner = document.getElementById('bannerAlerta');
+      const texto = document.getElementById('textoBannerAlerta');
+
+      if (itensUrgentes.length > 0) {
+        banner.style.display = 'block';
+        texto.innerText = `Urgente! ${itensUrgentes.length} produto(s) a menos de 7 dias do vencimento: ${itensUrgentes.join(', ')}. Crie promoção imediata!`;
+
+        if ("vibrate" in navigator && !intervaloVibracao) {
+          intervaloVibracao = setInterval(() => {
+            navigator.vibrate([200, 100, 200]);
+          }, 4000);
+        }
+      } else {
+        desativarAlertaVibracao();
+      }
+    }
+
+    function desativarAlertaVibracao() {
+      document.getElementById('bannerAlerta').style.display = 'none';
+      if (intervaloVibracao) {
+        clearInterval(intervaloVibracao);
+        intervaloVibracao = null;
+      }
+      if ("vibrate" in navigator) navigator.vibrate(0);
+    }
+
+    function renderizarValidades() {
+      const container = document.getElementById('listaValidades');
+      container.innerHTML = '';
+
+      if (listaValidade.length === 0) {
+        container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto cadastrado no monitor de validades.</p>`;
+        desativarAlertaVibracao();
+        return;
+      }
+
+      const hoje = new Date();
+      let itensUrgentes = [];
+
+      listaValidade.forEach((item, index) => {
+        const dataVal = new Date(item.data + 'T00:00:00');
+        const diffDias = Math.ceil((dataVal - hoje) / (1000 * 60 * 60 * 24));
+
+        let statusCor = '#2563eb';
+        let statusTexto = `Ok: Vence em ${diffDias} dias`;
+
+        if (diffDias < 0) {
+          statusCor = '#0f172a';
+          statusTexto = `💀 VENCIDO há ${Math.abs(diffDias)} dias! Retire da prateleira.`;
+        } else if (diffDias <= 7) {
+          statusCor = '#dc2626';
+          statusTexto = `🔴 URGENTE: Vence em ${diffDias} dias! (Queima de Estoque)`;
+          itensUrgentes.push(`${item.nome} (${diffDias}d)`);
+        } else if (diffDias <= 15) {
+          statusCor = '#f97316';
+          statusTexto = `🟠 ATENÇÃO: Vence em ${diffDias} dias. Prepare promoção.`;
+        } else if (diffDias <= 30) {
+          statusCor = '#eab308';
+          statusTexto = `🟡 ALERTA: Vence em ${diffDias} dias. Reorganizar prateleira.`;
+        }
+
+        container.innerHTML += `
+          <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+            <div>
+              <strong>${item.nome}</strong> (${item.qtd} un.)<br>
+              <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
+            </div>
+            <button onclick="removerValidade(${index})" style="background:#22c55e; color:white; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.75rem;">✅ Vendi</button>
+          </div>
+        `;
+      });
+
+      checarAlertasEemiteVibracao(itensUrgentes);
+    }
+
+    function renderizar() {
+      renderizarAtalhos();
+
+      const listaEl = document.getElementById('listaCarrinho');
+      listaEl.innerHTML = '';
+
+      carrinho.forEach((item, index) => {
+        listaEl.innerHTML += `
+          <div class="cart-item">
+            <div>
+              <strong>${item.nome}</strong><br>
+              <small>R$ ${item.preco.toFixed(2)} un.</small>
+            </div>
+            <div class="qty-controls">
+              <button class="btn-qty" onclick="alterarQtd(${index}, -1)">-</button>
+              <span>${item.qtd}</span>
+              <button class="btn-qty" onclick="alterarQtd(${index}, 1)">+</button>
+              <span style="font-weight:bold; margin-left:6px;">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('valorTotal').innerText = calcularTotal().toFixed(2);
+      calcularTroco();
+
+      const vendasFiltradas = obterVendasFiltradas();
+      const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+      document.getElementById('totalFiltrado').innerText = totalAcumulado.toFixed(2);
+
+      renderizarValidades();
+    }
+
+    function enviarWhatsappSocio() {
+      const tel = document.getElementById('telSocio').value.replace(/\D/g, '');
+      if (!tel) return alert('Digite o número do WhatsApp do sócio!');
+
+      const vendasFiltradas = obterVendasFiltradas();
+      const periodoTexto = { 'hoje': 'DO DIA', 'semana': 'DA SEMANA', 'mes': 'DO MÊS' }[filtroAtual];
+
+      let texto = `📊 *FECHAMENTO DE VENDAS ${periodoTexto}*\n\n`;
+      let totalGeral = 0;
+      let totalFiado = 0;
+
+      vendasFiltradas.forEach((v, i) => {
+        totalGeral += v.total;
+        if (v.pagamento === 'Fiado') totalFiado += v.total;
+
+        texto += `*Venda #${i+1} (${v.hora}) - ${v.cliente}*\n`;
+        v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
+        if (v.desconto > 0) texto += ` Desconto: -R$ ${v.desconto.toFixed(2)}\n`;
+        texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
+      });
+
+      texto += `💰 *TOTAL ACUMULADO: R$ ${totalGeral.toFixed(2)}*\n`;
+      if (totalFiado > 0) texto += `⚠️ *Total em Fiado a Receber: R$ ${totalFiado.toFixed(2)}*`;
+
+      const url = `https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    }
+
+    function zerarHistoricoCompleto() {
+      if (confirm('Tem certeza que deseja zerar o relatório e iniciar um novo período? Esta ação limpa a memória do caixa.')) {
+        vendasDoDia = [];
+        salvarEstado();
+        alert('Caixa zerado com sucesso para o novo período!');
+      }
+    }
+
+    function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
+    function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
+    function enviarFeedback() { window.open('https://api.whatsapp.com/send?text=Olá! Gostaria de tirar uma dúvida sobre o MercadoZap: ', '_blank'); }
+    function solicitarUpgradePlus() { window.open('https://api.whatsapp.com/send?text=Olá! Gostaria de assinar o MercadoZap PLUS!', '_blank'); }
+
+    renderizar();
+  </script>
+</body>
+</html>

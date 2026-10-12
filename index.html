@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MercadoZap Pro - Caixa & Vendas</title>
+  <title>Caixa Rápido Móvel - Vendas & Gestão</title>
+
+  <!-- BIBLIOTECA PARA LEITURA DE CÓDIGO DE BARRAS VIA CÂMERA -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
     body { background-color: #f4f6f8; padding: 12px; color: #333; }
@@ -16,8 +20,7 @@
     .tab-content.active { display: block; }
     .quick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .quick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; }
-    .btn-quick-edit { background: #f1f5f9; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; }
     .custom-item { display: flex; gap: 6px; margin-bottom: 10px; }
     .custom-item input, .input-field { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; width: 100%; }
     .custom-item input[type="text"] { flex: 2; }
@@ -50,13 +53,17 @@
     .badge-plus { background: #7c3aed; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
     .alert-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: none; }
     .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+    .unit-selector { display: flex; gap: 4px; margin-bottom: 6px; }
+    .unit-btn { flex: 1; padding: 6px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.8rem; font-weight: bold; border-radius: 4px; }
+    .unit-btn.selected { background: #2563eb; color: white; border-color: #2563eb; }
+    #reader { width: 100%; margin-bottom: 10px; display: none; }
   </style>
 </head>
 <body>
 
   <h1>
-    <span>⚡ MercadoZap Pro</span>
-    <button class="btn-help" onclick="abrirModalAjuda()">❓ Ajuda & Guia</button>
+    <span>⚡ Caixa Rápido Móvel</span>
+    <button class="btn-help" onclick="abrirModalAjuda()">⚙️ Config & Guia</button>
   </h1>
 
   <div class="alert-banner" id="bannerAlerta">
@@ -67,6 +74,9 @@
     <p style="font-size:0.8rem; color:#7f1d1d; margin-top:4px;" id="textoBannerAlerta"></p>
   </div>
 
+  <!-- LEITOR DE CÓDIGO DE BARRAS PELA CÂMERA -->
+  <div id="reader"></div>
+
   <div class="tab-bar">
     <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa / Vendas</button>
     <button class="tab-btn" id="btn-tab-validade" onclick="mudarAba('validade')">⚠️ Validades <span class="badge-plus">PLUS</span></button>
@@ -74,21 +84,34 @@
 
   <div class="tab-content active" id="tab-caixa">
     <div class="card">
-      <strong style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #64748b;">ATENDIMENTO:</strong>
-      <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)" style="margin-bottom: 10px;" onchange="salvarEstado()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong style="font-size: 0.85rem; color: #64748b;">ATENDIMENTO:</strong>
+        <button class="btn-small-edit" onclick="iniciarLeitorCamera()">📷 Bipar com Câmera</button>
+      </div>
+
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)">
+        <input type="text" id="nomeVendedor" class="input-field" placeholder="Vendedor(a)" style="width:110px;">
+      </div>
       
       <div class="quick-header">
         <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
-        <button class="btn-small-edit" onclick="abrirModalAtalhos()">⚙️ Personalizar Atalhos</button>
+        <button class="btn-small-edit" onclick="abrirModalAtalhos()">⚙️ Editar Atalhos</button>
       </div>
 
-      <!-- BOTÕES DE ATALHO GERADOS DINAMICAMENTE -->
       <div class="quick-buttons" id="containerAtalhos"></div>
 
-      <strong style="display:block; margin-top:10px; margin-bottom:6px; font-size:0.85rem; color:#64748b;">ITEM FORA DOS ATALHOS:</strong>
+      <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">ITEM FORA DOS ATALHOS / FRACIONADO:</strong>
+      
+      <div class="unit-selector">
+        <button class="unit-btn selected" id="btn-un" onclick="selecionarUnidade('UN')">Unidade (UN)</button>
+        <button class="unit-btn" id="btn-kg" onclick="selecionarUnidade('KG')">Por Quilo (KG)</button>
+      </div>
+
       <div class="custom-item">
-        <input type="text" id="nomeManual" placeholder="Outro produto...">
-        <input type="number" id="valorManual" placeholder="R$" step="0.01">
+        <input type="text" id="nomeManual" placeholder="Nome do produto...">
+        <input type="number" id="valorManual" placeholder="R$ (Un / Kg)" step="0.01">
+        <input type="number" id="qtdOuPesoManual" placeholder="Qtd / Peso(Kg)" step="0.001" style="width:100px;">
         <button class="btn-add" onclick="adicionarManual()">+</button>
       </div>
     </div>
@@ -138,7 +161,6 @@
         Total Selecionado (<span id="nomeFiltro">Hoje</span>): <strong>R$ <span id="totalFiltrado">0.00</span></strong>
       </p>
 
-      <input type="text" id="telSocio" placeholder="WhatsApp do Sócio (com DDD)" style="width:100%; padding:8px; margin-top:8px; border-radius:6px; border:1px solid #cbd5e1;">
       <button class="btn-client-receipt" style="background:#0284c7; margin-top:6px;" onclick="enviarWhatsappSocio()">📊 Enviar Relatório Selecionado ao Sócio</button>
       <button class="btn-clear" style="background:#475569; margin-top:8px;" onclick="zerarHistoricoCompleto()">🧹 Zerar Caixa / Iniciar Novo Período</button>
     </div>
@@ -147,11 +169,11 @@
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <strong style="color:#6b21a8; font-size:1rem;">⚠️ Alerta de Validades Sequencial (30d / 15d / 7d)</strong>
+        <strong style="color:#6b21a8; font-size:1rem;">⚠️ Alerta de Validades & Promoções</strong>
         <span class="badge-plus" style="font-size:0.8rem;">RECURSO PLUS</span>
       </div>
       <p style="font-size:0.85rem; color:#581c87; margin-bottom:10px;">
-        O sistema acompanha a validade em 3 fases: <strong>30 dias</strong> (Alerta Amarelo), <strong>15 dias</strong> (Atenção Laranja) e <strong>7 dias</strong> (Urgência Vermelha).
+        Cadastre os produtos com data de vencimento. Dê baixa parcial conforme for vendendo e acompanhe o estoque em tempo real!
       </p>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
@@ -159,7 +181,7 @@
         <input type="text" id="valNome" class="input-field" placeholder="Nome do produto (ex: Iogurte)" style="margin-bottom:6px;">
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="date" id="valData" class="input-field">
-          <input type="number" id="valQtd" class="input-field" placeholder="Qtd" style="width:70px;">
+          <input type="number" id="valQtd" class="input-field" placeholder="Qtd Total" style="width:90px;">
         </div>
         <button class="btn-finish" style="background:#7c3aed; margin-bottom:0;" onclick="cadastrarValidade()">Adicionar ao Monitor de Validades</button>
       </div>
@@ -169,192 +191,107 @@
     </div>
   </div>
 
-  <!-- MODAL DE GERENCIAMENTO DE ATALHOS DA TELA INICIAL -->
-  <div class="modal" id="modalAtalhos">
-    <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos do Balcão</h2>
-      
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Adicione, altere os preços ou remova os botões da tela inicial para colocar os produtos que mais vendem no seu comércio:</p>
-
-      <div id="listaAtalhosEdit" style="max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
-
-      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Adicionar Novo Botão de Atalho:</strong>
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Gelo 5kg)">
-        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="R$" step="0.01" style="width:90px;">
-        <button class="btn-add" onclick="adicionarNovoAtalho()">+</button>
-      </div>
-
-      <button class="btn-finish" onclick="fecharModalAtalhos()" style="background:#0284c7; margin-bottom:0;">Done / Salvar Alterações</button>
-    </div>
-  </div>
-
-  <!-- MODAL DE DÚVIDAS E GUIA COMPLETO -->
   <div class="modal" id="modalAjuda">
     <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">❓ Central de Dúvidas - MercadoZap</h2>
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações do Estabelecimento</h2>
       
-      <div style="max-height:320px; overflow-y:auto; padding-right:4px;">
-        <div class="faq-item">
-          <div class="faq-question">1. Como alterar o preço ou o nome dos botões de atalho?</div>
-          <div class="faq-answer">Clique no botão azul '⚙️ Personalizar Atalhos' no topo dos botões da tela inicial. Você pode mudar o preço, trocar o nome ou criar novos botões para os produtos que mais vendem no seu mercado.</div>
-        </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome do seu Comércio / Loja:</label>
+        <input type="text" id="cfgNomeLoja" class="input-field" placeholder="ex: Farmácia Saúde, Mercado Silva" onchange="salvarConfiguracoes()">
 
-        <div class="faq-item">
-          <div class="faq-question">2. Como passar uma venda rapidamente?</div>
-          <div class="faq-answer">Clique nos botões de atalho para adicionar itens na hora. Se for um produto fora dos atalhos, digite o nome e valor no campo 'Item fora dos atalhos' e aperte '+'.</div>
-        </div>
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569; margin-top:8px; display:block;">WhatsApp do Sócio / Admin (com DDD):</label>
+        <input type="text" id="cfgTelSocio" class="input-field" placeholder="ex: 75999998888" onchange="salvarConfiguracoes()">
 
-        <div class="faq-item">
-          <div class="faq-question">3. Como funcionam os alertas sequenciais de validade?</div>
-          <div class="faq-answer">O sistema avisa em 3 etapas: aos 30 dias (organizar estoque), aos 15 dias (preparar promoção) e aos 7 dias (alerta urgente). Quando o produto for vendido, basta clicar no botão 'Vendi' para apagar o aviso.</div>
-        </div>
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569; margin-top:8px; display:block;">Chave PIX do Estabelecimento (Opcional):</label>
+        <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()">
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
       
       <button class="btn-client-receipt" style="background:#059669;" onclick="enviarFeedback()">💬 Enviar Dúvida no WhatsApp</button>
-      <button class="btn-client-receipt" style="background:#7c3aed;" onclick="solicitarUpgradePlus()">⭐ Assinar MercadoZap PLUS</button>
-      <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#64748b; margin-top:6px;">Fechar Central de Dúvidas</button>
+      <button class="btn-client-receipt" style="background:#7c3aed;" onclick="solicitarUpgradePlus()">⭐ Assinar Caixa Rápido Móvel PLUS</button>
+      <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#64748b; margin-top:6px;">Salvar & Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modalAtalhos">
+    <div class="modal-content">
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos da Tela Inicial</h2>
+      <div id="listaAtalhosEdit" style="max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+
+      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Adicionar Novo Atalho:</strong>
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Remédio X)">
+        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="R$" step="0.01" style="width:90px;">
+        <button class="btn-add" onclick="adicionarNovoAtalho()">+</button>
+      </div>
+
+      <button class="btn-finish" onclick="fecharModalAtalhos()" style="background:#0284c7; margin-bottom:0;">Concluído</button>
     </div>
   </div>
 
   <script>
-    // LISTA PADRÃO DE ATALHOS INICIAIS
     const atalhosPadrao = [
-      { id: 1, nome: '🎱 Sinuca', preco: 2.00 },
-      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50 },
-      { id: 3, nome: '🍺 Devassa 600ml', preco: 7.00 },
-      { id: 4, nome: '🧊 Gelado / Geladinho', preco: 2.50 },
-      { id: 5, nome: '🔥 Botijão de Gás', preco: 105.00 },
-      { id: 6, nome: '🌾 Arroz 5kg', preco: 28.00 }
+      { id: 1, nome: '🎱 Sinuca', preco: 2.00, tipo: 'UN' },
+      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50, tipo: 'UN' },
+      { id: 3, nome: '🔥 Botijão de Gás', preco: 105.00, tipo: 'UN' },
+      { id: 4, nome: '🧀 Queijo Prato (Kg)', preco: 50.00, tipo: 'KG' }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('atalhos_custom_v1')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('carrinho_atual')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('vendas_dia_v2')) || [];
-    let listaValidade = JSON.parse(localStorage.getItem('lista_validade')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas')) || [];
+    let listaValidade = JSON.parse(localStorage.getItem('crm_validade')) || [];
+    let config = JSON.parse(localStorage.getItem('crm_config')) || { loja: 'Meu Comércio', socio: '', pix: '' };
+    
     let formaPagamento = 'Dinheiro';
+    let unidadeSelecionada = 'UN';
     let filtroAtual = 'hoje';
-    let intervaloVibracao = null;
+    let html5QrcodeScanner = null;
 
     function salvarEstado() {
-      localStorage.setItem('atalhos_custom_v1', JSON.stringify(atalhos));
-      localStorage.setItem('carrinho_atual', JSON.stringify(carrinho));
-      localStorage.setItem('vendas_dia_v2', JSON.stringify(vendasDoDia));
-      localStorage.setItem('lista_validade', JSON.stringify(listaValidade));
+      localStorage.setItem('crm_atalhos', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_validade', JSON.stringify(listaValidade));
+      localStorage.setItem('crm_config', JSON.stringify(config));
       renderizar();
     }
 
-    function renderizarAtalhos() {
-      const container = document.getElementById('containerAtalhos');
-      container.innerHTML = '';
-
-      atalhos.forEach(item => {
-        container.innerHTML += `
-          <button class="btn-quick" onclick="adicionarItem('${item.nome}', ${item.preco})">
-            ${item.nome}<br>
-            <span style="font-size:0.8rem; color:#2563eb;">R$ ${item.preco.toFixed(2)}</span>
-          </button>
-        `;
-      });
+    function selecionarUnidade(tipo) {
+      unidadeSelecionada = tipo;
+      document.getElementById('btn-un').classList.toggle('selected', tipo === 'UN');
+      document.getElementById('btn-kg').classList.toggle('selected', tipo === 'KG');
     }
 
-    function renderizarEdicaoAtalhos() {
-      const listaEl = document.getElementById('listaAtalhosEdit');
-      listaEl.innerHTML = '';
-
-      atalhos.forEach((item, index) => {
-        listaEl.innerHTML += `
-          <div class="btn-quick-edit">
-            <div>
-              <strong>${item.nome}</strong> — <span style="color:#16a34a; font-weight:bold;">R$ ${item.preco.toFixed(2)}</span>
-            </div>
-            <div>
-              <button onclick="editarPrecoAtalho(${index})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">Preço</button>
-              <button onclick="removerAtalho(${index})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">✕</button>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function editarPrecoAtalho(index) {
-      const novoPreco = prompt(`Digite o novo preço para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
-      const valor = parseFloat(novoPreco);
-      if (!isNaN(valor) && valor >= 0) {
-        atalhos[index].preco = valor;
-        salvarEstado();
-        renderizarEdicaoAtalhos();
-      }
-    }
-
-    function removerAtalho(index) {
-      if (confirm(`Remover o botão '${atalhos[index].nome}' da tela inicial?`)) {
-        atalhos.splice(index, 1);
-        salvarEstado();
-        renderizarEdicaoAtalhos();
-      }
-    }
-
-    function adicionarNovoAtalho() {
-      const nome = document.getElementById('novoAtalhoNome').value.trim();
-      const preco = parseFloat(document.getElementById('novoAtalhoPreco').value);
-
-      if (!nome || isNaN(preco) || preco < 0) return alert('Digite um nome e um valor válido!');
-
-      atalhos.push({ id: Date.now(), nome, preco });
-      document.getElementById('novoAtalhoNome').value = '';
-      document.getElementById('novoAtalhoPreco').value = '';
-      salvarEstado();
-      renderizarEdicaoAtalhos();
-    }
-
-    function abrirModalAtalhos() {
-      renderizarEdicaoAtalhos();
-      document.getElementById('modalAtalhos').style.display = 'block';
-    }
-
-    function fecharModalAtalhos() {
-      document.getElementById('modalAtalhos').style.display = 'none';
-      renderizarAtalhos();
-    }
-
-    function mudarAba(aba) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-      document.getElementById('btn-tab-' + aba).classList.add('active');
-      document.getElementById('tab-' + aba).classList.add('active');
-    }
-
-    function adicionarItem(nome, preco) {
-      const itemExistente = carrinho.find(it => it.nome === nome);
-      if (itemExistente) {
-        itemExistente.qtd += 1;
-      } else {
-        carrinho.push({ nome, preco: parseFloat(preco), qtd: 1 });
-      }
-      salvarEstado();
-    }
-
-    function alterarQtd(index, delta) {
-      carrinho[index].qtd += delta;
-      if (carrinho[index].qtd <= 0) carrinho.splice(index, 1);
+    function adicionarItem(nome, preco, tipo = 'UN', qtdOuPeso = 1) {
+      const valorTotalItem = preco * qtdOuPeso;
+      carrinho.push({ nome, precoUnitario: preco, tipo, qtdOuPeso, total: valorTotalItem });
       salvarEstado();
     }
 
     function adicionarManual() {
-      const nomeInput = document.getElementById('nomeManual');
-      const valorInput = document.getElementById('valorManual');
-      const nome = nomeInput.value.trim() || 'Item Diverso';
-      const preco = parseFloat(valorInput.value);
+      const nome = document.getElementById('nomeManual').value.trim() || 'Produto Diverso';
+      const preco = parseFloat(document.getElementById('valorManual').value);
+      const qtdOuPeso = parseFloat(document.getElementById('qtdOuPesoManual').value) || 1;
 
       if (isNaN(preco) || preco <= 0) return alert('Digite um valor válido!');
 
-      adicionarItem(nome, preco);
-      nomeInput.value = '';
-      valorInput.value = '';
+      adicionarItem(nome, preco, unidadeSelecionada, qtdOuPeso);
+      document.getElementById('nomeManual').value = '';
+      document.getElementById('valorManual').value = '';
+      document.getElementById('qtdOuPesoManual').value = '';
+    }
+
+    function alterarQtdCarrinho(index, delta) {
+      if (carrinho[index].tipo === 'KG') {
+        carrinho.splice(index, 1);
+      } else {
+        carrinho[index].qtdOuPeso += delta;
+        carrinho[index].total = carrinho[index].precoUnitario * carrinho[index].qtdOuPeso;
+        if (carrinho[index].qtdOuPeso <= 0) carrinho.splice(index, 1);
+      }
+      salvarEstado();
     }
 
     function limparCarrinho() {
@@ -374,7 +311,7 @@
     }
 
     function calcularTotal() {
-      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       return Math.max(0, subtotal - desconto);
     }
@@ -389,18 +326,21 @@
     function finalizarVenda(silencioso = false) {
       if (carrinho.length === 0) return alert('Carrinho vazio!');
       
-      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
       const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
+      const vendedor = document.getElementById('nomeVendedor').value.trim() || 'Atendente';
 
       vendasDoDia.push({
         dataTimestamp: new Date().getTime(),
-        cliente: cliente,
+        dataTexto: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        cliente,
+        vendedor,
         itens: JSON.parse(JSON.stringify(carrinho)),
-        subtotal: subtotal,
-        desconto: desconto,
+        subtotal,
+        desconto,
         total: totalFinal,
         pagamento: formaPagamento
       });
@@ -418,27 +358,42 @@
       if (carrinho.length === 0) return alert('Carrinho vazio!');
 
       const cliente = document.getElementById('nomeCliente').value.trim() || 'Cliente';
-      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const vendedor = document.getElementById('nomeVendedor').value.trim() || 'Atendente';
+      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
-      const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dataHoje = new Date().toLocaleDateString('pt-BR');
+      const horaHoje = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      let texto = `🛒 *MERCADINHO E CONVENIÊNCIA*\n`;
-      texto += `👤 *Cliente:* ${cliente}\n`;
-      texto += `⏰ *Horário:* ${hora}\n`;
+      let texto = `🏢 *${config.loja.toUpperCase()}*\n`;
+      texto += `📅 *Data:* ${dataHoje} | ⏰ *Hora:* ${horaHoje}\n`;
+      texto += `👤 *Cliente:* ${cliente} | 👨‍💼 *Vendedor:* ${vendedor}\n`;
       texto += `----------------------------------\n`;
 
       carrinho.forEach(it => {
-        texto += `• ${it.qtd}x ${it.nome} — R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
+        if (it.tipo === 'KG') {
+          texto += `• ${it.nome}\n  (${it.qtdOuPeso} kg x R$ ${it.precoUnitario.toFixed(2)}/kg) -> R$ ${it.total.toFixed(2)}\n`;
+        } else {
+          texto += `• ${it.qtdOuPeso}x ${it.nome} (R$ ${it.precoUnitario.toFixed(2)} un) -> R$ ${it.total.toFixed(2)}\n`;
+        }
       });
 
       texto += `----------------------------------\n`;
-      if (desconto > 0) {
-        texto += `Subtotal: R$ ${subtotal.toFixed(2)}\n`;
-        texto += `Desconto: R$ ${desconto.toFixed(2)}\n`;
-      }
+      if (desconto > 0) texto += `Subtotal: R$ ${subtotal.toFixed(2)}\nDesconto: R$ ${desconto.toFixed(2)}\n`;
       texto += `💰 *TOTAL PAGO: R$ ${totalFinal.toFixed(2)}*\n`;
       texto += `💳 Forma: ${formaPagamento}\n`;
+
+      if (formaPagamento === 'Dinheiro') {
+        const pago = parseFloat(document.getElementById('valorPago').value) || totalFinal;
+        const troco = Math.max(0, pago - totalFinal);
+        texto += `💵 Recebido: R$ ${pago.toFixed(2)} | Troco: R$ ${troco.toFixed(2)}\n`;
+      }
+
+      if (config.pix) {
+        texto += `----------------------------------\n`;
+        texto += `🔑 *Chave PIX da Loja:* ${config.pix}\n`;
+      }
+
       texto += `----------------------------------\n`;
       texto += `*Obrigado pela preferência, ${cliente}! Volte sempre!* 😊`;
 
@@ -446,29 +401,6 @@
 
       const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
       window.open(url, '_blank');
-    }
-
-    function selecionarFiltro(tipo) {
-      filtroAtual = tipo;
-      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('selected'));
-      document.getElementById('flt-' + tipo).classList.add('selected');
-      
-      const nomes = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' };
-      document.getElementById('nomeFiltro').innerText = nomes[tipo];
-      renderizar();
-    }
-
-    function obterVendasFiltradas() {
-      const agora = new Date().getTime();
-      const umDia = 24 * 60 * 60 * 1000;
-
-      return vendasDoDia.filter(v => {
-        const diffDias = (agora - (v.dataTimestamp || agora)) / umDia;
-        if (filtroAtual === 'hoje') return diffDias <= 1;
-        if (filtroAtual === 'semana') return diffDias <= 7;
-        if (filtroAtual === 'mes') return diffDias <= 30;
-        return true;
-      });
     }
 
     function cadastrarValidade() {
@@ -485,36 +417,12 @@
       salvarEstado();
     }
 
-    function removerValidade(index) {
-      listaValidade.splice(index, 1);
+    function abaterValidade(index, qtdAbater) {
+      listaValidade[index].qtd -= qtdAbater;
+      if (listaValidade[index].qtd <= 0) {
+        listaValidade.splice(index, 1);
+      }
       salvarEstado();
-    }
-
-    function checarAlertasEemiteVibracao(itensUrgentes) {
-      const banner = document.getElementById('bannerAlerta');
-      const texto = document.getElementById('textoBannerAlerta');
-
-      if (itensUrgentes.length > 0) {
-        banner.style.display = 'block';
-        texto.innerText = `Urgente! ${itensUrgentes.length} produto(s) a menos de 7 dias do vencimento: ${itensUrgentes.join(', ')}. Crie promoção imediata!`;
-
-        if ("vibrate" in navigator && !intervaloVibracao) {
-          intervaloVibracao = setInterval(() => {
-            navigator.vibrate([200, 100, 200]);
-          }, 4000);
-        }
-      } else {
-        desativarAlertaVibracao();
-      }
-    }
-
-    function desativarAlertaVibracao() {
-      document.getElementById('bannerAlerta').style.display = 'none';
-      if (intervaloVibracao) {
-        clearInterval(intervaloVibracao);
-        intervaloVibracao = null;
-      }
-      if ("vibrate" in navigator) navigator.vibrate(0);
     }
 
     function renderizarValidades() {
@@ -523,12 +431,10 @@
 
       if (listaValidade.length === 0) {
         container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto cadastrado no monitor de validades.</p>`;
-        desativarAlertaVibracao();
         return;
       }
 
       const hoje = new Date();
-      let itensUrgentes = [];
 
       listaValidade.forEach((item, index) => {
         const dataVal = new Date(item.data + 'T00:00:00');
@@ -539,51 +445,60 @@
 
         if (diffDias < 0) {
           statusCor = '#0f172a';
-          statusTexto = `💀 VENCIDO há ${Math.abs(diffDias)} dias! Retire da prateleira.`;
+          statusTexto = `💀 VENCIDO há ${Math.abs(diffDias)} dias!`;
         } else if (diffDias <= 7) {
           statusCor = '#dc2626';
-          statusTexto = `🔴 URGENTE: Vence em ${diffDias} dias! (Queima de Estoque)`;
-          itensUrgentes.push(`${item.nome} (${diffDias}d)`);
+          statusTexto = `🔴 URGENTE: Vence em ${diffDias} dias!`;
         } else if (diffDias <= 15) {
           statusCor = '#f97316';
-          statusTexto = `🟠 ATENÇÃO: Vence em ${diffDias} dias. Prepare promoção.`;
+          statusTexto = `🟠 ATENÇÃO: Vence em ${diffDias} dias.`;
         } else if (diffDias <= 30) {
           statusCor = '#eab308';
-          statusTexto = `🟡 ALERTA: Vence em ${diffDias} dias. Reorganizar prateleira.`;
+          statusTexto = `🟡 ALERTA: Vence em ${diffDias} dias.`;
         }
 
         container.innerHTML += `
           <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
             <div>
-              <strong>${item.nome}</strong> (${item.qtd} un.)<br>
+              <strong>${item.nome}</strong> (${item.qtd} un/cx restantes)<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
             </div>
-            <button onclick="removerValidade(${index})" style="background:#22c55e; color:white; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.75rem;">✅ Vendi</button>
+            <div>
+              <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
+            </div>
           </div>
         `;
       });
-
-      checarAlertasEemiteVibracao(itensUrgentes);
     }
 
     function renderizar() {
-      renderizarAtalhos();
+      const containerAtalhos = document.getElementById('containerAtalhos');
+      containerAtalhos.innerHTML = '';
+      atalhos.forEach(item => {
+        const txtKg = item.tipo === 'KG' ? '/kg' : '';
+        containerAtalhos.innerHTML += `
+          <button class="btn-quick" onclick="adicionarItem('${item.nome}', ${item.preco}, '${item.tipo}', 1)">
+            ${item.nome}<br>
+            <span style="font-size:0.8rem; color:#2563eb;">R$ ${item.preco.toFixed(2)}${txtKg}</span>
+          </button>
+        `;
+      });
 
       const listaEl = document.getElementById('listaCarrinho');
       listaEl.innerHTML = '';
-
       carrinho.forEach((item, index) => {
+        const txtMedida = item.tipo === 'KG' ? `${item.qtdOuPeso} kg` : `${item.qtdOuPeso} un`;
         listaEl.innerHTML += `
           <div class="cart-item">
             <div>
               <strong>${item.nome}</strong><br>
-              <small>R$ ${item.preco.toFixed(2)} un.</small>
+              <small>${txtMedida} x R$ ${item.precoUnitario.toFixed(2)}</small>
             </div>
             <div class="qty-controls">
-              <button class="btn-qty" onclick="alterarQtd(${index}, -1)">-</button>
-              <span>${item.qtd}</span>
-              <button class="btn-qty" onclick="alterarQtd(${index}, 1)">+</button>
-              <span style="font-weight:bold; margin-left:6px;">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+              ${item.tipo === 'UN' ? `<button class="btn-qty" onclick="alterarQtdCarrinho(${index}, -1)">-</button>` : ''}
+              <span>R$ ${item.total.toFixed(2)}</span>
+              ${item.tipo === 'UN' ? `<button class="btn-qty" onclick="alterarQtdCarrinho(${index}, 1)">+</button>` : ''}
+              <button onclick="alterarQtdCarrinho(${index}, -99)" style="background:none; border:none; color:red; font-weight:bold; margin-left:4px;">✕</button>
             </div>
           </div>
         `;
@@ -592,53 +507,76 @@
       document.getElementById('valorTotal').innerText = calcularTotal().toFixed(2);
       calcularTroco();
 
-      const vendasFiltradas = obterVendasFiltradas();
-      const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+      const totalAcumulado = vendasDoDia.reduce((acc, v) => acc + v.total, 0);
       document.getElementById('totalFiltrado').innerText = totalAcumulado.toFixed(2);
+
+      document.getElementById('cfgNomeLoja').value = config.loja;
+      document.getElementById('cfgTelSocio').value = config.socio;
+      document.getElementById('cfgChavePix').value = config.pix;
 
       renderizarValidades();
     }
 
+    function salvarConfiguracoes() {
+      config.loja = document.getElementById('cfgNomeLoja').value.trim() || 'Meu Comércio';
+      config.socio = document.getElementById('cfgTelSocio').value.replace(/\D/g, '');
+      config.pix = document.getElementById('cfgChavePix').value.trim();
+      salvarEstado();
+    }
+
     function enviarWhatsappSocio() {
-      const tel = document.getElementById('telSocio').value.replace(/\D/g, '');
-      if (!tel) return alert('Digite o número do WhatsApp do sócio!');
+      if (!config.socio) return alert('Cadastre o WhatsApp do Sócio no menu ⚙️ Config!');
 
-      const vendasFiltradas = obterVendasFiltradas();
-      const periodoTexto = { 'hoje': 'DO DIA', 'semana': 'DA SEMANA', 'mes': 'DO MÊS' }[filtroAtual];
-
-      let texto = `📊 *FECHAMENTO DE VENDAS ${periodoTexto}*\n\n`;
+      let texto = `📊 *FECHAMENTO DE CAIXA - ${config.loja.toUpperCase()}*\n\n`;
       let totalGeral = 0;
       let totalFiado = 0;
 
-      vendasFiltradas.forEach((v, i) => {
+      vendasDoDia.forEach((v, i) => {
         totalGeral += v.total;
         if (v.pagamento === 'Fiado') totalFiado += v.total;
 
-        texto += `*Venda #${i+1} (${v.hora}) - ${v.cliente}*\n`;
-        v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
-        if (v.desconto > 0) texto += ` Desconto: -R$ ${v.desconto.toFixed(2)}\n`;
+        texto += `*#${i+1} (${v.hora}) - ${v.cliente}* (Vend: ${v.vendedor})\n`;
+        v.itens.forEach(it => { texto += ` • ${it.nome}: R$ ${it.total.toFixed(2)}\n`; });
         texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
       });
 
-      texto += `💰 *TOTAL ACUMULADO: R$ ${totalGeral.toFixed(2)}*\n`;
+      texto += `💰 *TOTAL ACUMULADO HOJE: R$ ${totalGeral.toFixed(2)}*\n`;
       if (totalFiado > 0) texto += `⚠️ *Total em Fiado a Receber: R$ ${totalFiado.toFixed(2)}*`;
 
-      const url = `https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`;
+      const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
       window.open(url, '_blank');
     }
 
+    function iniciarLeitorCamera() {
+      const readerEl = document.getElementById('reader');
+      readerEl.style.display = 'block';
+
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      html5QrcodeScanner.render((decodedText) => {
+        alert("Código lido: " + decodedText);
+        html5QrcodeScanner.clear();
+        readerEl.style.display = 'none';
+        adicionarItem("Item Cod " + decodedText.slice(-4), 10.00, 'UN', 1);
+      });
+    }
+
     function zerarHistoricoCompleto() {
-      if (confirm('Tem certeza que deseja zerar o relatório e iniciar um novo período? Esta ação limpa a memória do caixa.')) {
+      if (confirm('Tem certeza que deseja zerar o caixa do dia?')) {
         vendasDoDia = [];
         salvarEstado();
-        alert('Caixa zerado com sucesso para o novo período!');
       }
     }
 
     function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
     function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
-    function enviarFeedback() { window.open('https://api.whatsapp.com/send?text=Olá! Gostaria de tirar uma dúvida sobre o MercadoZap: ', '_blank'); }
-    function solicitarUpgradePlus() { window.open('https://api.whatsapp.com/send?text=Olá! Gostaria de assinar o MercadoZap PLUS!', '_blank'); }
+    function abrirModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'block'; }
+    function fecharModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'none'; }
+    function enviarFeedback() { window.open('https://api.whatsapp.com/send?text=Olá! Suporte Caixa Rápido Móvel: ', '_blank'); }
+    function solicitarUpgradePlus() { window.open('https://api.whatsapp.com/send?text=Olá! Quero assinar o Caixa Rápido Móvel PLUS!', '_blank'); }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
 
     renderizar();
   </script>

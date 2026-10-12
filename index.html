@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.2 - Vendas & Gestão</title>
+  <title>Caixa Rápido Móvel Pro 2.3 - Gestão & Vendas</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -17,7 +17,6 @@
     .tab-btn.active { background: #25d366; color: white; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .quick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .quick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; }
     .btn-quick.esgotado { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; opacity: 0.6; cursor: not-allowed; }
@@ -50,10 +49,6 @@
     .btn-filter { flex: 1; padding: 6px; border: 1px solid #0284c7; background: white; color: #0284c7; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
     .btn-filter.selected { background: #0284c7; color: white; }
     .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-    .edit-item-row { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .faq-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
-    .faq-question { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 4px; }
-    .faq-answer { font-size: 0.8rem; color: #475569; line-height: 1.4; }
     .toggle-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px; font-weight: bold; color: #475569; }
     #reader { width: 100%; margin-bottom: 10px; display: none; }
     @media print {
@@ -92,9 +87,9 @@
         <input type="text" id="telCliente" class="input-field" placeholder="Zap Cliente (DDD)" style="width:130px;">
       </div>
       
-      <div class="quick-header">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
-        <button class="btn-small-edit" onclick="abrirModalAtalhos()">⚙️ Editar Atalhos & Preços</button>
+        <button class="btn-small-edit" onclick="mudarAba('estoque')">📦 Gerenciar Produtos</button>
       </div>
 
       <div class="quick-buttons" id="containerAtalhos"></div>
@@ -144,12 +139,50 @@
       <button class="btn-finish" onclick="finalizarVenda(false)">✅ Finalizar Apenas (Sem Zap)</button>
       <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
     </div>
+
+    <!-- RESUMO DO DIA VISÍVEL NO CAIXA -->
+    <div class="card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:4px;">📊 Resumo do Faturamento Hoje:</strong>
+      <div style="font-size:0.85rem; color:#15803d; display:flex; justify-content:space-between; margin-bottom:2px;">
+        <span>Vendas Acumuladas:</span>
+        <strong>R$ <span id="cxFaturamentoDia">0.00</span></strong>
+      </div>
+      <div style="font-size:0.85rem; color:#047857; display:flex; justify-content:space-between; margin-bottom:2px;">
+        <span>Lucro Líquido do Dia:</span>
+        <strong>R$ <span id="cxLucroDia">0.00</span></strong>
+      </div>
+      <div style="font-size:0.85rem; color:#b45309; display:flex; justify-content:space-between;">
+        <span>Fiado a Receber:</span>
+        <strong>R$ <span id="cxFiadoDia">0.00</span></strong>
+      </div>
+    </div>
   </div>
 
-  <!-- ABA 2: CONTROLE DE ESTOQUE E ENTRADAS -->
+  <!-- ABA 2: CADASTRO CENTRAL, ESTOQUE E ENTRADAS -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
-      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Gestão de Estoque & Entradas</strong>
+      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Cadastro Central de Produtos & Estoque</strong>
+
+      <!-- FORMULÁRIO DE CADASTRO COMPLETO DE PRODUTO -->
+      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">+ Cadastrar / Atualizar Produto no Estoque:</strong>
+        <input type="text" id="cadNome" class="input-field" placeholder="Nome do Produto (ex: Queijo Prato)" style="margin-bottom:6px;">
+        
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+          <input type="number" id="cadPrecoCusto" class="input-field" placeholder="Custo (R$)" step="0.01">
+          <input type="number" id="cadPrecoVenda" class="input-field" placeholder="Venda (R$)" step="0.01">
+        </div>
+
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <input type="number" id="cadQtdEstoque" class="input-field" placeholder="Qtd / Kg Inicial" step="0.1">
+          <select id="cadTipoUnidade" class="input-field" style="width:110px;">
+            <option value="UN">Unidade</option>
+            <option value="KG">Por Kg</option>
+          </select>
+        </div>
+
+        <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar Produto no Estoque</button>
+      </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px; font-size:0.85rem;">
         <p style="color:#0369a1;">💰 <strong>Custo Total Estocado:</strong> R$ <span id="custoTotalEstoque">0.00</span></p>
@@ -157,18 +190,18 @@
       </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Alertas do Estoque:</strong>
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Alerta Mínimo de Estoque (UN ou KG):</strong>
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar quando restar menos de:</label>
-          <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:70px; padding:4px;" value="5" onchange="salvarConfiguracoes()">
+          <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:80px; padding:4px;" value="5" step="0.5" onchange="salvarConfiguracoes()">
         </div>
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro</label>
+          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
           <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
         </div>
       </div>
 
-      <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Produtos Estocados:</strong>
+      <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Produtos Registrados no Estoque:</strong>
       <div id="listaEstoque" style="margin-top:6px;"></div>
     </div>
   </div>
@@ -191,7 +224,7 @@
           </select>
         </div>
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomValidade" checked onchange="salvarConfiguracoes()"> Alerta Sonoro</label>
+          <label><input type="checkbox" id="chkAlertSomValidade" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
           <label><input type="checkbox" id="chkAlertVibraValidade" checked onchange="salvarConfiguracoes()"> Vibração</label>
         </div>
       </div>
@@ -211,10 +244,10 @@
     </div>
   </div>
 
-  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS E CONFERÊNCIA DE CAIXA -->
+  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS E HISTÓRICO PERMANENTE -->
   <div class="tab-content" id="tab-relatorios">
     <div class="card print-area">
-      <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central de Relatórios Financeiros</strong>
+      <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
 
       <div class="filter-btn-group">
         <button class="btn-filter selected" id="flt-hoje" onclick="selecionarFiltro('hoje')">Hoje</button>
@@ -248,7 +281,7 @@
 
       <button class="btn-client-receipt" style="background:#0284c7; margin-top:10px;" onclick="enviarWhatsappSocio()">📲 Enviar Relatório ao Sócio no WhatsApp</button>
       <button class="btn-client-receipt" style="background:#475569;" onclick="gerarPDFRelatorio()">📄 Exportar Relatório em PDF / Imprimir</button>
-      <button class="btn-clear" style="margin-top:8px;" onclick="zerarHistoricoCompleto()">🧹 Limpar Vendas do Caixa Atual</button>
+      <button class="btn-clear" style="margin-top:8px;" onclick="zerarTelaCaixa()">🧹 Reiniciar Tela do Caixa Atual (Mantém Relatórios)</button>
     </div>
   </div>
 
@@ -282,41 +315,14 @@
           <div class="faq-answer">1. Clique em '📷 Bipar Câmera' no topo do Caixa.<br>2. Permita o acesso à câmera do celular.<br>3. Aponte a câmera para o código de barras (EAN-13) da embalagem a uma distância de 15cm.<br>4. O aplicativo bipará e lançará o produto direto na venda!</div>
         </div>
         <div class="faq-item">
-          <div class="faq-question">1. Como funciona o Fechamento Automático à Meia-Noite?</div>
-          <div class="faq-answer">Se o atendente se esquecer de zerar o caixa, o aplicativo detecta a virada do dia às 00:00, arquiva todas as vendas do dia anterior nos relatórios históricos e reinicia a tela com o caixa zerado para o novo dia!</div>
+          <div class="faq-question">1. Onde cadastrar novos produtos?</div>
+          <div class="faq-answer">Todos os produtos devem ser cadastrados na aba '📦 Estoque' informando preço de custo, venda, quantidade e se é vendido por Unidade ou Kg.</div>
         </div>
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
       
       <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#0284c7; margin-top:6px; font-weight:bold;">Salvar & Fechar</button>
-    </div>
-  </div>
-
-  <!-- MODAL EDITAR ATALHOS -->
-  <div class="modal" id="modalAtalhos">
-    <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos & Preços</h2>
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Edite preços de custo/venda e crie atalhos por UN ou KG:</p>
-      
-      <div id="listaAtalhosEdit" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
-
-      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Criar Novo Atalho:</strong>
-      <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Queijo Prato)" style="margin-bottom:6px;">
-      <div style="display:flex; gap:6px; margin-bottom:6px;">
-        <input type="number" id="novoAtalhoPrecoCusto" class="input-field" placeholder="Custo (R$)" step="0.01">
-        <input type="number" id="novoAtalhoPrecoVenda" class="input-field" placeholder="Venda (R$)" step="0.01">
-      </div>
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="number" id="novoAtalhoEstoque" class="input-field" placeholder="Estoque Início">
-        <select id="novoAtalhoTipo" class="input-field" style="width:110px;">
-          <option value="UN">Unidade</option>
-          <option value="KG">Por Kg</option>
-        </select>
-        <button class="btn-add" onclick="adicionarNovoAtalho()">+</button>
-      </div>
-
-      <button class="btn-finish" onclick="fecharModalAtalhos()" style="background:#0284c7; margin-bottom:0;">Concluído</button>
     </div>
   </div>
 
@@ -328,13 +334,13 @@
       { id: 4, nome: '🧀 Queijo Prato', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10 }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_2')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_2')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_2')) || [];
-    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v2_2')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_3')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_3')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_3')) || [];
+    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v2_3')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_2')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_3')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
       limiteAlert: 5, alertSomEstq: true, alertVibraEstq: true,
       diasValAlert: 30, alertSomVal: true, alertVibraVal: true
@@ -344,7 +350,27 @@
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
-    // VERIFICAÇÃO AUTOMÁTICA DE MEIA-NOITE
+    // GERADOR NATIVO DE ALERTA SONORO E VIBRAÇÃO
+    function acionarAlertaAlarme() {
+      try {
+        if (config.alertSomEstq || config.alertSomVal) {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        }
+        if ((config.alertVibraEstq || config.alertVibraVal) && navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]);
+        }
+      } catch (e) { console.log('Alerta sonoro aguardando interação do usuário.'); }
+    }
+
     function verificarViradaDeDiaAuto() {
       const hojeStr = new Date().toLocaleDateString();
       if (ultimoDiaAcesso !== hojeStr) {
@@ -356,22 +382,33 @@
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_2', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_2', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_2', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_validade_v2_2', JSON.stringify(listaValidade));
-      localStorage.setItem('crm_config_v2_2', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_3', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_3', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_3', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_validade_v2_3', JSON.stringify(listaValidade));
+      localStorage.setItem('crm_config_v2_3', JSON.stringify(config));
       renderizar();
     }
 
+    function obterQtdCarrinhoPendentes(prodId) {
+      return carrinho.filter(it => it.atalhoId === prodId).reduce((acc, it) => acc + (it.qtdEstoqueAbater || it.qtd), 0);
+    }
+
     function clicarAtalho(item) {
-      if (item.estoque <= 0) return alert(`O produto '${item.nome}' está esgotado no estoque!`);
+      const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
+      const estoqueDisponivel = item.estoque - pendenteNoCarrinho;
+
+      if (estoqueDisponivel <= 0) {
+        acionarAlertaAlarme();
+        return alert(`O produto '${item.nome}' está esgotado no estoque!`);
+      }
 
       if (item.tipo === 'KG') {
-        const gramasStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\n\nDigite a quantidade em GRAMAS (ex: 300 para 300g):`, "300");
+        const gramasStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\nDisponível: ${estoqueDisponivel.toFixed(3)} kg\n\nDigite a quantidade em GRAMAS (ex: 300 para 300g):`, "300");
         const gramas = parseFloat(gramasStr);
         if (!isNaN(gramas) && gramas > 0) {
           const pesoKg = gramas / 1000;
+          if (pesoKg > estoqueDisponivel) return alert('Quantidade digitada excede o estoque disponível!');
           const valorCalculado = item.preco * pesoKg;
           const custoCalculado = (item.precoCusto || 0) * pesoKg;
           adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, custoCalculado, 1, true, item.id, pesoKg);
@@ -542,6 +579,33 @@
       window.open(url, '_blank');
     }
 
+    function salvarNovoProdutoEstoque() {
+      const nome = document.getElementById('cadNome').value.trim();
+      const precoCusto = parseFloat(document.getElementById('cadPrecoCusto').value) || 0;
+      const precoVenda = parseFloat(document.getElementById('cadPrecoVenda').value);
+      const estoque = parseFloat(document.getElementById('cadQtdEstoque').value) || 0;
+      const tipo = document.getElementById('cadTipoUnidade').value;
+
+      if (!nome || isNaN(precoVenda) || precoVenda < 0) return alert('Preencha o nome e o preço de venda corretamente!');
+
+      const itemExistente = atalhos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
+      if (itemExistente) {
+        itemExistente.precoCusto = precoCusto;
+        itemExistente.preco = precoVenda;
+        itemExistente.estoque = estoque;
+        itemExistente.tipo = tipo;
+      } else {
+        atalhos.push({ id: Date.now(), nome, precoCusto, preco: precoVenda, tipo, estoque });
+      }
+
+      document.getElementById('cadNome').value = '';
+      document.getElementById('cadPrecoCusto').value = '';
+      document.getElementById('cadPrecoVenda').value = '';
+      document.getElementById('cadQtdEstoque').value = '';
+      salvarEstado();
+      alert('Produto salvo no estoque com sucesso!');
+    }
+
     function cadastrarValidade() {
       const nome = document.getElementById('valNome').value.trim();
       const data = document.getElementById('valData').value;
@@ -586,7 +650,7 @@
 
       atalhos.forEach((item, index) => {
         const txtTipo = item.tipo === 'KG' ? 'kg' : 'un';
-        const limiteAlert = config.limiteAlert || 5;
+        const limiteAlert = parseFloat(config.limiteAlert) || 5;
         const alertaBaixo = item.estoque <= limiteAlert ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
         
         const valorCustoItem = (item.precoCusto || 0) * item.estoque;
@@ -613,7 +677,7 @@
     }
 
     function ajustarEstoque(index) {
-      const novoQtd = prompt(`Ajustar estoque para '${atalhos[index].nome}':`, atalhos[index].estoque || 0);
+      const novoQtd = prompt(`Ajustar quantidade em estoque para '${atalhos[index].nome}':`, atalhos[index].estoque || 0);
       const valor = parseFloat(novoQtd);
       if (!isNaN(valor) && valor >= 0) {
         atalhos[index].estoque = valor;
@@ -663,62 +727,6 @@
       });
     }
 
-    function renderizarAtalhosEdit() {
-      const listaEl = document.getElementById('listaAtalhosEdit');
-      listaEl.innerHTML = '';
-      atalhos.forEach((item, index) => {
-        const txtTipo = item.tipo === 'KG' ? '/kg' : 'un';
-        listaEl.innerHTML += `
-          <div class="edit-item-row">
-            <div>
-              <strong>${item.nome}</strong> — Venda: R$ ${item.preco.toFixed(2)} (${txtTipo})<br>
-              <small style="color:#0369a1;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)}</small>
-            </div>
-            <div>
-              <button onclick="editarPrecoAtalho(${index})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">Editar</button>
-              <button onclick="removerAtalho(${index})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">✕</button>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function editarPrecoAtalho(index) {
-      const novoPreco = prompt(`Novo preço de VENDA para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
-      const valor = parseFloat(novoPreco);
-      if (!isNaN(valor) && valor >= 0) {
-        atalhos[index].preco = valor;
-        salvarEstado();
-        renderizarAtalhosEdit();
-      }
-    }
-
-    function removerAtalho(index) {
-      if (confirm(`Remover o atalho '${atalhos[index].nome}'?`)) {
-        atalhos.splice(index, 1);
-        salvarEstado();
-        renderizarAtalhosEdit();
-      }
-    }
-
-    function adicionarNovoAtalho() {
-      const nome = document.getElementById('novoAtalhoNome').value.trim();
-      const precoCusto = parseFloat(document.getElementById('novoAtalhoPrecoCusto').value) || 0;
-      const preco = parseFloat(document.getElementById('novoAtalhoPrecoVenda').value);
-      const estoque = parseFloat(document.getElementById('novoAtalhoEstoque').value) || 0;
-      const tipo = document.getElementById('novoAtalhoTipo').value;
-
-      if (!nome || isNaN(preco) || preco < 0) return alert('Preencha o nome e o preço de venda corretamente!');
-
-      atalhos.push({ id: Date.now(), nome, precoCusto, preco, tipo, estoque });
-      document.getElementById('novoAtalhoNome').value = '';
-      document.getElementById('novoAtalhoPrecoCusto').value = '';
-      document.getElementById('novoAtalhoPrecoVenda').value = '';
-      document.getElementById('novoAtalhoEstoque').value = '';
-      salvarEstado();
-      renderizarAtalhosEdit();
-    }
-
     function obterVendasFiltradas() {
       const agora = new Date().getTime();
       const umDia = 24 * 60 * 60 * 1000;
@@ -748,6 +756,11 @@
         💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
       `;
 
+      // Atualiza também no painel rápido do caixa
+      document.getElementById('cxFaturamentoDia').innerText = totalAcumulado.toFixed(2);
+      document.getElementById('cxLucroDia').innerText = totalLucro.toFixed(2);
+      document.getElementById('cxFiadoDia').innerText = totalFiado.toFixed(2);
+
       const fundoTroco = parseFloat(document.getElementById('cfgFundoTroco').value) || 0;
       document.getElementById('confDinheiroVendas').innerText = totalDinheiro.toFixed(2);
       document.getElementById('confSaldoGaveta').innerText = (totalDinheiro + fundoTroco).toFixed(2);
@@ -760,11 +773,14 @@
       containerAtalhos.innerHTML = '';
       atalhos.forEach(item => {
         const txtKg = item.tipo === 'KG' ? '/kg' : '';
-        const esgotado = item.estoque <= 0;
+        const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
+        const saldoEfetivo = item.estoque - pendenteNoCarrinho;
+        const esgotado = saldoEfetivo <= 0;
+        
         const classeEsgotado = esgotado ? 'esgotado' : '';
         const badgeEstq = esgotado 
           ? `<span class="badge-esgotado">Esgotado</span>` 
-          : `<span class="badge-estq">${item.estoque} ${item.tipo === 'KG' ? 'kg' : 'un'}</span>`;
+          : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo === 'KG' ? 'kg' : 'un'}</span>`;
 
         containerAtalhos.innerHTML += `
           <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
@@ -822,7 +838,7 @@
       config.socio = document.getElementById('cfgTelSocio').value.replace(/\D/g, '');
       config.pix = document.getElementById('cfgChavePix').value.trim();
 
-      config.limiteAlert = parseInt(document.getElementById('cfgLimiteEstoqueAlert').value) || 5;
+      config.limiteAlert = parseFloat(document.getElementById('cfgLimiteEstoqueAlert').value) || 5;
       config.alertSomEstq = document.getElementById('chkAlertSomEstoque').checked;
       config.alertVibraEstq = document.getElementById('chkAlertVibraEstoque').checked;
 
@@ -879,17 +895,19 @@
       });
     }
 
-    function zerarHistoricoCompleto() {
-      if (confirm('Atenção: Deseja limpar a lista de vendas ativas do caixa? Os registros continuarão consolidados nos relatórios.')) {
-        vendasDoDia = [];
+    function zerarTelaCaixa() {
+      if (confirm('Deseja apenas reiniciar a tela de vendas do caixa? Todos os relatórios do dia continuarão salvos!')) {
+        carrinho = [];
+        document.getElementById('nomeCliente').value = '';
+        document.getElementById('telCliente').value = '';
+        document.getElementById('valorDesconto').value = '0';
+        document.getElementById('valorPago').value = '';
         salvarEstado();
       }
     }
 
     function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
     function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
-    function abrirModalAtalhos() { renderizarAtalhosEdit(); document.getElementById('modalAtalhos').style.display = 'block'; }
-    function fecharModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'none'; }
 
     function mudarAba(aba) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -906,7 +924,6 @@
       renderizar();
     }
 
-    // Checa virada de dia a cada 1 minuto
     setInterval(verificarViradaDeDiaAuto, 60000);
 
     renderizar();

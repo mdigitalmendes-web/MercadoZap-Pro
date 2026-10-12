@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel - Vendas & Gestão</title>
-
-  <!-- BIBLIOTECA PARA LEITURA DE CÓDIGO DE BARRAS VIA CÂMERA -->
+  <title>Caixa Rápido Móvel - Vendas, Estoque & Validade</title>
+  
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
@@ -14,7 +13,7 @@
     h1 { font-size: 1.1rem; margin-bottom: 8px; text-align: center; color: #1a252f; display: flex; justify-content: space-between; align-items: center; }
     .card { background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 12px; }
     .tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
-    .tab-btn { flex: 1; padding: 10px 4px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; color: #475569; }
+    .tab-btn { flex: 1; padding: 10px 2px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 0.8rem; text-align: center; color: #475569; }
     .tab-btn.active { background: #25d366; color: white; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -26,7 +25,7 @@
     .custom-item input[type="text"] { flex: 2; }
     .custom-item input[type="number"] { flex: 1; }
     .btn-add { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: bold; }
-    .cart-list { max-height: 160px; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid #eee; }
+    .cart-list { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid #eee; }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
     .qty-controls { display: flex; align-items: center; gap: 6px; }
     .btn-qty { background: #e2e8f0; border: none; width: 26px; height: 26px; border-radius: 4px; font-weight: bold; font-size: 1rem; }
@@ -47,15 +46,12 @@
     .filter-btn-group { display: flex; gap: 4px; margin: 8px 0; }
     .btn-filter { flex: 1; padding: 6px; border: 1px solid #0284c7; background: white; color: #0284c7; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
     .btn-filter.selected { background: #0284c7; color: white; }
-    .faq-item { border-bottom: 1px solid #cbd5e1; padding: 8px 0; }
-    .faq-question { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 4px; }
-    .faq-answer { font-size: 0.8rem; color: #475569; line-height: 1.3; }
-    .badge-plus { background: #7c3aed; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
-    .alert-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: none; }
+    .badge-plus { background: #7c3aed; color: white; font-size: 0.65rem; padding: 2px 4px; border-radius: 4px; font-weight: bold; }
     .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-    .unit-selector { display: flex; gap: 4px; margin-bottom: 6px; }
-    .unit-btn { flex: 1; padding: 6px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.8rem; font-weight: bold; border-radius: 4px; }
-    .unit-btn.selected { background: #2563eb; color: white; border-color: #2563eb; }
+    .edit-item-row { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .faq-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
+    .faq-question { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 4px; }
+    .faq-answer { font-size: 0.8rem; color: #475569; line-height: 1.4; }
     #reader { width: 100%; margin-bottom: 10px; display: none; }
   </style>
 </head>
@@ -66,33 +62,23 @@
     <button class="btn-help" onclick="abrirModalAjuda()">⚙️ Config & Guia</button>
   </h1>
 
-  <div class="alert-banner" id="bannerAlerta">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <strong style="color:#991b1b; font-size:0.85rem;">🔔 ALERTA DE VENCIMENTO PRÓXIMO!</strong>
-      <button onclick="desativarAlertaVibracao()" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✅ Ciente / Pausar Alerta</button>
-    </div>
-    <p style="font-size:0.8rem; color:#7f1d1d; margin-top:4px;" id="textoBannerAlerta"></p>
-  </div>
-
-  <!-- LEITOR DE CÓDIGO DE BARRAS PELA CÂMERA -->
   <div id="reader"></div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa / Vendas</button>
-    <button class="tab-btn" id="btn-tab-validade" onclick="mudarAba('validade')">⚠️ Validades <span class="badge-plus">PLUS</span></button>
+    <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa</button>
+    <button class="tab-btn" id="btn-tab-estoque" onclick="mudarAba('estoque')">📦 Estoque</button>
+    <button class="tab-btn" id="btn-tab-validade" onclick="mudarAba('validade')">⚠️ Validades</button>
   </div>
 
+  <!-- ABA 1: CAIXA / VENDAS -->
   <div class="tab-content active" id="tab-caixa">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <strong style="font-size: 0.85rem; color: #64748b;">ATENDIMENTO:</strong>
-        <button class="btn-small-edit" onclick="iniciarLeitorCamera()">📷 Bipar com Câmera</button>
+        <button class="btn-small-edit" onclick="iniciarLeitorCamera()">📷 Bipar Câmera</button>
       </div>
 
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)">
-        <input type="text" id="nomeVendedor" class="input-field" placeholder="Vendedor(a)" style="width:110px;">
-      </div>
+      <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)" style="margin-bottom:10px;">
       
       <div class="quick-header">
         <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
@@ -101,17 +87,10 @@
 
       <div class="quick-buttons" id="containerAtalhos"></div>
 
-      <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">ITEM FORA DOS ATALHOS / FRACIONADO:</strong>
-      
-      <div class="unit-selector">
-        <button class="unit-btn selected" id="btn-un" onclick="selecionarUnidade('UN')">Unidade (UN)</button>
-        <button class="unit-btn" id="btn-kg" onclick="selecionarUnidade('KG')">Por Quilo (KG)</button>
-      </div>
-
+      <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">ITEM FORA DOS ATALHOS / OUTRO:</strong>
       <div class="custom-item">
         <input type="text" id="nomeManual" placeholder="Nome do produto...">
-        <input type="number" id="valorManual" placeholder="R$ (Un / Kg)" step="0.01">
-        <input type="number" id="qtdOuPesoManual" placeholder="Qtd / Peso(Kg)" step="0.001" style="width:100px;">
+        <input type="number" id="valorManual" placeholder="R$" step="0.01">
         <button class="btn-add" onclick="adicionarManual()">+</button>
       </div>
     </div>
@@ -149,7 +128,7 @@
     </div>
 
     <div class="card socio-section">
-      <strong>📊 Fechamento do Caixa (Sócio)</strong>
+      <strong>📊 Relatório & Fechamento de Caixa</strong>
       
       <div class="filter-btn-group">
         <button class="btn-filter selected" id="flt-hoje" onclick="selecionarFiltro('hoje')">Hoje</button>
@@ -157,33 +136,50 @@
         <button class="btn-filter" id="flt-mes" onclick="selecionarFiltro('mes')">Este Mês</button>
       </div>
 
-      <p style="font-size:0.85rem; margin-top:4px; color: #0369a1;">
-        Total Selecionado (<span id="nomeFiltro">Hoje</span>): <strong>R$ <span id="totalFiltrado">0.00</span></strong>
-      </p>
+      <div style="font-size:0.85rem; margin-top:6px; color: #0369a1;">
+        <p>Total Acumulado (<span id="nomeFiltro">Hoje</span>): <strong>R$ <span id="totalFiltrado">0.00</span></strong></p>
+        <p style="font-size:0.8rem; margin-top:2px;" id="detalheRelatorio"></p>
+      </div>
 
-      <button class="btn-client-receipt" style="background:#0284c7; margin-top:6px;" onclick="enviarWhatsappSocio()">📊 Enviar Relatório Selecionado ao Sócio</button>
+      <button class="btn-client-receipt" style="background:#0284c7; margin-top:8px;" onclick="enviarWhatsappSocio()">📊 Enviar Relatório Detalhado ao Sócio</button>
       <button class="btn-clear" style="background:#475569; margin-top:8px;" onclick="zerarHistoricoCompleto()">🧹 Zerar Caixa / Iniciar Novo Período</button>
     </div>
   </div>
 
+  <!-- ABA 2: CONTROLE DE ESTOQUE -->
+  <div class="tab-content" id="tab-estoque">
+    <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong style="color:#0369a1; font-size:1rem;">📦 Gestão de Estoque</strong>
+        <span class="badge-plus">SISTEMA ATIVO</span>
+      </div>
+      <p style="font-size:0.8rem; color:#0c4a6e; margin-bottom:10px;">
+        O estoque é abatido automaticamente conforme as vendas são concluídas no caixa.
+      </p>
+
+      <div id="listaEstoque" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ABA 3: MONITOR DE VALIDADES -->
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <strong style="color:#6b21a8; font-size:1rem;">⚠️ Alerta de Validades & Promoções</strong>
-        <span class="badge-plus" style="font-size:0.8rem;">RECURSO PLUS</span>
+        <strong style="color:#6b21a8; font-size:1rem;">⚠️ Monitor de Validades Sequencial</strong>
+        <span class="badge-plus" style="background:#7c3aed;">SISTEMA ATIVO</span>
       </div>
       <p style="font-size:0.85rem; color:#581c87; margin-bottom:10px;">
-        Cadastre os produtos com data de vencimento. Dê baixa parcial conforme for vendendo e acompanhe o estoque em tempo real!
+        Acompanhe a validade em 3 fases (30d, 15d, 7d). Ao vender parte do lote no balcão, clique em <strong>-1 Vendi</strong> para dar baixa parcial!
       </p>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; display:block; margin-bottom:6px;">+ Cadastrar Item com Validade:</strong>
+        <strong style="font-size:0.85rem; display:block; margin-bottom:6px;">+ Cadastrar Produto com Validade:</strong>
         <input type="text" id="valNome" class="input-field" placeholder="Nome do produto (ex: Iogurte)" style="margin-bottom:6px;">
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="date" id="valData" class="input-field">
-          <input type="number" id="valQtd" class="input-field" placeholder="Qtd Total" style="width:90px;">
+          <input type="number" id="valQtd" class="input-field" placeholder="Qtd" style="width:80px;">
         </div>
-        <button class="btn-finish" style="background:#7c3aed; margin-bottom:0;" onclick="cadastrarValidade()">Adicionar ao Monitor de Validades</button>
+        <button class="btn-finish" style="background:#7c3aed; margin-bottom:0;" onclick="cadastrarValidade()">Adicionar ao Monitor</button>
       </div>
 
       <strong style="font-size:0.85rem; color:#4c1d95;">📋 Itens Monitorados:</strong>
@@ -191,38 +187,72 @@
     </div>
   </div>
 
+  <!-- MODAL CONFIGURAÇÕES E CENTRAL DE DÚVIDAS -->
   <div class="modal" id="modalAjuda">
     <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações do Estabelecimento</h2>
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Guia do Sistema</h2>
       
-      <div style="margin-bottom:12px;">
-        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome do seu Comércio / Loja:</label>
-        <input type="text" id="cfgNomeLoja" class="input-field" placeholder="ex: Farmácia Saúde, Mercado Silva" onchange="salvarConfiguracoes()">
+      <div style="margin-bottom:12px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:8px;">🏢 Dados do Estabelecimento & Vendedor:</strong>
+        
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome da sua Loja / Comércio:</label>
+        <input type="text" id="cfgNomeLoja" class="input-field" placeholder="ex: Farmácia Saúde, Mercado Silva" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
 
-        <label style="font-size:0.8rem; font-weight:bold; color:#475569; margin-top:8px; display:block;">WhatsApp do Sócio / Admin (com DDD):</label>
-        <input type="text" id="cfgTelSocio" class="input-field" placeholder="ex: 75999998888" onchange="salvarConfiguracoes()">
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome do Vendedor(a) Fixo:</label>
+        <input type="text" id="cfgVendedor" class="input-field" placeholder="ex: Carlos, Maria" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
 
-        <label style="font-size:0.8rem; font-weight:bold; color:#475569; margin-top:8px; display:block;">Chave PIX do Estabelecimento (Opcional):</label>
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">WhatsApp do Sócio / Admin (com DDD):</label>
+        <input type="text" id="cfgTelSocio" class="input-field" placeholder="ex: 75999998888" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
+
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Chave PIX da Loja (Opcional):</label>
         <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()">
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
       
-      <button class="btn-client-receipt" style="background:#059669;" onclick="enviarFeedback()">💬 Enviar Dúvida no WhatsApp</button>
-      <button class="btn-client-receipt" style="background:#7c3aed;" onclick="solicitarUpgradePlus()">⭐ Assinar Caixa Rápido Móvel PLUS</button>
-      <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#64748b; margin-top:6px;">Salvar & Fechar</button>
+      <h3 style="font-size:0.95rem; color:#0f172a; margin-bottom:8px;">❓ Dúvidas Frequentes (Como Usar)</h3>
+      <div style="max-height:180px; overflow-y:auto; padding-right:4px;">
+        <div class="faq-item">
+          <div class="faq-question">1. Como passar vendas rápidas?</div>
+          <div class="faq-answer">Basta clicar nos botões de atalho na tela inicial. Clicar várias vezes aumenta a quantidade no carrinho automaticamente.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">2. Como vender produtos por Quilo (KG)?</div>
+          <div class="faq-answer">Cadastre o produto no menu '⚙️ Editar Atalhos' selecionando 'Por Kg'. Ao clicar nele na venda, digite apenas as gramas (ex: 300 para 300g) e o app calcula o valor exato!</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">3. Como funciona o Controle de Estoque?</div>
+          <div class="faq-answer">Na aba '📦 Estoque', você ajusta a quantidade inicial dos produtos. Toda venda concluída abate essa quantidade automaticamente.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">4. Como dar baixa em validades?</div>
+          <div class="faq-answer">Na aba '⚠️ Validades', cada lote possui o botão '-1 Vendi'. Ao vender parte dos produtos, clique nele para abater a quantidade gradualmente.</div>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
+      
+      <button class="btn-clear" onclick="fecharModalAjuda()" style="background:#0284c7; margin-top:6px; font-weight:bold;">Salvar & Fechar</button>
     </div>
   </div>
 
+  <!-- MODAL EDITAR ATALHOS -->
   <div class="modal" id="modalAtalhos">
     <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos da Tela Inicial</h2>
-      <div id="listaAtalhosEdit" style="max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos & Estoque</h2>
+      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Edite preços, estoques e crie novos botões por Unidade (UN) ou Quilo (KG):</p>
+      
+      <div id="listaAtalhosEdit" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
 
-      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Adicionar Novo Atalho:</strong>
+      <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Criar Novo Atalho:</strong>
+      <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Queijo Prato)" style="margin-bottom:6px;">
       <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Remédio X)">
-        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="R$" step="0.01" style="width:90px;">
+        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="Preço (R$)" step="0.01">
+        <input type="number" id="novoAtalhoEstoque" class="input-field" placeholder="Estoque" style="width:80px;">
+        <select id="novoAtalhoTipo" class="input-field" style="width:100px;">
+          <option value="UN">Unidade</option>
+          <option value="KG">Por Kg</option>
+        </select>
         <button class="btn-add" onclick="adicionarNovoAtalho()">+</button>
       </div>
 
@@ -232,65 +262,69 @@
 
   <script>
     const atalhosPadrao = [
-      { id: 1, nome: '🎱 Sinuca', preco: 2.00, tipo: 'UN' },
-      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50, tipo: 'UN' },
-      { id: 3, nome: '🔥 Botijão de Gás', preco: 105.00, tipo: 'UN' },
-      { id: 4, nome: '🧀 Queijo Prato (Kg)', preco: 50.00, tipo: 'KG' }
+      { id: 1, nome: '🎱 Sinuca', preco: 2.00, tipo: 'UN', estoque: 50 },
+      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50, tipo: 'UN', estoque: 100 },
+      { id: 3, nome: '🔥 Botijão de Gás', preco: 105.00, tipo: 'UN', estoque: 15 },
+      { id: 4, nome: '🧀 Queijo Prato', preco: 50.00, tipo: 'KG', estoque: 10 }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas')) || [];
-    let listaValidade = JSON.parse(localStorage.getItem('crm_validade')) || [];
-    let config = JSON.parse(localStorage.getItem('crm_config')) || { loja: 'Meu Comércio', socio: '', pix: '' };
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v5')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v5')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v5')) || [];
+    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v5')) || [];
+    let config = JSON.parse(localStorage.getItem('crm_config_v5')) || { loja: 'Meu Comércio', vendedor: 'Atendente', socio: '', pix: '' };
     
     let formaPagamento = 'Dinheiro';
-    let unidadeSelecionada = 'UN';
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_validade', JSON.stringify(listaValidade));
-      localStorage.setItem('crm_config', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v5', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v5', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v5', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_validade_v5', JSON.stringify(listaValidade));
+      localStorage.setItem('crm_config_v5', JSON.stringify(config));
       renderizar();
     }
 
-    function selecionarUnidade(tipo) {
-      unidadeSelecionada = tipo;
-      document.getElementById('btn-un').classList.toggle('selected', tipo === 'UN');
-      document.getElementById('btn-kg').classList.toggle('selected', tipo === 'KG');
+    function clicarAtalho(item) {
+      if (item.tipo === 'KG') {
+        const gramasStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\n\nDigite a quantidade em GRAMAS (ex: 300 para 300g):`, "300");
+        const gramas = parseFloat(gramasStr);
+        if (!isNaN(gramas) && gramas > 0) {
+          const pesoKg = gramas / 1000;
+          const valorCalculado = item.preco * pesoKg;
+          adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, 1, true, item.id, pesoKg);
+        }
+      } else {
+        adicionarAoCarrinho(item.nome, item.preco, 1, false, item.id, 1);
+      }
     }
 
-    function adicionarItem(nome, preco, tipo = 'UN', qtdOuPeso = 1) {
-      const valorTotalItem = preco * qtdOuPeso;
-      carrinho.push({ nome, precoUnitario: preco, tipo, qtdOuPeso, total: valorTotalItem });
+    function adicionarAoCarrinho(nome, preco, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1) {
+      const itemExistente = carrinho.find(it => it.nome === nome);
+      if (itemExistente && !ehFracionado) {
+        itemExistente.qtd += qtd;
+        itemExistente.qtdEstoqueAbater += qtdEstoqueAbater;
+      } else {
+        carrinho.push({ nome, preco: parseFloat(preco), qtd: qtd, ehFracionado, atalhoId, qtdEstoqueAbater });
+      }
       salvarEstado();
     }
 
     function adicionarManual() {
       const nome = document.getElementById('nomeManual').value.trim() || 'Produto Diverso';
       const preco = parseFloat(document.getElementById('valorManual').value);
-      const qtdOuPeso = parseFloat(document.getElementById('qtdOuPesoManual').value) || 1;
-
       if (isNaN(preco) || preco <= 0) return alert('Digite um valor válido!');
 
-      adicionarItem(nome, preco, unidadeSelecionada, qtdOuPeso);
+      adicionarAoCarrinho(nome, preco, 1, false, null, 0);
       document.getElementById('nomeManual').value = '';
       document.getElementById('valorManual').value = '';
-      document.getElementById('qtdOuPesoManual').value = '';
     }
 
     function alterarQtdCarrinho(index, delta) {
-      if (carrinho[index].tipo === 'KG') {
-        carrinho.splice(index, 1);
-      } else {
-        carrinho[index].qtdOuPeso += delta;
-        carrinho[index].total = carrinho[index].precoUnitario * carrinho[index].qtdOuPeso;
-        if (carrinho[index].qtdOuPeso <= 0) carrinho.splice(index, 1);
-      }
+      carrinho[index].qtd += delta;
+      if (carrinho[index].qtd <= 0) carrinho.splice(index, 1);
       salvarEstado();
     }
 
@@ -311,7 +345,7 @@
     }
 
     function calcularTotal() {
-      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       return Math.max(0, subtotal - desconto);
     }
@@ -323,21 +357,30 @@
       document.getElementById('textoTroco').innerText = `Troco: R$ ${troco.toFixed(2)}`;
     }
 
+    function abaterEstoqueDoCarrinho() {
+      carrinho.forEach(item => {
+        if (item.atalhoId) {
+          const prod = atalhos.find(a => a.id === item.atalhoId);
+          if (prod && prod.estoque !== undefined) {
+            prod.estoque = Math.max(0, prod.estoque - (item.qtdEstoqueAbater || item.qtd));
+          }
+        }
+      });
+    }
+
     function finalizarVenda(silencioso = false) {
       if (carrinho.length === 0) return alert('Carrinho vazio!');
       
-      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
       const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
-      const vendedor = document.getElementById('nomeVendedor').value.trim() || 'Atendente';
 
       vendasDoDia.push({
         dataTimestamp: new Date().getTime(),
-        dataTexto: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         cliente,
-        vendedor,
+        vendedor: config.vendedor,
         itens: JSON.parse(JSON.stringify(carrinho)),
         subtotal,
         desconto,
@@ -345,42 +388,38 @@
         pagamento: formaPagamento
       });
 
+      abaterEstoqueDoCarrinho();
+
       carrinho = [];
       document.getElementById('nomeCliente').value = '';
       document.getElementById('valorDesconto').value = '0';
       document.getElementById('valorPago').value = '';
       salvarEstado();
 
-      if (!silencioso) alert('Venda registrada com sucesso!');
+      if (!silencioso) alert('Venda registrada e estoque atualizado com sucesso!');
     }
 
     function enviarComprovanteCliente() {
       if (carrinho.length === 0) return alert('Carrinho vazio!');
 
       const cliente = document.getElementById('nomeCliente').value.trim() || 'Cliente';
-      const vendedor = document.getElementById('nomeVendedor').value.trim() || 'Atendente';
-      const subtotal = carrinho.reduce((acc, item) => acc + item.total, 0);
+      const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
-      const dataHoje = new Date().toLocaleDateString('pt-BR');
       const horaHoje = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       let texto = `🏢 *${config.loja.toUpperCase()}*\n`;
-      texto += `📅 *Data:* ${dataHoje} | ⏰ *Hora:* ${horaHoje}\n`;
-      texto += `👤 *Cliente:* ${cliente} | 👨‍💼 *Vendedor:* ${vendedor}\n`;
+      texto += `👤 *Cliente:* ${cliente} | 👨‍💼 *Vend:* ${config.vendedor}\n`;
+      texto += `⏰ *Hora:* ${horaHoje}\n`;
       texto += `----------------------------------\n`;
 
       carrinho.forEach(it => {
-        if (it.tipo === 'KG') {
-          texto += `• ${it.nome}\n  (${it.qtdOuPeso} kg x R$ ${it.precoUnitario.toFixed(2)}/kg) -> R$ ${it.total.toFixed(2)}\n`;
-        } else {
-          texto += `• ${it.qtdOuPeso}x ${it.nome} (R$ ${it.precoUnitario.toFixed(2)} un) -> R$ ${it.total.toFixed(2)}\n`;
-        }
+        texto += `• ${it.qtd}x ${it.nome} — R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
       });
 
       texto += `----------------------------------\n`;
       if (desconto > 0) texto += `Subtotal: R$ ${subtotal.toFixed(2)}\nDesconto: R$ ${desconto.toFixed(2)}\n`;
-      texto += `💰 *TOTAL PAGO: R$ ${totalFinal.toFixed(2)}*\n`;
+      texto += `💰 *TOTAL: R$ ${totalFinal.toFixed(2)}*\n`;
       texto += `💳 Forma: ${formaPagamento}\n`;
 
       if (formaPagamento === 'Dinheiro') {
@@ -391,7 +430,7 @@
 
       if (config.pix) {
         texto += `----------------------------------\n`;
-        texto += `🔑 *Chave PIX da Loja:* ${config.pix}\n`;
+        texto += `🔑 *Chave PIX:* ${config.pix}\n`;
       }
 
       texto += `----------------------------------\n`;
@@ -419,10 +458,39 @@
 
     function abaterValidade(index, qtdAbater) {
       listaValidade[index].qtd -= qtdAbater;
-      if (listaValidade[index].qtd <= 0) {
-        listaValidade.splice(index, 1);
-      }
+      if (listaValidade[index].qtd <= 0) listaValidade.splice(index, 1);
       salvarEstado();
+    }
+
+    function renderizarEstoque() {
+      const container = document.getElementById('listaEstoque');
+      container.innerHTML = '';
+
+      atalhos.forEach((item, index) => {
+        const txtTipo = item.tipo === 'KG' ? 'kg' : 'un';
+        const alertaBaixo = item.estoque <= 5 ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
+        
+        container.innerHTML += `
+          <div style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>${item.nome}</strong><br>
+              <span style="font-size:0.8rem; ${alertaBaixo}">Estoque Atual: ${item.estoque || 0} ${txtTipo}</span>
+            </div>
+            <div>
+              <button onclick="ajustarEstoque(${index})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Ajustar</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function ajustarEstoque(index) {
+      const novoQtd = prompt(`Ajustar estoque para '${atalhos[index].nome}':`, atalhos[index].estoque || 0);
+      const valor = parseFloat(novoQtd);
+      if (!isNaN(valor) && valor >= 0) {
+        atalhos[index].estoque = valor;
+        salvarEstado();
+      }
     }
 
     function renderizarValidades() {
@@ -430,12 +498,11 @@
       container.innerHTML = '';
 
       if (listaValidade.length === 0) {
-        container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto cadastrado no monitor de validades.</p>`;
+        container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto em monitoramento de validade.</p>`;
         return;
       }
 
       const hoje = new Date();
-
       listaValidade.forEach((item, index) => {
         const dataVal = new Date(item.data + 'T00:00:00');
         const diffDias = Math.ceil((dataVal - hoje) / (1000 * 60 * 60 * 24));
@@ -460,14 +527,79 @@
         container.innerHTML += `
           <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
             <div>
-              <strong>${item.nome}</strong> (${item.qtd} un/cx restantes)<br>
+              <strong>${item.nome}</strong> (${item.qtd} un/cx)<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
             </div>
+            <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
+          </div>
+        `;
+      });
+    }
+
+    function renderizarAtalhosEdit() {
+      const listaEl = document.getElementById('listaAtalhosEdit');
+      listaEl.innerHTML = '';
+      atalhos.forEach((item, index) => {
+        const txtTipo = item.tipo === 'KG' ? '/kg' : 'un';
+        listaEl.innerHTML += `
+          <div class="edit-item-row">
             <div>
-              <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
+              <strong>${item.nome}</strong> — R$ ${item.preco.toFixed(2)} (${txtTipo})<br>
+              <small style="color:#0369a1;">Estoque: ${item.estoque || 0}</small>
+            </div>
+            <div>
+              <button onclick="editarPrecoAtalho(${index})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">Editar</button>
+              <button onclick="removerAtalho(${index})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">✕</button>
             </div>
           </div>
         `;
+      });
+    }
+
+    function editarPrecoAtalho(index) {
+      const novoPreco = prompt(`Novo preço para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
+      const valor = parseFloat(novoPreco);
+      if (!isNaN(valor) && valor >= 0) {
+        atalhos[index].preco = valor;
+        salvarEstado();
+        renderizarAtalhosEdit();
+      }
+    }
+
+    function removerAtalho(index) {
+      if (confirm(`Remover o atalho '${atalhos[index].nome}'?`)) {
+        atalhos.splice(index, 1);
+        salvarEstado();
+        renderizarAtalhosEdit();
+      }
+    }
+
+    function adicionarNovoAtalho() {
+      const nome = document.getElementById('novoAtalhoNome').value.trim();
+      const preco = parseFloat(document.getElementById('novoAtalhoPreco').value);
+      const estoque = parseFloat(document.getElementById('novoAtalhoEstoque').value) || 0;
+      const tipo = document.getElementById('novoAtalhoTipo').value;
+
+      if (!nome || isNaN(preco) || preco < 0) return alert('Preencha o nome e o preço corretamente!');
+
+      atalhos.push({ id: Date.now(), nome, preco, tipo, estoque });
+      document.getElementById('novoAtalhoNome').value = '';
+      document.getElementById('novoAtalhoPreco').value = '';
+      document.getElementById('novoAtalhoEstoque').value = '';
+      salvarEstado();
+      renderizarAtalhosEdit();
+    }
+
+    function obterVendasFiltradas() {
+      const agora = new Date().getTime();
+      const umDia = 24 * 60 * 60 * 1000;
+
+      return vendasDoDia.filter(v => {
+        const diffDias = (agora - (v.dataTimestamp || agora)) / umDia;
+        if (filtroAtual === 'hoje') return diffDias <= 1;
+        if (filtroAtual === 'semana') return diffDias <= 7;
+        if (filtroAtual === 'mes') return diffDias <= 30;
+        return true;
       });
     }
 
@@ -477,7 +609,7 @@
       atalhos.forEach(item => {
         const txtKg = item.tipo === 'KG' ? '/kg' : '';
         containerAtalhos.innerHTML += `
-          <button class="btn-quick" onclick="adicionarItem('${item.nome}', ${item.preco}, '${item.tipo}', 1)">
+          <button class="btn-quick" onclick='clicarAtalho(${JSON.stringify(item)})'>
             ${item.nome}<br>
             <span style="font-size:0.8rem; color:#2563eb;">R$ ${item.preco.toFixed(2)}${txtKg}</span>
           </button>
@@ -487,18 +619,17 @@
       const listaEl = document.getElementById('listaCarrinho');
       listaEl.innerHTML = '';
       carrinho.forEach((item, index) => {
-        const txtMedida = item.tipo === 'KG' ? `${item.qtdOuPeso} kg` : `${item.qtdOuPeso} un`;
         listaEl.innerHTML += `
           <div class="cart-item">
             <div>
               <strong>${item.nome}</strong><br>
-              <small>${txtMedida} x R$ ${item.precoUnitario.toFixed(2)}</small>
+              <small>R$ ${item.preco.toFixed(2)} un/item</small>
             </div>
             <div class="qty-controls">
-              ${item.tipo === 'UN' ? `<button class="btn-qty" onclick="alterarQtdCarrinho(${index}, -1)">-</button>` : ''}
-              <span>R$ ${item.total.toFixed(2)}</span>
-              ${item.tipo === 'UN' ? `<button class="btn-qty" onclick="alterarQtdCarrinho(${index}, 1)">+</button>` : ''}
-              <button onclick="alterarQtdCarrinho(${index}, -99)" style="background:none; border:none; color:red; font-weight:bold; margin-left:4px;">✕</button>
+              <button class="btn-qty" onclick="alterarQtdCarrinho(${index}, -1)">-</button>
+              <span>${item.qtd}</span>
+              <button class="btn-qty" onclick="alterarQtdCarrinho(${index}, 1)">+</button>
+              <span style="font-weight:bold; margin-left:6px;">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
             </div>
           </div>
         `;
@@ -507,18 +638,32 @@
       document.getElementById('valorTotal').innerText = calcularTotal().toFixed(2);
       calcularTroco();
 
-      const totalAcumulado = vendasDoDia.reduce((acc, v) => acc + v.total, 0);
+      // RELATÓRIOS SEPARADOS
+      const vendasFiltradas = obterVendasFiltradas();
+      const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+      const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+      const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+      const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+      const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+
       document.getElementById('totalFiltrado').innerText = totalAcumulado.toFixed(2);
+      document.getElementById('detalheRelatorio').innerHTML = `
+        💵 Dinheiro: R$ ${totalDinheiro.toFixed(2)} | 📱 PIX: R$ ${totalPix.toFixed(2)}<br>
+        💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
+      `;
 
       document.getElementById('cfgNomeLoja').value = config.loja;
+      document.getElementById('cfgVendedor').value = config.vendedor;
       document.getElementById('cfgTelSocio').value = config.socio;
       document.getElementById('cfgChavePix').value = config.pix;
 
+      renderizarEstoque();
       renderizarValidades();
     }
 
     function salvarConfiguracoes() {
       config.loja = document.getElementById('cfgNomeLoja').value.trim() || 'Meu Comércio';
+      config.vendedor = document.getElementById('cfgVendedor').value.trim() || 'Atendente';
       config.socio = document.getElementById('cfgTelSocio').value.replace(/\D/g, '');
       config.pix = document.getElementById('cfgChavePix').value.trim();
       salvarEstado();
@@ -527,20 +672,23 @@
     function enviarWhatsappSocio() {
       if (!config.socio) return alert('Cadastre o WhatsApp do Sócio no menu ⚙️ Config!');
 
-      let texto = `📊 *FECHAMENTO DE CAIXA - ${config.loja.toUpperCase()}*\n\n`;
+      const vendasFiltradas = obterVendasFiltradas();
+      const periodoTexto = { 'hoje': 'DO DIA', 'semana': 'DA SEMANA', 'mes': 'DO MÊS' }[filtroAtual];
+
+      let texto = `📊 *FECHAMENTO DE CAIXA ${periodoTexto} - ${config.loja.toUpperCase()}*\n\n`;
       let totalGeral = 0;
       let totalFiado = 0;
 
-      vendasDoDia.forEach((v, i) => {
+      vendasFiltradas.forEach((v, i) => {
         totalGeral += v.total;
         if (v.pagamento === 'Fiado') totalFiado += v.total;
 
         texto += `*#${i+1} (${v.hora}) - ${v.cliente}* (Vend: ${v.vendedor})\n`;
-        v.itens.forEach(it => { texto += ` • ${it.nome}: R$ ${it.total.toFixed(2)}\n`; });
+        v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
         texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
       });
 
-      texto += `💰 *TOTAL ACUMULADO HOJE: R$ ${totalGeral.toFixed(2)}*\n`;
+      texto += `💰 *TOTAL ACUMULADO SELECIONADO: R$ ${totalGeral.toFixed(2)}*\n`;
       if (totalFiado > 0) texto += `⚠️ *Total em Fiado a Receber: R$ ${totalFiado.toFixed(2)}*`;
 
       const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
@@ -556,12 +704,12 @@
         alert("Código lido: " + decodedText);
         html5QrcodeScanner.clear();
         readerEl.style.display = 'none';
-        adicionarItem("Item Cod " + decodedText.slice(-4), 10.00, 'UN', 1);
+        adicionarAoCarrinho("Item Cod " + decodedText.slice(-4), 10.00, 1, false);
       });
     }
 
     function zerarHistoricoCompleto() {
-      if (confirm('Tem certeza que deseja zerar o caixa do dia?')) {
+      if (confirm('Tem certeza que deseja zerar o histórico de vendas selecionado?')) {
         vendasDoDia = [];
         salvarEstado();
       }
@@ -569,13 +717,23 @@
 
     function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
     function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
-    function abrirModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'block'; }
+    function abrirModalAtalhos() { renderizarAtalhosEdit(); document.getElementById('modalAtalhos').style.display = 'block'; }
     function fecharModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'none'; }
     function enviarFeedback() { window.open('https://api.whatsapp.com/send?text=Olá! Suporte Caixa Rápido Móvel: ', '_blank'); }
-    function solicitarUpgradePlus() { window.open('https://api.whatsapp.com/send?text=Olá! Quero assinar o Caixa Rápido Móvel PLUS!', '_blank'); }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+    function mudarAba(aba) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById('btn-tab-' + aba).classList.add('active');
+      document.getElementById('tab-' + aba).classList.add('active');
+    }
+
+    function selecionarFiltro(tipo) {
+      filtroAtual = tipo;
+      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('selected'));
+      document.getElementById('flt-' + tipo).classList.add('selected');
+      document.getElementById('nomeFiltro').innerText = tipo === 'hoje' ? 'Hoje' : (tipo === 'semana' ? 'Esta Semana' : 'Este Mês');
+      renderizar();
     }
 
     renderizar();

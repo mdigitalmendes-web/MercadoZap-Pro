@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel - Vendas, Estoque & Validade</title>
+  <title>Caixa Rápido Móvel Pro - Vendas, Lucro & Gestão</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -19,7 +19,9 @@
     .tab-content.active { display: block; }
     .quick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .quick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; }
+    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; }
+    .btn-quick.esgotado { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; opacity: 0.6; cursor: not-allowed; }
+    .badge-esgotado { position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
     .custom-item { display: flex; gap: 6px; margin-bottom: 10px; }
     .custom-item input, .input-field { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; width: 100%; }
     .custom-item input[type="text"] { flex: 2; }
@@ -29,7 +31,8 @@
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
     .qty-controls { display: flex; align-items: center; gap: 6px; }
     .btn-qty { background: #e2e8f0; border: none; width: 26px; height: 26px; border-radius: 4px; font-weight: bold; font-size: 1rem; }
-    .total-box { font-size: 1.2rem; font-weight: bold; text-align: right; color: #16a34a; margin-bottom: 10px; }
+    .total-box { font-size: 1.2rem; font-weight: bold; text-align: right; color: #16a34a; margin-bottom: 6px; }
+    .lucro-box { font-size: 0.85rem; font-weight: bold; text-align: right; color: #0284c7; margin-bottom: 10px; }
     .pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
     .pay-btn { padding: 10px 4px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; }
     .pay-btn.selected { background: #16a34a; color: white; border-color: #16a34a; }
@@ -52,13 +55,14 @@
     .faq-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
     .faq-question { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 4px; }
     .faq-answer { font-size: 0.8rem; color: #475569; line-height: 1.4; }
+    .toggle-pix-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px; font-weight: bold; color: #475569; }
     #reader { width: 100%; margin-bottom: 10px; display: none; }
   </style>
 </head>
 <body>
 
   <h1>
-    <span>⚡ Caixa Rápido Móvel</span>
+    <span>⚡ Caixa Rápido Móvel Pro</span>
     <button class="btn-help" onclick="abrirModalAjuda()">⚙️ Config & Guia</button>
   </h1>
 
@@ -78,7 +82,10 @@
         <button class="btn-small-edit" onclick="iniciarLeitorCamera()">📷 Bipar Câmera</button>
       </div>
 
-      <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)" style="margin-bottom:10px;">
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="nomeCliente" class="input-field" placeholder="Nome do Cliente (Opcional)">
+        <input type="text" id="telCliente" class="input-field" placeholder="Zap Cliente (com DDD)" style="width:140px;">
+      </div>
       
       <div class="quick-header">
         <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
@@ -105,6 +112,7 @@
       </div>
 
       <div class="total-box">Total: R$ <span id="valorTotal">0.00</span></div>
+      <div class="lucro-box">Lucro Estimado nesta Venda: R$ <span id="valorLucroVenda">0.00</span></div>
 
       <strong style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #64748b;">FORMA DE PAGAMENTO:</strong>
       <div class="pay-methods">
@@ -120,6 +128,11 @@
           <input type="number" id="valorPago" placeholder="R$" style="width:80px; padding:4px;" oninput="calcularTroco()">
         </div>
         <div style="margin-top:6px; font-weight:bold; color:#b45309;" id="textoTroco">Troco: R$ 0,00</div>
+      </div>
+
+      <div class="toggle-pix-option">
+        <input type="checkbox" id="chkIncluirPixComprovante" checked>
+        <label for="chkIncluirPixComprovante">Incluir Chave PIX da loja no comprovante do Zap</label>
       </div>
 
       <button class="btn-client-receipt" onclick="enviarComprovanteCliente()">📲 Finalizar & Enviar Comprovante no WhatsApp</button>
@@ -138,7 +151,8 @@
 
       <div style="font-size:0.85rem; margin-top:6px; color: #0369a1;">
         <p>Total Acumulado (<span id="nomeFiltro">Hoje</span>): <strong>R$ <span id="totalFiltrado">0.00</span></strong></p>
-        <p style="font-size:0.8rem; margin-top:2px;" id="detalheRelatorio"></p>
+        <p style="color:#059669; font-weight:bold; margin-top:2px;">Lucro Líquido do Período: R$ <span id="totalLucroFiltrado">0.00</span></p>
+        <p style="font-size:0.8rem; margin-top:4px;" id="detalheRelatorio"></p>
       </div>
 
       <button class="btn-client-receipt" style="background:#0284c7; margin-top:8px;" onclick="enviarWhatsappSocio()">📊 Enviar Relatório Detalhado ao Sócio</button>
@@ -146,17 +160,20 @@
     </div>
   </div>
 
-  <!-- ABA 2: CONTROLE DE ESTOQUE -->
+  <!-- ABA 2: CONTROLE DE ESTOQUE E ENTRADAS/SAÍDAS -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <strong style="color:#0369a1; font-size:1rem;">📦 Gestão de Estoque</strong>
+        <strong style="color:#0369a1; font-size:1rem;">📦 Gestão de Estoque & Projeção de Lucro</strong>
         <span class="badge-plus">SISTEMA ATIVO</span>
       </div>
-      <p style="font-size:0.8rem; color:#0c4a6e; margin-bottom:10px;">
-        O estoque é abatido automaticamente conforme as vendas são concluídas no caixa.
-      </p>
 
+      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px; font-size:0.85rem;">
+        <p style="color:#0369a1;">💰 <strong>Custo Total Estocado:</strong> R$ <span id="custoTotalEstoque">0.00</span></p>
+        <p style="color:#16a34a; font-weight:bold; margin-top:2px;">📈 <strong>Projeção de Lucro Bruto:</strong> R$ <span id="projecaoLucroEstoque">0.00</span></p>
+      </div>
+
+      <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Produtos Estocados:</strong>
       <div id="listaEstoque" style="margin-top:6px;"></div>
     </div>
   </div>
@@ -193,19 +210,22 @@
       <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Guia do Sistema</h2>
       
       <div style="margin-bottom:12px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:8px;">🏢 Dados do Estabelecimento & Vendedor:</strong>
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:8px;">🏢 Dados do Estabelecimento & Atendente:</strong>
         
         <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome da sua Loja / Comércio:</label>
         <input type="text" id="cfgNomeLoja" class="input-field" placeholder="ex: Farmácia Saúde, Mercado Silva" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
 
-        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome do Vendedor(a) Fixo:</label>
-        <input type="text" id="cfgVendedor" class="input-field" placeholder="ex: Carlos, Maria" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Nome do Atendente Fixo:</label>
+        <input type="text" id="cfgAtendente" class="input-field" placeholder="ex: Carlos, Maria" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
 
         <label style="font-size:0.8rem; font-weight:bold; color:#475569;">WhatsApp do Sócio / Admin (com DDD):</label>
         <input type="text" id="cfgTelSocio" class="input-field" placeholder="ex: 75999998888" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
 
         <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Chave PIX da Loja (Opcional):</label>
-        <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()">
+        <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()" style="margin-bottom:6px;">
+
+        <label style="font-size:0.8rem; font-weight:bold; color:#475569;">Limite para Alerta de Estoque Baixo (Qtd/Kg):</label>
+        <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" placeholder="5" onchange="salvarConfiguracoes()">
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
@@ -213,20 +233,20 @@
       <h3 style="font-size:0.95rem; color:#0f172a; margin-bottom:8px;">❓ Dúvidas Frequentes (Como Usar)</h3>
       <div style="max-height:180px; overflow-y:auto; padding-right:4px;">
         <div class="faq-item">
-          <div class="faq-question">1. Como passar vendas rápidas?</div>
-          <div class="faq-answer">Basta clicar nos botões de atalho na tela inicial. Clicar várias vezes aumenta a quantidade no carrinho automaticamente.</div>
+          <div class="faq-question">1. Como funciona a margem de lucro?</div>
+          <div class="faq-answer">No cadastro do atalho, preencha o Preço de Custo e o Preço de Venda. O app calcula seu lucro por item e o acumulado do dia automaticamente.</div>
         </div>
         <div class="faq-item">
-          <div class="faq-question">2. Como vender produtos por Quilo (KG)?</div>
-          <div class="faq-answer">Cadastre o produto no menu '⚙️ Editar Atalhos' selecionando 'Por Kg'. Ao clicar nele na venda, digite apenas as gramas (ex: 300 para 300g) e o app calcula o valor exato!</div>
+          <div class="faq-question">2. O que acontece quando o estoque acaba?</div>
+          <div class="faq-answer">O botão de atalho fica esgotado (cinza) e bloqueado. Ao repor o estoque na aba '📦 Estoque', o botão é reabilitado.</div>
         </div>
         <div class="faq-item">
-          <div class="faq-question">3. Como funciona o Controle de Estoque?</div>
-          <div class="faq-answer">Na aba '📦 Estoque', você ajusta a quantidade inicial dos produtos. Toda venda concluída abate essa quantidade automaticamente.</div>
+          <div class="faq-question">3. Como enviar o comprovante direto para o cliente?</div>
+          <div class="faq-answer">Digite o Zap do cliente no campo 'Zap Cliente' no topo. Ao clicar em 'Finalizar & Enviar Comprovante', a conversa abre direto no Zap dele!</div>
         </div>
         <div class="faq-item">
-          <div class="faq-question">4. Como dar baixa em validades?</div>
-          <div class="faq-answer">Na aba '⚠️ Validades', cada lote possui o botão '-1 Vendi'. Ao vender parte dos produtos, clique nele para abater a quantidade gradualmente.</div>
+          <div class="faq-question">4. Como desativar a chave PIX no comprovante?</div>
+          <div class="faq-answer">Basta desmarcar a caixinha 'Incluir Chave PIX' antes de enviar o comprovante no Zap.</div>
         </div>
       </div>
 
@@ -239,17 +259,20 @@
   <!-- MODAL EDITAR ATALHOS -->
   <div class="modal" id="modalAtalhos">
     <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos & Estoque</h2>
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Edite preços, estoques e crie novos botões por Unidade (UN) ou Quilo (KG):</p>
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Personalizar Atalhos & Preços</h2>
+      <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">Edite preços de custo/venda, estoques e crie atalhos por UN ou KG:</p>
       
       <div id="listaAtalhosEdit" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
 
       <strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#0369a1;">+ Criar Novo Atalho:</strong>
       <input type="text" id="novoAtalhoNome" class="input-field" placeholder="Nome (ex: Queijo Prato)" style="margin-bottom:6px;">
+      <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <input type="number" id="novoAtalhoPrecoCusto" class="input-field" placeholder="Custo (R$)" step="0.01">
+        <input type="number" id="novoAtalhoPrecoVenda" class="input-field" placeholder="Venda (R$)" step="0.01">
+      </div>
       <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="number" id="novoAtalhoPreco" class="input-field" placeholder="Preço (R$)" step="0.01">
-        <input type="number" id="novoAtalhoEstoque" class="input-field" placeholder="Estoque" style="width:80px;">
-        <select id="novoAtalhoTipo" class="input-field" style="width:100px;">
+        <input type="number" id="novoAtalhoEstoque" class="input-field" placeholder="Estoque Início">
+        <select id="novoAtalhoTipo" class="input-field" style="width:110px;">
           <option value="UN">Unidade</option>
           <option value="KG">Por Kg</option>
         </select>
@@ -262,52 +285,55 @@
 
   <script>
     const atalhosPadrao = [
-      { id: 1, nome: '🎱 Sinuca', preco: 2.00, tipo: 'UN', estoque: 50 },
-      { id: 2, nome: '🍺 Skol 350ml', preco: 4.50, tipo: 'UN', estoque: 100 },
-      { id: 3, nome: '🔥 Botijão de Gás', preco: 105.00, tipo: 'UN', estoque: 15 },
-      { id: 4, nome: '🧀 Queijo Prato', preco: 50.00, tipo: 'KG', estoque: 10 }
+      { id: 1, nome: '🎱 Sinuca', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50 },
+      { id: 2, nome: '🍺 Skol 350ml', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100 },
+      { id: 3, nome: '🔥 Botijão de Gás', precoCusto: 85.00, preco: 105.00, tipo: 'UN', estoque: 15 },
+      { id: 4, nome: '🧀 Queijo Prato', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10 }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v5')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v5')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v5')) || [];
-    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v5')) || [];
-    let config = JSON.parse(localStorage.getItem('crm_config_v5')) || { loja: 'Meu Comércio', vendedor: 'Atendente', socio: '', pix: '' };
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_1')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_1')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_1')) || [];
+    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v2_1')) || [];
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_1')) || { loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', limiteAlert: 5 };
     
     let formaPagamento = 'Dinheiro';
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v5', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v5', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v5', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_validade_v5', JSON.stringify(listaValidade));
-      localStorage.setItem('crm_config_v5', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_1', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_1', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_1', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_validade_v2_1', JSON.stringify(listaValidade));
+      localStorage.setItem('crm_config_v2_1', JSON.stringify(config));
       renderizar();
     }
 
     function clicarAtalho(item) {
+      if (item.estoque <= 0) return alert(`O produto '${item.nome}' está esgotado no estoque!`);
+
       if (item.tipo === 'KG') {
         const gramasStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\n\nDigite a quantidade em GRAMAS (ex: 300 para 300g):`, "300");
         const gramas = parseFloat(gramasStr);
         if (!isNaN(gramas) && gramas > 0) {
           const pesoKg = gramas / 1000;
           const valorCalculado = item.preco * pesoKg;
-          adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, 1, true, item.id, pesoKg);
+          const custoCalculado = (item.precoCusto || 0) * pesoKg;
+          adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, custoCalculado, 1, true, item.id, pesoKg);
         }
       } else {
-        adicionarAoCarrinho(item.nome, item.preco, 1, false, item.id, 1);
+        adicionarAoCarrinho(item.nome, item.preco, item.precoCusto || 0, 1, false, item.id, 1);
       }
     }
 
-    function adicionarAoCarrinho(nome, preco, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1) {
+    function adicionarAoCarrinho(nome, preco, custo, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1) {
       const itemExistente = carrinho.find(it => it.nome === nome);
       if (itemExistente && !ehFracionado) {
         itemExistente.qtd += qtd;
         itemExistente.qtdEstoqueAbater += qtdEstoqueAbater;
       } else {
-        carrinho.push({ nome, preco: parseFloat(preco), qtd: qtd, ehFracionado, atalhoId, qtdEstoqueAbater });
+        carrinho.push({ nome, preco: parseFloat(preco), custo: parseFloat(custo), qtd: qtd, ehFracionado, atalhoId, qtdEstoqueAbater });
       }
       salvarEstado();
     }
@@ -317,7 +343,7 @@
       const preco = parseFloat(document.getElementById('valorManual').value);
       if (isNaN(preco) || preco <= 0) return alert('Digite um valor válido!');
 
-      adicionarAoCarrinho(nome, preco, 1, false, null, 0);
+      adicionarAoCarrinho(nome, preco, preco * 0.7, 1, false, null, 0);
       document.getElementById('nomeManual').value = '';
       document.getElementById('valorManual').value = '';
     }
@@ -331,6 +357,7 @@
     function limparCarrinho() {
       carrinho = [];
       document.getElementById('nomeCliente').value = '';
+      document.getElementById('telCliente').value = '';
       document.getElementById('valorDesconto').value = '0';
       document.getElementById('valorPago').value = '';
       salvarEstado();
@@ -350,6 +377,12 @@
       return Math.max(0, subtotal - desconto);
     }
 
+    function calcularLucroVenda() {
+      const faturamento = calcularTotal();
+      const custoTotal = carrinho.reduce((acc, item) => acc + (item.custo * item.qtd), 0);
+      return Math.max(0, faturamento - custoTotal);
+    }
+
     function calcularTroco() {
       const total = calcularTotal();
       const pago = parseFloat(document.getElementById('valorPago').value) || 0;
@@ -357,12 +390,18 @@
       document.getElementById('textoTroco').innerText = `Troco: R$ ${troco.toFixed(2)}`;
     }
 
-    function abaterEstoqueDoCarrinho() {
+    function abaterEstoqueEValidades() {
       carrinho.forEach(item => {
         if (item.atalhoId) {
           const prod = atalhos.find(a => a.id === item.atalhoId);
           if (prod && prod.estoque !== undefined) {
             prod.estoque = Math.max(0, prod.estoque - (item.qtdEstoqueAbater || item.qtd));
+            
+            // Abater também no monitor de validades se houver coincidência de nome
+            const itemValidade = listaValidade.find(v => v.nome.toLowerCase() === prod.nome.toLowerCase());
+            if (itemValidade) {
+              itemValidade.qtd = Math.max(0, itemValidade.qtd - (item.qtdEstoqueAbater || item.qtd));
+            }
           }
         }
       });
@@ -374,24 +413,27 @@
       const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
+      const lucroVenda = calcularLucroVenda();
       const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
 
       vendasDoDia.push({
         dataTimestamp: new Date().getTime(),
         hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         cliente,
-        vendedor: config.vendedor,
+        atendente: config.atendente,
         itens: JSON.parse(JSON.stringify(carrinho)),
         subtotal,
         desconto,
         total: totalFinal,
+        lucro: lucroVenda,
         pagamento: formaPagamento
       });
 
-      abaterEstoqueDoCarrinho();
+      abaterEstoqueEValidades();
 
       carrinho = [];
       document.getElementById('nomeCliente').value = '';
+      document.getElementById('telCliente').value = '';
       document.getElementById('valorDesconto').value = '0';
       document.getElementById('valorPago').value = '';
       salvarEstado();
@@ -403,18 +445,21 @@
       if (carrinho.length === 0) return alert('Carrinho vazio!');
 
       const cliente = document.getElementById('nomeCliente').value.trim() || 'Cliente';
+      const telCliente = document.getElementById('telCliente').value.replace(/\D/g, '');
       const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       const desconto = parseFloat(document.getElementById('valorDesconto').value) || 0;
       const totalFinal = Math.max(0, subtotal - desconto);
       const horaHoje = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dataHoje = new Date().toLocaleDateString('pt-BR');
+      const incluirPix = document.getElementById('chkIncluirPixComprovante').checked;
 
       let texto = `🏢 *${config.loja.toUpperCase()}*\n`;
-      texto += `👤 *Cliente:* ${cliente} | 👨‍💼 *Vend:* ${config.vendedor}\n`;
-      texto += `⏰ *Hora:* ${horaHoje}\n`;
+      texto += `📅 *Data:* ${dataHoje} | ⏰ *Hora:* ${horaHoje}\n`;
+      texto += `👤 *Cliente:* ${cliente} | 👨‍💼 *Atendente:* ${config.atendente}\n`;
       texto += `----------------------------------\n`;
 
       carrinho.forEach(it => {
-        texto += `• ${it.qtd}x ${it.nome} — R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
+        texto += `• ${it.qtd}x ${it.nome} (R$ ${it.preco.toFixed(2)} un) -> R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
       });
 
       texto += `----------------------------------\n`;
@@ -428,7 +473,7 @@
         texto += `💵 Recebido: R$ ${pago.toFixed(2)} | Troco: R$ ${troco.toFixed(2)}\n`;
       }
 
-      if (config.pix) {
+      if (incluirPix && config.pix) {
         texto += `----------------------------------\n`;
         texto += `🔑 *Chave PIX:* ${config.pix}\n`;
       }
@@ -438,7 +483,9 @@
 
       finalizarVenda(true);
 
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      const url = telCliente 
+        ? `https://api.whatsapp.com/send?phone=55${telCliente}&text=${encodeURIComponent(texto)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
       window.open(url, '_blank');
     }
 
@@ -456,8 +503,28 @@
       salvarEstado();
     }
 
+    function editarValidade(index) {
+      const item = listaValidade[index];
+      const novaQtd = prompt(`Editar quantidade para '${item.nome}':`, item.qtd);
+      const valorQtd = parseInt(novaQtd);
+      if (!isNaN(valorQtd) && valorQtd >= 0) {
+        item.qtd = valorQtd;
+        
+        // Sincronizar com o estoque
+        const prod = atalhos.find(a => a.nome.toLowerCase() === item.nome.toLowerCase());
+        if (prod) prod.estoque = valorQtd;
+
+        salvarEstado();
+      }
+    }
+
     function abaterValidade(index, qtdAbater) {
       listaValidade[index].qtd -= qtdAbater;
+      
+      // Sincronizar com o estoque
+      const prod = atalhos.find(a => a.nome.toLowerCase() === listaValidade[index].nome.toLowerCase());
+      if (prod) prod.estoque = Math.max(0, prod.estoque - qtdAbater);
+
       if (listaValidade[index].qtd <= 0) listaValidade.splice(index, 1);
       salvarEstado();
     }
@@ -466,15 +533,25 @@
       const container = document.getElementById('listaEstoque');
       container.innerHTML = '';
 
+      let custoTotal = 0;
+      let projecaoLucro = 0;
+
       atalhos.forEach((item, index) => {
         const txtTipo = item.tipo === 'KG' ? 'kg' : 'un';
-        const alertaBaixo = item.estoque <= 5 ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
+        const limiteAlert = config.limiteAlert || 5;
+        const alertaBaixo = item.estoque <= limiteAlert ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
         
+        const valorCustoItem = (item.precoCusto || 0) * item.estoque;
+        const valorVendaItem = item.preco * item.estoque;
+        custoTotal += valorCustoItem;
+        projecaoLucro += (valorVendaItem - valorCustoItem);
+
         container.innerHTML += `
           <div style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
             <div>
               <strong>${item.nome}</strong><br>
-              <span style="font-size:0.8rem; ${alertaBaixo}">Estoque Atual: ${item.estoque || 0} ${txtTipo}</span>
+              <span style="font-size:0.8rem; ${alertaBaixo}">Estoque: ${item.estoque || 0} ${txtTipo}</span><br>
+              <small style="color:#64748b;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)} | Venda: R$ ${item.preco.toFixed(2)}</small>
             </div>
             <div>
               <button onclick="ajustarEstoque(${index})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Ajustar</button>
@@ -482,6 +559,9 @@
           </div>
         `;
       });
+
+      document.getElementById('custoTotalEstoque').innerText = custoTotal.toFixed(2);
+      document.getElementById('projecaoLucroEstoque').innerText = projecaoLucro.toFixed(2);
     }
 
     function ajustarEstoque(index) {
@@ -526,11 +606,11 @@
 
         container.innerHTML += `
           <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-            <div>
-              <strong>${item.nome}</strong> (${item.qtd} un/cx)<br>
+            <div onclick="editarValidade(${index})" style="cursor:pointer;">
+              <strong>${item.nome}</strong> (${item.qtd} un/cx) ✏️<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
             </div>
-            <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
+            <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
           </div>
         `;
       });
@@ -544,8 +624,8 @@
         listaEl.innerHTML += `
           <div class="edit-item-row">
             <div>
-              <strong>${item.nome}</strong> — R$ ${item.preco.toFixed(2)} (${txtTipo})<br>
-              <small style="color:#0369a1;">Estoque: ${item.estoque || 0}</small>
+              <strong>${item.nome}</strong> — Venda: R$ ${item.preco.toFixed(2)} (${txtTipo})<br>
+              <small style="color:#0369a1;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)} | Estq: ${item.estoque || 0}</small>
             </div>
             <div>
               <button onclick="editarPrecoAtalho(${index})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem;">Editar</button>
@@ -557,7 +637,7 @@
     }
 
     function editarPrecoAtalho(index) {
-      const novoPreco = prompt(`Novo preço para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
+      const novoPreco = prompt(`Novo preço de VENDA para '${atalhos[index].nome}':`, atalhos[index].preco.toFixed(2));
       const valor = parseFloat(novoPreco);
       if (!isNaN(valor) && valor >= 0) {
         atalhos[index].preco = valor;
@@ -576,15 +656,17 @@
 
     function adicionarNovoAtalho() {
       const nome = document.getElementById('novoAtalhoNome').value.trim();
-      const preco = parseFloat(document.getElementById('novoAtalhoPreco').value);
+      const precoCusto = parseFloat(document.getElementById('novoAtalhoPrecoCusto').value) || 0;
+      const preco = parseFloat(document.getElementById('novoAtalhoPrecoVenda').value);
       const estoque = parseFloat(document.getElementById('novoAtalhoEstoque').value) || 0;
       const tipo = document.getElementById('novoAtalhoTipo').value;
 
-      if (!nome || isNaN(preco) || preco < 0) return alert('Preencha o nome e o preço corretamente!');
+      if (!nome || isNaN(preco) || preco < 0) return alert('Preencha o nome e o preço de venda corretamente!');
 
-      atalhos.push({ id: Date.now(), nome, preco, tipo, estoque });
+      atalhos.push({ id: Date.now(), nome, precoCusto, preco, tipo, estoque });
       document.getElementById('novoAtalhoNome').value = '';
-      document.getElementById('novoAtalhoPreco').value = '';
+      document.getElementById('novoAtalhoPrecoCusto').value = '';
+      document.getElementById('novoAtalhoPrecoVenda').value = '';
       document.getElementById('novoAtalhoEstoque').value = '';
       salvarEstado();
       renderizarAtalhosEdit();
@@ -608,10 +690,15 @@
       containerAtalhos.innerHTML = '';
       atalhos.forEach(item => {
         const txtKg = item.tipo === 'KG' ? '/kg' : '';
+        const esgotado = item.estoque <= 0;
+        const classeEsgotado = esgotado ? 'esgotado' : '';
+        const badge = esgotado ? `<span class="badge-esgotado">Esgotado</span>` : '';
+
         containerAtalhos.innerHTML += `
-          <button class="btn-quick" onclick='clicarAtalho(${JSON.stringify(item)})'>
+          <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
+            ${badge}
             ${item.nome}<br>
-            <span style="font-size:0.8rem; color:#2563eb;">R$ ${item.preco.toFixed(2)}${txtKg}</span>
+            <span style="font-size:0.8rem; color:${esgotado ? '#94a3b8' : '#2563eb'};">R$ ${item.preco.toFixed(2)}${txtKg}</span>
           </button>
         `;
       });
@@ -636,26 +723,30 @@
       });
 
       document.getElementById('valorTotal').innerText = calcularTotal().toFixed(2);
+      document.getElementById('valorLucroVenda').innerText = calcularLucroVenda().toFixed(2);
       calcularTroco();
 
       // RELATÓRIOS SEPARADOS
       const vendasFiltradas = obterVendasFiltradas();
       const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+      const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
       const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
       const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
       const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
       const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
 
       document.getElementById('totalFiltrado').innerText = totalAcumulado.toFixed(2);
+      document.getElementById('totalLucroFiltrado').innerText = totalLucro.toFixed(2);
       document.getElementById('detalheRelatorio').innerHTML = `
         💵 Dinheiro: R$ ${totalDinheiro.toFixed(2)} | 📱 PIX: R$ ${totalPix.toFixed(2)}<br>
         💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
       `;
 
       document.getElementById('cfgNomeLoja').value = config.loja;
-      document.getElementById('cfgVendedor').value = config.vendedor;
+      document.getElementById('cfgAtendente').value = config.atendente;
       document.getElementById('cfgTelSocio').value = config.socio;
       document.getElementById('cfgChavePix').value = config.pix;
+      document.getElementById('cfgLimiteEstoqueAlert').value = config.limiteAlert || 5;
 
       renderizarEstoque();
       renderizarValidades();
@@ -663,9 +754,10 @@
 
     function salvarConfiguracoes() {
       config.loja = document.getElementById('cfgNomeLoja').value.trim() || 'Meu Comércio';
-      config.vendedor = document.getElementById('cfgVendedor').value.trim() || 'Atendente';
+      config.atendente = document.getElementById('cfgAtendente').value.trim() || 'Atendente';
       config.socio = document.getElementById('cfgTelSocio').value.replace(/\D/g, '');
       config.pix = document.getElementById('cfgChavePix').value.trim();
+      config.limiteAlert = parseInt(document.getElementById('cfgLimiteEstoqueAlert').value) || 5;
       salvarEstado();
     }
 
@@ -677,18 +769,21 @@
 
       let texto = `📊 *FECHAMENTO DE CAIXA ${periodoTexto} - ${config.loja.toUpperCase()}*\n\n`;
       let totalGeral = 0;
+      let totalLucroGeral = 0;
       let totalFiado = 0;
 
       vendasFiltradas.forEach((v, i) => {
         totalGeral += v.total;
+        totalLucroGeral += (v.lucro || 0);
         if (v.pagamento === 'Fiado') totalFiado += v.total;
 
-        texto += `*#${i+1} (${v.hora}) - ${v.cliente}* (Vend: ${v.vendedor})\n`;
+        texto += `*#${i+1} (${v.hora}) - ${v.cliente}* (Atend: ${v.atendente})\n`;
         v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
         texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
       });
 
-      texto += `💰 *TOTAL ACUMULADO SELECIONADO: R$ ${totalGeral.toFixed(2)}*\n`;
+      texto += `💰 *TOTAL FATURADO: R$ ${totalGeral.toFixed(2)}*\n`;
+      texto += `📈 *LUCRO LÍQUIDO: R$ ${totalLucroGeral.toFixed(2)}*\n`;
       if (totalFiado > 0) texto += `⚠️ *Total em Fiado a Receber: R$ ${totalFiado.toFixed(2)}*`;
 
       const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
@@ -704,7 +799,7 @@
         alert("Código lido: " + decodedText);
         html5QrcodeScanner.clear();
         readerEl.style.display = 'none';
-        adicionarAoCarrinho("Item Cod " + decodedText.slice(-4), 10.00, 1, false);
+        adicionarAoCarrinho("Item Cod " + decodedText.slice(-4), 10.00, 7.00, 1, false);
       });
     }
 
@@ -719,7 +814,6 @@
     function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
     function abrirModalAtalhos() { renderizarAtalhosEdit(); document.getElementById('modalAtalhos').style.display = 'block'; }
     function fecharModalAtalhos() { document.getElementById('modalAtalhos').style.display = 'none'; }
-    function enviarFeedback() { window.open('https://api.whatsapp.com/send?text=Olá! Suporte Caixa Rápido Móvel: ', '_blank'); }
 
     function mudarAba(aba) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.3 - Gestão & Vendas</title>
+  <title>Caixa Rápido Móvel Pro 2.4 - Gestão Avançada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -51,10 +51,12 @@
     .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
     .toggle-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px; font-weight: bold; color: #475569; }
     #reader { width: 100%; margin-bottom: 10px; display: none; }
+    
     @media print {
       body * { visibility: hidden; }
-      .print-area, .print-area * { visibility: visible; }
-      .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+      #areaRelatorioPrint, #areaRelatorioPrint * { visibility: visible; }
+      #areaRelatorioPrint { position: absolute; left: 0; top: 0; width: 100%; font-size: 11pt; color: black; background: white; }
+      .page-break { page-break-before: always; }
     }
   </style>
 </head>
@@ -89,7 +91,7 @@
       
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <strong style="font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS:</strong>
-        <button class="btn-small-edit" onclick="mudarAba('estoque')">📦 Gerenciar Produtos</button>
+        <button class="btn-small-edit" onclick="mudarAba('estoque')">📦 Cadastrar / Editar Produtos</button>
       </div>
 
       <div class="quick-buttons" id="containerAtalhos"></div>
@@ -140,20 +142,30 @@
       <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
     </div>
 
-    <!-- RESUMO DO DIA VISÍVEL NO CAIXA -->
+    <!-- RESUMO DETALHADO DO FATURAMENTO DO DIA -->
     <div class="card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
-      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:4px;">📊 Resumo do Faturamento Hoje:</strong>
-      <div style="font-size:0.85rem; color:#15803d; display:flex; justify-content:space-between; margin-bottom:2px;">
-        <span>Vendas Acumuladas:</span>
-        <strong>R$ <span id="cxFaturamentoDia">0.00</span></strong>
+      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:6px;">📊 Visão Geral do Faturamento Hoje:</strong>
+      
+      <div style="font-size:0.85rem; color:#15803d; display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>💵 Dinheiro Vivo:</span>
+        <strong>R$ <span id="cxDinheiroDia">0.00</span></strong>
       </div>
-      <div style="font-size:0.85rem; color:#047857; display:flex; justify-content:space-between; margin-bottom:2px;">
-        <span>Lucro Líquido do Dia:</span>
-        <strong>R$ <span id="cxLucroDia">0.00</span></strong>
+      <div style="font-size:0.85rem; color:#0284c7; display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>📱 PIX Recebido:</span>
+        <strong>R$ <span id="cxPixDia">0.00</span></strong>
       </div>
-      <div style="font-size:0.85rem; color:#b45309; display:flex; justify-content:space-between;">
-        <span>Fiado a Receber:</span>
+      <div style="font-size:0.85rem; color:#6366f1; display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>💳 Cartão de Crédito/Débito:</span>
+        <strong>R$ <span id="cxCartaoDia">0.00</span></strong>
+      </div>
+      <div style="font-size:0.85rem; color:#b45309; display:flex; justify-content:space-between; margin-bottom:6px;">
+        <span>📝 Fiado / Caderno a Receber:</span>
         <strong>R$ <span id="cxFiadoDia">0.00</span></strong>
+      </div>
+      <hr style="border:0; border-top:1px solid #bbf7d0; margin:4px 0;">
+      <div style="font-size:0.9rem; color:#166534; display:flex; justify-content:space-between; font-weight:bold;">
+        <span>💰 Total Faturado: R$ <span id="cxFaturamentoDia">0.00</span></span>
+        <span style="color:#047857;">📈 Lucro: R$ <span id="cxLucroDia">0.00</span></span>
       </div>
     </div>
   </div>
@@ -161,27 +173,32 @@
   <!-- ABA 2: CADASTRO CENTRAL, ESTOQUE E ENTRADAS -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
-      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Cadastro Central de Produtos & Estoque</strong>
+      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Estoque</strong>
 
-      <!-- FORMULÁRIO DE CADASTRO COMPLETO DE PRODUTO -->
+      <!-- FORMULÁRIO DE CADASTRO COMPLETO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">+ Cadastrar / Atualizar Produto no Estoque:</strong>
-        <input type="text" id="cadNome" class="input-field" placeholder="Nome do Produto (ex: Queijo Prato)" style="margin-bottom:6px;">
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">+ Cadastrar / Editar Mercadoria:</strong>
+        
+        <input type="text" id="cadNome" class="input-field" placeholder="Nome do Produto (ex: Queijo Prato, Caixa Cerveja)" style="margin-bottom:6px;">
         
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="number" id="cadPrecoCusto" class="input-field" placeholder="Custo (R$)" step="0.01">
           <input type="number" id="cadPrecoVenda" class="input-field" placeholder="Venda (R$)" step="0.01">
         </div>
 
-        <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="number" id="cadQtdEstoque" class="input-field" placeholder="Qtd / Kg Inicial" step="0.1">
-          <select id="cadTipoUnidade" class="input-field" style="width:110px;">
-            <option value="UN">Unidade</option>
-            <option value="KG">Por Kg</option>
+          <select id="cadTipoUnidade" class="input-field" style="width:130px;">
+            <option value="UN">Unidade (UN)</option>
+            <option value="CX">Caixa / Fardo</option>
+            <option value="KG">Por Quilo (KG)</option>
           </select>
         </div>
 
-        <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar Produto no Estoque</button>
+        <label style="font-size:0.75rem; font-weight:bold; color:#0369a1; display:block; margin-bottom:2px;">Data de Validade (Opcional):</label>
+        <input type="date" id="cadValidade" class="input-field" style="margin-bottom:8px;">
+
+        <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar no Estoque</button>
       </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px; font-size:0.85rem;">
@@ -190,29 +207,33 @@
       </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Alerta Mínimo de Estoque (UN ou KG):</strong>
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Alerta de Estoque Mínimo (UN / CX / KG):</strong>
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar quando restar menos de:</label>
           <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:80px; padding:4px;" value="5" step="0.5" onchange="salvarConfiguracoes()">
         </div>
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
+          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro</label>
           <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
         </div>
       </div>
 
-      <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Produtos Registrados no Estoque:</strong>
+      <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Mercadorias Registradas no Estoque:</strong>
       <div id="listaEstoque" style="margin-top:6px;"></div>
     </div>
   </div>
 
-  <!-- ABA 3: MONITOR DE VALIDADES -->
+  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO & ALERTAS -->
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
-      <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades Sequencial</strong>
+      <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Central de Alertas</strong>
+      <p style="font-size:0.8rem; color:#6b21a8; margin-bottom:10px;">
+        Os produtos com data de validade informada na aba <strong>Estoque</strong> são sincronizados automaticamente aqui!
+      </p>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração de Alertas de Validade:</strong>
+        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração dos Sons e Notificações de Validade:</strong>
+        
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar com antecedência de até:</label>
           <select id="cfgDiasValidadeAlert" class="input-field" style="width:110px; padding:4px;" onchange="salvarConfiguracoes()">
@@ -223,30 +244,31 @@
             <option value="7">7 Dias</option>
           </select>
         </div>
+
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+          <label style="font-size:0.8rem;">Tipo de Som do Alarme:</label>
+          <select id="cfgTipoSomValidade" class="input-field" style="width:130px; padding:4px;" onchange="salvarConfiguracoes()">
+            <option value="bipe">Bipe Rápido</option>
+            <option value="grave">Alarme Grave</option>
+            <option value="sirene">Sirene Dupla</option>
+          </select>
+          <button class="btn-small-edit" onclick="testarSomAlarme()">🔔 Testar</button>
+        </div>
+
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomValidade" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
-          <label><input type="checkbox" id="chkAlertVibraValidade" checked onchange="salvarConfiguracoes()"> Vibração</label>
+          <label><input type="checkbox" id="chkAlertSomValidade" checked onchange="salvarConfiguracoes()"> Ativar Som</label>
+          <label><input type="checkbox" id="chkAlertVibraValidade" checked onchange="salvarConfiguracoes()"> Ativar Vibração</label>
         </div>
       </div>
 
-      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; display:block; margin-bottom:6px;">+ Cadastrar Lote com Validade:</strong>
-        <input type="text" id="valNome" class="input-field" placeholder="Nome do produto (ex: Iogurte)" style="margin-bottom:6px;">
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
-          <input type="date" id="valData" class="input-field">
-          <input type="number" id="valQtd" class="input-field" placeholder="Qtd Lote" style="width:90px;">
-        </div>
-        <button class="btn-finish" style="background:#7c3aed; margin-bottom:0;" onclick="cadastrarValidade()">Adicionar ao Monitor</button>
-      </div>
-
-      <strong style="font-size:0.85rem; color:#4c1d95;">📋 Itens Monitorados:</strong>
+      <strong style="font-size:0.85rem; color:#4c1d95;">📋 Lotes em Acompanhamento:</strong>
       <div id="listaValidades" style="margin-top:6px;"></div>
     </div>
   </div>
 
-  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS E HISTÓRICO PERMANENTE -->
+  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS E EXPORTAÇÃO PDF COMPLETA -->
   <div class="tab-content" id="tab-relatorios">
-    <div class="card print-area">
+    <div class="card">
       <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
 
       <div class="filter-btn-group">
@@ -279,9 +301,31 @@
         </div>
       </div>
 
-      <button class="btn-client-receipt" style="background:#0284c7; margin-top:10px;" onclick="enviarWhatsappSocio()">📲 Enviar Relatório ao Sócio no WhatsApp</button>
-      <button class="btn-client-receipt" style="background:#475569;" onclick="gerarPDFRelatorio()">📄 Exportar Relatório em PDF / Imprimir</button>
-      <button class="btn-clear" style="margin-top:8px;" onclick="zerarTelaCaixa()">🧹 Reiniciar Tela do Caixa Atual (Mantém Relatórios)</button>
+      <button class="btn-client-receipt" style="background:#0284c7; margin-top:10px;" onclick="enviarWhatsappSocio()">📲 Enviar Relatório Resumido ao Sócio no Zap</button>
+      <button class="btn-client-receipt" style="background:#475569;" onclick="gerarPDFCompletoComExtrato()">📄 Gerar PDF Completo com Extrato por Cliente</button>
+      <button class="btn-clear" style="margin-top:8px;" onclick="zerarTelaCaixa()">🧹 Reiniciar Tela do Caixa Atual (Mantém Histórico)</button>
+    </div>
+
+    <!-- ÁREA IMPRESSA DO PDF COMPLETO -->
+    <div id="areaRelatorioPrint" style="display:none; padding:10px;">
+      <h2 style="text-align:center; margin-bottom:4px;" id="pdfNomeLoja">RELATÓRIO FINANCEIRO EXECUTIVO</h2>
+      <p style="text-align:center; font-size:0.85rem; margin-bottom:12px;">Período: <span id="pdfPeriodoTexto">Hoje</span> | Gerado em: <span id="pdfDataGeracao"></span></p>
+
+      <div style="border:1px solid #000; padding:10px; margin-bottom:12px;">
+        <h3>1. Demonstrativo de Ganhos & Faturamento</h3>
+        <p><strong>Faturamento Total:</strong> R$ <span id="pdfTotalFaturado">0.00</span></p>
+        <p><strong>Lucro Líquido Estimado:</strong> R$ <span id="pdfTotalLucro">0.00</span></p>
+        <hr style="margin:6px 0;">
+        <p>💵 Dinheiro: R$ <span id="pdfTotalDinheiro">0.00</span> | 📱 PIX: R$ <span id="pdfTotalPix">0.00</span></p>
+        <p>💳 Cartão: R$ <span id="pdfTotalCartao">0.00</span> | 📝 Fiado a Receber: R$ <span id="pdfTotalFiado">0.00</span></p>
+      </div>
+
+      <div class="page-break"></div>
+
+      <div style="border:1px solid #000; padding:10px;">
+        <h3>2. Extrato Detalhado de Compras por Cliente</h3>
+        <div id="pdfExtratoVendas"></div>
+      </div>
     </div>
   </div>
 
@@ -312,11 +356,11 @@
       <div style="max-height:200px; overflow-y:auto; padding-right:4px;">
         <div class="faq-item">
           <div class="faq-question">📷 Como usar o Leitor de Código de Barras pela Câmera?</div>
-          <div class="faq-answer">1. Clique em '📷 Bipar Câmera' no topo do Caixa.<br>2. Permita o acesso à câmera do celular.<br>3. Aponte a câmera para o código de barras (EAN-13) da embalagem a uma distância de 15cm.<br>4. O aplicativo bipará e lançará o produto direto na venda!</div>
+          <div class="faq-answer">1. Clique em '📷 Bipar Câmera' no topo do Caixa.<br>2. Permita o acesso à câmera.<br>3. Aponte para o código de barras (EAN-13) a 15cm.<br>4. O produto será bipado e adicionado direto na venda!</div>
         </div>
         <div class="faq-item">
-          <div class="faq-question">1. Onde cadastrar novos produtos?</div>
-          <div class="faq-answer">Todos os produtos devem ser cadastrados na aba '📦 Estoque' informando preço de custo, venda, quantidade e se é vendido por Unidade ou Kg.</div>
+          <div class="faq-question">1. Onde cadastrar e gerenciar produtos?</div>
+          <div class="faq-answer">Tudo é feito na aba '📦 Estoque'. Informe o preço de custo, venda, quantidade e se é vendido por Unidade, Caixa ou Kg. Se informar a validade, ele sincroniza com a aba de Validades automaticamente!</div>
         </div>
       </div>
 
@@ -334,41 +378,43 @@
       { id: 4, nome: '🧀 Queijo Prato', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10 }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_3')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_3')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_3')) || [];
-    let listaValidade = JSON.parse(localStorage.getItem('crm_validade_v2_3')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_4')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_4')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_4')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_3')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_4')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
       limiteAlert: 5, alertSomEstq: true, alertVibraEstq: true,
-      diasValAlert: 30, alertSomVal: true, alertVibraVal: true
+      diasValAlert: 30, alertSomVal: true, alertVibraVal: true, tipoSomVal: 'bipe'
     };
     
     let formaPagamento = 'Dinheiro';
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
-    // GERADOR NATIVO DE ALERTA SONORO E VIBRAÇÃO
-    function acionarAlertaAlarme() {
+    // SINTETIZADOR DIVERSICADO DE ALARMES SONOROS
+    function testarSomAlarme() {
       try {
-        if (config.alertSomEstq || config.alertSomVal) {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, ctx.currentTime);
-          gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
-        }
-        if ((config.alertVibraEstq || config.alertVibraVal) && navigator.vibrate) {
-          navigator.vibrate([200, 100, 200]);
-        }
-      } catch (e) { console.log('Alerta sonoro aguardando interação do usuário.'); }
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        const tipoSom = config.tipoSomVal || 'bipe';
+        let freq = 880;
+        if (tipoSom === 'grave') freq = 320;
+        if (tipoSom === 'sirene') freq = 1200;
+
+        osc.type = tipoSom === 'sirene' ? 'sawtooth' : 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+
+        if (config.alertVibraVal && navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } catch (e) { console.log('Sintetizador aguardando toque do usuário.'); }
     }
 
     function verificarViradaDeDiaAuto() {
@@ -382,11 +428,10 @@
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_3', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_3', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_3', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_validade_v2_3', JSON.stringify(listaValidade));
-      localStorage.setItem('crm_config_v2_3', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_4', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_4', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_4', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_config_v2_4', JSON.stringify(config));
       renderizar();
     }
 
@@ -399,7 +444,7 @@
       const estoqueDisponivel = item.estoque - pendenteNoCarrinho;
 
       if (estoqueDisponivel <= 0) {
-        acionarAlertaAlarme();
+        testarSomAlarme();
         return alert(`O produto '${item.nome}' está esgotado no estoque!`);
       }
 
@@ -411,20 +456,20 @@
           if (pesoKg > estoqueDisponivel) return alert('Quantidade digitada excede o estoque disponível!');
           const valorCalculado = item.preco * pesoKg;
           const custoCalculado = (item.precoCusto || 0) * pesoKg;
-          adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, custoCalculado, 1, true, item.id, pesoKg);
+          adicionarAoCarrinho(`${item.nome} (${gramas}g)`, valorCalculado, custoCalculado, 1, true, item.id, pesoKg, item.preco);
         }
       } else {
-        adicionarAoCarrinho(item.nome, item.preco, item.precoCusto || 0, 1, false, item.id, 1);
+        adicionarAoCarrinho(item.nome, item.preco, item.precoCusto || 0, 1, false, item.id, 1, item.preco);
       }
     }
 
-    function adicionarAoCarrinho(nome, preco, custo, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1) {
+    function adicionarAoCarrinho(nome, preco, custo, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1, precoPorKg = null) {
       const itemExistente = carrinho.find(it => it.nome === nome);
       if (itemExistente && !ehFracionado) {
         itemExistente.qtd += qtd;
         itemExistente.qtdEstoqueAbater += qtdEstoqueAbater;
       } else {
-        carrinho.push({ nome, preco: parseFloat(preco), custo: parseFloat(custo), qtd: qtd, ehFracionado, atalhoId, qtdEstoqueAbater });
+        carrinho.push({ nome, preco: parseFloat(preco), custo: parseFloat(custo), qtd: qtd, ehFracionado, atalhoId, qtdEstoqueAbater, precoPorKg });
       }
       salvarEstado();
     }
@@ -434,7 +479,7 @@
       const preco = parseFloat(document.getElementById('valorManual').value);
       if (isNaN(preco) || preco <= 0) return alert('Digite um valor válido!');
 
-      adicionarAoCarrinho(nome, preco, preco * 0.7, 1, false, null, 0);
+      adicionarAoCarrinho(nome, preco, preco * 0.7, 1, false, null, 0, null);
       document.getElementById('nomeManual').value = '';
       document.getElementById('valorManual').value = '';
     }
@@ -487,11 +532,6 @@
           const prod = atalhos.find(a => a.id === item.atalhoId);
           if (prod && prod.estoque !== undefined) {
             prod.estoque = Math.max(0, prod.estoque - (item.qtdEstoqueAbater || item.qtd));
-            
-            const itemValidade = listaValidade.find(v => v.nome.toLowerCase() === prod.nome.toLowerCase());
-            if (itemValidade) {
-              itemValidade.qtd = Math.max(0, itemValidade.qtd - (item.qtdEstoqueAbater || item.qtd));
-            }
           }
         }
       });
@@ -508,6 +548,7 @@
 
       vendasDoDia.push({
         dataTimestamp: new Date().getTime(),
+        dataDataStr: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         cliente,
         atendente: config.atendente,
@@ -549,7 +590,11 @@
       texto += `----------------------------------\n`;
 
       carrinho.forEach(it => {
-        texto += `• ${it.qtd}x ${it.nome} (R$ ${it.preco.toFixed(2)} un) -> R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
+        if (it.ehFracionado && it.precoPorKg) {
+          texto += `• ${it.nome} (R$ ${it.precoPorKg.toFixed(2)}/kg) -> R$ ${it.preco.toFixed(2)}\n`;
+        } else {
+          texto += `• ${it.qtd}x ${it.nome} (R$ ${it.preco.toFixed(2)} un) -> R$ ${(it.preco * it.qtd).toFixed(2)}\n`;
+        }
       });
 
       texto += `----------------------------------\n`;
@@ -585,6 +630,7 @@
       const precoVenda = parseFloat(document.getElementById('cadPrecoVenda').value);
       const estoque = parseFloat(document.getElementById('cadQtdEstoque').value) || 0;
       const tipo = document.getElementById('cadTipoUnidade').value;
+      const validade = document.getElementById('cadValidade').value;
 
       if (!nome || isNaN(precoVenda) || precoVenda < 0) return alert('Preencha o nome e o preço de venda corretamente!');
 
@@ -594,51 +640,18 @@
         itemExistente.preco = precoVenda;
         itemExistente.estoque = estoque;
         itemExistente.tipo = tipo;
+        if (validade) itemExistente.validade = validade;
       } else {
-        atalhos.push({ id: Date.now(), nome, precoCusto, preco: precoVenda, tipo, estoque });
+        atalhos.push({ id: Date.now(), nome, precoCusto, preco: precoVenda, tipo, estoque, validade });
       }
 
       document.getElementById('cadNome').value = '';
       document.getElementById('cadPrecoCusto').value = '';
       document.getElementById('cadPrecoVenda').value = '';
       document.getElementById('cadQtdEstoque').value = '';
+      document.getElementById('cadValidade').value = '';
       salvarEstado();
-      alert('Produto salvo no estoque com sucesso!');
-    }
-
-    function cadastrarValidade() {
-      const nome = document.getElementById('valNome').value.trim();
-      const data = document.getElementById('valData').value;
-      const qtd = parseInt(document.getElementById('valQtd').value) || 1;
-
-      if (!nome || !data) return alert('Preencha o nome do produto e a data de validade!');
-
-      listaValidade.push({ nome, data, qtd });
-      document.getElementById('valNome').value = '';
-      document.getElementById('valData').value = '';
-      document.getElementById('valQtd').value = '';
-      salvarEstado();
-    }
-
-    function editarValidade(index) {
-      const item = listaValidade[index];
-      const novaQtd = prompt(`Editar quantidade para '${item.nome}':`, item.qtd);
-      const valorQtd = parseInt(novaQtd);
-      if (!isNaN(valorQtd) && valorQtd >= 0) {
-        item.qtd = valorQtd;
-        const prod = atalhos.find(a => a.nome.toLowerCase() === item.nome.toLowerCase());
-        if (prod) prod.estoque = valorQtd;
-        salvarEstado();
-      }
-    }
-
-    function abaterValidade(index, qtdAbater) {
-      listaValidade[index].qtd -= qtdAbater;
-      const prod = atalhos.find(a => a.nome.toLowerCase() === listaValidade[index].nome.toLowerCase());
-      if (prod) prod.estoque = Math.max(0, prod.estoque - qtdAbater);
-
-      if (listaValidade[index].qtd <= 0) listaValidade.splice(index, 1);
-      salvarEstado();
+      alert('Mercadoria salva no estoque com sucesso!');
     }
 
     function renderizarEstoque() {
@@ -649,7 +662,7 @@
       let projecaoLucro = 0;
 
       atalhos.forEach((item, index) => {
-        const txtTipo = item.tipo === 'KG' ? 'kg' : 'un';
+        const txtTipo = item.tipo === 'KG' ? 'kg' : (item.tipo === 'CX' ? 'cx' : 'un');
         const limiteAlert = parseFloat(config.limiteAlert) || 5;
         const alertaBaixo = item.estoque <= limiteAlert ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
         
@@ -658,12 +671,15 @@
         custoTotal += valorCustoItem;
         projecaoLucro += (valorVendaItem - valorCustoItem);
 
+        const txtValidade = item.validade ? `<br><small style="color:#7c3aed;">Validade: ${item.validade}</small>` : '';
+
         container.innerHTML += `
           <div style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <strong>${item.nome}</strong><br>
+              <strong>${item.nome}</strong> (${item.tipo})<br>
               <span style="font-size:0.8rem; ${alertaBaixo}">Estoque: ${item.estoque || 0} ${txtTipo}</span><br>
               <small style="color:#64748b;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)} | Venda: R$ ${item.preco.toFixed(2)}</small>
+              ${txtValidade}
             </div>
             <div>
               <button onclick="ajustarEstoque(${index})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Ajustar</button>
@@ -689,16 +705,18 @@
       const container = document.getElementById('listaValidades');
       container.innerHTML = '';
 
-      if (listaValidade.length === 0) {
-        container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto em monitoramento de validade.</p>`;
+      const itensComValidade = atalhos.filter(a => a.validade);
+
+      if (itensComValidade.length === 0) {
+        container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto com data de validade informada na aba Estoque.</p>`;
         return;
       }
 
       const hoje = new Date();
       const limiteDiasAlert = parseInt(config.diasValAlert) || 30;
 
-      listaValidade.forEach((item, index) => {
-        const dataVal = new Date(item.data + 'T00:00:00');
+      itensComValidade.forEach((item) => {
+        const dataVal = new Date(item.validade + 'T00:00:00');
         const diffDias = Math.ceil((dataVal - hoje) / (1000 * 60 * 60 * 24));
 
         let statusCor = '#2563eb';
@@ -717,11 +735,11 @@
 
         container.innerHTML += `
           <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-            <div onclick="editarValidade(${index})" style="cursor:pointer;">
-              <strong>${item.nome}</strong> (${item.qtd} un/cx) ✏️<br>
+            <div>
+              <strong>${item.nome}</strong> (${item.estoque} em estoque)<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
             </div>
-            <button onclick="abaterValidade(${index}, 1)" style="background:#22c55e; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">-1 Vendi</button>
+            <button onclick="mudarAba('estoque')" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">Ver no Estoque</button>
           </div>
         `;
       });
@@ -744,6 +762,7 @@
       const vendasFiltradas = obterVendasFiltradas();
       const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
       const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
+      
       const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
       const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
       const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
@@ -756,10 +775,13 @@
         💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
       `;
 
-      // Atualiza também no painel rápido do caixa
+      // Atualiza o painel rápido do caixa
+      document.getElementById('cxDinheiroDia').innerText = totalDinheiro.toFixed(2);
+      document.getElementById('cxPixDia').innerText = totalPix.toFixed(2);
+      document.getElementById('cxCartaoDia').innerText = totalCartao.toFixed(2);
+      document.getElementById('cxFiadoDia').innerText = totalFiado.toFixed(2);
       document.getElementById('cxFaturamentoDia').innerText = totalAcumulado.toFixed(2);
       document.getElementById('cxLucroDia').innerText = totalLucro.toFixed(2);
-      document.getElementById('cxFiadoDia').innerText = totalFiado.toFixed(2);
 
       const fundoTroco = parseFloat(document.getElementById('cfgFundoTroco').value) || 0;
       document.getElementById('confDinheiroVendas').innerText = totalDinheiro.toFixed(2);
@@ -824,6 +846,7 @@
       document.getElementById('chkAlertVibraEstoque').checked = config.alertVibraEstq;
       
       document.getElementById('cfgDiasValidadeAlert').value = config.diasValAlert || 30;
+      document.getElementById('cfgTipoSomValidade').value = config.tipoSomVal || 'bipe';
       document.getElementById('chkAlertSomValidade').checked = config.alertSomVal;
       document.getElementById('chkAlertVibraValidade').checked = config.alertVibraVal;
 
@@ -843,6 +866,7 @@
       config.alertVibraEstq = document.getElementById('chkAlertVibraEstoque').checked;
 
       config.diasValAlert = parseInt(document.getElementById('cfgDiasValidadeAlert').value) || 30;
+      config.tipoSomVal = document.getElementById('cfgTipoSomValidade').value;
       config.alertSomVal = document.getElementById('chkAlertSomValidade').checked;
       config.alertVibraVal = document.getElementById('chkAlertVibraValidade').checked;
 
@@ -858,28 +882,67 @@
       let texto = `📊 *FECHAMENTO DE CAIXA ${periodoTexto} - ${config.loja.toUpperCase()}*\n\n`;
       let totalGeral = 0;
       let totalLucroGeral = 0;
-      let totalFiado = 0;
 
       vendasFiltradas.forEach((v, i) => {
         totalGeral += v.total;
         totalLucroGeral += (v.lucro || 0);
-        if (v.pagamento === 'Fiado') totalFiado += v.total;
 
-        texto += `*#${i+1} (${v.hora}) - ${v.cliente}* (Atend: ${v.atendente})\n`;
+        texto += `*#${i+1} (${v.hora}) - ${v.cliente}*\n`;
         v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
         texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
       });
 
       texto += `💰 *TOTAL FATURADO: R$ ${totalGeral.toFixed(2)}*\n`;
       texto += `📈 *LUCRO LÍQUIDO: R$ ${totalLucroGeral.toFixed(2)}*\n`;
-      if (totalFiado > 0) texto += `⚠️ *Total em Fiado a Receber: R$ ${totalFiado.toFixed(2)}*`;
 
       const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
       window.open(url, '_blank');
     }
 
-    function gerarPDFRelatorio() {
+    function gerarPDFCompletoComExtrato() {
+      const vendasFiltradas = obterVendasFiltradas();
+      const periodoTexto = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' }[filtroAtual];
+
+      document.getElementById('pdfNomeLoja').innerText = config.loja.toUpperCase();
+      document.getElementById('pdfPeriodoTexto').innerText = periodoTexto;
+      document.getElementById('pdfDataGeracao').innerText = new Date().toLocaleString('pt-BR');
+
+      const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+      const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
+      const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+      const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+      const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+      const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+
+      document.getElementById('pdfTotalFaturado').innerText = totalAcumulado.toFixed(2);
+      document.getElementById('pdfTotalLucro').innerText = totalLucro.toFixed(2);
+      document.getElementById('pdfTotalDinheiro').innerText = totalDinheiro.toFixed(2);
+      document.getElementById('pdfTotalPix').innerText = totalPix.toFixed(2);
+      document.getElementById('pdfTotalCartao').innerText = totalCartao.toFixed(2);
+      document.getElementById('pdfTotalFiado').innerText = totalFiado.toFixed(2);
+
+      const divExtrato = document.getElementById('pdfExtratoVendas');
+      divExtrato.innerHTML = '';
+
+      if (vendasFiltradas.length === 0) {
+        divExtrato.innerHTML = '<p>Nenhuma venda registrada neste período.</p>';
+      } else {
+        vendasFiltradas.forEach((v, i) => {
+          let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
+          divExtrato.innerHTML += `
+            <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px;">
+              <strong>#${i+1} [${v.hora}] ${v.cliente}</strong> (${v.pagamento})<br>
+              <small>Itens: ${itensTxt}</small><br>
+              <strong>Total Venda: R$ ${v.total.toFixed(2)}</strong>
+            </div>
+          `;
+        });
+      }
+
+      const areaPrint = document.getElementById('areaRelatorioPrint');
+      areaPrint.style.display = 'block';
       window.print();
+      areaPrint.style.display = 'none';
     }
 
     function iniciarLeitorCamera() {
@@ -891,12 +954,12 @@
         alert("Código lido com sucesso: " + decodedText);
         html5QrcodeScanner.clear();
         readerEl.style.display = 'none';
-        adicionarAoCarrinho("Item Cod " + decodedText.slice(-4), 10.00, 7.00, 1, false);
+        adicionarAoCarrinho("Item Cod " + decodedText.slice(-4), 10.00, 7.00, 1, false, null, 1, null);
       });
     }
 
     function zerarTelaCaixa() {
-      if (confirm('Deseja apenas reiniciar a tela de vendas do caixa? Todos os relatórios do dia continuarão salvos!')) {
+      if (confirm('Deseja apenas reiniciar a tela do caixa? Todos os relatórios do dia continuarão salvos!')) {
         carrinho = [];
         document.getElementById('nomeCliente').value = '';
         document.getElementById('telCliente').value = '';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 3.0 - Gestão com Licença Avançada</title>
+  <title>Caixa Rápido Móvel Pro 3.1 - Gestão com Licença Avançada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -528,11 +528,11 @@
       }
     }
 
+    // FORÇA O BLOQUEIO E O RECARREGAMENTO IMEDIATO
     function simularBloqueioLicenca() {
-      fecharModalAjuda();
       localStorage.setItem('crm_dias_licenca_liberados', '0');
       localStorage.setItem('crm_licenca_vitalicia', 'false');
-      verificarLicencaAcesso();
+      location.reload();
     }
 
     function validarChaveAtivacao() {
@@ -543,6 +543,7 @@
         document.getElementById('telaBloqueioLicenca').style.display = 'none';
         document.getElementById('bannerStatusTrial').style.display = 'none';
         alert('🎉 Licença VITALÍCIA Ativada com Sucesso! O sistema está liberado permanentemente.');
+        location.reload();
       } 
       else if (chaveDigitada === CHAVES.TRIAL_20) {
         localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
@@ -550,7 +551,7 @@
         localStorage.setItem('crm_licenca_vitalicia', 'false');
         document.getElementById('telaBloqueioLicenca').style.display = 'none';
         alert('🎉 Licença de 20 DIAS Ativada com Sucesso!');
-        renderizar();
+        location.reload();
       } 
       else if (chaveDigitada === CHAVES.TRIAL_30) {
         localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
@@ -558,7 +559,7 @@
         localStorage.setItem('crm_licenca_vitalicia', 'false');
         document.getElementById('telaBloqueioLicenca').style.display = 'none';
         alert('🎉 Licença de 30 DIAS Ativada com Sucesso!');
-        renderizar();
+        location.reload();
       } 
       else {
         alert('❌ Chave de ativação inválida!');

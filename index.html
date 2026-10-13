@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.7 - Gestão Inteligente</title>
+  <title>Caixa Rápido Móvel Pro 2.8 - Automação Avançada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -54,7 +54,6 @@
     .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
     .cad-type-btn.active { background: #0284c7; color: white; }
 
-    /* ANIMAÇÃO DE TREMBLOR E PISCA-ALERTA CRÍTICO */
     @keyframes alertTremor {
       0% { transform: translate(0, 0); }
       25% { transform: translate(-2px, 1px); }
@@ -92,10 +91,10 @@
 </head>
 <body>
 
-  <!-- BANNER DE SILENCIAR ALARME CONTINUO -->
+  <!-- BANNER DETALHADO DE EMERGÊNCIA -->
   <div id="bannerAlarmeSilenciar">
-    ⚠️ ALERTA CRÍTICO ATIVO (ESTOQUE OU VALIDADE)!
-    <button onclick="silenciarAlarmeManual()" style="margin-top:6px; background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%;">🔕 Silenciar Alarme Automático</button>
+    <div id="textoDetalhadoAlarme" style="margin-bottom:6px;">⚠️ ALERTA CRÍTICO ATIVO!</div>
+    <button onclick="silenciarAlarmeManual()" style="background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%;">🔕 Silenciar Alarme Automático</button>
   </div>
 
   <h1>
@@ -207,7 +206,6 @@
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
       <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Entrada de Estoque</strong>
 
-      <!-- SELETOR DO TIPO DE CADASTRO COM TRÊS OPÇÕES DEFINIDAS -->
       <div style="display:flex; gap:4px; margin-bottom:10px;">
         <button class="cad-type-btn active" id="btnCadTipoKg" onclick="selecionarTipoCadastro('KG')">🥩 Por Peso (KG)</button>
         <button class="cad-type-btn" id="btnCadTipoUn" onclick="selecionarTipoCadastro('UN')">🥤 Unidade (UN)</button>
@@ -264,15 +262,28 @@
         <p style="color:#16a34a; font-weight:bold; margin-top:2px;">📈 <strong>Projeção de Lucro Bruto:</strong> R$ <span id="projecaoLucroEstoque">0.00</span></p>
       </div>
 
+      <!-- ALERTAS PERSONALIZADOS POR TIPO DE PRODUTO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Alerta Mínimo de Estoque:</strong>
+          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Limites de Alerta Mínimo Personalizados:</strong>
           <button class="btn-small-edit" onclick="testarSomEstoque()">🔔 Testar Som</button>
         </div>
-        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-          <label style="font-size:0.8rem;">Avisar quando restar menos de:</label>
-          <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:80px; padding:4px;" value="5" step="0.5" onchange="salvarConfiguracoes()">
+        
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+          <div>
+            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Quilos (kg):</label>
+            <input type="number" id="cfgLimiteEstqKg" class="input-field" style="padding:4px;" value="2.5" step="0.5" onchange="salvarConfiguracoes()">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Unidades (un):</label>
+            <input type="number" id="cfgLimiteEstqUn" class="input-field" style="padding:4px;" value="5" step="1" onchange="salvarConfiguracoes()">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Caixas (cx):</label>
+            <input type="number" id="cfgLimiteEstqCx" class="input-field" style="padding:4px;" value="2" step="1" onchange="salvarConfiguracoes()">
+          </div>
         </div>
+
         <div style="display:flex; gap:10px; font-size:0.8rem;">
           <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Som Automático</label>
           <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
@@ -284,13 +295,13 @@
     </div>
   </div>
 
-  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO & ALERTAS -->
+  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO & HORÁRIOS PROGRAMADOS -->
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
-      <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Central de Alertas</strong>
+      <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Horários de Alarme</strong>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração dos Sons e Intervalo do Alarme:</strong>
+        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração dos Alarmes Diários:</strong>
         
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar antecedência:</label>
@@ -304,12 +315,10 @@
         </div>
 
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-          <label style="font-size:0.8rem;">Repetir Alarme a cada:</label>
-          <select id="cfgIntervaloAlertMinutos" class="input-field" style="width:110px; padding:4px;" onchange="salvarConfiguracoes()">
-            <option value="15">15 minutos</option>
-            <option value="30" selected>30 minutos</option>
-            <option value="60">1 hora</option>
-            <option value="120">2 horas</option>
+          <label style="font-size:0.8rem;">Modo de Notificação:</label>
+          <select id="cfgModoDisparoValidade" class="input-field" style="width:160px; padding:4px;" onchange="salvarConfiguracoes()">
+            <option value="fixo" selected>Fixos (10h e 15h)</option>
+            <option value="intervalo">A cada X minutos</option>
           </select>
         </div>
 
@@ -454,9 +463,9 @@
       { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15' }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_7')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_7')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_7')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_8')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_8')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_8')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
     let idTurnoAtual = localStorage.getItem('crm_turno_atual') || Date.now().toString();
 
@@ -464,13 +473,13 @@
     let idEditando = null;
     let alarmeLoopInterval = null;
     let alarmeSilenciadoManual = false;
-    let ultimaHoraAlarmeTocada = 0;
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_7')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_8')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
-      limiteAlert: 5, alertSomEstq: true, alertVibraEstq: true,
-      diasValAlert: 30, alertSomVal: true, alertVibraVal: true, tipoSomVal: 'bipe',
-      intervaloAlertMin: 30
+      limiteKg: 2.5, limiteUn: 5, limiteCx: 2,
+      alertSomEstq: true, alertVibraEstq: true,
+      diasValAlert: 30, modoValidade: 'fixo', tipoSomVal: 'sirene',
+      alertSomVal: true, alertVibraVal: true
     };
     
     let formaPagamento = 'Dinheiro';
@@ -480,6 +489,11 @@
     document.addEventListener('click', () => {
       verificarAlertasECorrerAlarme();
     }, { once: true });
+
+    window.addEventListener('focus', () => {
+      alarmeSilenciadoManual = false;
+      verificarAlertasECorrerAlarme();
+    });
 
     function selecionarTipoCadastro(tipo) {
       tipoCadastroAtivo = tipo;
@@ -535,29 +549,40 @@
 
       const hoje = new Date();
       const limiteDiasVal = parseInt(config.diasValAlert) || 30;
-      const limiteEstq = parseFloat(config.limiteAlert) || 5;
 
-      let temCriticoEstoque = atalhos.some(a => a.estoque <= limiteEstq);
-      let temCriticoValidade = atalhos.some(a => {
-        if (!a.validade) return false;
+      let itensEstoqueCritico = [];
+      atalhos.forEach(a => {
+        let limite = parseFloat(config.limiteUn) || 5;
+        if (a.tipo === 'KG') limite = parseFloat(config.limiteKg) || 2.5;
+        if (a.tipo === 'CX') limite = parseFloat(config.limiteCx) || 2;
+
+        if (a.estoque <= limite) {
+          itensEstoqueCritico.push(`${a.nome} (${a.estoque} ${a.tipo.toLowerCase()})`);
+        }
+      });
+
+      let itensValidadeCritico = [];
+      atalhos.forEach(a => {
+        if (!a.validade) return;
         const diff = Math.ceil((new Date(a.validade + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
-        return diff <= limiteDiasVal;
+        if (diff <= limiteDiasVal) {
+          itensValidadeCritico.push(`${a.nome} (${diff < 0 ? 'Vencido' : 'Vence em ' + diff + 'd'})`);
+        }
       });
 
       const banner = document.getElementById('bannerAlarmeSilenciar');
+      const textoBanner = document.getElementById('textoDetalhadoAlarme');
 
-      if (temCriticoEstoque || temCriticoValidade) {
+      if (itensEstoqueCritico.length > 0 || itensValidadeCritico.length > 0) {
+        let mensagem = '🚨 ALERTA ATIVO: ';
+        if (itensEstoqueCritico.length > 0) mensagem += `[ESTOQUE CRÍTICO: ${itensEstoqueCritico.join(', ')}] `;
+        if (itensValidadeCritico.length > 0) mensagem += `[VALIDADE PRÓXIMA: ${itensValidadeCritico.join(', ')}]`;
+
+        textoBanner.innerText = mensagem;
         banner.style.display = 'block';
 
-        const agoraMs = new Date().getTime();
-        const intervaloMs = (parseInt(config.intervaloAlertMin) || 30) * 60 * 1000;
-
-        if (agoraMs - ultimaHoraAlarmeTocada >= intervaloMs) {
-          dispararPulsoAlarme();
-          ultimaHoraAlarmeTocada = agoraMs;
-        }
-
         if (!alarmeLoopInterval) {
+          dispararPulsoAlarme();
           alarmeLoopInterval = setInterval(() => {
             if (!alarmeSilenciadoManual) dispararPulsoAlarme();
           }, 3000);
@@ -578,7 +603,6 @@
         alarmeLoopInterval = null;
       }
       document.getElementById('bannerAlarmeSilenciar').style.display = 'none';
-      alert('Alarme silenciado até a próxima reavaliação!');
     }
 
     function testarSomEstoque() {
@@ -604,10 +628,10 @@
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_7', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_7', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_7', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_config_v2_7', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_8', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_8', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_8', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_config_v2_8', JSON.stringify(config));
       renderizar();
     }
 
@@ -744,9 +768,11 @@
       document.getElementById('telCliente').value = '';
       document.getElementById('valorDesconto').value = '0';
       document.getElementById('valorPago').value = '';
+
+      alarmeSilenciadoManual = false;
       salvarEstado();
 
-      if (!silencioso) alert('Venda registrada e estoque atualizado com sucesso!');
+      if (!silencioso) alert('Venda registrada com sucesso!');
     }
 
     function enviarComprovanteCliente() {
@@ -825,6 +851,7 @@
       }
 
       limparFormularioEstoque();
+      alarmeSilenciadoManual = false;
       salvarEstado();
     }
 
@@ -874,9 +901,12 @@
 
       atalhos.forEach((item) => {
         const txtTipo = item.tipo === 'KG' ? 'kg' : (item.tipo === 'CX' ? 'cx' : 'un');
-        const limiteAlert = parseFloat(config.limiteAlert) || 5;
-        const eCritico = item.estoque <= limiteAlert;
         
+        let limite = parseFloat(config.limiteUn) || 5;
+        if (item.tipo === 'KG') limite = parseFloat(config.limiteKg) || 2.5;
+        if (item.tipo === 'CX') limite = parseFloat(config.limiteCx) || 2;
+
+        const eCritico = item.estoque <= limite;
         const classeCritica = eCritico ? 'alerta-tremendo' : '';
         const alertaBaixoStr = eCritico ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
         
@@ -992,7 +1022,6 @@
         💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
       `;
 
-      // Atualiza o painel do caixa com base no turno visual ativo
       const vendasTurno = obterVendasTurnoAtual();
       const tDinheiro = vendasTurno.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
       const tPix = vendasTurno.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
@@ -1067,13 +1096,16 @@
       document.getElementById('cfgTelSocio').value = config.socio;
       document.getElementById('cfgChavePix').value = config.pix;
       
-      document.getElementById('cfgLimiteEstoqueAlert').value = config.limiteAlert || 5;
+      document.getElementById('cfgLimiteEstqKg').value = config.limiteKg || 2.5;
+      document.getElementById('cfgLimiteEstqUn').value = config.limiteUn || 5;
+      document.getElementById('cfgLimiteEstqCx').value = config.limiteCx || 2;
+
       document.getElementById('chkAlertSomEstoque').checked = config.alertSomEstq;
       document.getElementById('chkAlertVibraEstoque').checked = config.alertVibraEstq;
       
       document.getElementById('cfgDiasValidadeAlert').value = config.diasValAlert || 30;
-      document.getElementById('cfgIntervaloAlertMinutos').value = config.intervaloAlertMin || 30;
-      document.getElementById('cfgTipoSomValidade').value = config.tipoSomVal || 'bipe';
+      document.getElementById('cfgModoDisparoValidade').value = config.modoValidade || 'fixo';
+      document.getElementById('cfgTipoSomValidade').value = config.tipoSomVal || 'sirene';
       document.getElementById('chkAlertSomValidade').checked = config.alertSomVal;
       document.getElementById('chkAlertVibraValidade').checked = config.alertVibraVal;
 
@@ -1088,12 +1120,15 @@
       config.socio = document.getElementById('cfgTelSocio').value.replace(/\D/g, '');
       config.pix = document.getElementById('cfgChavePix').value.trim();
 
-      config.limiteAlert = parseFloat(document.getElementById('cfgLimiteEstoqueAlert').value) || 5;
+      config.limiteKg = parseFloat(document.getElementById('cfgLimiteEstqKg').value) || 2.5;
+      config.limiteUn = parseFloat(document.getElementById('cfgLimiteEstqUn').value) || 5;
+      config.limiteCx = parseFloat(document.getElementById('cfgLimiteEstqCx').value) || 2;
+
       config.alertSomEstq = document.getElementById('chkAlertSomEstoque').checked;
       config.alertVibraEstq = document.getElementById('chkAlertVibraEstoque').checked;
 
       config.diasValAlert = parseInt(document.getElementById('cfgDiasValidadeAlert').value) || 30;
-      config.intervaloAlertMin = parseInt(document.getElementById('cfgIntervaloAlertMinutos').value) || 30;
+      config.modoValidade = document.getElementById('cfgModoDisparoValidade').value;
       config.tipoSomVal = document.getElementById('cfgTipoSomValidade').value;
       config.alertSomVal = document.getElementById('chkAlertSomValidade').checked;
       config.alertVibraVal = document.getElementById('chkAlertVibraValidade').checked;
@@ -1251,7 +1286,18 @@
 
     setInterval(() => {
       verificarViradaDeDiaAuto();
-      verificarAlertasECorrerAlarme();
+      
+      const agora = new Date();
+      const horaStr = agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      if (config.modoValidade === 'fixo') {
+        if (horaStr === '10:00' || horaStr === '15:00') {
+          alarmeSilenciadoManual = false;
+          verificarAlertasECorrerAlarme();
+        }
+      } else {
+        verificarAlertasECorrerAlarme();
+      }
     }, 15000);
 
     renderizar();

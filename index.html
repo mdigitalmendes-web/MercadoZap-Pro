@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.8 - Automação Avançada</title>
+  <title>Caixa Rápido Móvel Pro 3.0 - Gestão com Licença Avançada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -54,6 +54,19 @@
     .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
     .cad-type-btn.active { background: #0284c7; color: white; }
 
+    /* ESTILO DA TELA DE BLOQUEIO DE LICENÇA */
+    #telaBloqueioLicenca {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #0f172a;
+      color: white;
+      z-index: 9999;
+      padding: 24px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
     @keyframes alertTremor {
       0% { transform: translate(0, 0); }
       25% { transform: translate(-2px, 1px); }
@@ -91,10 +104,35 @@
 </head>
 <body>
 
+  <!-- TELA DE BLOQUEIO AUTOMÁTICO DE LICENÇA EXPIRADA -->
+  <div id="telaBloqueioLicenca">
+    <div style="max-width:400px; margin:40px auto;">
+      <span style="font-size:3rem;">🔒</span>
+      <h2 style="font-size:1.4rem; margin:12px 0; color:#ef4444;">Licença Expirada / Bloqueada!</h2>
+      <p style="font-size:0.9rem; color:#cbd5e1; margin-bottom:20px; line-height:1.5;" id="textoMotivoBloqueio">
+        Seu período de uso do <i>Gestão Fácil Mercado / Caixa Rápido Pro</i> chegou ao fim neste dispositivo.<br><br>
+        Insira uma nova chave válida enviada pelo desenvolvedor para desbloquear o sistema.
+      </p>
+
+      <input type="text" id="chaveAtivacaoInput" class="input-field" placeholder="Digite a Chave de Licença..." style="text-align:center; text-transform:uppercase; font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
+      
+      <button onclick="validarChaveAtivacao()" class="btn-finish" style="background:#2563eb;">🔓 Validar e Desbloquear</button>
+      
+      <p style="font-size:0.75rem; color:#94a3b8; margin-top:16px;">
+        Entre em contato para renovar sua licença de uso.
+      </p>
+    </div>
+  </div>
+
   <!-- BANNER DETALHADO DE EMERGÊNCIA -->
   <div id="bannerAlarmeSilenciar">
     <div id="textoDetalhadoAlarme" style="margin-bottom:6px;">⚠️ ALERTA CRÍTICO ATIVO!</div>
     <button onclick="silenciarAlarmeManual()" style="background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%;">🔕 Silenciar Alarme Automático</button>
+  </div>
+
+  <!-- BANNER INDICADOR DE LICENÇA NO TOPO -->
+  <div id="bannerStatusTrial" style="background:#e0f2fe; color:#0369a1; padding:6px; border-radius:6px; font-size:0.75rem; font-weight:bold; text-align:center; margin-bottom:8px;">
+    ⏳ Status da Licença: Restam <span id="diasRestantesTrialText">--</span> dias de uso.
   </div>
 
   <h1>
@@ -201,7 +239,7 @@
     </div>
   </div>
 
-  <!-- ABA 2: CENTRAL ÚNICA DE ESTOQUE E CADASTRO SEPARADO -->
+  <!-- ABA 2: CENTRAL ÚNICA DE ESTOQUE -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
       <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Entrada de Estoque</strong>
@@ -212,7 +250,6 @@
         <button class="cad-type-btn" id="btnCadTipoCx" onclick="selecionarTipoCadastro('CX')">📦 Caixas (CX)</button>
       </div>
 
-      <!-- FORMULÁRIO DINÂMICO DE CADASTRO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <strong style="font-size:0.85rem; color:#0369a1;" id="tituloFormCad">+ Cadastrar Produto por Quilo:</strong>
@@ -262,7 +299,6 @@
         <p style="color:#16a34a; font-weight:bold; margin-top:2px;">📈 <strong>Projeção de Lucro Bruto:</strong> R$ <span id="projecaoLucroEstoque">0.00</span></p>
       </div>
 
-      <!-- ALERTAS PERSONALIZADOS POR TIPO DE PRODUTO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Limites de Alerta Mínimo Personalizados:</strong>
@@ -295,7 +331,7 @@
     </div>
   </div>
 
-  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO & HORÁRIOS PROGRAMADOS -->
+  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO -->
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
       <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Horários de Alarme</strong>
@@ -343,7 +379,7 @@
     </div>
   </div>
 
-  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS E EXPORTAÇÃO PDF COMPLETA -->
+  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS -->
   <div class="tab-content" id="tab-relatorios">
     <div class="card">
       <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
@@ -360,7 +396,6 @@
         <div style="margin-top:6px; font-size:0.8rem;" id="detalheRelatorio"></div>
       </div>
 
-      <!-- SELEÇÃO DE RELATÓRIOS RÁPIDOS COM 1 CLIQUE -->
       <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-top:12px; margin-bottom:6px;">📄 Gerar Relatórios Específicos em PDF:</strong>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:10px;">
         <button class="btn-small-edit" style="padding:10px; background:#0284c7;" onclick="gerarPDFTipo('faturamento')">💰 Ganhos & Faturamento</button>
@@ -369,7 +404,6 @@
         <button class="btn-small-edit" style="padding:10px; background:#475569;" onclick="gerarPDFTipo('estoque')">📦 Estoque & Valor Investido</button>
       </div>
 
-      <!-- CONFERÊNCIA DE CAIXA / GAVETA -->
       <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:6px;">
         <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">💵 Conferência de Caixa (Gaveta):</strong>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
@@ -396,7 +430,6 @@
       </div>
     </div>
 
-    <!-- ÁREA IMPRESSA DO PDF COMPLETO -->
     <div id="areaRelatorioPrint" style="display:none; padding:10px;">
       <h2 style="text-align:center; margin-bottom:4px;" id="pdfNomeLoja">RELATÓRIO FINANCEIRO EXECUTIVO</h2>
       <p style="text-align:center; font-size:0.85rem; margin-bottom:12px;">Período: <span id="pdfPeriodoTexto">Hoje</span> | Gerado em: <span id="pdfDataGeracao"></span></p>
@@ -419,7 +452,7 @@
     </div>
   </div>
 
-  <!-- MODAL CONFIGURAÇÕES E MANUAL/TOUR -->
+  <!-- MODAL CONFIGURAÇÕES E MANUAL -->
   <div class="modal" id="modalAjuda">
     <div class="modal-content">
       <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Guia do Sistema</h2>
@@ -440,7 +473,8 @@
         <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()">
       </div>
 
-      <button class="btn-finish" style="background:#0284c7; margin-bottom:12px;" onclick="abrirManualCompleto()">📘 Tour & Explicação das Funcionalidades</button>
+      <button class="btn-finish" style="background:#0284c7; margin-bottom:8px;" onclick="abrirManualCompleto()">📘 Tour & Explicação das Funcionalidades</button>
+      <button class="btn-small-edit" style="width:100%; padding:10px; background:#dc2626; margin-bottom:12px;" onclick="simularBloqueioLicenca()">🧪 Testar Tela de Bloqueio Agora</button>
 
       <div id="boxManualTexto" style="display:none; background:#f0f9ff; padding:10px; border-radius:8px; border:1px solid #bae6fd; max-height:220px; overflow-y:auto; font-size:0.8rem; color:#0369a1; line-height:1.4;">
         <p><strong>🛒 Aba 1: Caixa / Vendas</strong><br>Atendimento rápido no balcão com atalhos de botões, cálculo de troco, venda por quilo com fração automática e envio do comprovante para o WhatsApp do cliente.</p><br>
@@ -456,6 +490,81 @@
   </div>
 
   <script>
+    // CHAVES DE LICENÇA DO DESENVOLVEDOR
+    const CHAVES = {
+      TRIAL_20: "MERCADO20DIAS",
+      TRIAL_30: "MERCADO30DIAS",
+      VITALICIO: "MERCADOVITALICIO"
+    };
+
+    // VALIDAÇÃO E SEGURANÇA ANTI-REINSTALAÇÃO
+    function verificarLicencaAcesso() {
+      let dataInstalacaoFixa = localStorage.getItem('crm_data_primeira_instalacao');
+      let diasLicencaLiberados = parseInt(localStorage.getItem('crm_dias_licenca_liberados')) || 20; // Padrão inicial: 20 dias
+      let eVitalicio = localStorage.getItem('crm_licenca_vitalicia') === 'true';
+
+      if (eVitalicio) {
+        document.getElementById('bannerStatusTrial').style.display = 'none';
+        document.getElementById('telaBloqueioLicenca').style.display = 'none';
+        return true;
+      }
+
+      if (!dataInstalacaoFixa) {
+        dataInstalacaoFixa = new Date().getTime().toString();
+        localStorage.setItem('crm_data_primeira_instalacao', dataInstalacaoFixa);
+      }
+
+      const agoraMs = new Date().getTime();
+      const diasDecorridos = Math.floor((agoraMs - parseInt(dataInstalacaoFixa)) / (1000 * 60 * 60 * 24));
+      const diasRestantes = diasLicencaLiberados - diasDecorridos;
+
+      if (diasRestantes <= 0) {
+        document.getElementById('telaBloqueioLicenca').style.display = 'block';
+        document.getElementById('textoMotivoBloqueio').innerHTML = `Seu período liberado de <strong>${diasLicencaLiberados} dias</strong> expirou neste dispositivo.<br><br>Entre em contato para obter uma nova chave de liberação.`;
+        return false;
+      } else {
+        document.getElementById('diasRestantesTrialText').innerText = diasRestantes;
+        return true;
+      }
+    }
+
+    function simularBloqueioLicenca() {
+      fecharModalAjuda();
+      localStorage.setItem('crm_dias_licenca_liberados', '0');
+      localStorage.setItem('crm_licenca_vitalicia', 'false');
+      verificarLicencaAcesso();
+    }
+
+    function validarChaveAtivacao() {
+      const chaveDigitada = document.getElementById('chaveAtivacaoInput').value.trim().toUpperCase();
+
+      if (chaveDigitada === CHAVES.VITALICIO) {
+        localStorage.setItem('crm_licenca_vitalicia', 'true');
+        document.getElementById('telaBloqueioLicenca').style.display = 'none';
+        document.getElementById('bannerStatusTrial').style.display = 'none';
+        alert('🎉 Licença VITALÍCIA Ativada com Sucesso! O sistema está liberado permanentemente.');
+      } 
+      else if (chaveDigitada === CHAVES.TRIAL_20) {
+        localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
+        localStorage.setItem('crm_dias_licenca_liberados', '20');
+        localStorage.setItem('crm_licenca_vitalicia', 'false');
+        document.getElementById('telaBloqueioLicenca').style.display = 'none';
+        alert('🎉 Licença de 20 DIAS Ativada com Sucesso!');
+        renderizar();
+      } 
+      else if (chaveDigitada === CHAVES.TRIAL_30) {
+        localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
+        localStorage.setItem('crm_dias_licenca_liberados', '30');
+        localStorage.setItem('crm_licenca_vitalicia', 'false');
+        document.getElementById('telaBloqueioLicenca').style.display = 'none';
+        alert('🎉 Licença de 30 DIAS Ativada com Sucesso!');
+        renderizar();
+      } 
+      else {
+        alert('❌ Chave de ativação inválida!');
+      }
+    }
+
     const atalhosPadrao = [
       { id: 1, nome: '🎱 Sinuca', dataRecebimento: '2026-10-01', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50, ean: '', validade: '' },
       { id: 2, nome: '🍺 Skol 350ml', dataRecebimento: '2026-10-01', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100, ean: '7891991000823', validade: '' },
@@ -463,9 +572,9 @@
       { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15' }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_8')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_8')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_8')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v3_0')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v3_0')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v3_0')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
     let idTurnoAtual = localStorage.getItem('crm_turno_atual') || Date.now().toString();
 
@@ -474,7 +583,7 @@
     let alarmeLoopInterval = null;
     let alarmeSilenciadoManual = false;
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_8')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v3_0')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
       limiteKg: 2.5, limiteUn: 5, limiteCx: 2,
       alertSomEstq: true, alertVibraEstq: true,
@@ -628,10 +737,10 @@
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_8', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_8', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_8', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_config_v2_8', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v3_0', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v3_0', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v3_0', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_config_v3_0', JSON.stringify(config));
       renderizar();
     }
 
@@ -738,6 +847,7 @@
     }
 
     function finalizarVenda(silencioso = false) {
+      if (!verificarLicencaAcesso()) return;
       if (carrinho.length === 0) return alert('Carrinho vazio!');
       
       const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
@@ -776,6 +886,7 @@
     }
 
     function enviarComprovanteCliente() {
+      if (!verificarLicencaAcesso()) return;
       if (carrinho.length === 0) return alert('Carrinho vazio!');
 
       const cliente = document.getElementById('nomeCliente').value.trim() || 'Cliente';
@@ -1043,6 +1154,7 @@
     }
 
     function renderizar() {
+      verificarLicencaAcesso();
       verificarViradaDeDiaAuto();
       verificarAlertasECorrerAlarme();
 
@@ -1125,7 +1237,7 @@
       config.limiteCx = parseFloat(document.getElementById('cfgLimiteEstqCx').value) || 2;
 
       config.alertSomEstq = document.getElementById('chkAlertSomEstoque').checked;
-      config.alertVibraEstq = document.getElementById('chkAlertVibraEstoque').checked;
+      config.alertVibraEstoque = document.getElementById('chkAlertVibraEstoque').checked;
 
       config.diasValAlert = parseInt(document.getElementById('cfgDiasValidadeAlert').value) || 30;
       config.modoValidade = document.getElementById('cfgModoDisparoValidade').value;
@@ -1285,6 +1397,7 @@
     }
 
     setInterval(() => {
+      verificarLicencaAcesso();
       verificarViradaDeDiaAuto();
       
       const agora = new Date();

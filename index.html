@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.6 - Sistema de Gestão</title>
+  <title>Caixa Rápido Móvel Pro 2.7 - Gestão Inteligente</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -54,7 +54,7 @@
     .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
     .cad-type-btn.active { background: #0284c7; color: white; }
 
-    /* ANIMAÇÃO DE TREMBLOR E PISCA-ALERTA */
+    /* ANIMAÇÃO DE TREMBLOR E PISCA-ALERTA CRÍTICO */
     @keyframes alertTremor {
       0% { transform: translate(0, 0); }
       25% { transform: translate(-2px, 1px); }
@@ -68,6 +68,18 @@
       background-color: #fef2f2 !important;
     }
 
+    #bannerAlarmeSilenciar {
+      display: none;
+      background: #dc2626;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
     #reader { width: 100%; margin-bottom: 10px; display: none; }
     
     @media print {
@@ -79,6 +91,12 @@
   </style>
 </head>
 <body>
+
+  <!-- BANNER DE SILENCIAR ALARME CONTINUO -->
+  <div id="bannerAlarmeSilenciar">
+    ⚠️ ALERTA CRÍTICO ATIVO (ESTOQUE OU VALIDADE)!
+    <button onclick="silenciarAlarmeManual()" style="margin-top:6px; background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%;">🔕 Silenciar Alarme Automático</button>
+  </div>
 
   <h1>
     <span>⚡ Caixa Rápido Móvel Pro</span>
@@ -156,9 +174,9 @@
       <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
     </div>
 
-    <!-- RESUMO DETALHADO DO FATURAMENTO DO DIA -->
+    <!-- RESUMO DO EXPEDIENTE ATUAL NA TELA DO CAIXA -->
     <div class="card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
-      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:6px;">📊 Visão Geral do Faturamento Hoje:</strong>
+      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:6px;">📊 Faturamento do Turno Atual:</strong>
       
       <div style="font-size:0.85rem; color:#15803d; display:flex; justify-content:space-between; margin-bottom:4px;">
         <span>💵 Dinheiro Vivo:</span>
@@ -248,15 +266,15 @@
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Alerta de Estoque Mínimo (UN / CX / KG):</strong>
-          <button class="btn-small-edit" onclick="testarSomEstoque()">🔔 Testar Alarme de Estoque</button>
+          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Alerta Mínimo de Estoque:</strong>
+          <button class="btn-small-edit" onclick="testarSomEstoque()">🔔 Testar Som</button>
         </div>
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar quando restar menos de:</label>
           <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:80px; padding:4px;" value="5" step="0.5" onchange="salvarConfiguracoes()">
         </div>
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
+          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Som Automático</label>
           <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
         </div>
       </div>
@@ -270,15 +288,12 @@
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
       <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Central de Alertas</strong>
-      <p style="font-size:0.8rem; color:#6b21a8; margin-bottom:10px;">
-        Os produtos com data de validade cadastrados na aba <strong>Estoque</strong> são monitorados automaticamente aqui!
-      </p>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e9d5ff; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração dos Sons e Notificações de Validade:</strong>
+        <strong style="font-size:0.85rem; color:#6b21a8; display:block; margin-bottom:6px;">⚙️ Configuração dos Sons e Intervalo do Alarme:</strong>
         
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-          <label style="font-size:0.8rem;">Avisar com antecedência de até:</label>
+          <label style="font-size:0.8rem;">Avisar antecedência:</label>
           <select id="cfgDiasValidadeAlert" class="input-field" style="width:110px; padding:4px;" onchange="salvarConfiguracoes()">
             <option value="60">60 Dias</option>
             <option value="45">45 Dias</option>
@@ -289,8 +304,18 @@
         </div>
 
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-          <label style="font-size:0.8rem;">Tipo de Som do Alarme:</label>
-          <select id="cfgTipoSomValidade" class="input-field" style="width:130px; padding:4px;" onchange="salvarConfiguracoes()">
+          <label style="font-size:0.8rem;">Repetir Alarme a cada:</label>
+          <select id="cfgIntervaloAlertMinutos" class="input-field" style="width:110px; padding:4px;" onchange="salvarConfiguracoes()">
+            <option value="15">15 minutos</option>
+            <option value="30" selected>30 minutos</option>
+            <option value="60">1 hora</option>
+            <option value="120">2 horas</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+          <label style="font-size:0.8rem;">Tipo de Som:</label>
+          <select id="cfgTipoSomValidade" class="input-field" style="width:120px; padding:4px;" onchange="salvarConfiguracoes()">
             <option value="bipe">Bipe Rápido</option>
             <option value="grave">Alarme Grave</option>
             <option value="sirene">Sirene Dupla</option>
@@ -355,7 +380,11 @@
 
       <button class="btn-client-receipt" style="background:#0284c7; margin-top:10px;" onclick="enviarWhatsappSocio()">📲 Enviar Relatório Resumido ao Sócio no Zap</button>
       <button class="btn-client-receipt" style="background:#475569;" onclick="gerarPDFCompletoComExtrato()">📄 Gerar PDF Completo com Extrato por Cliente</button>
-      <button class="btn-clear" style="margin-top:8px;" onclick="zerarTelaCaixa()">🧹 Reiniciar Tela do Caixa Atual (Mantém Histórico)</button>
+      
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <button class="btn-clear" style="flex:1; background:#0284c7;" onclick="zerarTelaCaixaVisual()">🧹 Fechar/Iniciar Novo Turno do Caixa</button>
+        <button class="btn-clear" style="flex:1; background:#ef4444;" onclick="apagarTodoOHistoricoVendas()">🗑️ Apagar Todo Histórico</button>
+      </div>
     </div>
 
     <!-- ÁREA IMPRESSA DO PDF COMPLETO -->
@@ -425,27 +454,32 @@
       { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15' }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_6')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_6')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_6')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_7')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_7')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_7')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
+    let idTurnoAtual = localStorage.getItem('crm_turno_atual') || Date.now().toString();
 
     let tipoCadastroAtivo = 'KG';
     let idEditando = null;
-    let audioCtxIniciado = false;
+    let alarmeLoopInterval = null;
+    let alarmeSilenciadoManual = false;
+    let ultimaHoraAlarmeTocada = 0;
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_6')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_7')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
       limiteAlert: 5, alertSomEstq: true, alertVibraEstq: true,
-      diasValAlert: 30, alertSomVal: true, alertVibraVal: true, tipoSomVal: 'bipe'
+      diasValAlert: 30, alertSomVal: true, alertVibraVal: true, tipoSomVal: 'bipe',
+      intervaloAlertMin: 30
     };
     
     let formaPagamento = 'Dinheiro';
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
-    // INICIALIZADOR DE ÁUDIO NATIVO APÓS INTERAÇÃO
-    document.addEventListener('click', () => { audioCtxIniciado = true; }, { once: true });
+    document.addEventListener('click', () => {
+      verificarAlertasECorrerAlarme();
+    }, { once: true });
 
     function selecionarTipoCadastro(tipo) {
       tipoCadastroAtivo = tipo;
@@ -483,12 +517,68 @@
 
         osc.type = tipoSom === 'sirene' ? 'sawtooth' : 'sine';
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.4);
       } catch (e) { console.log('Sintetizador bloqueado.'); }
+    }
+
+    function dispararPulsoAlarme() {
+      tocarSomSintetizado(config.tipoSomVal || 'sirene');
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+    }
+
+    function verificarAlertasECorrerAlarme() {
+      if (alarmeSilenciadoManual) return;
+
+      const hoje = new Date();
+      const limiteDiasVal = parseInt(config.diasValAlert) || 30;
+      const limiteEstq = parseFloat(config.limiteAlert) || 5;
+
+      let temCriticoEstoque = atalhos.some(a => a.estoque <= limiteEstq);
+      let temCriticoValidade = atalhos.some(a => {
+        if (!a.validade) return false;
+        const diff = Math.ceil((new Date(a.validade + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
+        return diff <= limiteDiasVal;
+      });
+
+      const banner = document.getElementById('bannerAlarmeSilenciar');
+
+      if (temCriticoEstoque || temCriticoValidade) {
+        banner.style.display = 'block';
+
+        const agoraMs = new Date().getTime();
+        const intervaloMs = (parseInt(config.intervaloAlertMin) || 30) * 60 * 1000;
+
+        if (agoraMs - ultimaHoraAlarmeTocada >= intervaloMs) {
+          dispararPulsoAlarme();
+          ultimaHoraAlarmeTocada = agoraMs;
+        }
+
+        if (!alarmeLoopInterval) {
+          alarmeLoopInterval = setInterval(() => {
+            if (!alarmeSilenciadoManual) dispararPulsoAlarme();
+          }, 3000);
+        }
+      } else {
+        banner.style.display = 'none';
+        if (alarmeLoopInterval) {
+          clearInterval(alarmeLoopInterval);
+          alarmeLoopInterval = null;
+        }
+      }
+    }
+
+    function silenciarAlarmeManual() {
+      alarmeSilenciadoManual = true;
+      if (alarmeLoopInterval) {
+        clearInterval(alarmeLoopInterval);
+        alarmeLoopInterval = null;
+      }
+      document.getElementById('bannerAlarmeSilenciar').style.display = 'none';
+      alert('Alarme silenciado até a próxima reavaliação!');
     }
 
     function testarSomEstoque() {
@@ -505,17 +595,19 @@
       const hojeStr = new Date().toLocaleDateString();
       if (ultimoDiaAcesso !== hojeStr) {
         ultimoDiaAcesso = hojeStr;
+        idTurnoAtual = Date.now().toString();
         localStorage.setItem('crm_ultimo_dia', hojeStr);
+        localStorage.setItem('crm_turno_atual', idTurnoAtual);
         carrinho = [];
         renderizar();
       }
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_6', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_6', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_6', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_config_v2_6', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_7', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_7', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_7', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_config_v2_7', JSON.stringify(config));
       renderizar();
     }
 
@@ -631,6 +723,7 @@
       const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
 
       vendasDoDia.push({
+        turnoId: idTurnoAtual,
         dataTimestamp: new Date().getTime(),
         dataDataStr: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -878,6 +971,10 @@
       });
     }
 
+    function obterVendasTurnoAtual() {
+      return vendasDoDia.filter(v => v.turnoId === idTurnoAtual);
+    }
+
     function renderizarRelatorios() {
       const vendasFiltradas = obterVendasFiltradas();
       const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
@@ -895,20 +992,30 @@
         💳 Cartão: R$ ${totalCartao.toFixed(2)} | <span style="color:#d97706; font-weight:bold;">📝 Fiado a Receber: R$ ${totalFiado.toFixed(2)}</span>
       `;
 
-      document.getElementById('cxDinheiroDia').innerText = totalDinheiro.toFixed(2);
-      document.getElementById('cxPixDia').innerText = totalPix.toFixed(2);
-      document.getElementById('cxCartaoDia').innerText = totalCartao.toFixed(2);
-      document.getElementById('cxFiadoDia').innerText = totalFiado.toFixed(2);
-      document.getElementById('cxFaturamentoDia').innerText = totalAcumulado.toFixed(2);
-      document.getElementById('cxLucroDia').innerText = totalLucro.toFixed(2);
+      // Atualiza o painel do caixa com base no turno visual ativo
+      const vendasTurno = obterVendasTurnoAtual();
+      const tDinheiro = vendasTurno.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+      const tPix = vendasTurno.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+      const tCartao = vendasTurno.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+      const tFiado = vendasTurno.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+      const tTotal = vendasTurno.reduce((acc, v) => acc + v.total, 0);
+      const tLucro = vendasTurno.reduce((acc, v) => acc + (v.lucro || 0), 0);
+
+      document.getElementById('cxDinheiroDia').innerText = tDinheiro.toFixed(2);
+      document.getElementById('cxPixDia').innerText = tPix.toFixed(2);
+      document.getElementById('cxCartaoDia').innerText = tCartao.toFixed(2);
+      document.getElementById('cxFiadoDia').innerText = tFiado.toFixed(2);
+      document.getElementById('cxFaturamentoDia').innerText = tTotal.toFixed(2);
+      document.getElementById('cxLucroDia').innerText = tLucro.toFixed(2);
 
       const fundoTroco = parseFloat(document.getElementById('cfgFundoTroco').value) || 0;
-      document.getElementById('confDinheiroVendas').innerText = totalDinheiro.toFixed(2);
-      document.getElementById('confSaldoGaveta').innerText = (totalDinheiro + fundoTroco).toFixed(2);
+      document.getElementById('confDinheiroVendas').innerText = tDinheiro.toFixed(2);
+      document.getElementById('confSaldoGaveta').innerText = (tDinheiro + fundoTroco).toFixed(2);
     }
 
     function renderizar() {
       verificarViradaDeDiaAuto();
+      verificarAlertasECorrerAlarme();
 
       const containerAtalhos = document.getElementById('containerAtalhos');
       containerAtalhos.innerHTML = '';
@@ -965,6 +1072,7 @@
       document.getElementById('chkAlertVibraEstoque').checked = config.alertVibraEstq;
       
       document.getElementById('cfgDiasValidadeAlert').value = config.diasValAlert || 30;
+      document.getElementById('cfgIntervaloAlertMinutos').value = config.intervaloAlertMin || 30;
       document.getElementById('cfgTipoSomValidade').value = config.tipoSomVal || 'bipe';
       document.getElementById('chkAlertSomValidade').checked = config.alertSomVal;
       document.getElementById('chkAlertVibraValidade').checked = config.alertVibraVal;
@@ -985,6 +1093,7 @@
       config.alertVibraEstq = document.getElementById('chkAlertVibraEstoque').checked;
 
       config.diasValAlert = parseInt(document.getElementById('cfgDiasValidadeAlert').value) || 30;
+      config.intervaloAlertMin = parseInt(document.getElementById('cfgIntervaloAlertMinutos').value) || 30;
       config.tipoSomVal = document.getElementById('cfgTipoSomValidade').value;
       config.alertSomVal = document.getElementById('chkAlertSomValidade').checked;
       config.alertVibraVal = document.getElementById('chkAlertVibraValidade').checked;
@@ -1096,14 +1205,25 @@
       });
     }
 
-    function zerarTelaCaixa() {
-      if (confirm('Deseja apenas reiniciar a tela do caixa? Todos os relatórios do dia continuarão salvos!')) {
+    function zerarTelaCaixaVisual() {
+      if (confirm('Deseja iniciar um novo turno visual no caixa? O faturamento da tela será zerado, mas todos os relatórios do dia continuarão salvos!')) {
+        idTurnoAtual = Date.now().toString();
+        localStorage.setItem('crm_turno_atual', idTurnoAtual);
         carrinho = [];
         document.getElementById('nomeCliente').value = '';
         document.getElementById('telCliente').value = '';
         document.getElementById('valorDesconto').value = '0';
         document.getElementById('valorPago').value = '';
         salvarEstado();
+      }
+    }
+
+    function apagarTodoOHistoricoVendas() {
+      if (confirm('⚠️ ATENÇÃO: Tem certeza que deseja apagar TODO o histórico permanente de vendas do aplicativo? Esta ação não pode ser desfeita.')) {
+        vendasDoDia = [];
+        carrinho = [];
+        salvarEstado();
+        alert('Todo o histórico de vendas foi apagado com sucesso!');
       }
     }
 
@@ -1129,7 +1249,10 @@
       renderizar();
     }
 
-    setInterval(verificarViradaDeDiaAuto, 60000);
+    setInterval(() => {
+      verificarViradaDeDiaAuto();
+      verificarAlertasECorrerAlarme();
+    }, 15000);
 
     renderizar();
   </script>

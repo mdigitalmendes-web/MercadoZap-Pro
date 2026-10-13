@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 2.5 - Gestão Profissional</title>
+  <title>Caixa Rápido Móvel Pro 2.6 - Sistema de Gestão</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -50,8 +50,24 @@
     .btn-filter.selected { background: #0284c7; color: white; }
     .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
     .toggle-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px; font-weight: bold; color: #475569; }
-    .cad-type-btn { flex: 1; padding: 8px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.8rem; text-align: center; }
+    
+    .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
     .cad-type-btn.active { background: #0284c7; color: white; }
+
+    /* ANIMAÇÃO DE TREMBLOR E PISCA-ALERTA */
+    @keyframes alertTremor {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 1px); }
+      50% { transform: translate(2px, -1px); }
+      75% { transform: translate(-1px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+    .alerta-tremendo {
+      animation: alertTremor 0.2s infinite;
+      border: 2px solid #ef4444 !important;
+      background-color: #fef2f2 !important;
+    }
+
     #reader { width: 100%; margin-bottom: 10px; display: none; }
     
     @media print {
@@ -168,15 +184,16 @@
     </div>
   </div>
 
-  <!-- ABA 2: CENTRAL ÚNICA DE ESTOQUE E CADASTRO -->
+  <!-- ABA 2: CENTRAL ÚNICA DE ESTOQUE E CADASTRO SEPARADO -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
       <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Entrada de Estoque</strong>
 
-      <!-- SELETOR DO TIPO DE CADASTRO -->
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <button class="cad-type-btn active" id="btnCadTipoKg" onclick="selecionarTipoCadastro('KG')">🥩 Produtos por Peso (KG)</button>
-        <button class="cad-type-btn" id="btnCadTipoUn" onclick="selecionarTipoCadastro('UN')">📦 Unidades / Caixas</button>
+      <!-- SELETOR DO TIPO DE CADASTRO COM TRÊS OPÇÕES DEFINIDAS -->
+      <div style="display:flex; gap:4px; margin-bottom:10px;">
+        <button class="cad-type-btn active" id="btnCadTipoKg" onclick="selecionarTipoCadastro('KG')">🥩 Por Peso (KG)</button>
+        <button class="cad-type-btn" id="btnCadTipoUn" onclick="selecionarTipoCadastro('UN')">🥤 Unidade (UN)</button>
+        <button class="cad-type-btn" id="btnCadTipoCx" onclick="selecionarTipoCadastro('CX')">📦 Caixas (CX)</button>
       </div>
 
       <!-- FORMULÁRIO DINÂMICO DE CADASTRO -->
@@ -186,7 +203,7 @@
           <button class="btn-small-edit" onclick="iniciarLeitorCamera('cadastro')">📷 Bipar Câmera</button>
         </div>
         
-        <input type="text" id="cadNome" class="input-field" placeholder="Nome da Mercadoria (ex: Carne Bovina, Queijo Prato)" style="margin-bottom:6px;">
+        <input type="text" id="cadNome" class="input-field" placeholder="Nome do Produto (ex: Carne Bovina, Caixa Cerveja)" style="margin-bottom:6px;">
         
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <div>
@@ -230,13 +247,16 @@
       </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Alerta de Estoque Mínimo (UN / CX / KG):</strong>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Alerta de Estoque Mínimo (UN / CX / KG):</strong>
+          <button class="btn-small-edit" onclick="testarSomEstoque()">🔔 Testar Alarme de Estoque</button>
+        </div>
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Avisar quando restar menos de:</label>
           <input type="number" id="cfgLimiteEstoqueAlert" class="input-field" style="width:80px; padding:4px;" value="5" step="0.5" onchange="salvarConfiguracoes()">
         </div>
         <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro</label>
+          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Alerta Sonoro (Bipe)</label>
           <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
         </div>
       </div>
@@ -275,7 +295,7 @@
             <option value="grave">Alarme Grave</option>
             <option value="sirene">Sirene Dupla</option>
           </select>
-          <button class="btn-small-edit" onclick="testarSomAlarme()">🔔 Testar</button>
+          <button class="btn-small-edit" onclick="testarSomValidade()">🔔 Testar</button>
         </div>
 
         <div style="display:flex; gap:10px; font-size:0.8rem;">
@@ -306,8 +326,17 @@
         <div style="margin-top:6px; font-size:0.8rem;" id="detalheRelatorio"></div>
       </div>
 
+      <!-- SELEÇÃO DE RELATÓRIOS RÁPIDOS COM 1 CLIQUE -->
+      <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-top:12px; margin-bottom:6px;">📄 Gerar Relatórios Específicos em PDF:</strong>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:10px;">
+        <button class="btn-small-edit" style="padding:10px; background:#0284c7;" onclick="gerarPDFTipo('faturamento')">💰 Ganhos & Faturamento</button>
+        <button class="btn-small-edit" style="padding:10px; background:#059669;" onclick="gerarPDFTipo('pagamentos')">💳 Meios de Pagamento</button>
+        <button class="btn-small-edit" style="padding:10px; background:#d97706;" onclick="gerarPDFTipo('fiados')">📝 Fiados / Caderno</button>
+        <button class="btn-small-edit" style="padding:10px; background:#475569;" onclick="gerarPDFTipo('estoque')">📦 Estoque & Valor Investido</button>
+      </div>
+
       <!-- CONFERÊNCIA DE CAIXA / GAVETA -->
-      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:10px;">
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:6px;">
         <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">💵 Conferência de Caixa (Gaveta):</strong>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
           <span>Dinheiro em Vendas Hoje:</span>
@@ -335,7 +364,7 @@
       <p style="text-align:center; font-size:0.85rem; margin-bottom:12px;">Período: <span id="pdfPeriodoTexto">Hoje</span> | Gerado em: <span id="pdfDataGeracao"></span></p>
 
       <div style="border:1px solid #000; padding:10px; margin-bottom:12px;">
-        <h3>1. Demonstrativo de Ganhos & Faturamento</h3>
+        <h3 id="pdfTituloSecao1">1. Demonstrativo de Ganhos & Faturamento</h3>
         <p><strong>Faturamento Total:</strong> R$ <span id="pdfTotalFaturado">0.00</span></p>
         <p><strong>Lucro Líquido Estimado:</strong> R$ <span id="pdfTotalLucro">0.00</span></p>
         <hr style="margin:6px 0;">
@@ -377,7 +406,7 @@
 
       <div id="boxManualTexto" style="display:none; background:#f0f9ff; padding:10px; border-radius:8px; border:1px solid #bae6fd; max-height:220px; overflow-y:auto; font-size:0.8rem; color:#0369a1; line-height:1.4;">
         <p><strong>🛒 Aba 1: Caixa / Vendas</strong><br>Atendimento rápido no balcão com atalhos de botões, cálculo de troco, venda por quilo com fração automática e envio do comprovante para o WhatsApp do cliente.</p><br>
-        <p><strong>📦 Aba 2: Estoque</strong><br>Central para cadastrar produtos por peso (KG) ou unidades/caixas. Permite registrar lote, preços de custo/venda, bipar códigos de barras e editar todas as informações depois.</p><br>
+        <p><strong>📦 Aba 2: Estoque</strong><br>Central para cadastrar produtos por peso (KG), unidades (UN) ou caixas/fardos (CX). Permite registrar lote, preços de custo/venda, bipar códigos de barras e editar todas as informações depois.</p><br>
         <p><strong>⚠️ Aba 3: Validades</strong><br>Painel de monitoramento automático dos produtos com data de validade perto do vencimento, com alarmes sonoros e vibração configuráveis.</p><br>
         <p><strong>📊 Aba 4: Relatórios</strong><br>Fechamento financeiro diário/semanal/mensal, separação dos recebimentos em PIX, Cartão, Dinheiro e Fiado, além de conferência da gaveta de troco e emissão de PDF executivo.</p>
       </div>
@@ -396,15 +425,16 @@
       { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15' }
     ];
 
-    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_5')) || atalhosPadrao;
-    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_5')) || [];
-    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_5')) || [];
+    let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v2_6')) || atalhosPadrao;
+    let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v2_6')) || [];
+    let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v2_6')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
 
     let tipoCadastroAtivo = 'KG';
     let idEditando = null;
+    let audioCtxIniciado = false;
 
-    let config = JSON.parse(localStorage.getItem('crm_config_v2_5')) || { 
+    let config = JSON.parse(localStorage.getItem('crm_config_v2_6')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
       limiteAlert: 5, alertSomEstq: true, alertVibraEstq: true,
       diasValAlert: 30, alertSomVal: true, alertVibraVal: true, tipoSomVal: 'bipe'
@@ -414,45 +444,61 @@
     let filtroAtual = 'hoje';
     let html5QrcodeScanner = null;
 
+    // INICIALIZADOR DE ÁUDIO NATIVO APÓS INTERAÇÃO
+    document.addEventListener('click', () => { audioCtxIniciado = true; }, { once: true });
+
     function selecionarTipoCadastro(tipo) {
       tipoCadastroAtivo = tipo;
       document.getElementById('btnCadTipoKg').classList.toggle('active', tipo === 'KG');
       document.getElementById('btnCadTipoUn').classList.toggle('active', tipo === 'UN');
+      document.getElementById('btnCadTipoCx').classList.toggle('active', tipo === 'CX');
 
       if (tipo === 'KG') {
         document.getElementById('tituloFormCad').innerText = idEditando ? '✏️ Editando Produto por Peso (KG)' : '+ Cadastrar Produto por Peso (KG)';
         document.getElementById('lblQtdInic').innerText = 'Quilos Iniciais (kg):';
         document.getElementById('lblCusto').innerText = 'Preço Custo/kg (R$):';
         document.getElementById('lblVenda').innerText = 'Preço Venda/kg (R$):';
-      } else {
-        document.getElementById('tituloFormCad').innerText = idEditando ? '✏️ Editando Unidade / Caixa' : '+ Cadastrar Unidade / Caixa';
-        document.getElementById('lblQtdInic').innerText = 'Quantidade Inicial:';
-        document.getElementById('lblCusto').innerText = 'Preço Custo Un/Cx (R$):';
-        document.getElementById('lblVenda').innerText = 'Preço Venda Un/Cx (R$):';
+      } else if (tipo === 'UN') {
+        document.getElementById('tituloFormCad').innerText = idEditando ? '✏️ Editando Unidade Avulsa (UN)' : '+ Cadastrar Unidade Avulsa (UN)';
+        document.getElementById('lblQtdInic').innerText = 'Quantidade Inicial (un):';
+        document.getElementById('lblCusto').innerText = 'Preço Custo Un (R$):';
+        document.getElementById('lblVenda').innerText = 'Preço Venda Un (R$):';
+      } else if (tipo === 'CX') {
+        document.getElementById('tituloFormCad').innerText = idEditando ? '✏️ Editando Caixa / Fardo (CX)' : '+ Cadastrar Caixa / Fardo (CX)';
+        document.getElementById('lblQtdInic').innerText = 'Caixas Iniciais (cx):';
+        document.getElementById('lblCusto').innerText = 'Preço Custo Cx (R$):';
+        document.getElementById('lblVenda').innerText = 'Preço Venda Cx (R$):';
       }
     }
 
-    function testarSomAlarme() {
+    function tocarSomSintetizado(tipoSom) {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         
-        const tipoSom = config.tipoSomVal || 'bipe';
         let freq = 880;
         if (tipoSom === 'grave') freq = 320;
         if (tipoSom === 'sirene') freq = 1200;
 
         osc.type = tipoSom === 'sirene' ? 'sawtooth' : 'sine';
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.4);
+      } catch (e) { console.log('Sintetizador bloqueado.'); }
+    }
 
-        if (config.alertVibraVal && navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      } catch (e) { console.log('Sintetizador aguardando toque do usuário.'); }
+    function testarSomEstoque() {
+      tocarSomSintetizado('grave');
+      if (config.alertVibraEstq && navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+
+    function testarSomValidade() {
+      tocarSomSintetizado(config.tipoSomVal || 'bipe');
+      if (config.alertVibraVal && navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
 
     function verificarViradaDeDiaAuto() {
@@ -466,10 +512,10 @@
     }
 
     function salvarEstado() {
-      localStorage.setItem('crm_atalhos_v2_5', JSON.stringify(atalhos));
-      localStorage.setItem('crm_carrinho_v2_5', JSON.stringify(carrinho));
-      localStorage.setItem('crm_vendas_v2_5', JSON.stringify(vendasDoDia));
-      localStorage.setItem('crm_config_v2_5', JSON.stringify(config));
+      localStorage.setItem('crm_atalhos_v2_6', JSON.stringify(atalhos));
+      localStorage.setItem('crm_carrinho_v2_6', JSON.stringify(carrinho));
+      localStorage.setItem('crm_vendas_v2_6', JSON.stringify(vendasDoDia));
+      localStorage.setItem('crm_config_v2_6', JSON.stringify(config));
       renderizar();
     }
 
@@ -482,7 +528,7 @@
       const estoqueDisponivel = item.estoque - pendenteNoCarrinho;
 
       if (estoqueDisponivel <= 0) {
-        testarSomAlarme();
+        testarSomEstoque();
         return alert(`O produto '${item.nome}' está esgotado no estoque!`);
       }
 
@@ -734,9 +780,12 @@
       let projecaoLucro = 0;
 
       atalhos.forEach((item) => {
-        const txtTipo = item.tipo === 'KG' ? 'kg' : 'un';
+        const txtTipo = item.tipo === 'KG' ? 'kg' : (item.tipo === 'CX' ? 'cx' : 'un');
         const limiteAlert = parseFloat(config.limiteAlert) || 5;
-        const alertaBaixo = item.estoque <= limiteAlert ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
+        const eCritico = item.estoque <= limiteAlert;
+        
+        const classeCritica = eCritico ? 'alerta-tremendo' : '';
+        const alertaBaixoStr = eCritico ? 'color:#dc2626; font-weight:bold;' : 'color:#0369a1;';
         
         const valorCustoItem = (item.precoCusto || 0) * item.estoque;
         const valorVendaItem = item.preco * item.estoque;
@@ -747,10 +796,10 @@
         const txtEan = item.ean ? `<br><small style="color:#64748b;">EAN: ${item.ean}</small>` : '';
 
         container.innerHTML += `
-          <div style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+          <div class="${classeCritica}" style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
             <div>
               <strong>${item.nome}</strong> (${item.tipo})<br>
-              <span style="font-size:0.8rem; ${alertaBaixo}">Estoque: ${item.estoque || 0} ${txtTipo}</span><br>
+              <span style="font-size:0.8rem; ${alertaBaixoStr}">Estoque: ${item.estoque || 0} ${txtTipo} ${eCritico ? '⚠️ CRÍTICO' : ''}</span><br>
               <small style="color:#64748b;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)} | Venda: R$ ${item.preco.toFixed(2)}</small>
               ${txtVal}${txtEan}
             </div>
@@ -786,20 +835,26 @@
 
         let statusCor = '#2563eb';
         let statusTexto = `Ok: Vence em ${diffDias} dias`;
+        let eCriticoVal = false;
 
         if (diffDias < 0) {
           statusCor = '#0f172a';
           statusTexto = `💀 VENCIDO há ${Math.abs(diffDias)} dias!`;
+          eCriticoVal = true;
         } else if (diffDias <= 7) {
           statusCor = '#dc2626';
           statusTexto = `🔴 URGENTE: Vence em ${diffDias} dias!`;
+          eCriticoVal = true;
         } else if (diffDias <= limiteDiasAlert) {
           statusCor = '#f97316';
           statusTexto = `🟠 ATENÇÃO: Vence em ${diffDias} dias.`;
+          eCriticoVal = true;
         }
 
+        const classeTremorVal = eCriticoVal ? 'alerta-tremendo' : '';
+
         container.innerHTML += `
-          <div style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+          <div class="${classeTremorVal}" style="background:white; border-left:4px solid ${statusCor}; padding:8px; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
             <div>
               <strong>${item.nome}</strong> (${item.estoque} em estoque)<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
@@ -866,7 +921,7 @@
         const classeEsgotado = esgotado ? 'esgotado' : '';
         const badgeEstq = esgotado 
           ? `<span class="badge-esgotado">Esgotado</span>` 
-          : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo === 'KG' ? 'kg' : 'un'}</span>`;
+          : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo}</span>`;
 
         containerAtalhos.innerHTML += `
           <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
@@ -963,7 +1018,11 @@
       window.open(url, '_blank');
     }
 
-    function gerarPDFCompletoComExtrato() {
+    function gerarPDFTipo(tipo) {
+      gerarPDFCompletoComExtrato(tipo);
+    }
+
+    function gerarPDFCompletoComExtrato(tipoFiltroPDF = 'completo') {
       const vendasFiltradas = obterVendasFiltradas();
       const periodoTexto = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' }[filtroAtual];
 
@@ -988,10 +1047,15 @@
       const divExtrato = document.getElementById('pdfExtratoVendas');
       divExtrato.innerHTML = '';
 
-      if (vendasFiltradas.length === 0) {
-        divExtrato.innerHTML = '<p>Nenhuma venda registrada neste período.</p>';
+      let listaParaExibir = vendasFiltradas;
+      if (tipoFiltroPDF === 'fiados') {
+        listaParaExibir = vendasFiltradas.filter(v => v.pagamento === 'Fiado');
+      }
+
+      if (listaParaExibir.length === 0) {
+        divExtrato.innerHTML = '<p>Nenhuma venda localizada para este tipo de relatório.</p>';
       } else {
-        vendasFiltradas.forEach((v, i) => {
+        listaParaExibir.forEach((v, i) => {
           let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
           divExtrato.innerHTML += `
             <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px;">

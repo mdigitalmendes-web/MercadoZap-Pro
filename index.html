@@ -55,8 +55,8 @@
     <p class="text-[10px] text-gray-500 mt-8">Suporte & Licenciamento Comercial</p>
   </div>
 
-  <!-- BARRA SUPERIOR (HEADER) -->
-  <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
+  <!-- BARRA SUPERIOR (HEADER) - OCULTA ANTES DO LOGIN POR SEGURANÇA -->
+  <header id="app-main-header" class="hidden whatsapp-green text-white p-3.5 justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
       <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-green-200">
         <i class="fa-solid fa-bars"></i>
@@ -72,62 +72,106 @@
         ⏳ 19 dias
       </span>
 
-      <!-- DROPDOWN TRÊS PONTINHOS -->
+      <!-- DROPDOWN TRÊS PONTINHOS COMPACTO -->
       <div class="relative">
         <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
 
-        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-60 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
-          <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
-          <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Backup & Sincronizar Nuvem</button>
-          <button onclick="openModalAjuda()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
+        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-200 z-50">
+          <button onclick="openModalPerfil()" class="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-2 text-xs font-semibold"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
+          <button onclick="openModalAjuda()" class="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-2 text-xs font-semibold"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
           <hr class="my-1 border-gray-200">
-          <button id="menu-logout" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2 text-xs"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
+          <button id="menu-logout" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 flex items-center gap-2 text-xs font-bold"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- DRAWER LATERAL -->
+  <!-- DRAWER LATERAL (SANDUÍCHE REORGANIZADO E CENTRALIZADO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
-    <div class="drawer-content relative bg-white w-64 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
-      <div>
+    <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
+      <div class="overflow-y-auto">
         <div class="whatsapp-green p-4 text-white flex justify-between items-center">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-cash-register text-xl text-green-300"></i>
-            <span class="font-bold text-sm">Navegação Principal</span>
+            <span class="font-bold text-sm">Menu do Aplicativo</span>
           </div>
           <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
         </div>
 
-        <div class="p-3 space-y-1.5">
-          <button onclick="selecionarAbaDrawer('vendas')" id="drawer-btn-vendas" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i>
+        <!-- MÓDULOS PRINCIPAIS DE NAVEGAÇÃO -->
+        <div class="p-3 space-y-1 border-b">
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Módulos de Trabalho</p>
+          
+          <button onclick="selecionarAbaDrawer('vendas')" id="drawer-btn-vendas" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-cart-shopping text-base w-5 text-center text-teal-600"></i>
             <span>Caixa / Frente de Vendas</span>
           </button>
           
-          <button onclick="selecionarAbaDrawer('estoque')" id="drawer-btn-estoque" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-boxes-stacked text-base w-5 text-center"></i>
+          <button onclick="selecionarAbaDrawer('estoque')" id="drawer-btn-estoque" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-boxes-stacked text-base w-5 text-center text-teal-600"></i>
             <span>Estoque & Validades</span>
           </button>
 
-          <button onclick="selecionarAbaDrawer('clientes')" id="drawer-btn-clientes" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-users text-base w-5 text-center"></i>
+          <button onclick="selecionarAbaDrawer('clientes')" id="drawer-btn-clientes" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-users text-base w-5 text-center text-teal-600"></i>
             <span>Fiado & Prazos</span>
           </button>
 
-          <button onclick="selecionarAbaDrawer('relatorios')" id="drawer-btn-relatorios" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-chart-line text-base w-5 text-center"></i>
+          <button onclick="selecionarAbaDrawer('relatorios')" id="drawer-btn-relatorios" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-chart-line text-base w-5 text-center text-teal-600"></i>
             <span>Relatórios & Financeiro</span>
+          </button>
+        </div>
+
+        <!-- FERRAMENTAS E AÇÕES DE EXPORTAÇÃO CENTRALIZADAS -->
+        <div class="p-3 space-y-1 border-b">
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Dados</p>
+
+          <button onclick="fecharDrawerNavegacao(); selecionarAbaDrawer('relatorios');" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-file-pdf text-red-600 w-5 text-center"></i>
+            <span>Gerar Relatório em PDF</span>
+          </button>
+
+          <button onclick="exportarBackupCSV()" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-file-excel text-green-600 w-5 text-center"></i>
+            <span>Exportar Vendas em Excel (.CSV)</span>
+          </button>
+
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
+            <span>Backup & Sincronizar Nuvem</span>
+          </button>
+        </div>
+
+        <!-- CONFIGURAÇÕES E AJUDA -->
+        <div class="p-3 space-y-1">
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações & Suporte</p>
+
+          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-store text-teal-600 w-5 text-center"></i>
+            <span>Perfil do Estabelecimento</span>
+          </button>
+
+          <button onclick="fecharDrawerNavegacao(); abrirModalMinimosPadrao();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-sliders text-amber-600 w-5 text-center"></i>
+            <span>Padrões de Mínimo do Estoque</span>
+          </button>
+
+          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-circle-question text-purple-600 w-5 text-center"></i>
+            <span>Guia de Uso & Instruções</span>
           </button>
         </div>
       </div>
 
-      <div class="p-3 bg-gray-50 border-t text-[10px] text-gray-500 text-center">
-        💡 <b>Dica Prática:</b> Passe o dedo para os lados (swipe) na tela para trocar de aba!
+      <!-- BOTÃO DE SAIR NO MENU HAMBÚRGUER -->
+      <div class="p-3 bg-gray-50 border-t">
+        <button onclick="fazerLogoutSeguro()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-right-from-bracket"></i> Sair do Aplicativo
+        </button>
       </div>
     </div>
   </div>
@@ -142,7 +186,7 @@
     </div>
   </main>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (CORRIGIDO E SEGURO) -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
       <div class="flex justify-between items-center border-b pb-2">
@@ -430,6 +474,19 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
+    // CONTROLADOR DE EXIBIÇÃO DA BARRA SUPERIOR E SEGURANÇA
+    function mostrarInterfaceAutenticada(mostrar) {
+      const header = document.getElementById('app-main-header');
+      if (mostrar) {
+        header.classList.remove('hidden');
+        header.classList.add('flex');
+      } else {
+        header.classList.add('hidden');
+        header.classList.remove('flex');
+        fecharDrawerNavegacao();
+      }
+    }
+
     // LICENCIAMENTO
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
@@ -485,7 +542,7 @@
       }
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (VERSÃO REESCRITA COM DESTRUIÇÃO TOTAL SELETA)
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
     function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
@@ -594,6 +651,7 @@
     swipeArea.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; tratarSwipeDedo(); }, false);
 
     function tratarSwipeDedo() {
+      if (!auth.currentUser) return; // Bloqueia swipe antes do login
       const diferenca = touchEndX - touchStartX;
       if (Math.abs(diferenca) > 80) {
         let idxAtual = ordemAbas.indexOf(abaAtual);
@@ -602,8 +660,14 @@
       }
     }
 
-    function abrirDrawerNavegacao() { document.getElementById('drawer-menu').classList.remove('hidden'); }
-    function fecharDrawerNavegacao() { document.getElementById('drawer-menu').classList.add('hidden'); }
+    function abrirDrawerNavegacao() { 
+      if (!auth.currentUser) return;
+      document.getElementById('drawer-menu').classList.remove('hidden'); 
+    }
+    
+    function fecharDrawerNavegacao() { 
+      document.getElementById('drawer-menu').classList.add('hidden'); 
+    }
 
     function selecionarAbaDrawer(aba) {
       fecharDrawerNavegacao();
@@ -613,7 +677,10 @@
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
-    btnMenu.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('hidden'); });
+    btnMenu.addEventListener('click', (e) => { 
+      e.stopPropagation(); 
+      if (auth.currentUser) dropdownMenu.classList.toggle('hidden'); 
+    });
     document.addEventListener('click', () => { dropdownMenu.classList.add('hidden'); });
 
     function openModalPerfil() {
@@ -646,10 +713,14 @@
     }
 
     function showOnboardingStep1() {
+      mostrarInterfaceAutenticada(false); // Oculta barra superior e menus por segurança
+
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <i class="fa-solid fa-store text-4xl text-teal-600 mb-2"></i>
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-store"></i>
+            </div>
             <h2 class="text-xl font-bold text-gray-800">Seja Bem-Vindo!</h2>
             <p class="text-xs text-gray-500">Configure o perfil do seu negócio para iniciar</p>
           </div>
@@ -657,12 +728,12 @@
           <form onsubmit="handleOnboardingStep1(event)" class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja ou Negócio</label>
-              <input type="text" id="step1-nome" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs">
+              <input type="text" id="step1-nome" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
-              <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+              <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
                 <option value="PF">Pessoa Física (Autônomo / Informal)</option>
                 <option value="MEI">MEI (Microempreendedor Individual)</option>
                 <option value="ME">Microempresa (ME)</option>
@@ -671,21 +742,21 @@
 
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
-              <select id="step1-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+              <select id="step1-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
                 <option value="Produtos">Venda de Produtos</option>
                 <option value="Servicos">Prestação de Serviços</option>
                 <option value="Ambos">Produtos e Serviços</option>
               </select>
             </div>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
               Avançar para Criar Conta <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Já possui uma conta?</p>
-            <button onclick="showLoginForm()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Fazer Login</button>
+            <p class="text-xs text-gray-600">Já possui uma conta ativa?</p>
+            <button onclick="showLoginForm()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Fazer Login Agora</button>
           </div>
         </div>
       `;
@@ -702,10 +773,14 @@
     }
 
     function showRegisterForm() {
+      mostrarInterfaceAutenticada(false);
+
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <i class="fa-solid fa-user-plus text-4xl text-teal-600 mb-2"></i>
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
             <h2 class="text-xl font-bold text-gray-800">Criar Sua Conta</h2>
             <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja}</b></p>
           </div>
@@ -713,16 +788,16 @@
           <form onsubmit="handleRegister(event)" class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail de acesso</label>
-              <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs">
+              <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">Senha (mínimo 6 dígitos)</label>
-              <input type="password" id="reg-password" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs">
+              <input type="password" id="reg-password" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
               Concluir e Abrir Caixa
             </button>
           </form>
@@ -735,34 +810,38 @@
     }
 
     function showLoginForm() {
+      mostrarInterfaceAutenticada(false);
+
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <i class="fa-solid fa-user-check text-4xl text-teal-600 mb-2"></i>
-            <h2 class="text-xl font-bold text-gray-800">Entrar na Conta</h2>
-            <p class="text-xs text-gray-500">Acesse suas vendas na nuvem</p>
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Entrar no Aplicativo</h2>
+            <p class="text-xs text-gray-500">Acesse com suas credenciais de segurança</p>
           </div>
 
           <form onsubmit="handleLogin(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
-              <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail registrado</label>
+              <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
-              <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Senha</label>
+              <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
-              Entrar
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              Entrar e Abrir Caixa
             </button>
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Primeiro acesso?</p>
-            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Configurar Novo Negócio</button>
+            <p class="text-xs text-gray-600">Primeiro acesso no sistema?</p>
+            <button onclick="showOnboardingStep1()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Configurar Novo Negócio</button>
           </div>
         </div>
       `;
@@ -798,7 +877,17 @@
       });
     }
 
+    function fazerLogoutSeguro() {
+      if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
+        auth.signOut().then(() => {
+          mostrarInterfaceAutenticada(false);
+          showLoginForm();
+        });
+      }
+    }
+
     function switchTab(aba) {
+      if (!auth.currentUser) return;
       if (!verificarLicencaStatus()) return;
 
       abaAtual = aba;
@@ -808,8 +897,8 @@
       ordemAbas.forEach(a => {
         const btn = document.getElementById('drawer-btn-' + a);
         if (btn) {
-          if (a === aba) btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
-          else btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
+          if (a === aba) btn.className = "w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
+          else btn.className = "w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
         }
       });
 
@@ -817,6 +906,13 @@
     }
 
     function renderAba() {
+      if (!auth.currentUser) {
+        showLoginForm();
+        return;
+      }
+
+      mostrarInterfaceAutenticada(true);
+
       if (!verificarLicencaStatus()) return;
 
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
@@ -2262,11 +2358,13 @@
       } else alert("Você está desconectado. Faça login para sincronizar.");
     }
 
+    // LISTENER DE AUTENTICAÇÃO E INICIALIZAÇÃO
     auth.onAuthStateChanged((user) => {
       verificarLicencaStatus();
       monitorarFechamentoAutomaticoMeiaNoite();
 
       if (user) {
+        mostrarInterfaceAutenticada(true);
         db.collection("perfis").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             perfilNegocio = doc.data();
@@ -2275,16 +2373,17 @@
           renderAba();
         }).catch(() => renderAba());
       } else {
-        showOnboardingStep1();
+        mostrarInterfaceAutenticada(false);
+        showLoginForm();
       }
     });
 
     document.getElementById('menu-logout').addEventListener('click', (e) => {
       e.preventDefault();
-      auth.signOut().then(() => alert('Você desconectou da conta.'));
+      fazerLogoutSeguro();
     });
 
-    console.log("Caixa Rápido Móvel Pro v16.0 - Leitor de Câmera com Encerramento de Processo Seguro!");
+    console.log("Caixa Rápido Móvel Pro v17.0 - Layout limpo, menu centralizado e controle total de login!");
   </script>
 </body>
 </html>

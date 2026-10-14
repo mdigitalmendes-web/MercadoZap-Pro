@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Gerador de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Leitor de Código de Barras via Câmera (HTML5-QRCode) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
@@ -94,6 +96,23 @@
     </button>
   </nav>
 
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA DO CELULAR -->
+  <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-barcode text-teal-600"></i> Aponte para o Código de Barras
+        </h3>
+        <button onclick="fecharScanner()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[200px]"></div>
+      <p id="scanner-status" class="text-[11px] text-gray-500 text-center font-semibold">Iniciando câmera...</p>
+      <button onclick="fecharScanner()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
+        Cancelar Leitura
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL DE ALERTA DE EMERGÊNCIA DE ESTOQUE (SOM + VIBRAÇÃO CONTINUA ATÉ CLIQUE MANUAL) -->
   <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
@@ -151,6 +170,40 @@
     </div>
   </div>
 
+  <!-- MODAL: MÍNIMOS PADRÃO POR UNIDADE -->
+  <div id="modal-minimos-padrao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Limites Mínimos Padrão</h3>
+        <button onclick="fecharModalMinimosPadrao()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <p class="text-[11px] text-gray-500 leading-relaxed">
+        Defina o estoque mínimo automático por tipo de medida ao cadastrar novos produtos:
+      </p>
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Unidades (un):</label>
+          <input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg bg-white font-bold">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Quilogramas (kg):</label>
+          <input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg bg-white font-bold">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Caixas (cx):</label>
+          <input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg bg-white font-bold">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Litros (L):</label>
+          <input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg bg-white font-bold">
+        </div>
+      </div>
+      <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">
+        Salvar Padrões
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL: FRACIONADOS (PESAGEM / LITRAGEM NO CAIXA) -->
   <div id="modal-fracionado" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
@@ -192,9 +245,9 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>🛒 Caixa:</b> Escolha a forma de envio ao confirmar a venda (WhatsApp, Impressão ou Concluir direto sem mensagem).</p>
-        <p><b>🚨 Alerta de Estoque Mínimo:</b> Caso o produto atinja o limite, o alarme e a vibração tocarão direto até você clicar no botão manual para desligar.</p>
-        <p><b>🤝 Fiado Integrado:</b> Vendas em Fiado acumulam no cadastro do cliente automaticamente.</p>
+        <p><b>📷 Leitor de Código de Barras:</b> Clique no ícone de câmera no caixa ou no cadastro de estoque para bipar pelo celular!</p>
+        <p><b>📅 Validades Críticas:</b> O estoque monitora automaticamente mercadorias perecíveis e próximas ao vencimento.</p>
+        <p><b>🛒 Caixa Reorganizado:</b> Atalhos no topo para acesso rápido e pesquisa/avulso logo abaixo.</p>
       </div>
     </div>
   </div>
@@ -221,10 +274,10 @@
 
     // Produtos Iniciais
     const produtosExemplo = [
-      { id: 1, nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
-      { id: 2, nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
-      { id: 3, nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true },
-      { id: 4, nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-15", atalho: true }
+      { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
+      { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
+      { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true },
+      { id: 4, ean: "", nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-01", atalho: true }
     ];
 
     // Estado
@@ -233,14 +286,19 @@
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
       { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00 }
     ];
+    let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
+    
     let carrinho = [];
     let abaAtual = 'vendas';
+    let subAbaEstoque = 'todos'; // 'todos', 'minimos', 'validades'
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let cliEditandoIndex = null;
     let timerSomAlerta = null;
     let timerVibracaoAlerta = null;
     let audioCtxAlerta = null;
+    let html5QrcodeScanner = null;
+    let modoScannerDestino = 'caixa'; // 'caixa' ou 'cadastro'
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
@@ -464,7 +522,51 @@
       else if (abaAtual === 'relatorios') renderAbaRelatorios();
     }
 
-    // ABA 1: CAIXA / FRENTE DE CAIXA
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA DO CELULAR
+    function abrirScanner(destino) {
+      modoScannerDestino = destino;
+      document.getElementById('modal-scanner').classList.remove('hidden');
+      document.getElementById('scanner-status').innerText = "Iniciando câmera...";
+
+      setTimeout(() => {
+        if (!html5QrcodeScanner) {
+          html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+        }
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+      }, 300);
+    }
+
+    function onScanSuccess(decodedText) {
+      fecharScanner();
+      
+      if (modoScannerDestino === 'caixa') {
+        let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
+        if (prod) {
+          let idxReal = produtos.findIndex(p => p.id === prod.id);
+          adicionarAoCarrinho(idxReal);
+          alert(`✅ Código lido: ${prod.nome} adicionado!`);
+        } else {
+          alert(`🔍 Código ${decodedText} lido, mas não está cadastrado. Preencha o nome para adicionar avulso.`);
+          document.getElementById('venda-nome-manual').value = `Item ${decodedText}`;
+        }
+      } else if (modoScannerDestino === 'cadastro') {
+        document.getElementById('cad-prod-ean').value = decodedText;
+        alert(`✅ Código de barras lido: ${decodedText}`);
+      }
+    }
+
+    function onScanError(errorMessage) {
+      // Ignorar erros comuns de frame contínuo sem código
+    }
+
+    function fecharScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch(() => {});
+      }
+      document.getElementById('modal-scanner').classList.add('hidden');
+    }
+
+    // ABA 1: CAIXA (REORGANIZADO: ATALHOS NO TOPO + PESQUISA/AVULSO EMBAIXO)
     function renderAbaVendas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -551,15 +653,30 @@
             </div>
           </div>
 
-          <!-- PESQUISA INTELIGENTE E ITEM AVULSO -->
+          <!-- 1º) ATALHOS DE PRODUTOS NO TOPO DA TELA -->
+          <div class="border-t pt-3 space-y-2">
+            <div class="flex justify-between items-center">
+              <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
+              </h2>
+              <button onclick="abrirScanner('caixa')" class="bg-gray-800 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow">
+                <i class="fa-solid fa-camera"></i> Bipar
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos nos atalhos.</p>'}
+            </div>
+          </div>
+
+          <!-- 2º) PESQUISA INTELIGENTE E ITEM AVULSO DESLOCADOS PARA BAIXO -->
           <div class="border-t pt-3 space-y-2 relative">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto ou Item Avulso
+              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto no Estoque ou Avulso
             </h2>
             
             <div class="grid grid-cols-3 gap-2">
               <div class="col-span-2 relative">
-                <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome do produto..." class="w-full p-2 border rounded-lg text-xs bg-white">
+                <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome..." class="w-full p-2 border rounded-lg text-xs bg-white">
                 <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto divide-y">
                 </div>
               </div>
@@ -568,16 +685,6 @@
             <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
               + Adicionar Item ao Carrinho
             </button>
-          </div>
-
-          <!-- ATALHOS -->
-          <div class="border-t pt-3 space-y-2">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos
-            </h2>
-            <div class="grid grid-cols-2 gap-2">
-              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos nos atalhos.</p>'}
-            </div>
           </div>
 
           <!-- CARRINHO -->
@@ -590,7 +697,6 @@
               ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
             </div>
 
-            <!-- FINALIZAÇÃO DE VENDA COM OPÇÕES DE ENVIO E RECIBO LOGO ABAIXO -->
             <div class="bg-gray-50 p-3 rounded-lg border space-y-2.5">
               <div class="flex justify-between items-center font-bold text-xs text-gray-800">
                 <span>Total a Pagar:</span>
@@ -609,7 +715,6 @@
                   </select>
                 </div>
 
-                <!-- TRÊS OPÇÕES DE FINALIZAÇÃO ORGANIZADAS -->
                 <div class="space-y-1.5 pt-1">
                   <button onclick="processarFinalizarVenda('whatsapp')" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Finalizar & Enviar no WhatsApp
@@ -643,7 +748,7 @@
         return;
       }
 
-      let filtro = produtos.filter(p => p.nome.toLowerCase().includes(texto.toLowerCase()));
+      let filtro = produtos.filter(p => p.nome.toLowerCase().includes(texto.toLowerCase()) || (p.ean && p.ean.includes(texto)));
       if (filtro.length === 0) {
         box.classList.add('hidden');
         return;
@@ -732,7 +837,7 @@
       renderAba();
     }
 
-    // ALERTA CONTINUO DE ESTOQUE (SOM + VIBRAÇÃO CONTINUA ATÉ DESLIGAR MANUALMENTE)
+    // ALERTA CONTINUO DE ESTOQUE
     function iniciarAlertaEstoqueCritico(produtosAlertados) {
       document.getElementById('alerta-estoque-mensagem').innerHTML = produtosAlertados.map(p => `
         <span class="block"><b>${p.nome}</b>: Restam apenas <span class="text-red-600 font-extrabold text-sm">${p.estoque} ${p.medida || 'un'}</span> (Limite Mínimo: ${p.estMin || 3})</span>
@@ -740,7 +845,6 @@
 
       document.getElementById('modal-alerta-estoque-continua').classList.remove('hidden');
 
-      // Toca bipe contínuo em loop
       if (!timerSomAlerta) {
         timerSomAlerta = setInterval(() => {
           try {
@@ -758,7 +862,6 @@
         }, 700);
       }
 
-      // Vibração contínua em loop
       if (!timerVibracaoAlerta && navigator.vibrate) {
         timerVibracaoAlerta = setInterval(() => {
           navigator.vibrate([300, 200, 300]);
@@ -773,31 +876,86 @@
       switchTab('estoque');
     }
 
-    // ABA 2: ESTOQUE
+    // ABA 2: ESTOQUE ORGANIZADO COM SUB-ABAS (TODOS / MÍNIMOS / VALIDADES CRÍTICAS) E CONFIGURAÇÃO DE PADRÕES
+    function setSubAbaEstoque(sub) {
+      subAbaEstoque = sub;
+      renderAbaEstoque();
+    }
+
+    function abrirModalMinimosPadrao() {
+      document.getElementById('min-padrao-un').value = minimosPadrao.un || 5;
+      document.getElementById('min-padrao-kg').value = minimosPadrao.kg || 2;
+      document.getElementById('min-padrao-cx').value = minimosPadrao.cx || 3;
+      document.getElementById('min-padrao-L').value = minimosPadrao.L || 5;
+      document.getElementById('modal-minimos-padrao').classList.remove('hidden');
+    }
+
+    function fecharModalMinimosPadrao() {
+      document.getElementById('modal-minimos-padrao').classList.add('hidden');
+    }
+
+    function salvarMinimosPadrao() {
+      minimosPadrao = {
+        un: parseFloat(document.getElementById('min-padrao-un').value || 5),
+        kg: parseFloat(document.getElementById('min-padrao-kg').value || 2),
+        cx: parseFloat(document.getElementById('min-padrao-cx').value || 3),
+        L: parseFloat(document.getElementById('min-padrao-L').value || 5)
+      };
+      localStorage.setItem('crm_minimos_padrao', JSON.stringify(minimosPadrao));
+      fecharModalMinimosPadrao();
+      alert("Limites mínimos padrão salvos!");
+      renderAbaEstoque();
+    }
+
+    function preencherMinimoAutomaticoPorMedida() {
+      const medida = document.getElementById('cad-prod-medida').value;
+      const campoMin = document.getElementById('cad-prod-estmin');
+      if (minimosPadrao[medida]) {
+        campoMin.value = minimosPadrao[medida];
+      }
+    }
+
     function renderAbaEstoque() {
-      let produtosOrdenados = [...produtos].map((p, originalIdx) => ({ ...p, originalIdx }));
-      produtosOrdenados.sort((a, b) => {
+      let hoje = new Date();
+      let trintaDiasFrente = new Date();
+      trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+      // Filtragem por Sub-aba
+      let produtosExibicao = [...produtos].map((p, originalIdx) => ({ ...p, originalIdx }));
+
+      if (subAbaEstoque === 'minimos') {
+        produtosExibicao = produtosExibicao.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+      } else if (subAbaEstoque === 'validades') {
+        produtosExibicao = produtosExibicao.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+      }
+
+      produtosExibicao.sort((a, b) => {
         let aAlerta = (a.estoque <= (a.estMin || 3)) ? 1 : 0;
         let bAlerta = (b.estoque <= (b.estMin || 3)) ? 1 : 0;
         return bAlerta - aAlerta;
       });
 
-      let listaEstoqueHTML = produtosOrdenados.map((p) => {
+      let listaEstoqueHTML = produtosExibicao.map((p) => {
         let ehAlertaEstoque = (p.estoque || 0) <= (p.estMin || 3);
-        let ehAlertaValidade = p.validade && new Date(p.validade) <= new Date(new Date().setDate(new Date().getDate() + 30));
+        let dataVal = p.validade ? new Date(p.validade) : null;
+        let ehVencido = dataVal && dataVal < hoje;
+        let ehAlertaValidade = dataVal && dataVal <= trintaDiasFrente;
 
         return `
-          <div class="flex justify-between items-center ${ehAlertaEstoque ? 'alerta-saltando bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
+          <div class="flex justify-between items-center ${ehAlertaEstoque || ehVencido ? 'alerta-saltando bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
             <div>
               <p class="font-bold text-gray-800">
                 ${p.nome} 
-                ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded ml-1">ALERTA ESTOQUE!</span>' : ''}
-                ${ehAlertaValidade ? '<span class="text-[9px] bg-orange-200 text-orange-800 px-1 rounded ml-1">Vencendo!</span>' : ''}
+                ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded ml-1">MÍNIMO!</span>' : ''}
+                ${ehVencido ? '<span class="text-[9px] bg-black text-white px-1.5 py-0.5 rounded ml-1 font-bold">VENCIDO</span>' : (ehAlertaValidade ? '<span class="text-[9px] bg-amber-500 text-white px-1 rounded ml-1 font-bold">VENCENDO</span>' : '')}
               </p>
-              <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> (Mínimo: ${p.estMin || 3}) ${p.validade ? '• Val: ' + p.validade : ''}</p>
+              <p class="text-gray-500">
+                Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> (Mín: ${p.estMin || 3}) 
+                ${p.validade ? '• Val: <b>' + p.validade + '</b>' : ''}
+              </p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="toggleAtalhoEstoque(${p.originalIdx})" class="text-xs p-1 ${p.atalho !== false ? 'text-amber-500' : 'text-gray-300'}" title="Exibir nos Atalhos do Caixa">
+              <button onclick="toggleAtalhoEstoque(${p.originalIdx})" class="text-xs p-1 ${p.atalho !== false ? 'text-amber-500' : 'text-gray-300'}" title="Exibir nos Atalhos">
                 <i class="fa-solid fa-star text-base"></i>
               </button>
               <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
@@ -809,14 +967,38 @@
       }).join('');
 
       document.getElementById('main-content').innerHTML = `
-        <div class="space-y-4">
-          <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque & Alertas Mínimos
-          </h2>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Controle de Estoque
+            </h2>
+            <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
+              <i class="fa-solid fa-sliders text-teal-600"></i> Padrões Mínimos
+            </button>
+          </div>
+
+          <!-- NAVEGAÇÃO ORGANIZADA POR SUB-ABAS / PASTAS -->
+          <div class="flex border-b border-gray-200 text-xs font-bold space-x-1">
+            <button onclick="setSubAbaEstoque('todos')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600'}">
+              Todos (${produtos.length})
+            </button>
+            <button onclick="setSubAbaEstoque('minimos')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'}">
+              ⚠️ Mínimos
+            </button>
+            <button onclick="setSubAbaEstoque('validades')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-600'}">
+              📅 Validades Críticas
+            </button>
+          </div>
 
           <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-lg border">
-            <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
+            <div class="flex justify-between items-center">
+              <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
+              <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2 py-1 rounded flex items-center gap-1">
+                <i class="fa-solid fa-barcode"></i> Bipar
+              </button>
+            </div>
             
+            <input type="hidden" id="cad-prod-ean">
             <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs bg-white">
             
             <div class="grid grid-cols-2 gap-2">
@@ -826,21 +1008,20 @@
 
             <div class="grid grid-cols-2 gap-2">
               <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
-              <select id="cad-prod-medida" class="p-2 border rounded-lg text-xs bg-white">
+              <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="p-2 border rounded-lg text-xs bg-white">
                 <option value="un">Unidades (un)</option>
                 <option value="kg">Quilogramas (kg)</option>
-                <option value="g">Gramas (g)</option>
-                <option value="L">Litros (L)</option>
                 <option value="cx">Caixas (cx)</option>
-                <option value="pct">Pacotes (pct)</option>
+                <option value="L">Litros (L)</option>
+                <option value="g">Gramas (g)</option>
               </select>
             </div>
 
-            <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200 space-y-1">
-              <label class="block text-xs font-bold text-amber-900 flex items-center gap-1">
-                <i class="fa-solid fa-bell text-amber-600"></i> Defina o Limite Mínimo para Receber Alerta:
+            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+              <label class="block text-[11px] font-bold text-amber-900 mb-0.5">
+                Limite Mínimo para Alerta de Estoque:
               </label>
-              <input type="number" id="cad-prod-estmin" placeholder="Ex: 5 (Avisa quando tiver 5 ou menos)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+              <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -849,7 +1030,7 @@
                 <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
               </div>
               <div>
-                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade</label>
+                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Crítica)</label>
                 <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
               </div>
             </div>
@@ -859,7 +1040,7 @@
               <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos do Caixa</label>
             </div>
 
-            <div class="flex gap-2 pt-2">
+            <div class="flex gap-2 pt-1">
               <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
                 + Salvar Produto
               </button>
@@ -869,16 +1050,16 @@
             </div>
           </div>
 
-          <div class="border-t pt-3 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Produtos em Estoque (${produtos.length})</h3>
+          <div class="space-y-1.5">
             <div class="space-y-2 max-h-52 overflow-y-auto">
-              ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum produto cadastrado.</p>'}
+              ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum produto nesta pasta.</p>'}
             </div>
           </div>
         </div>
       `;
 
       document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
+      preencherMinimoAutomaticoPorMedida();
     }
 
     function toggleAtalhoEstoque(index) {
@@ -891,7 +1072,8 @@
       prodEditandoIndex = index;
       let p = produtos[index];
 
-      document.getElementById('form-estoque-titulo').innerText = "✏️ Editar Produto: " + p.nome;
+      document.getElementById('form-estoque-titulo').innerText = "✏️ Editar: " + p.nome;
+      document.getElementById('cad-prod-ean').value = p.ean || '';
       document.getElementById('cad-prod-nome').value = p.nome;
       document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
       document.getElementById('cad-prod-preco').value = p.preco;
@@ -911,6 +1093,7 @@
     }
 
     function cadastrarOuAtualizarProduto() {
+      const ean = document.getElementById('cad-prod-ean').value;
       const nome = document.getElementById('cad-prod-nome').value;
       const precoCusto = document.getElementById('cad-prod-preco-custo').value || 0;
       const preco = document.getElementById('cad-prod-preco').value;
@@ -925,6 +1108,7 @@
 
       let prodData = {
         id: prodEditandoIndex !== null ? produtos[prodEditandoIndex].id : Date.now(),
+        ean: ean,
         nome: nome,
         precoCusto: parseFloat(precoCusto),
         preco: parseFloat(preco),
@@ -942,6 +1126,7 @@
       } else {
         let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
         if (prodExistente) {
+          prodExistente.ean = ean || prodExistente.ean;
           prodExistente.precoCusto = parseFloat(precoCusto);
           prodExistente.preco = parseFloat(preco);
           prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
@@ -1334,7 +1519,7 @@
       }
     }
 
-    // FINALIZAÇÃO PROCESSADA COM MODO ESCOLHIDO
+    // FINALIZAÇÃO DE VENDA
     function removerDoCarrinho(index) {
       carrinho.splice(index, 1);
       renderAba();
@@ -1402,7 +1587,6 @@
         }
       });
 
-      // Atualizar Fiado
       if (clienteNome) {
         let cli = clientes.find(c => c.nome.toLowerCase() === clienteNome.toLowerCase());
         if (cli) {
@@ -1439,7 +1623,6 @@
 
       carrinho = [];
 
-      // Ações por Modo de Envio
       if (modoEnvio === 'whatsapp') {
         enviarComprovanteDiretoWhatsApp(dadosVenda);
       } else if (modoEnvio === 'imprimir') {
@@ -1448,7 +1631,6 @@
         alert("✅ Venda finalizada e registrada no caixa!");
       }
 
-      // Se houver produto em estoque mínimo, ativa alarme contínuo
       if (produtosComEstoqueCritico.length > 0) {
         iniciarAlertaEstoqueCritico(produtosComEstoqueCritico);
       }
@@ -1552,7 +1734,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v5.6 Definitivo!");
+    console.log("Caixa Rápido Móvel Pro v6.0 Integrado!");
   </script>
 </body>
 </html>

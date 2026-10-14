@@ -142,21 +142,20 @@
     </div>
   </main>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (CORRIGIDO E SEGURO) -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
           <i class="fa-solid fa-barcode text-teal-600"></i> Bipar Código de Barras
         </h3>
-        <button onclick="fecharScanner()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharScanner()" class="text-gray-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
       </div>
       
       <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[220px]"></div>
-      <p id="scanner-status" class="text-[11px] text-teal-700 font-bold text-center">Iniciando câmera traseira...</p>
       
-      <button onclick="fecharScanner()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
-        Cancelar
+      <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
+        Cancelar / Fechar Câmera
       </button>
     </div>
   </div>
@@ -391,7 +390,6 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // HABILITAR NUVEM OFFLINE (SUPORTE SEM INTERNET)
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
     const produtosExemplo = [
@@ -487,27 +485,24 @@
       }
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (VERSÃO REESCRITA COM DESTRUIÇÃO TOTAL SELETA)
     function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
-      document.getElementById('scanner-status').innerText = "Iniciando câmera traseira...";
 
-      setTimeout(() => {
-        if (html5QrcodeScanner) html5QrcodeScanner.clear().catch(() => {});
+      fecharScannerSilent().then(() => {
+        try {
+          html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: { width: 250, height: 150 }, rememberLastUsedCamera: true },
+            false
+          );
 
-        html5QrcodeScanner = new Html5Qrcode("reader");
-        const config = { fps: 15, qrbox: { width: 250, height: 150 } };
-
-        html5QrcodeScanner.start(
-          { facingMode: "environment" },
-          config,
-          onScanSuccess,
-          onScanError
-        ).catch(() => {
-          document.getElementById('scanner-status').innerText = "Erro ao acessar câmera.";
-        });
-      }, 150);
+          html5QrcodeScanner.render(onScanSuccess, onScanError);
+        } catch(e) {
+          console.error("Erro ao iniciar câmera", e);
+        }
+      });
     }
 
     function onScanSuccess(decodedText) {
@@ -524,8 +519,10 @@
           document.getElementById('venda-nome-manual').value = `Item ${decodedText}`;
         }
       } else if (modoScannerDestino === 'cadastro') {
-        document.getElementById('cad-prod-ean').value = decodedText;
-        document.getElementById('cad-prod-ean-display').innerText = `EAN LIDO: ${decodedText}`;
+        let eanInput = document.getElementById('cad-prod-ean');
+        let eanDisp = document.getElementById('cad-prod-ean-display');
+        if (eanInput) eanInput.value = decodedText;
+        if (eanDisp) eanDisp.innerText = `EAN LIDO: ${decodedText}`;
         alert(`✅ Código de barras lido: ${decodedText}`);
       } else if (modoScannerDestino === 'busca_estoque') {
         document.getElementById('busca-estoque-input').value = decodedText;
@@ -535,10 +532,18 @@
 
     function onScanError(errorMessage) {}
 
-    function fecharScanner() {
+    async function fecharScannerSilent() {
       if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => html5QrcodeScanner.clear()).catch(() => {});
+        try {
+          await html5QrcodeScanner.clear();
+        } catch(e) {}
+        html5QrcodeScanner = null;
       }
+      document.getElementById('reader').innerHTML = "";
+    }
+
+    function fecharScanner() {
+      fecharScannerSilent();
       document.getElementById('modal-scanner').classList.add('hidden');
     }
 
@@ -1626,7 +1631,7 @@
       }
     }
 
-    // ABA 3: FIADOS E PRAZOS (LIMPA E FOCADA NA BUSCA INSTANTÂNEA)
+    // ABA 3: FIADOS E PRAZOS
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
@@ -1650,7 +1655,6 @@
             <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome..." class="w-full p-3 border rounded-xl text-xs bg-white shadow-sm font-bold focus:outline-none focus:border-teal-600">
             
             <div id="resultado-busca-clientes" class="space-y-2 pt-1">
-              <!-- CARDS EXIBIDOS APENAS QUANDO HOUVER BUSCA -->
             </div>
           </div>
         </div>
@@ -1703,7 +1707,6 @@
               </div>
             </div>
 
-            <!-- PAINEL DE AÇÕES DIRETAS DO CLIENTE -->
             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200">
               <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-lg hover:bg-green-700 text-xs shadow flex items-center justify-center gap-1">
                 <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Zap
@@ -1804,7 +1807,7 @@
       }
     }
 
-    // ABA 4: RELATÓRIOS (FILTRO POR PERÍODO E CORREÇÃO DO GERADOR PDF)
+    // ABA 4: RELATÓRIOS
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -1853,7 +1856,6 @@
             </div>
           </div>
 
-          <!-- FILTRO POR PERÍODO DE RELATÓRIO -->
           <div class="bg-gray-50 p-3 rounded-xl border space-y-3">
             <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
               <i class="fa-solid fa-filter text-teal-600"></i> Selecionar Período do Relatório
@@ -2282,7 +2284,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v15.0 - Com Suporte Offline e Relatórios Customizados por Data!");
+    console.log("Caixa Rápido Móvel Pro v16.0 - Leitor de Câmera com Encerramento de Processo Seguro!");
   </script>
 </body>
 </html>

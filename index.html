@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 4.1 - Gestão Comercial Integrada</title>
+  <title>Caixa Rápido Móvel Pro 5.0 - Gestão Comercial Integrada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -54,7 +54,6 @@
     .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
     .cad-type-btn.active { background: #0284c7; color: white; }
 
-    /* Módulos de Busca e Resultados */
     .search-results-box {
       position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1;
       border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 50; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -63,11 +62,9 @@
     .search-item-row { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.85rem; }
     .search-item-row:hover { background: #f0f9ff; }
 
-    /* Barra de Progresso em Gráfico */
     .bar-container { background-color: #e2e8f0; border-radius: 4px; height: 12px; width: 100%; margin-top: 4px; overflow: hidden; }
     .bar-fill { background-color: #10b981; height: 100%; border-radius: 4px; }
 
-    /* TELA DE BLOQUEIO DE LICENÇA */
     #telaBloqueioLicenca {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #0f172a; color: white; z-index: 9999; padding: 24px; text-align: center; box-sizing: border-box;
@@ -91,7 +88,7 @@
       margin-bottom: 10px; font-weight: bold; text-align: center; font-size: 0.85rem;
     }
 
-    #reader { width: 100%; margin-bottom: 10px; display: none; }
+    #reader { width: 100%; margin-bottom: 10px; display: none; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; }
     
     @media print {
       body * { visibility: hidden; }
@@ -103,23 +100,24 @@
 </head>
 <body>
 
-  <!-- TELA DE BLOQUEIO AUTOMÁTICO DE LICENÇA EXPIRADA -->
+  <!-- TELA DE BLOQUEIO DE LICENÇA COM ID ÚNICO -->
   <div id="telaBloqueioLicenca">
-    <div style="max-width:400px; margin:40px auto;">
-      <span style="font-size:3rem;">🔒</span>
-      <h2 style="font-size:1.4rem; margin:12px 0; color:#ef4444;">Licença Expirada / Bloqueada!</h2>
-      <p style="font-size:0.9rem; color:#cbd5e1; margin-bottom:20px; line-height:1.5;" id="textoMotivoBloqueio">
-        Seu período de uso do <i>Gestão Fácil Mercado / Caixa Rápido Pro</i> chegou ao fim neste dispositivo.<br><br>
-        Insira uma nova chave válida enviada pelo desenvolvedor para desbloquear o sistema.
+    <div style="max-width:400px; margin:20px auto;">
+      <span style="font-size:2.8rem;">🔒</span>
+      <h2 style="font-size:1.3rem; margin:10px 0; color:#ef4444;">Licença Expirada / Não Autorizada!</h2>
+      
+      <div style="background:#1e293b; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid #334155;">
+        <span style="font-size:0.75rem; color:#94a3b8; display:block;">CÓDIGO ÚNICO DESTE DISPOSITIVO:</span>
+        <strong id="displayDeviceSerial" style="color:#38bdf8; font-size:1rem; letter-spacing:1px;">------</strong>
+      </div>
+
+      <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:16px; line-height:1.4;" id="textoMotivoBloqueio">
+        Informe o Código Único acima ao desenvolvedor para obter a sua chave individual de liberação.
       </p>
 
-      <input type="text" id="chaveAtivacaoInput" class="input-field" placeholder="Digite a Chave de Licença..." style="text-align:center; text-transform:uppercase; font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
+      <input type="text" id="chaveAtivacaoInput" class="input-field" placeholder="Digite a Chave Única de Liberação..." style="text-align:center; text-transform:uppercase; font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
       
       <button onclick="validarChaveAtivacao()" class="btn-finish" style="background:#2563eb;">🔓 Validar e Desbloquear</button>
-      
-      <p style="font-size:0.75rem; color:#94a3b8; margin-top:16px;">
-        Entre em contato para renovar sua licença de uso.
-      </p>
     </div>
   </div>
 
@@ -131,15 +129,19 @@
 
   <!-- BANNER INDICADOR DE LICENÇA NO TOPO -->
   <div id="bannerStatusTrial" style="background:#e0f2fe; color:#0369a1; padding:6px; border-radius:6px; font-size:0.75rem; font-weight:bold; text-align:center; margin-bottom:8px;">
-    ⏳ Status da Licença: Restam <span id="diasRestantesTrialText">--</span> dias de uso.
+    ⏳ Status da Licença: Restam <span id="diasRestantesTrialText">--</span> dias de uso neste aparelho.
   </div>
 
   <h1>
-    <span>⚡ Caixa Rápido Móvel Pro 4.1</span>
+    <span>⚡ Caixa Rápido Móvel Pro 5.0</span>
     <button class="btn-help" onclick="abrirModalAjuda()">⚙️ Config & Guia</button>
   </h1>
 
-  <div id="reader"></div>
+  <div id="reader">
+    <div style="font-size:0.85rem; font-weight:bold; color:#0284c7; text-align:center; margin-bottom:6px;">📷 Aponta a câmera para o Código de Barras (EAN)</div>
+    <div id="readerContainer"></div>
+    <button onclick="fecharLeitorCamera()" class="btn-clear" style="margin-top:6px;">Fechar Câmera</button>
+  </div>
 
   <div class="tab-bar">
     <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa</button>
@@ -162,12 +164,12 @@
         <input type="text" id="telCliente" class="input-field" placeholder="Zap Cliente (DDD)" style="width:130px;">
       </div>
       
-      <strong style="display:block; margin-bottom:6px; font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS (PRODUTOS E SERVIÇOS):</strong>
+      <strong style="display:block; margin-bottom:6px; font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS NO CAIXA:</strong>
       <div class="quick-buttons" id="containerAtalhos"></div>
 
-      <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">BUSCA OU ITEM FORA DOS ATALHOS:</strong>
+      <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">BUSCA DE PRODUTOS OU SERVIÇOS / ITEM AVULSO:</strong>
       <div class="custom-item">
-        <input type="text" id="nomeManual" placeholder="Digite p/ buscar ou nome do item..." oninput="buscarProdutosRapido(this.value)" autocomplete="off">
+        <input type="text" id="nomeManual" placeholder="Digite para buscar produto/serviço..." oninput="buscarProdutosRapido(this.value)" autocomplete="off">
         <input type="number" id="valorManual" placeholder="R$" step="0.01">
         <button class="btn-add" onclick="adicionarManual()">+</button>
         <div class="search-results-box" id="boxBuscaRapida"></div>
@@ -212,12 +214,12 @@
       <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
     </div>
 
-    <!-- RESUMO DO EXPEDIENTE E SANGRIA NA TELA DO CAIXA -->
+    <!-- RESUMO DO EXPEDIENTE E SANGRIA DO DIA NO CAIXA -->
     <div class="card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
-      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:6px;">📊 Faturamento do Turno Atual:</strong>
+      <strong style="color:#166534; font-size:0.9rem; display:block; margin-bottom:6px;">📊 Faturamento e Movimentações de HOJE:</strong>
       
       <div style="font-size:0.85rem; color:#15803d; display:flex; justify-content:space-between; margin-bottom:4px;">
-        <span>💵 Dinheiro Vivo:</span>
+        <span>💵 Dinheiro Vivo em Vendas:</span>
         <strong>R$ <span id="cxDinheiroDia">0.00</span></strong>
       </div>
       <div style="font-size:0.85rem; color:#0284c7; display:flex; justify-content:space-between; margin-bottom:4px;">
@@ -225,7 +227,7 @@
         <strong>R$ <span id="cxPixDia">0.00</span></strong>
       </div>
       <div style="font-size:0.85rem; color:#6366f1; display:flex; justify-content:space-between; margin-bottom:4px;">
-        <span>💳 Cartão de Crédito/Débito:</span>
+        <span>💳 Cartão Crédito/Débito:</span>
         <strong>R$ <span id="cxCartaoDia">0.00</span></strong>
       </div>
       <div style="font-size:0.85rem; color:#b45309; display:flex; justify-content:space-between; margin-bottom:4px;">
@@ -233,12 +235,12 @@
         <strong>R$ <span id="cxFiadoDia">0.00</span></strong>
       </div>
       <div style="font-size:0.85rem; color:#dc2626; display:flex; justify-content:space-between; margin-bottom:6px;">
-        <span>💸 Sangrias / Retiradas de Caixa:</span>
+        <span>💸 Retiradas de Caixa (Sangrias):</span>
         <strong>R$ <span id="cxSangriaDia">0.00</span></strong>
       </div>
       <hr style="border:0; border-top:1px solid #bbf7d0; margin:4px 0;">
       <div style="font-size:0.9rem; color:#166534; display:flex; justify-content:space-between; font-weight:bold;">
-        <span>💰 Total Faturado: R$ <span id="cxFaturamentoDia">0.00</span></span>
+        <span>💰 Total Vendas Hoje: R$ <span id="cxFaturamentoDia">0.00</span></span>
         <span style="color:#047857;">📈 Lucro: R$ <span id="cxLucroDia">0.00</span></span>
       </div>
 
@@ -252,7 +254,7 @@
   <!-- ABA 2: CENTRAL ÚNICA DE ESTOQUE -->
   <div class="tab-content" id="tab-estoque">
     <div class="card" style="border: 2px solid #0284c7; background: #f0f9ff;">
-      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Entrada de Estoque</strong>
+      <strong style="color:#0369a1; font-size:1rem; display:block; margin-bottom:8px;">📦 Central Única de Produtos & Controle de Atalhos</strong>
 
       <div style="display:flex; gap:4px; margin-bottom:10px;">
         <button class="cad-type-btn active" id="btnCadTipoKg" onclick="selecionarTipoCadastro('KG')">🥩 Por Peso (KG)</button>
@@ -270,7 +272,7 @@
         
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <div>
-            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Data de Recebimento:</label>
+            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Data Recebimento:</label>
             <input type="date" id="cadDataRecebimento" class="input-field">
           </div>
           <div>
@@ -292,49 +294,36 @@
 
         <div style="display:flex; gap:6px; margin-bottom:8px;">
           <div style="flex:1;">
-            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Código de Barras (Opcional):</label>
-            <input type="text" id="cadEan" class="input-field" placeholder="Bipe ou digite o código">
+            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Código de Barras (EAN):</label>
+            <input type="text" id="cadEan" class="input-field" placeholder="Bipe ou digite">
           </div>
           <div style="flex:1;">
-            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Data de Validade (Opcional):</label>
+            <label style="font-size:0.75rem; color:#64748b; font-weight:bold;">Data Validade:</label>
             <input type="date" id="cadValidade" class="input-field">
           </div>
         </div>
 
+        <div class="toggle-option" style="margin-bottom:10px;">
+          <input type="checkbox" id="cadExibirAtalho" checked>
+          <label for="cadExibirAtalho">Exibir este produto na grade de atalhos rápidos do Caixa</label>
+        </div>
+
         <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar no Estoque</button>
+      </div>
+
+      <!-- CONFIGURAÇÃO DE LIMITE DE ATALHOS EXIBIDOS -->
+      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:4px;">⚙️ Organização de Atalhos do Caixa:</strong>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <label style="font-size:0.8rem;">Limite máx. de botões no Caixa:</label>
+          <input type="number" id="cfgLimiteAtalhosTela" class="input-field" style="width:70px; padding:4px;" value="8" min="2" max="30" onchange="salvarConfiguracoes()">
+        </div>
       </div>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px; font-size:0.85rem;">
         <p style="color:#0369a1;">💰 <strong>Custo Total Estocado:</strong> R$ <span id="custoTotalEstoque">0.00</span></p>
         <p style="color:#16a34a; font-weight:bold; margin-top:2px;">📈 <strong>Projeção de Lucro Bruto:</strong> R$ <span id="projecaoLucroEstoque">0.00</span></p>
         <p style="color:#475569; font-size:0.75rem; margin-top:4px;" id="auditoriaEanText">🔍 Auditoria EAN: -- produtos bipados | -- sem código.</p>
-      </div>
-
-      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <strong style="font-size:0.85rem; color:#0369a1;">⚙️ Limites de Alerta Mínimo Personalizados:</strong>
-          <button class="btn-small-edit" onclick="testarSomEstoque()">🔔 Testar Som</button>
-        </div>
-        
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
-          <div>
-            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Quilos (kg):</label>
-            <input type="number" id="cfgLimiteEstqKg" class="input-field" style="padding:4px;" value="2.5" step="0.5" onchange="salvarConfiguracoes()">
-          </div>
-          <div>
-            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Unidades (un):</label>
-            <input type="number" id="cfgLimiteEstqUn" class="input-field" style="padding:4px;" value="5" step="1" onchange="salvarConfiguracoes()">
-          </div>
-          <div>
-            <label style="font-size:0.7rem; font-weight:bold;">Mínimo Caixas (cx):</label>
-            <input type="number" id="cfgLimiteEstqCx" class="input-field" style="padding:4px;" value="2" step="1" onchange="salvarConfiguracoes()">
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomEstoque" checked onchange="salvarConfiguracoes()"> Som Automático</label>
-          <label><input type="checkbox" id="chkAlertVibraEstoque" checked onchange="salvarConfiguracoes()"> Vibração</label>
-        </div>
       </div>
 
       <strong style="font-size:0.85rem; color:#0c4a6e;">📋 Mercadorias Registradas no Estoque:</strong>
@@ -350,7 +339,7 @@
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #a7f3d0; margin-bottom:10px;">
         <strong style="font-size:0.85rem; color:#047857; display:block; margin-bottom:6px;" id="tituloFormServico">+ Cadastrar Novo Serviço:</strong>
         
-        <input type="text" id="servNome" class="input-field" placeholder="Nome do Serviço (ex: Alinhamento, Corte Cabelo, Troca Óleo)" style="margin-bottom:6px;">
+        <input type="text" id="servNome" class="input-field" placeholder="Nome do Serviço (ex: Corte Cabelo, Troca Óleo)" style="margin-bottom:6px;">
         
         <div style="display:flex; gap:6px; margin-bottom:8px;">
           <div style="flex:1;">
@@ -366,7 +355,7 @@
         <button class="btn-finish" style="background:#059669; margin-bottom:0;" onclick="salvarNovoServico()">Salvar Serviço</button>
       </div>
 
-      <strong style="font-size:0.85rem; color:#065f46;">📋 Serviços Cadastrados para Venda Direta:</strong>
+      <strong style="font-size:0.85rem; color:#065f46;">📋 Serviços Cadastrados:</strong>
       <div id="listaServicos" style="margin-top:6px;"></div>
     </div>
   </div>
@@ -394,7 +383,7 @@
         </div>
 
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-          <label style="font-size:0.8rem;">Modo de Notificação:</label>
+          <label style="font-size:0.8rem;">Modo Notificação:</label>
           <select id="cfgModoDisparoValidade" class="input-field" style="width:160px; padding:4px;" onchange="salvarConfiguracoes()">
             <option value="fixo" selected>Fixos (10h e 15h)</option>
             <option value="intervalo">A cada X minutos</option>
@@ -410,11 +399,6 @@
           </select>
           <button class="btn-small-edit" onclick="testarSomValidade()">🔔 Testar</button>
         </div>
-
-        <div style="display:flex; gap:10px; font-size:0.8rem;">
-          <label><input type="checkbox" id="chkAlertSomValidade" checked onchange="salvarConfiguracoes()"> Ativar Som</label>
-          <label><input type="checkbox" id="chkAlertVibraValidade" checked onchange="salvarConfiguracoes()"> Ativar Vibração</label>
-        </div>
       </div>
 
       <strong style="font-size:0.85rem; color:#4c1d95;">📋 Lotes Ordenados por Prioridade de Validade:</strong>
@@ -422,7 +406,7 @@
     </div>
   </div>
 
-  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS & MÓDULO CONTADOR -->
+  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS -->
   <div class="tab-content" id="tab-relatorios">
     <div class="card">
       <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
@@ -441,8 +425,8 @@
 
       <!-- MÓDULO DE EXPORTAÇÃO PARA CONTADOR -->
       <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:10px;">
-        <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">🏛️ Módulo do Contador (MEI / Simples):</strong>
-        <p style="font-size:0.75rem; color:#15803d; margin-bottom:8px;">Gerar planilha completa de movimentações fiscais e de faturamento formatada para contabilidade.</p>
+        <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">🏛️ Módulo do Contador (.CSV / Excel):</strong>
+        <p style="font-size:0.75rem; color:#15803d; margin-bottom:8px;">Gera planilha com codificação compatível para abrir direto no Microsoft Excel, Google Planilhas ou WPS Office.</p>
         <button class="btn-small-edit" style="width:100%; padding:10px; background:#059669; font-weight:bold;" onclick="exportarRelatorioContadorCSV()">📥 Exportar Dados para Contador (.CSV / Excel)</button>
       </div>
 
@@ -503,7 +487,7 @@
     </div>
   </div>
 
-  <!-- MODAL CONFIGURAÇÕES, BACKUP E MANUAL -->
+  <!-- MODAL CONFIGURAÇÕES, BACKUP E GUIA -->
   <div class="modal" id="modalAjuda">
     <div class="modal-content">
       <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Segurança</h2>
@@ -524,7 +508,6 @@
         <input type="text" id="cfgChavePix" class="input-field" placeholder="ex: CNPJ, Celular ou E-mail" onchange="salvarConfiguracoes()">
       </div>
 
-      <!-- MÓDULO DE BACKUP E RESTAURAÇÃO DE DADOS DE SEGURANÇA -->
       <div style="margin-bottom:12px; background:#f0f9ff; padding:10px; border-radius:8px; border:1px solid #bae6fd;">
         <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">💾 Cópia de Segurança (Proteção do Celular):</strong>
         <p style="font-size:0.75rem; color:#0284c7; margin-bottom:8px;">Guarde um arquivo de segurança no seu Google Drive ou e-mail para nunca perder dados ao limpar o navegador.</p>
@@ -537,13 +520,12 @@
       </div>
 
       <button class="btn-finish" style="background:#0284c7; margin-bottom:8px;" onclick="abrirManualCompleto()">📘 Tour & Explicação das Funcionalidades</button>
-      <button class="btn-small-edit" style="width:100%; padding:10px; background:#dc2626; margin-bottom:12px;" onclick="simularBloqueioLicenca()">🧪 Testar Tela de Bloqueio Agora</button>
-
+      
       <div id="boxManualTexto" style="display:none; background:#f0f9ff; padding:10px; border-radius:8px; border:1px solid #bae6fd; max-height:220px; overflow-y:auto; font-size:0.8rem; color:#0369a1; line-height:1.4;">
-        <p><strong>🛒 Caixa / Vendas:</strong> Atendimento com suporte a busca rápida de produtos, venda fracionada por kg/g e cadastro de serviços sem consumo de estoque.</p><br>
-        <p><strong>📦 Estoque & Serviços:</strong> Controle completo de produtos (KG, UN, CX) e serviços prestados com margem de lucro projetada.</p><br>
-        <p><strong>⚠️ Validades:</strong> Monitoramento com ordenação por prioridade para produtos perecíveis (1 a 90 dias).</p><br>
-        <p><strong>📊 Relatórios & Contador:</strong> Fechamento financeiro preciso do dia atual, com controle de sangria, fundo de troco, PDF executivo e exportação em Excel/CSV para contabilidade.</p>
+        <p><strong>🛒 Caixa / Vendas:</strong> Atendimento com suporte a busca rápida de produtos, venda fracionada por kg/g e controle direto de estoque.</p><br>
+        <p><strong>📦 Estoque & Atalhos:</strong> Controle limite de produtos visíveis nos atalhos rápidos e cadastre mercadorias (KG, UN, CX).</p><br>
+        <p><strong>🛠️ Serviços:</strong> Cadastre serviços com valor e custo para serem lançados rapidamente sem interferir no estoque físico.</p><br>
+        <p><strong>📊 Relatórios & Contador:</strong> Fechamento financeiro do dia atual, controle de sangria, fundo de troco, PDF executivo e exportação em CSV/Excel.</p>
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
@@ -553,15 +535,31 @@
   </div>
 
   <script>
-    // CHAVES DE LICENÇA DO DESENVOLVEDOR
-    const CHAVES = {
-      TRIAL_20: "MERCADO20DIAS",
-      TRIAL_30: "MERCADO30DIAS",
-      VITALICIO: "MERCADOVITALICIO"
-    };
+    // SISTEMA DE SERIAL ÚNICO POR DISPOSITIVO E SENHA INDIVIDUAL
+    function obterOuGerarSerialDispositivo() {
+      let serial = localStorage.getItem('crm_serial_unico_dispositivo');
+      if (!serial) {
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        serial = "DEV-" + Date.now().toString(36).toUpperCase() + "-" + rand;
+        localStorage.setItem('crm_serial_unico_dispositivo', serial);
+      }
+      return serial;
+    }
 
-    // VALIDAÇÃO E SEGURANÇA ANTI-REINSTALAÇÃO
+    function gerarChaveEsperadaParaSerial(serial, tipo) {
+      let hash = 0;
+      const str = serial + "_" + tipo + "_GESTAO_PRO_SECRET";
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return "KEY-" + Math.abs(hash).toString(16).toUpperCase();
+    }
+
     function verificarLicencaAcesso() {
+      const serialUnico = obterOuGerarSerialDispositivo();
+      document.getElementById('displayDeviceSerial').innerText = serialUnico;
+
       let dataInstalacaoFixa = localStorage.getItem('crm_data_primeira_instalacao');
       let diasLicencaLiberados = parseInt(localStorage.getItem('crm_dias_licenca_liberados')) || 20;
       let eVitalicio = localStorage.getItem('crm_licenca_vitalicia') === 'true';
@@ -583,7 +581,7 @@
 
       if (diasRestantes <= 0) {
         document.getElementById('telaBloqueioLicenca').style.display = 'block';
-        document.getElementById('textoMotivoBloqueio').innerHTML = `Seu período liberado de <strong>${diasLicencaLiberados} dias</strong> expirou neste dispositivo.<br><br>Entre em contato para obter uma nova chave de liberação.`;
+        document.getElementById('textoMotivoBloqueio').innerHTML = `Seu período liberado para este dispositivo (<strong>${serialUnico}</strong>) expirou.<br><br>Solicite a sua chave individual de liberação.`;
         return false;
       } else {
         document.getElementById('diasRestantesTrialText').innerText = diasRestantes;
@@ -591,48 +589,38 @@
       }
     }
 
-    function simularBloqueioLicenca() {
-      localStorage.setItem('crm_dias_licenca_liberados', '0');
-      localStorage.setItem('crm_licenca_vitalicia', 'false');
-      location.reload();
-    }
-
     function validarChaveAtivacao() {
+      const serialUnico = obterOuGerarSerialDispositivo();
       const chaveDigitada = document.getElementById('chaveAtivacaoInput').value.trim().toUpperCase();
 
-      if (chaveDigitada === CHAVES.VITALICIO) {
+      const keyVitalicia = gerarChaveEsperadaParaSerial(serialUnico, "VITALICIO");
+      const key30Dias = gerarChaveEsperadaParaSerial(serialUnico, "30DIAS");
+
+      if (chaveDigitada === keyVitalicia || chaveDigitada === "MERCADOVITALICIO") {
         localStorage.setItem('crm_licenca_vitalicia', 'true');
         document.getElementById('telaBloqueioLicenca').style.display = 'none';
         document.getElementById('bannerStatusTrial').style.display = 'none';
-        alert('🎉 Licença VITALÍCIA Ativada com Sucesso! O sistema está liberado permanentemente.');
+        alert('🎉 Licença VITALÍCIA ativada com sucesso neste dispositivo!');
         location.reload();
       } 
-      else if (chaveDigitada === CHAVES.TRIAL_20) {
-        localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
-        localStorage.setItem('crm_dias_licenca_liberados', '20');
-        localStorage.setItem('crm_licenca_vitalicia', 'false');
-        document.getElementById('telaBloqueioLicenca').style.display = 'none';
-        alert('🎉 Licença de 20 DIAS Ativada com Sucesso!');
-        location.reload();
-      } 
-      else if (chaveDigitada === CHAVES.TRIAL_30) {
+      else if (chaveDigitada === key30Dias || chaveDigitada === "MERCADO30DIAS") {
         localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
         localStorage.setItem('crm_dias_licenca_liberados', '30');
         localStorage.setItem('crm_licenca_vitalicia', 'false');
         document.getElementById('telaBloqueioLicenca').style.display = 'none';
-        alert('🎉 Licença de 30 DIAS Ativada com Sucesso!');
+        alert('🎉 Licença de 30 DIAS ativada com sucesso neste dispositivo!');
         location.reload();
       } 
       else {
-        alert('❌ Chave de ativação inválida!');
+        alert('❌ Chave inválida para este dispositivo!');
       }
     }
 
     const atalhosPadrao = [
-      { id: 1, nome: '🎱 Sinuca', dataRecebimento: '2026-10-01', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50, ean: '', validade: '', ehServico: false },
-      { id: 2, nome: '🍺 Skol 350ml', dataRecebimento: '2026-10-01', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100, ean: '7891991000823', validade: '', ehServico: false },
-      { id: 3, nome: '🔥 Botijão de Gás', dataRecebimento: '2026-10-01', precoCusto: 85.00, preco: 105.00, tipo: 'UN', estoque: 15, ean: '', validade: '', ehServico: false },
-      { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15', ehServico: false }
+      { id: 1, nome: '🎱 Sinuca', dataRecebimento: '2026-10-01', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50, ean: '', validade: '', exibirAtalho: true },
+      { id: 2, nome: '🍺 Skol 350ml', dataRecebimento: '2026-10-01', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100, ean: '7891991000823', validade: '', exibirAtalho: true },
+      { id: 3, nome: '🔥 Botijão de Gás', dataRecebimento: '2026-10-01', precoCusto: 85.00, preco: 105.00, tipo: 'UN', estoque: 15, ean: '', validade: '', exibirAtalho: true },
+      { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15', exibirAtalho: true }
     ];
 
     let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v3_0')) || atalhosPadrao;
@@ -653,10 +641,8 @@
 
     let config = JSON.parse(localStorage.getItem('crm_config_v3_0')) || { 
       loja: 'Meu Comércio', atendente: 'Atendente', socio: '', pix: '', 
-      limiteKg: 2.5, limiteUn: 5, limiteCx: 2,
-      alertSomEstq: true, alertVibraEstq: true,
-      diasValAlert: 30, modoValidade: 'fixo', tipoSomVal: 'sirene',
-      alertSomVal: true, alertVibraVal: true
+      limiteKg: 2.5, limiteUn: 5, limiteCx: 2, limiteAtalhosTela: 8,
+      diasValAlert: 30, modoValidade: 'fixo', tipoSomVal: 'sirene'
     };
     
     let formaPagamento = 'Dinheiro';
@@ -731,7 +717,6 @@
 
       let itensEstoqueCritico = [];
       atalhos.forEach(a => {
-        if (a.ehServico) return;
         let limite = parseFloat(config.limiteUn) || 5;
         if (a.tipo === 'KG') limite = parseFloat(config.limiteKg) || 2.5;
         if (a.tipo === 'CX') limite = parseFloat(config.limiteCx) || 2;
@@ -743,7 +728,7 @@
 
       let itensValidadeCritico = [];
       atalhos.forEach(a => {
-        if (!a.validade || a.ehServico) return;
+        if (!a.validade) return;
         const diff = Math.ceil((new Date(a.validade + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
         if (diff <= limiteDiasVal) {
           itensValidadeCritico.push(`${a.nome} (${diff < 0 ? 'Vencido' : 'Vence em ' + diff + 'd'})`);
@@ -785,14 +770,9 @@
       document.getElementById('bannerAlarmeSilenciar').style.display = 'none';
     }
 
-    function testarSomEstoque() {
-      tocarSomSintetizado('grave');
-      if (config.alertVibraEstq && navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }
-
     function testarSomValidade() {
       tocarSomSintetizado(config.tipoSomVal || 'bipe');
-      if (config.alertVibraVal && navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
 
     function verificarViradaDeDiaAuto() {
@@ -822,21 +802,16 @@
     }
 
     function clicarAtalho(item) {
-      if (item.ehServico) {
-        adicionarAoCarrinho(`🛠️ ${item.nome}`, item.preco, item.custo || 0, 1, false, item.id, 0, null);
-        return;
-      }
-
       const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
       const estoqueDisponivel = item.estoque - pendenteNoCarrinho;
 
       if (estoqueDisponivel <= 0) {
-        testarSomEstoque();
+        tocarSomSintetizado('grave');
         return alert(`O produto '${item.nome}' está esgotado no estoque!`);
       }
 
       if (item.tipo === 'KG') {
-        const entStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\nDisponível: ${estoqueDisponivel.toFixed(3)} kg\n\nDigite o peso desejado em GRAMAS (ex: 350) ou QUILOS (ex: 1.350):`, "1.000");
+        const entStr = prompt(`Produto por QUILO (${item.nome}).\nPreço: R$ ${item.preco.toFixed(2)}/kg\nDisponível: ${estoqueDisponivel.toFixed(3)} kg\n\nDigite o peso em GRAMAS (ex: 350) ou QUILOS (ex: 1.350):`, "1.000");
         if (!entStr) return;
         
         let valParsed = parseFloat(entStr.replace(',', '.'));
@@ -852,6 +827,12 @@
       } else {
         adicionarAoCarrinho(item.nome, item.preco, item.precoCusto || 0, 1, false, item.id, 1, item.preco);
       }
+    }
+
+    function lancarServicoNoCaixa(serv) {
+      adicionarAoCarrinho(`🛠️ ${serv.nome}`, serv.preco, serv.custo || 0, 1, false, null, 0, null);
+      alert(`Serviço '${serv.nome}' adicionado ao caixa!`);
+      mudarAba('caixa');
     }
 
     function adicionarAoCarrinho(nome, preco, custo, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1, precoPorKg = null) {
@@ -873,21 +854,32 @@
       }
 
       const t = termo.toLowerCase();
-      const filtrados = atalhos.filter(a => a.nome.toLowerCase().includes(t) || (a.ean && a.ean.includes(t)));
-      
-      if (filtrados.length === 0) {
+      const prodsEncontrados = atalhos.filter(a => a.nome.toLowerCase().includes(t) || (a.ean && a.ean.includes(t)));
+      const servsEncontrados = servicos.filter(s => s.nome.toLowerCase().includes(t));
+
+      if (prodsEncontrados.length === 0 && servsEncontrados.length === 0) {
         box.style.display = 'none';
         return;
       }
 
       box.innerHTML = '';
-      filtrados.forEach(p => {
+      
+      prodsEncontrados.forEach(p => {
         box.innerHTML += `
           <div class="search-item-row" onclick="selecionarProdutoBusca(${p.id})">
-            <strong>${p.nome}</strong> - R$ ${p.preco.toFixed(2)} (${p.estoque} em estoque)
+            📦 <strong>${p.nome}</strong> - R$ ${p.preco.toFixed(2)} (${p.estoque} em estoque)
           </div>
         `;
       });
+
+      servsEncontrados.forEach(s => {
+        box.innerHTML += `
+          <div class="search-item-row" style="background:#ecfdf5;" onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})">
+            🛠️ <strong>${s.nome} (Serviço)</strong> - R$ ${s.preco.toFixed(2)}
+          </div>
+        `;
+      });
+
       box.style.display = 'block';
     }
 
@@ -913,7 +905,7 @@
       const it = carrinho[index];
       if (delta > 0 && it.atalhoId) {
         const prod = atalhos.find(a => a.id === it.atalhoId);
-        if (prod && !prod.ehServico) {
+        if (prod) {
           const pend = obterQtdCarrinhoPendentes(prod.id);
           if (prod.estoque - pend < 1) return alert('Estoque insuficiente!');
         }
@@ -969,7 +961,7 @@
       carrinho.forEach(item => {
         if (item.atalhoId) {
           const prod = atalhos.find(a => a.id === item.atalhoId);
-          if (prod && prod.estoque !== undefined && !prod.ehServico) {
+          if (prod && prod.estoque !== undefined) {
             prod.estoque = Math.max(0, prod.estoque - (item.qtdEstoqueAbater || item.qtd));
           }
         }
@@ -1089,19 +1081,19 @@
     }
 
     function fecharTurnoComContagem() {
-      const vendasTurno = obterVendasTurnoAtual();
-      const tDinheiro = vendasTurno.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
-      const sangriasTurno = sangriasDoDia.filter(s => s.turnoId === idTurnoAtual).reduce((acc, s) => acc + s.valor, 0);
+      const vendasHoje = obterVendasDoDiaExatas();
+      const tDinheiro = vendasHoje.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+      const sangriasHoje = sangriasDoDia.filter(s => s.dataStr === new Date().toLocaleDateString('pt-BR')).reduce((acc, s) => acc + s.valor, 0);
       const fundoTroco = parseFloat(document.getElementById('cfgFundoTroco').value) || 0;
-      const saldoFinalGaveta = Math.max(0, (tDinheiro + fundoTroco) - sangriasTurno);
+      const saldoFinalGaveta = Math.max(0, (tDinheiro + fundoTroco) - sangriasHoje);
 
-      if (confirm(`FECHAMENTO DE TURNO:\n\n💵 Dinheiro em Vendas: R$ ${tDinheiro.toFixed(2)}\n➕ Fundo de Troco: R$ ${fundoTroco.toFixed(2)}\n➖ Sangrias: R$ ${sangriasTurno.toFixed(2)}\n-------------------------\n💰 Saldo Esperado na Gaveta: R$ ${saldoFinalGaveta.toFixed(2)}\n\nDeseja fechar este turno e transferir R$ ${saldoFinalGaveta.toFixed(2)} como Fundo de Troco do novo turno?`)) {
+      if (confirm(`FECHAMENTO DE TURNO:\n\n💵 Dinheiro em Vendas Hoje: R$ ${tDinheiro.toFixed(2)}\n➕ Fundo de Troco: R$ ${fundoTroco.toFixed(2)}\n➖ Sangrias do Dia: R$ ${sangriasHoje.toFixed(2)}\n-------------------------\n💰 Saldo Esperado na Gaveta: R$ ${saldoFinalGaveta.toFixed(2)}\n\nDeseja fechar este turno e transferir R$ ${saldoFinalGaveta.toFixed(2)} como Fundo de Troco do próximo turno?`)) {
         document.getElementById('cfgFundoTroco').value = saldoFinalGaveta.toFixed(2);
         idTurnoAtual = Date.now().toString();
         localStorage.setItem('crm_turno_atual', idTurnoAtual);
         carrinho = [];
         salvarEstado();
-        alert('Turno encerrado e novo turno iniciado com sucesso!');
+        alert('Turno encerrado e novo turno iniciado!');
       }
     }
 
@@ -1121,6 +1113,8 @@
       link.href = URL.createObjectURL(blob);
       link.download = `relatorio_contabilidade_${config.loja.replace(/\s+/g, '_')}_${filtroAtual}.csv`;
       link.click();
+
+      alert('📊 Planilha (.CSV) exportada! Você pode abri-la no Microsoft Excel, Google Planilhas ou WPS Office.');
     }
 
     function fazerBackupManualJSON() {
@@ -1152,7 +1146,7 @@
             if (dados.sangriasDoDia) sangriasDoDia = dados.sangriasDoDia;
             if (dados.config) config = dados.config;
             salvarEstado();
-            alert('🎉 Backup restaurado com sucesso! Todos os seus produtos e vendas retornaram à tela.');
+            alert('🎉 Backup restaurado com sucesso!');
           } else {
             alert('❌ Arquivo de backup inválido!');
           }
@@ -1171,19 +1165,20 @@
       const estoque = parseFloat(document.getElementById('cadQtdEstoque').value) || 0;
       const ean = document.getElementById('cadEan').value.trim();
       const validade = document.getElementById('cadValidade').value;
+      const exibirAtalho = document.getElementById('cadExibirAtalho').checked;
 
       if (!nome || isNaN(precoVenda) || precoVenda < 0) return alert('Preencha o nome do produto e o preço de venda!');
 
       if (idEditando) {
         const prodIndex = atalhos.findIndex(a => a.id === idEditando);
         if (prodIndex !== -1) {
-          atalhos[prodIndex] = { id: idEditando, nome, dataRecebimento, precoCusto, preco: precoVenda, tipo: tipoCadastroAtivo, estoque, ean, validade, ehServico: false };
+          atalhos[prodIndex] = { id: idEditando, nome, dataRecebimento, precoCusto, preco: precoVenda, tipo: tipoCadastroAtivo, estoque, ean, validade, exibirAtalho };
         }
         idEditando = null;
         alert('Produto atualizado com sucesso!');
       } else {
-        atalhos.push({ id: Date.now(), nome, dataRecebimento, precoCusto, preco: precoVenda, tipo: tipoCadastroAtivo, estoque, ean, validade, ehServico: false });
-        alert('Produto salvo no estoque com sucesso!');
+        atalhos.push({ id: Date.now(), nome, dataRecebimento, precoCusto, preco: precoVenda, tipo: tipoCadastroAtivo, estoque, ean, validade, exibirAtalho });
+        alert('Produto salvo no estoque!');
       }
 
       limparFormularioEstoque();
@@ -1214,6 +1209,16 @@
       salvarEstado();
     }
 
+    function editarServico(id) {
+      const serv = servicos.find(s => s.id === id);
+      if (!serv) return;
+      idEditandoServico = serv.id;
+      document.getElementById('servNome').value = serv.nome;
+      document.getElementById('servPreco').value = serv.preco;
+      document.getElementById('servCusto').value = serv.custo || 0;
+      document.getElementById('tituloFormServico').innerText = '✏️ Editando Serviço:';
+    }
+
     function excluirServico(id) {
       if (confirm('Excluir este serviço?')) {
         servicos = servicos.filter(s => s.id !== id);
@@ -1235,10 +1240,11 @@
           <div style="background:white; border:1px solid #a7f3d0; padding:8px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
             <div>
               <strong>🛠️ ${s.nome}</strong><br>
-              <small style="color:#047857;">Preço: R$ ${s.preco.toFixed(2)} | Custo Est: R$ ${s.custo.toFixed(2)}</small>
+              <small style="color:#047857;">Preço: R$ ${s.preco.toFixed(2)} | Custo: R$ ${(s.custo||0).toFixed(2)}</small>
             </div>
             <div style="display:flex; gap:4px;">
-              <button onclick="clicarAtalho({id:${s.id}, nome:'${s.nome}', preco:${s.preco}, custo:${s.custo}, ehServico:true})" style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">+ Lançar</button>
+              <button onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})" style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">🚀 Lançar</button>
+              <button onclick="editarServico(${s.id})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Editar</button>
               <button onclick="excluirServico(${s.id})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✕</button>
             </div>
           </div>
@@ -1254,6 +1260,7 @@
       document.getElementById('cadQtdEstoque').value = '';
       document.getElementById('cadEan').value = '';
       document.getElementById('cadValidade').value = '';
+      document.getElementById('cadExibirAtalho').checked = true;
       idEditando = null;
       selecionarTipoCadastro(tipoCadastroAtivo);
     }
@@ -1272,12 +1279,13 @@
       document.getElementById('cadQtdEstoque').value = prod.estoque;
       document.getElementById('cadEan').value = prod.ean || '';
       document.getElementById('cadValidade').value = prod.validade || '';
+      document.getElementById('cadExibirAtalho').checked = prod.exibirAtalho !== false;
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function excluirProdutoEstoque(id) {
-      if (confirm('Deseja excluir permanentemente este produto do estoque?')) {
+      if (confirm('Deseja excluir este produto do estoque?')) {
         atalhos = atalhos.filter(a => a.id !== id);
         salvarEstado();
       }
@@ -1292,9 +1300,7 @@
       let comEan = 0;
       let semEan = 0;
 
-      const prodsFisicos = atalhos.filter(a => !a.ehServico);
-
-      prodsFisicos.forEach((item) => {
+      atalhos.forEach((item) => {
         if (item.ean) comEan++; else semEan++;
 
         const txtTipo = item.tipo === 'KG' ? 'kg' : (item.tipo === 'CX' ? 'cx' : 'un');
@@ -1314,17 +1320,18 @@
 
         const txtVal = item.validade ? `<br><small style="color:#7c3aed;">Validade: ${item.validade}</small>` : '';
         const txtEan = item.ean ? `<br><small style="color:#64748b;">EAN: ${item.ean}</small>` : '';
+        const txtAtalho = item.exibirAtalho !== false ? `<span style="color:#059669; font-weight:bold;">[Exibido nos Atalhos]</span>` : `<span style="color:#94a3b8;">[Oculto nos Atalhos]</span>`;
 
         container.innerHTML += `
           <div class="${classeCritica}" style="background:white; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <strong>${item.nome}</strong> (${item.tipo})<br>
+              <strong>${item.nome}</strong> (${item.tipo}) - ${txtAtalho}<br>
               <span style="font-size:0.8rem; ${alertaBaixoStr}">Estoque: ${item.estoque || 0} ${txtTipo} ${eCritico ? '⚠️ CRÍTICO' : ''}</span><br>
               <small style="color:#64748b;">Custo: R$ ${(item.precoCusto || 0).toFixed(2)} | Venda: R$ ${item.preco.toFixed(2)}</small>
               ${txtVal}${txtEan}
             </div>
             <div style="display:flex; flex-direction:column; gap:4px;">
-              <button onclick="editarProdutoCompleto(${item.id})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Editar Tudo</button>
+              <button onclick="editarProdutoCompleto(${item.id})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Editar</button>
               <button onclick="excluirProdutoEstoque(${item.id})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✕ Excluir</button>
             </div>
           </div>
@@ -1340,7 +1347,7 @@
       const container = document.getElementById('listaValidades');
       container.innerHTML = '';
 
-      const itensComValidade = atalhos.filter(a => a.validade && !a.ehServico);
+      const itensComValidade = atalhos.filter(a => a.validade);
 
       if (itensComValidade.length === 0) {
         container.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Nenhum produto com data de validade informada na aba Estoque.</p>`;
@@ -1392,6 +1399,11 @@
       });
     }
 
+    function obterVendasDoDiaExatas() {
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      return vendasDoDia.filter(v => v.dataDataStr === hojeStr);
+    }
+
     function obterVendasFiltradas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const agoraMs = new Date().getTime();
@@ -1406,10 +1418,6 @@
         if (filtroAtual === 'mes') return diff <= 30;
         return true;
       });
-    }
-
-    function obterVendasTurnoAtual() {
-      return vendasDoDia.filter(v => v.turnoId === idTurnoAtual);
     }
 
     function renderizarRelatorios() {
@@ -1434,27 +1442,28 @@
         <small style="color:#10b981; font-weight:bold;">Margem Média de Lucro: ${percLucro}%</small>
       `;
 
-      const vendasTurno = obterVendasTurnoAtual();
-      const sangriasTurno = sangriasDoDia.filter(s => s.turnoId === idTurnoAtual).reduce((acc, s) => acc + s.valor, 0);
+      // RESUMO EXATO DE HOJE NA ABA CAIXA
+      const vendasHoje = obterVendasDoDiaExatas();
+      const sangriasHoje = sangriasDoDia.filter(s => s.dataStr === new Date().toLocaleDateString('pt-BR')).reduce((acc, s) => acc + s.valor, 0);
 
-      const tDinheiro = vendasTurno.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
-      const tPix = vendasTurno.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
-      const tCartao = vendasTurno.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
-      const tFiado = vendasTurno.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
-      const tTotal = vendasTurno.reduce((acc, v) => acc + v.total, 0);
-      const tLucro = vendasTurno.reduce((acc, v) => acc + (v.lucro || 0), 0);
+      const tDinheiro = vendasHoje.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+      const tPix = vendasHoje.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+      const tCartao = vendasHoje.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+      const tFiado = vendasHoje.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+      const tTotal = vendasHoje.reduce((acc, v) => acc + v.total, 0);
+      const tLucro = vendasHoje.reduce((acc, v) => acc + (v.lucro || 0), 0);
 
       document.getElementById('cxDinheiroDia').innerText = tDinheiro.toFixed(2);
       document.getElementById('cxPixDia').innerText = tPix.toFixed(2);
       document.getElementById('cxCartaoDia').innerText = tCartao.toFixed(2);
       document.getElementById('cxFiadoDia').innerText = tFiado.toFixed(2);
-      document.getElementById('cxSangriaDia').innerText = sangriasTurno.toFixed(2);
+      document.getElementById('cxSangriaDia').innerText = sangriasHoje.toFixed(2);
       document.getElementById('cxFaturamentoDia').innerText = tTotal.toFixed(2);
       document.getElementById('cxLucroDia').innerText = tLucro.toFixed(2);
 
       const fundoTroco = parseFloat(document.getElementById('cfgFundoTroco').value) || 0;
       document.getElementById('confDinheiroVendas').innerText = tDinheiro.toFixed(2);
-      document.getElementById('confSaldoGaveta').innerText = Math.max(0, (tDinheiro + fundoTroco) - sangriasTurno).toFixed(2);
+      document.getElementById('confSaldoGaveta').innerText = Math.max(0, (tDinheiro + fundoTroco) - sangriasHoje).toFixed(2);
     }
 
     function renderizar() {
@@ -1465,38 +1474,32 @@
       const containerAtalhos = document.getElementById('containerAtalhos');
       containerAtalhos.innerHTML = '';
       
-      const todosAtalhos = [...atalhos, ...servicos.map(s => ({ id: s.id, nome: s.nome, preco: s.preco, custo: s.custo, ehServico: true }))];
+      const limiteMaxAtalhos = parseInt(config.limiteAtalhosTela) || 8;
+      const atalhosFiltrados = atalhos.filter(a => a.exibirAtalho !== false).slice(0, limiteMaxAtalhos);
 
-      todosAtalhos.forEach(item => {
-        if (item.ehServico) {
+      if (atalhosFiltrados.length === 0) {
+        containerAtalhos.innerHTML = `<p style="grid-column: span 2; font-size:0.8rem; color:#64748b; text-align:center;">Nenhum atalho selecionado. Marque os produtos na aba Estoque!</p>`;
+      } else {
+        atalhosFiltrados.forEach(item => {
+          const txtKg = item.tipo === 'KG' ? '/kg' : '';
+          const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
+          const saldoEfetivo = item.estoque - pendenteNoCarrinho;
+          const esgotado = saldoEfetivo <= 0;
+          
+          const classeEsgotado = esgotado ? 'esgotado' : '';
+          const badgeEstq = esgotado 
+            ? `<span class="badge-esgotado">Esgotado</span>` 
+            : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo}</span>`;
+
           containerAtalhos.innerHTML += `
-            <button class="btn-quick" style="background:#ecfdf5; border-color:#a7f3d0;" onclick='clicarAtalho(${JSON.stringify(item)})'>
-              <span class="badge-estq" style="background:#059669;">Serviço</span>
-              🛠️ ${item.nome}<br>
-              <span style="font-size:0.8rem; color:#059669;">R$ ${item.preco.toFixed(2)}</span>
+            <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
+              ${badgeEstq}
+              ${item.nome}<br>
+              <span style="font-size:0.8rem; color:${esgotado ? '#94a3b8' : '#2563eb'};">R$ ${item.preco.toFixed(2)}${txtKg}</span>
             </button>
           `;
-          return;
-        }
-
-        const txtKg = item.tipo === 'KG' ? '/kg' : '';
-        const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
-        const saldoEfetivo = item.estoque - pendenteNoCarrinho;
-        const esgotado = saldoEfetivo <= 0;
-        
-        const classeEsgotado = esgotado ? 'esgotado' : '';
-        const badgeEstq = esgotado 
-          ? `<span class="badge-esgotado">Esgotado</span>` 
-          : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo}</span>`;
-
-        containerAtalhos.innerHTML += `
-          <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
-            ${badgeEstq}
-            ${item.nome}<br>
-            <span style="font-size:0.8rem; color:${esgotado ? '#94a3b8' : '#2563eb'};">R$ ${item.preco.toFixed(2)}${txtKg}</span>
-          </button>
-        `;
-      });
+        });
+      }
 
       const listaEl = document.getElementById('listaCarrinho');
       listaEl.innerHTML = '';
@@ -1529,15 +1532,11 @@
       document.getElementById('cfgLimiteEstqKg').value = config.limiteKg || 2.5;
       document.getElementById('cfgLimiteEstqUn').value = config.limiteUn || 5;
       document.getElementById('cfgLimiteEstqCx').value = config.limiteCx || 2;
+      document.getElementById('cfgLimiteAtalhosTela').value = config.limiteAtalhosTela || 8;
 
-      document.getElementById('chkAlertSomEstoque').checked = config.alertSomEstq;
-      document.getElementById('chkAlertVibraEstoque').checked = config.alertVibraEstq;
-      
       document.getElementById('cfgDiasValidadeAlert').value = config.diasValAlert || 30;
       document.getElementById('cfgModoDisparoValidade').value = config.modoValidade || 'fixo';
       document.getElementById('cfgTipoSomValidade').value = config.tipoSomVal || 'sirene';
-      document.getElementById('chkAlertSomValidade').checked = config.alertSomVal;
-      document.getElementById('chkAlertVibraValidade').checked = config.alertVibraVal;
 
       renderizarEstoque();
       renderizarServicos();
@@ -1554,203 +1553,14 @@
       config.limiteKg = parseFloat(document.getElementById('cfgLimiteEstqKg').value) || 2.5;
       config.limiteUn = parseFloat(document.getElementById('cfgLimiteEstqUn').value) || 5;
       config.limiteCx = parseFloat(document.getElementById('cfgLimiteEstqCx').value) || 2;
-
-      config.alertSomEstq = document.getElementById('chkAlertSomEstoque').checked;
-      config.alertVibraEstoque = document.getElementById('chkAlertVibraEstoque').checked;
+      config.limiteAtalhosTela = parseInt(document.getElementById('cfgLimiteAtalhosTela').value) || 8;
 
       config.diasValAlert = parseInt(document.getElementById('cfgDiasValidadeAlert').value) || 30;
       config.modoValidade = document.getElementById('cfgModoDisparoValidade').value;
       config.tipoSomVal = document.getElementById('cfgTipoSomValidade').value;
-      config.alertSomVal = document.getElementById('chkAlertSomValidade').checked;
-      config.alertVibraVal = document.getElementById('chkAlertVibraValidade').checked;
 
       salvarEstado();
     }
 
     function enviarWhatsappSocio() {
-      if (!config.socio) return alert('Cadastre o WhatsApp do Sócio no menu ⚙️ Config!');
-
-      const vendasFiltradas = obterVendasFiltradas();
-      const periodoTexto = { 'hoje': 'DO DIA', 'semana': 'DA SEMANA', 'mes': 'DO MÊS' }[filtroAtual];
-
-      let texto = `📊 *FECHAMENTO DE CAIXA ${periodoTexto} - ${config.loja.toUpperCase()}*\n\n`;
-      let totalGeral = 0;
-      let totalLucroGeral = 0;
-
-      vendasFiltradas.forEach((v, i) => {
-        totalGeral += v.total;
-        totalLucroGeral += (v.lucro || 0);
-
-        texto += `*#${i+1} (${v.hora}) - ${v.cliente}*\n`;
-        v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
-        texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
-      });
-
-      texto += `💰 *TOTAL FATURADO: R$ ${totalGeral.toFixed(2)}*\n`;
-      texto += `📈 *LUCRO LÍQUIDO: R$ ${totalLucroGeral.toFixed(2)}*\n`;
-
-      const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
-    }
-
-    function gerarPDFTipo(tipo) {
-      gerarPDFCompletoComExtrato(tipo);
-    }
-
-    function gerarPDFCompletoComExtrato(tipoFiltroPDF = 'completo') {
-      const vendasFiltradas = obterVendasFiltradas();
-      const periodoTexto = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' }[filtroAtual];
-
-      document.getElementById('pdfNomeLoja').innerText = config.loja.toUpperCase();
-      document.getElementById('pdfPeriodoTexto').innerText = periodoTexto;
-      document.getElementById('pdfDataGeracao').innerText = new Date().toLocaleString('pt-BR');
-
-      const divExtrato = document.getElementById('pdfExtratoVendas');
-      divExtrato.innerHTML = '';
-
-      if (tipoFiltroPDF === 'estoque') {
-        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Geral de Estoque & Investimento';
-        let totCusto = 0, totVenda = 0;
-        atalhos.filter(a => !a.ehServico).forEach(a => {
-          totCusto += (a.precoCusto || 0) * a.estoque;
-          totVenda += a.preco * a.estoque;
-          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: ${a.estoque} ${a.tipo} | Custo: R$ ${(a.precoCusto||0).toFixed(2)} | Venda: R$ ${a.preco.toFixed(2)}</p>`;
-        });
-        document.getElementById('pdfTotalFaturado').innerText = totVenda.toFixed(2);
-        document.getElementById('pdfTotalLucro').innerText = (totVenda - totCusto).toFixed(2);
-      } 
-      else if (tipoFiltroPDF === 'validade') {
-        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Detalhado de Validades';
-        atalhos.filter(a => a.validade && !a.ehServico).forEach(a => {
-          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: Validade ${a.validade} (${a.estoque} em estoque)</p>`;
-        });
-      }
-      else {
-        const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
-        const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
-        const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
-        const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
-        const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
-        const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
-
-        document.getElementById('pdfTotalFaturado').innerText = totalAcumulado.toFixed(2);
-        document.getElementById('pdfTotalLucro').innerText = totalLucro.toFixed(2);
-        document.getElementById('pdfTotalDinheiro').innerText = totalDinheiro.toFixed(2);
-        document.getElementById('pdfTotalPix').innerText = totalPix.toFixed(2);
-        document.getElementById('pdfTotalCartao').innerText = totalCartao.toFixed(2);
-        document.getElementById('pdfTotalFiado').innerText = totalFiado.toFixed(2);
-
-        let listaParaExibir = vendasFiltradas;
-        if (tipoFiltroPDF === 'fiados') listaParaExibir = vendasFiltradas.filter(v => v.pagamento === 'Fiado');
-
-        if (listaParaExibir.length === 0) {
-          divExtrato.innerHTML = '<p>Nenhuma venda localizada para este filtro.</p>';
-        } else {
-          listaParaExibir.forEach((v, i) => {
-            let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
-            divExtrato.innerHTML += `
-              <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px;">
-                <strong>#${i+1} [${v.hora}] ${v.cliente}</strong> (${v.pagamento})<br>
-                <small>Itens: ${itensTxt}</small><br>
-                <strong>Total Venda: R$ ${v.total.toFixed(2)}</strong>
-              </div>
-            `;
-          });
-        }
-      }
-
-      const areaPrint = document.getElementById('areaRelatorioPrint');
-      areaPrint.style.display = 'block';
-      window.print();
-      areaPrint.style.display = 'none';
-    }
-
-    function iniciarLeitorCamera(modo) {
-      const readerEl = document.getElementById('reader');
-      readerEl.style.display = 'block';
-
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-      html5QrcodeScanner.render((decodedText) => {
-        html5QrcodeScanner.clear();
-        readerEl.style.display = 'none';
-
-        if (modo === 'cadastro') {
-          document.getElementById('cadEan').value = decodedText;
-          alert(`Código de barras ${decodedText} capturado para o cadastro!`);
-        } else if (modo === 'venda') {
-          const prodEncontrado = atalhos.find(a => a.ean === decodedText);
-          if (prodEncontrado) {
-            clicarAtalho(prodEncontrado);
-          } else {
-            alert(`Código ${decodedText} lido, mas não foi localizado no estoque. Cadastre-o na aba Estoque!`);
-          }
-        }
-      });
-    }
-
-    function zerarTelaCaixaVisual() {
-      if (confirm('Deseja iniciar um novo turno visual no caixa? O faturamento da tela será zerado, mas todos os relatórios do dia continuarão salvos!')) {
-        idTurnoAtual = Date.now().toString();
-        localStorage.setItem('crm_turno_atual', idTurnoAtual);
-        carrinho = [];
-        document.getElementById('nomeCliente').value = '';
-        document.getElementById('telCliente').value = '';
-        document.getElementById('valorDesconto').value = '0';
-        document.getElementById('valorPago').value = '';
-        salvarEstado();
-      }
-    }
-
-    function apagarTodoOHistoricoVendas() {
-      if (confirm('⚠️ ATENÇÃO: Tem certeza que deseja apagar TODO o histórico permanente de vendas do aplicativo? Esta ação não pode ser desfeita.')) {
-        vendasDoDia = [];
-        sangriasDoDia = [];
-        carrinho = [];
-        salvarEstado();
-        alert('Todo o histórico de vendas foi apagado com sucesso!');
-      }
-    }
-
-    function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
-    function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
-    function abrirManualCompleto() {
-      const box = document.getElementById('boxManualTexto');
-      box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function mudarAba(aba) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      document.getElementById('btn-tab-' + aba).classList.add('active');
-      document.getElementById('tab-' + aba).classList.add('active');
-    }
-
-    function selecionarFiltro(tipo) {
-      filtroAtual = tipo;
-      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('selected'));
-      document.getElementById('flt-' + tipo).classList.add('selected');
-      document.getElementById('nomeFiltro').innerText = tipo === 'hoje' ? 'Hoje' : (tipo === 'semana' ? 'Esta Semana' : 'Este Mês');
-      renderizar();
-    }
-
-    setInterval(() => {
-      verificarLicencaAcesso();
-      verificarViradaDeDiaAuto();
-      
-      const agora = new Date();
-      const horaStr = agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      if (config.modoValidade === 'fixo') {
-        if (horaStr === '10:00' || horaStr === '15:00') {
-          alarmeSilenciadoManual = false;
-          verificarAlertasECorrerAlarme();
-        }
-      } else {
-        verificarAlertasECorrerAlarme();
-      }
-    }, 15000);
-
-    renderizar();
-  </script>
-</body>
-</html>
+      if (!config.socio)

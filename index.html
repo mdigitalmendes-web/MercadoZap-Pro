@@ -35,6 +35,26 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
+  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA (OCULTA POR PADRÃO) -->
+  <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
+    <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+    <h2 class="text-2xl font-extrabold text-red-500">Período de Teste Expirado!</h2>
+    <p class="text-xs text-gray-300 mt-2 max-w-xs leading-relaxed">
+      Sua licença de teste de 20 dias terminou. Para continuar utilizando o <b>Caixa Rápido Móvel Pro</b>, insira o Código de Desbloqueio / Serial fornecido pelo administrador.
+    </p>
+
+    <div class="mt-6 w-full max-w-xs space-y-3">
+      <input type="password" id="input-senha-serial" placeholder="Digite a Senha / Serial" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700 text-white text-center font-extrabold tracking-widest text-sm focus:outline-none focus:border-teal-500">
+      <button onclick="validarAtivacaoSerial()" class="w-full bg-teal-600 hover:bg-teal-500 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg">
+        🔓 Desbloquear Aplicativo
+      </button>
+      <p id="msg-serial-erro" class="text-xs text-red-400 font-bold hidden"></p>
+    </div>
+    <p class="text-[10px] text-gray-500 mt-8">Suporte & Licenciamento Comercial</p>
+  </div>
+
   <!-- BARRA SUPERIOR (HEADER) COM MENU HAMBÚRGUER (☰) -->
   <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
@@ -47,21 +67,28 @@
       </div>
     </div>
     
-    <!-- MENU DE TRÊS PONTINHOS (⋮) -->
-    <div class="relative">
-      <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-      </button>
+    <!-- BANNER DE LICENÇA / TESTE NO HEADER -->
+    <div class="flex items-center gap-2">
+      <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
+        ⏳ 19 dias
+      </span>
 
-      <!-- DROPDOWN DO MENU -->
-      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-60 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
-        <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
-        <button onclick="openModalFechamento()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Caixa / Turno</button>
-        <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
-        <button onclick="sincronizarNuvemManual()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Backup & Sincronizar Nuvem</button>
-        <button onclick="openModalAjuda()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
-        <hr class="my-1 border-gray-200">
-        <button id="menu-logout" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2 text-xs"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
+      <!-- MENU DE TRÊS PONTINHOS (⋮) -->
+      <div class="relative">
+        <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+
+        <!-- DROPDOWN DO MENU -->
+        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-60 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
+          <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
+          <button onclick="openModalFechamento()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Caixa / Turno</button>
+          <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Backup & Sincronizar Nuvem</button>
+          <button onclick="openModalAjuda()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
+          <hr class="my-1 border-gray-200">
+          <button id="menu-logout" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2 text-xs"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
+        </div>
       </div>
     </div>
   </header>
@@ -92,7 +119,7 @@
 
           <button onclick="selecionarAbaDrawer('clientes')" id="drawer-btn-clientes" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
             <i class="fa-solid fa-users text-base w-5 text-center"></i>
-            <span>Fiado & Clientes</span>
+            <span>Fiado & Prazos</span>
           </button>
 
           <button onclick="selecionarAbaDrawer('relatorios')" id="drawer-btn-relatorios" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
@@ -117,6 +144,53 @@
       </div>
     </div>
   </main>
+
+  <!-- MODAL: AJUSTE DIRETO / REPOSIÇÃO RÁPIDA DE ESTOQUE E VALIDADE -->
+  <div id="modal-ajuste-rapido-prod" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 id="ajuste-rapido-titulo" class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-to-square text-teal-600"></i> Ajuste Rápido de Produto
+        </h3>
+        <button onclick="fecharModalAjusteRapido()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+
+      <input type="hidden" id="ajuste-prod-index">
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Quantidade em Estoque:</label>
+          <div class="flex gap-1.5 items-center">
+            <input type="number" id="ajuste-prod-qtd" class="w-full p-2.5 border rounded-lg font-extrabold text-teal-800 text-sm bg-white">
+            <div class="flex gap-1">
+              <button onclick="adicionarQtdDireta(5)" class="bg-teal-50 border border-teal-200 text-teal-800 font-bold px-2 py-2 rounded-lg hover:bg-teal-100">+5</button>
+              <button onclick="adicionarQtdDireta(10)" class="bg-teal-50 border border-teal-200 text-teal-800 font-bold px-2 py-2 rounded-lg hover:bg-teal-100">+10</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Preço de Venda R$ (Ajuste / Desconto):</label>
+          <div class="flex gap-1.5 items-center">
+            <input type="number" step="0.01" id="ajuste-prod-preco" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+            <div class="flex gap-1">
+              <button onclick="aplicarDescontoPorcentagem(10)" class="bg-amber-50 border border-amber-200 text-amber-800 font-bold px-2 py-2 rounded-lg hover:bg-amber-100 text-[10px]">-10%</button>
+              <button onclick="aplicarDescontoPorcentagem(20)" class="bg-amber-50 border border-amber-200 text-amber-800 font-bold px-2 py-2 rounded-lg hover:bg-amber-100 text-[10px]">-20%</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Data de Validade:</label>
+          <input type="date" id="ajuste-prod-validade" class="w-full p-2 border rounded-lg font-medium text-gray-800 bg-white">
+        </div>
+      </div>
+
+      <button onclick="salvarAjusteRapidoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+        💾 Salvar Alterações Imediatas
+      </button>
+    </div>
+  </div>
 
   <!-- MODAL: SANGRIA E SUPRIMENTO -->
   <div id="modal-sangria-suprimento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -159,24 +233,23 @@
     </div>
   </div>
 
-  <!-- MODAL DE ALERTA DE EMERGÊNCIA DE ESTOQUE -->
+  <!-- MODAL DE ALERTA DE EMERGÊNCIA (ESTOQUE E FIADO VENCIDO) -->
   <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
       <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div>
-        <h3 class="font-extrabold text-red-600 text-lg uppercase tracking-wide">🚨 ATENÇÃO: ESTOQUE CRÍTICO!</h3>
+        <h3 id="alerta-modal-titulo" class="font-extrabold text-red-600 text-lg uppercase tracking-wide">🚨 ATENÇÃO: SISTEMA DE ALERTA!</h3>
         <p id="alerta-estoque-mensagem" class="text-xs font-semibold text-gray-700 mt-2 leading-relaxed">
-          O produto atingiu o limite mínimo cadastrado!
+          Notificação crítica pendente!
         </p>
       </div>
       <div class="bg-red-50 p-3 rounded-lg border border-red-200 text-xs text-gray-700 space-y-1">
-        <p><b>Local de Ajuste:</b> Aba <span class="font-bold text-teal-800">Estoque</span></p>
         <p class="text-[10px] text-red-500 font-medium">O alarme sonoro e vibração continuarão até você clicar abaixo.</p>
       </div>
       <button onclick="interromperAlertaEstoqueManual()" class="w-full bg-red-600 text-white font-extrabold py-3.5 rounded-xl hover:bg-red-700 transition text-xs shadow-lg uppercase tracking-wider">
-        <i class="fa-solid fa-bell-slash mr-1"></i> Parar Alerta e Ir para o Estoque
+        <i class="fa-solid fa-bell-slash mr-1"></i> Entendido / Ciente
       </button>
     </div>
   </div>
@@ -270,11 +343,11 @@
     </div>
   </div>
 
-  <!-- MODAL: FECHAMENTO DE CAIXA -->
+  <!-- MODAL: FECHAMENTO DE CAIXA DE TURNO -->
   <div id="modal-fechamento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Caixa</h3>
+        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Turno / Caixa</h3>
         <button onclick="closeModalFechamento()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div id="fechamento-conteudo" class="space-y-3 text-xs">
@@ -291,9 +364,9 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>🔍 Busca de Clientes / Fiado:</b> A lista longa foi substituída pela Busca Inteligente! Digite o nome para cobrar, abater o saldo devedor ou editar o cliente.</p>
-        <p><b>🔍 Busca no Estoque:</b> Pesquise pelo nome para alterar preços, estoque ou marcar como atalho no caixa.</p>
-        <p><b>☰ Menu de Navegação:</b> Clique nos três tracinhos no topo esquerdo para trocar de aba ou deslize o dedo na tela para os lados.</p>
+        <p><b>🔒 Fechamento de Caixa:</b> Botão direto na tela principal do Caixa para o vendedor fazer a contagem da gaveta ao final do turno.</p>
+        <p><b>⏰ Fechamento Automático:</b> Às 23:59 todos os dias o sistema faz o fechamento do caixa do dia automaticamente e salva em relatórios.</p>
+        <p><b>⚡ Edição Instantânea:</b> Altere estoques, dê descontos e atualize validades direto na sub-aba de Mínimos e Validades.</p>
       </div>
     </div>
   </div>
@@ -326,13 +399,22 @@
       { id: 4, ean: "", nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-01", atalho: true }
     ];
 
+    // LICENCIAMENTO SERIAL E DIAS DE TESTE (INICIANDO EM 19 DIAS RESTANTES DE TESTE)
+    const ONTEM_MS = Date.now() - (24 * 60 * 60 * 1000);
+    let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
+      dataInstalacao: ONTEM_MS,
+      diasDegustacao: 20,
+      vitalicio: false
+    };
+
     // Estado
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
+    let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
-      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00 },
-      { id: 102, nome: "Maria Oliveira", telefone: "(75) 98888-2222", debito: 50.00 }
+      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" },
+      { id: 102, nome: "Maria Oliveira", telefone: "(75) 98888-2222", debito: 50.00, prazoPagamento: "" }
     ];
     let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
     
@@ -342,7 +424,6 @@
     let subAbaEstoque = 'gerenciar';
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
-    let cliEditandoIndex = null;
     let timerSomAlerta = null;
     let timerVibracaoAlerta = null;
     let audioCtxAlerta = null;
@@ -350,6 +431,118 @@
     let modoScannerDestino = 'caixa';
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
+
+    // VERIFICAÇÃO DO PERÍODO DE LICENÇA (SERIAL E CONTAGEM REGRESSIVA)
+    function verificarLicencaStatus() {
+      if (licencaInfo.vitalicio) {
+        document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
+        document.getElementById('badge-licenca').className = "bg-green-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer";
+        document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
+        return true;
+      }
+
+      const msPassados = Date.now() - licencaInfo.dataInstalacao;
+      const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
+      const diasRestantes = licencaInfo.diasDegustacao - diasUsados;
+
+      if (diasRestantes <= 0) {
+        document.getElementById('screen-licenca-bloqueada').classList.remove('hidden');
+        return false;
+      } else {
+        document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
+        document.getElementById('badge-licenca').innerText = `⏳ ${diasRestantes} dia(s)`;
+        if (diasRestantes <= 5) {
+          document.getElementById('badge-licenca').className = "bg-red-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer animate-pulse";
+        }
+        return true;
+      }
+    }
+
+    function validarAtivacaoSerial() {
+      const senha = document.getElementById('input-senha-serial').value.trim();
+      const msgErro = document.getElementById('msg-serial-erro');
+
+      if (senha === "VITALICIO2026") {
+        licencaInfo.vitalicio = true;
+        localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
+        alert("🎉 Licença VITALÍCIA ativada com sucesso!");
+        verificarLicencaStatus();
+      } else if (senha === "TESTE30") {
+        licencaInfo.diasDegustacao += 30;
+        localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
+        alert("⏳ Mais +30 dias de teste liberados!");
+        verificarLicencaStatus();
+      } else {
+        msgErro.innerText = "Senha / Serial inválido! Tente novamente.";
+        msgErro.classList.remove('hidden');
+      }
+    }
+
+    function openModalLicencaStatus() {
+      if (licencaInfo.vitalicio) {
+        alert("Sua licença é VITALÍCIA e ilimitada!");
+      } else {
+        const msPassados = Date.now() - licencaInfo.dataInstalacao;
+        const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
+        const diasRestantes = licencaInfo.diasDegustacao - diasUsados;
+        alert(`Licença de Demonstração:\nRestam ${diasRestantes} dia(s) de teste de uso do aplicativo.`);
+      }
+    }
+
+    // FECHAMENTO AUTOMÁTICO DE CAIXA ÀS 23:59
+    function monitorarFechamentoAutomaticoMeiaNoite() {
+      setInterval(() => {
+        const agora = new Date();
+        const hora = agora.getHours();
+        const min = agora.getMinutes();
+
+        if (hora === 23 && min === 59) {
+          let hojeStr = agora.toLocaleDateString('pt-BR');
+          let jaFechouHoje = historicoFechamentos.some(f => f.data === hojeStr && f.automatico);
+
+          if (!jaFechouHoje) {
+            executarFechamentoCaixaAutomatico(hojeStr);
+          }
+        }
+      }, 40000); // Checa a cada 40 segundos
+    }
+
+    function executarFechamentoCaixaAutomatico(hojeStr) {
+      const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+      const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
+
+      const totalVendas = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalCartoes = vendasHoje.filter(v => v.formaPagto.includes('Cartão')).reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+      const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+
+      const saldoEsperadoGaveta = totalDinheiro - totalSangrias + totalSuprimentos;
+
+      const registroFechamento = {
+        id: Date.now(),
+        data: hojeStr,
+        hora: "23:59",
+        automatico: true,
+        vendasQtd: vendasHoje.length,
+        totalVendas: totalVendas,
+        totalDinheiro: totalDinheiro,
+        totalPix: totalPix,
+        totalCartoes: totalCartoes,
+        totalSangrias: totalSangrias,
+        totalSuprimentos: totalSuprimentos,
+        gavetaEsperada: saldoEsperadoGaveta
+      };
+
+      historicoFechamentos.push(registroFechamento);
+      localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
+      }
+    }
 
     // DETECÇÃO DE GESTO TOUCH SWIPE
     let touchStartX = 0;
@@ -587,8 +780,10 @@
 
     // NAVEGAÇÃO DE ABAS
     function switchTab(aba) {
+      if (!verificarLicencaStatus()) return;
+
       abaAtual = aba;
-      const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado', relatorios: 'Relatórios' };
+      const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
       document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
 
       ordemAbas.forEach(a => {
@@ -606,6 +801,8 @@
     }
 
     function renderAba() {
+      if (!verificarLicencaStatus()) return;
+
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
 
       if (abaAtual === 'vendas') renderAbaVendas();
@@ -702,7 +899,7 @@
       renderAbaVendas();
     }
 
-    // ABA 1: CAIXA
+    // ABA 1: CAIXA (COM BOTÃO DE FECHAMENTO DE CAIXA DE TURNO INTEGRADO)
     function renderAbaVendas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -731,7 +928,7 @@
             <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
               <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-gray-500'}">
-                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto}${p.medida || 'un'}</b>`}
+                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto} ${p.medida || 'un'}</b>`}
               </span>
               <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
             </div>
@@ -839,13 +1036,21 @@
               <div class="space-y-2">
                 <div>
                   <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Forma de Pagamento:</label>
-                  <select id="venda-pagto" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
+                  <select id="venda-pagto" onchange="toggleOpcoesFiadoPrazo(this.value)" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
                     <option value="PIX">PIX</option>
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="Cartão de Crédito">Cartão de Crédito</option>
                     <option value="Cartão de Débito">Cartão de Débito</option>
                     <option value="Fiado">Fiado / A Prazo</option>
                   </select>
+                </div>
+
+                <!-- CAMPO OPCIONAL: PRAZO DO FIADO -->
+                <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-lg border border-amber-300 space-y-1">
+                  <label class="block text-[10px] font-bold text-amber-900">
+                    📅 Data Limite para Pagamento (Opcional):
+                  </label>
+                  <input type="date" id="venda-fiado-prazo" class="w-full p-2 border rounded-lg text-xs bg-white text-gray-800 font-medium">
                 </div>
 
                 <div class="space-y-1.5 pt-1">
@@ -863,21 +1068,35 @@
             </div>
           </div>
 
+          <!-- MOVIMENTAÇÃO DE CAIXA E BOTÃO DE FECHAMENTO DE TURNO DESTACADO -->
           <div class="border-t pt-3 space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-vault text-amber-600"></i> Movimentação de Caixa (Sangria / Troco)
+              <i class="fa-solid fa-vault text-amber-600"></i> Gestão de Gaveta & Turno
             </h2>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-lg hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-arrow-down text-red-600"></i> - Sangria (Retirar)
+                <i class="fa-solid fa-arrow-down text-red-600"></i> Sangria (Retirar)
               </button>
               <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-lg hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-arrow-up text-green-600"></i> + Suprimento (Entrada)
+                <i class="fa-solid fa-arrow-up text-green-600"></i> Suprimento (Entrar)
               </button>
             </div>
+
+            <button onclick="openModalFechamento()" class="w-full bg-amber-600 text-white font-extrabold p-3 rounded-xl hover:bg-amber-700 text-xs flex justify-center items-center gap-2 shadow-md uppercase tracking-wider mt-1">
+              <i class="fa-solid fa-lock text-sm"></i> Fechar Caixa do Turno / Conferir Gaveta
+            </button>
           </div>
         </div>
       `;
+    }
+
+    function toggleOpcoesFiadoPrazo(pagto) {
+      const box = document.getElementById('box-prazo-fiado');
+      if (pagto === 'Fiado') {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
     }
 
     function autoPreencherZapCliente() {
@@ -984,12 +1203,10 @@
       renderAba();
     }
 
-    // ALERTA CONTINUO DE ESTOQUE
-    function iniciarAlertaEstoqueCritico(produtosAlertados) {
-      document.getElementById('alerta-estoque-mensagem').innerHTML = produtosAlertados.map(p => `
-        <span class="block"><b>${p.nome}</b>: Restam apenas <span class="text-red-600 font-extrabold text-sm">${p.estoque} ${p.medida || 'un'}</span> (Limite Mínimo: ${p.estMin || 3})</span>
-      `).join('');
-
+    // ALERTA CONTINUO DE ESTOQUE OU FIADO VENCIDO
+    function iniciarAlertaGeral(titulo, mensagemHTML) {
+      document.getElementById('alerta-modal-titulo').innerText = titulo;
+      document.getElementById('alerta-estoque-mensagem').innerHTML = mensagemHTML;
       document.getElementById('modal-alerta-estoque-continua').classList.remove('hidden');
 
       if (!timerSomAlerta) {
@@ -1020,7 +1237,6 @@
       if (timerSomAlerta) { clearInterval(timerSomAlerta); timerSomAlerta = null; }
       if (timerVibracaoAlerta) { clearInterval(timerVibracaoAlerta); timerVibracaoAlerta = null; }
       document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
-      switchTab('estoque');
     }
 
     // ABA 2: ESTOQUE
@@ -1081,9 +1297,10 @@
             </button>
           </div>
 
+          <!-- BOTÕES DE NAVEGAÇÃO DE SUB-ABAS -->
           <div class="grid grid-cols-3 gap-1 text-[11px] font-bold">
             <button onclick="setSubAbaEstoque('gerenciar')" class="py-2 rounded-lg text-center ${subAbaEstoque === 'gerenciar' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              ➕ Cadastrar / Buscar
+              ➕ Cadastrar
             </button>
             <button onclick="setSubAbaEstoque('minimos')" class="py-2 rounded-lg text-center relative ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               ⚠️ Mínimos
@@ -1095,8 +1312,23 @@
             </button>
           </div>
 
+          <!-- CONTEÚDO PRINCIPAL DA SUB-ABA -->
           <div id="subaba-estoque-conteudo">
             ${subAbaEstoque === 'gerenciar' ? renderSubAbaGerenciar() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
+          </div>
+
+          <!-- PAINEL DE BUSCA NO RODAPÉ -->
+          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2 border-t pt-3">
+            <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
+              <span>🔍 Buscar Produto Cadastrado no Estoque</span>
+              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded font-bold">
+                <i class="fa-solid fa-barcode"></i> Bipar
+              </button>
+            </label>
+            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
+            
+            <div id="resultado-busca-estoque" class="hidden space-y-2 pt-1">
+            </div>
           </div>
         </div>
       `;
@@ -1109,81 +1341,206 @@
 
     function renderSubAbaGerenciar() {
       return `
-        <div class="space-y-4">
-          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
-            <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
-              <span>🔍 Buscar Produto Cadastrado para Alterar ou Marcar Atalho</span>
-              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded font-bold">
-                <i class="fa-solid fa-barcode"></i> Bipar
-              </button>
+        <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-xl border">
+          <div class="flex justify-between items-center">
+            <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
+            <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2 py-1 rounded flex items-center gap-1">
+              <i class="fa-solid fa-barcode"></i> Bipar
+            </button>
+          </div>
+          
+          <input type="hidden" id="cad-prod-ean">
+          <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs bg-white">
+          
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" step="0.01" id="cad-prod-preco-custo" placeholder="Preço Custo R$" class="p-2 border rounded-lg text-xs bg-white">
+            <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda R$" class="p-2 border rounded-lg text-xs bg-white">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
+            <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="p-2 border rounded-lg text-xs bg-white">
+              <option value="un">Unidades (un)</option>
+              <option value="kg">Quilogramas (kg)</option>
+              <option value="cx">Caixas (cx)</option>
+              <option value="L">Litros (L)</option>
+              <option value="g">Gramas (g)</option>
+            </select>
+          </div>
+
+          <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+            <label class="block text-[11px] font-bold text-amber-900 mb-0.5">
+              Limite Mínimo para Alerta de Estoque:
             </label>
-            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            
-            <div id="resultado-busca-estoque" class="hidden space-y-2 pt-1">
+            <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Entrada</label>
+              <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Crítica)</label>
+              <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
             </div>
           </div>
 
-          <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-xl border">
-            <div class="flex justify-between items-center">
-              <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
-              <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2 py-1 rounded flex items-center gap-1">
-                <i class="fa-solid fa-barcode"></i> Bipar
-              </button>
-            </div>
-            
-            <input type="hidden" id="cad-prod-ean">
-            <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs bg-white">
-            
-            <div class="grid grid-cols-2 gap-2">
-              <input type="number" step="0.01" id="cad-prod-preco-custo" placeholder="Preço Custo R$" class="p-2 border rounded-lg text-xs bg-white">
-              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda R$" class="p-2 border rounded-lg text-xs bg-white">
-            </div>
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
+            <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos Rápidos do Caixa</label>
+          </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
-              <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="p-2 border rounded-lg text-xs bg-white">
-                <option value="un">Unidades (un)</option>
-                <option value="kg">Quilogramas (kg)</option>
-                <option value="cx">Caixas (cx)</option>
-                <option value="L">Litros (L)</option>
-                <option value="g">Gramas (g)</option>
-              </select>
-            </div>
-
-            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-              <label class="block text-[11px] font-bold text-amber-900 mb-0.5">
-                Limite Mínimo para Alerta de Estoque:
-              </label>
-              <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Entrada</label>
-                <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
-              </div>
-              <div>
-                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Crítica)</label>
-                <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 pt-1">
-              <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
-              <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos Rápidos do Caixa</label>
-            </div>
-
-            <div class="flex gap-2 pt-1">
-              <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
-                + Salvar Produto
-              </button>
-              <button id="btn-cancelar-edit-prod" onclick="cancelarEdicaoProduto()" class="hidden bg-gray-300 text-gray-700 font-bold px-3 py-2.5 rounded-lg text-xs">
-                Cancelar
-              </button>
-            </div>
+          <div class="flex gap-2 pt-1">
+            <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
+              + Salvar Produto
+            </button>
+            <button id="btn-cancelar-edit-prod" onclick="cancelarEdicaoProduto()" class="hidden bg-gray-300 text-gray-700 font-bold px-3 py-2.5 rounded-lg text-xs">
+              Cancelar
+            </button>
           </div>
         </div>
       `;
+    }
+
+    function renderSubAbaMinimos() {
+      let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+
+      if (minimos.length === 0) {
+        return `
+          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+            <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
+            <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
+            <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-2">
+          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">
+            ⚠️ Produtos com Estoque Crítico (${minimos.length}):
+          </p>
+          <div class="space-y-2 max-h-72 overflow-y-auto">
+            ${minimos.map(p => {
+              let idxReal = produtos.findIndex(prod => prod.id === p.id);
+              let faltam = (p.estMin || 3) - p.estoque;
+
+              return `
+                <div class="bg-red-50 border border-red-300 p-3 rounded-lg flex justify-between items-center text-xs alerta-saltando">
+                  <div>
+                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
+                    <p class="text-red-700 font-bold mt-0.5">
+                      Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-gray-500 font-normal">(Mín: ${p.estMin || 3})</span>
+                    </p>
+                    <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Sugestão de Reposição: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
+                  </div>
+                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs shadow hover:bg-red-700">
+                    ⚡ Repor Agora
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSubAbaValidades() {
+      let hoje = new Date();
+      let trintaDiasFrente = new Date();
+      trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+      let validadesCriticas = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+
+      if (validadesCriticas.length === 0) {
+        return `
+          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+            <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
+            <h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3>
+            <p class="text-xs text-green-600">Nenhum produto em risco nos próximos 30 dias.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-2">
+          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">
+            📅 Validades Próximas ou Vencidas (${validadesCriticas.length}):
+          </p>
+          <div class="space-y-2 max-h-72 overflow-y-auto">
+            ${validadesCriticas.map(p => {
+              let idxReal = produtos.findIndex(prod => prod.id === p.id);
+              let dataVal = new Date(p.validade);
+              let ehVencido = dataVal < hoje;
+
+              return `
+                <div class="p-3 rounded-lg border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
+                  <div>
+                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
+                    <p class="text-gray-600 mt-0.5">
+                      Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
+                    </p>
+                    <p class="text-[10px] text-gray-500">Preço Atual: R$ ${parseFloat(p.preco).toFixed(2)}</p>
+                  </div>
+                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs shadow hover:bg-amber-700">
+                    🏷️ Desconto / Ajustar
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // MODAL DE AJUSTE DIRETO E INSTANTÂNEO
+    function abrirModalAjusteRapido(index) {
+      let p = produtos[index];
+      document.getElementById('ajuste-prod-index').value = index;
+      document.getElementById('ajuste-rapido-titulo').innerText = `✏️ Ajuste Direto: ${p.nome}`;
+      document.getElementById('ajuste-prod-qtd').value = p.estoque;
+      document.getElementById('ajuste-prod-preco').value = p.preco;
+      document.getElementById('ajuste-prod-validade').value = p.validade || '';
+      document.getElementById('modal-ajuste-rapido-prod').classList.remove('hidden');
+    }
+
+    function fecharModalAjusteRapido() {
+      document.getElementById('modal-ajuste-rapido-prod').classList.add('hidden');
+    }
+
+    function adicionarQtdDireta(qtd) {
+      let campo = document.getElementById('ajuste-prod-qtd');
+      let valAtual = parseFloat(campo.value || 0);
+      campo.value = valAtual + qtd;
+    }
+
+    function aplicarDescontoPorcentagem(pct) {
+      let campo = document.getElementById('ajuste-prod-preco');
+      let valAtual = parseFloat(campo.value || 0);
+      let novoPreco = valAtual * (1 - pct / 100);
+      campo.value = novoPreco.toFixed(2);
+    }
+
+    function salvarAjusteRapidoProduto() {
+      let idx = document.getElementById('ajuste-prod-index').value;
+      if (idx === "") return;
+
+      let p = produtos[idx];
+      p.estoque = parseFloat(document.getElementById('ajuste-prod-qtd').value || 0);
+      p.preco = parseFloat(document.getElementById('ajuste-prod-preco').value || 0);
+      p.validade = document.getElementById('ajuste-prod-validade').value;
+
+      localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
+      }
+
+      fecharModalAjusteRapido();
+      alert(`✅ Produto "${p.nome}" atualizado com sucesso no estoque!`);
+      renderAbaEstoque();
     }
 
     function buscarEExibirProdutoEstoque(termo) {
@@ -1212,7 +1569,7 @@
                 <p class="text-gray-500">
                   Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b>
                 </p>
-                ${p.validade ? `<p class="text-[10px] text-amber-700 font-semibold">Validade: ${p.validade}</p>` : ''}
+                ${p.validade ? `<p class="text-[10px] text-amber-700 font-semibold">Validade: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -1223,7 +1580,7 @@
               <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
                 <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Nos Atalhos'}
               </button>
-              <button onclick="prepararEditarProduto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
+              <button onclick="abrirModalAjusteRapido(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
                 <i class="fa-solid fa-pen"></i> Editar
               </button>
               <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
@@ -1237,94 +1594,6 @@
       box.classList.remove('hidden');
     }
 
-    function renderSubAbaMinimos() {
-      let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-
-      if (minimos.length === 0) {
-        return `
-          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
-            <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
-            <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
-            <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="space-y-2">
-          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">
-            ⚠️ Produtos que necessitam de reposição imediata (${minimos.length}):
-          </p>
-          <div class="space-y-2 max-h-80 overflow-y-auto">
-            ${minimos.map(p => {
-              let idxReal = produtos.findIndex(prod => prod.id === p.id);
-              return `
-                <div class="bg-red-50 border border-red-300 p-3 rounded-lg flex justify-between items-center text-xs alerta-saltando">
-                  <div>
-                    <p class="font-bold text-gray-800">${p.nome}</p>
-                    <p class="text-red-700 font-bold">
-                      Restam apenas: ${p.estoque}${p.medida || 'un'} <span class="text-gray-500 font-normal">(Mínimo: ${p.estMin || 3})</span>
-                    </p>
-                  </div>
-                  <button onclick="prepararEditarProduto(${idxReal}); setSubAbaEstoque('gerenciar');" class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">
-                    Repor / Editar
-                  </button>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSubAbaValidades() {
-      let hoje = new Date();
-      let trintaDiasFrente = new Date();
-      trintaDiasFrente.setDate(hoje.getDate() + 30);
-
-      let validadesCriticas = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
-
-      if (validadesCriticas.length === 0) {
-        return `
-          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
-            <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
-            <h3 class="font-bold text-green-800 text-sm">Nenhum produto em risco de vencimento!</h3>
-            <p class="text-xs text-green-600">Todos os produtos perecíveis estão com datas de validade distantes.</p>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="space-y-2">
-          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">
-            📅 Semáforo de Validades Críticas (${validadesCriticas.length} itens):
-          </p>
-          <div class="space-y-2 max-h-80 overflow-y-auto">
-            ${validadesCriticas.map(p => {
-              let idxReal = produtos.findIndex(prod => prod.id === p.id);
-              let dataVal = new Date(p.validade);
-              let ehVencido = dataVal < hoje;
-
-              return `
-                <div class="p-3 rounded-lg border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
-                  <div>
-                    <p class="font-bold text-gray-800">${p.nome}</p>
-                    <p class="text-gray-600">
-                      Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
-                    </p>
-                    <p class="text-gray-500">Estoque atual: ${p.estoque}${p.medida || 'un'}</p>
-                  </div>
-                  <button onclick="prepararEditarProduto(${idxReal}); setSubAbaEstoque('gerenciar');" class="bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">
-                    Desconto / Ajustar
-                  </button>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
     function toggleAtalhoEstoque(index) {
       produtos[index].atalho = !(produtos[index].atalho !== false);
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
@@ -1334,30 +1603,6 @@
       } else {
         renderAba();
       }
-    }
-
-    function prepararEditarProduto(index) {
-      prodEditandoIndex = index;
-      let p = produtos[index];
-
-      document.getElementById('form-estoque-titulo').innerText = "✏️ Editar: " + p.nome;
-      document.getElementById('cad-prod-ean').value = p.ean || '';
-      document.getElementById('cad-prod-nome').value = p.nome;
-      document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
-      document.getElementById('cad-prod-preco').value = p.preco;
-      document.getElementById('cad-prod-qtd').value = p.estoque;
-      document.getElementById('cad-prod-estmin').value = p.estMin || 3;
-      document.getElementById('cad-prod-medida').value = p.medida || 'un';
-      document.getElementById('cad-prod-entrada').value = p.dataEntrada || '';
-      document.getElementById('cad-prod-validade').value = p.validade || '';
-      document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
-
-      document.getElementById('btn-cancelar-edit-prod').classList.remove('hidden');
-    }
-
-    function cancelarEdicaoProduto() {
-      prodEditandoIndex = null;
-      renderAba();
     }
 
     function cadastrarOuAtualizarProduto() {
@@ -1428,195 +1673,161 @@
       }
     }
 
-    // ABA 3: FIADO / CLIENTES (COM BUSCA DINÂMICA INTELIGENTE & SEM LISTA FIXA)
+    // ABA 3: FIADO & PRAZOS
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
-          <!-- PAINEL SUPERIOR: RESUMO DO FIADO -->
-          <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex justify-between items-center">
+          <!-- BUSCA DINÂMICA DE CLIENTES (POSICIONADA NO TOPO) -->
+          <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-teal-900">
+                🔍 Pesquisar Cliente / Cobrar
+              </label>
+              <button onclick="exibirTodosOuDevedores('devedores')" class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold shadow-sm">
+                ⚠️ Apenas Devedores
+              </button>
+            </div>
+            
+            <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome do cliente..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
+            
+            <div id="resultado-busca-clientes" class="space-y-2 pt-1">
+              <!-- Cards exibidos dinamicamente -->
+            </div>
+          </div>
+
+          <!-- RESUMO FINANCEIRO E TOTAL DE DEVEDORES (DESLOCADO PARA BAIXO) -->
+          <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex justify-between items-center shadow-sm border-t pt-3">
             <div>
-              <p class="text-[10px] text-red-600 font-bold uppercase">Total a Receber (Fiado)</p>
+              <p class="text-[10px] text-red-600 font-bold uppercase">Total Geral a Receber (Fiado)</p>
               <p class="text-lg font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
             </div>
             <span class="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold">
               ${devedoresQtd} Devedor(es)
             </span>
           </div>
-
-          <!-- BUSCA ATIVA DE CLIENTES / FIADO -->
-          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
-            <label class="block text-xs font-bold text-teal-900 flex justify-between items-center">
-              <span>🔍 Buscar Cliente para Cobrar ou Abater Débito</span>
-              <button onclick="exibirTodosOuDevedores('devedores')" class="text-[10px] text-red-700 font-bold underline">
-                Ver Devedores
-              </button>
-            </label>
-            <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome do cliente..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            
-            <div id="resultado-busca-clientes" class="hidden space-y-2 pt-1">
-              <!-- Resultados via JS -->
-            </div>
-          </div>
-
-          <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DE CLIENTE -->
-          <div class="space-y-2 bg-gray-50 p-3 rounded-xl border">
-            <h3 id="form-cliente-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Cliente</h3>
-            
-            <input type="text" id="cli-nome" placeholder="Nome Completo do Cliente" class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            <input type="text" id="cli-tel" placeholder="Telefone / WhatsApp" class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            <input type="number" step="0.01" id="cli-debito-inicial" placeholder="Débito Anterior / Fiado R$ (Opcional)" class="w-full p-2.5 border rounded-lg text-xs bg-white">
-
-            <div class="flex gap-2 pt-1">
-              <button onclick="cadastrarOuAtualizarCliente()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-                + Salvar Cliente
-              </button>
-              <button id="btn-cancelar-edit-cli" onclick="cancelarEdicaoCliente()" class="hidden bg-gray-300 text-gray-700 font-bold px-3 py-2.5 rounded-lg text-xs">
-                Cancelar
-              </button>
-            </div>
-          </div>
         </div>
       `;
+
+      exibirTodosOuDevedores('devedores');
+      verificarEAlertarFiadosVencidos();
     }
 
-    // LÓGICA DA BUSCA DINÂMICA DE CLIENTES E ABATIMENTO
+    function verificarEAlertarFiadosVencidos() {
+      const hojeStr = new Date().toISOString().split('T')[0];
+      let vencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && c.prazoPagamento <= hojeStr);
+
+      if (vencidos.length > 0) {
+        let msg = vencidos.map(c => `<span class="block"><b>${c.nome}</b>: Venceu em <b>${c.prazoPagamento.split('-').reverse().join('/')}</b> (Saldo: R$ ${parseFloat(c.debito).toFixed(2)})</span>`).join('');
+        iniciarAlertaGeral("🚨 FIADO COM PRAZO VENCIDO!", msg);
+      }
+    }
+
     function buscarEExibirClientes(termo) {
       const box = document.getElementById('resultado-busca-clientes');
+      if (!box) return;
+
       if (!termo || termo.trim().length < 1) {
-        box.classList.add('hidden');
+        exibirTodosOuDevedores('devedores');
         return;
       }
 
       let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
       
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-2">Nenhum cliente localizado com "${termo}".</p>`;
-        box.classList.remove('hidden');
+        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-3">Nenhum cliente localizado com "${termo}".</p>`;
         return;
       }
 
-      box.innerHTML = filtro.map(c => {
+      renderizarListaClientesCards(filtro);
+    }
+
+    function exibirTodosOuDevedores(modo) {
+      const box = document.getElementById('resultado-busca-clientes');
+      if (!box) return;
+
+      let lista = clientes;
+      if (modo === 'devedores') {
+        lista = clientes.filter(c => c.debito > 0);
+      }
+
+      if (lista.length === 0) {
+        box.innerHTML = `<div class="bg-green-50 p-4 rounded-lg border border-green-200 text-center text-xs text-green-700 font-bold">✅ Não há clientes com débitos fiados pendentes!</div>`;
+        return;
+      }
+
+      renderizarListaClientesCards(lista);
+    }
+
+    function renderizarListaClientesCards(lista) {
+      const box = document.getElementById('resultado-busca-clientes');
+      const hojeStr = new Date().toISOString().split('T')[0];
+
+      box.innerHTML = lista.map(c => {
         let idxReal = clientes.findIndex(cli => cli.id === c.id);
         let temDebito = c.debito > 0;
+        let ehAtrasado = temDebito && c.prazoPagamento && c.prazoPagamento <= hojeStr;
 
         return `
-          <div class="bg-white p-3 rounded-lg border ${temDebito ? 'border-red-300 bg-red-50/30' : 'border-gray-200'} shadow-sm space-y-2 text-xs">
+          <div class="bg-white p-3 rounded-lg border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : (temDebito ? 'border-amber-300 bg-amber-50/20' : 'border-gray-200')} shadow-sm space-y-2 text-xs">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
-                <p class="text-gray-500">Tel: ${c.telefone || 'Não cadastrado'}</p>
+                <p class="font-bold text-gray-800 text-sm flex items-center gap-1">
+                  ${c.nome}
+                  ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ NO PRAZO / VENCIDO</span>' : ''}
+                </p>
+                <p class="text-gray-500 text-[11px]">Tel/Zap: ${c.telefone || 'Não cadastrado'}</p>
+                ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-gray-600'}">Prazo Combinado: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
               </div>
-              <span class="font-extrabold text-xs px-2 py-0.5 rounded border ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
-                ${temDebito ? 'Fiado: R$ ' + parseFloat(c.debito).toFixed(2) : 'Conta Em Dia'}
-              </span>
+              <div class="text-right">
+                <span class="font-extrabold text-xs px-2 py-0.5 rounded border block ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
+                  ${temDebito ? 'R$ ' + parseFloat(c.debito).toFixed(2) : 'Em dia'}
+                </span>
+              </div>
             </div>
 
             ${temDebito ? `
-              <div class="flex gap-2 pt-1 border-t border-gray-200">
-                <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+              <div class="flex gap-1.5 pt-1 border-t border-gray-200 items-center">
+                <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="R$ Abater" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
                 <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
                   Abater
+                </button>
+                <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-700 text-white font-bold px-2.5 py-2 rounded-lg hover:bg-green-800 text-xs whitespace-nowrap shadow flex items-center gap-1">
+                  <i class="fa-brands fa-whatsapp"></i> Zap
                 </button>
               </div>
             ` : ''}
 
-            <div class="flex justify-end gap-2 border-t pt-1">
-              <button onclick="prepararEditarCliente(${idxReal})" class="text-blue-600 font-bold text-[11px] hover:underline"><i class="fa-solid fa-pen"></i> Editar</button>
-              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold text-[11px] hover:underline ml-2"><i class="fa-solid fa-trash"></i> Excluir</button>
+            <div class="flex justify-end gap-2 border-t pt-1 text-[11px]">
+              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Excluir Registro</button>
             </div>
           </div>
         `;
       }).join('');
-
-      box.classList.remove('hidden');
     }
 
-    function exibirTodosOuDevedores(modo) {
-      const input = document.getElementById('busca-cliente-input');
-      if (modo === 'devedores') {
-        input.value = '';
-        const box = document.getElementById('resultado-busca-clientes');
-        let devedores = clientes.filter(c => c.debito > 0);
-
-        if (devedores.length === 0) {
-          box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-2">✅ Não há clientes devendo fiado no momento!</p>`;
-        } else {
-          box.innerHTML = devedores.map(c => {
-            let idxReal = clientes.findIndex(cli => cli.id === c.id);
-            return `
-              <div class="bg-white p-3 rounded-lg border border-red-300 bg-red-50/30 shadow-sm space-y-2 text-xs">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
-                    <p class="text-gray-500">Tel: ${c.telefone || 'Não cadastrado'}</p>
-                  </div>
-                  <span class="font-extrabold text-xs px-2 py-0.5 rounded border text-red-700 bg-red-100 border-red-300">
-                    Fiado: R$ ${parseFloat(c.debito).toFixed(2)}
-                  </span>
-                </div>
-
-                <div class="flex gap-2 pt-1 border-t border-gray-200">
-                  <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-                  <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
-                    Abater
-                  </button>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-        box.classList.remove('hidden');
-      }
-    }
-
-    function prepararEditarCliente(index) {
-      cliEditandoIndex = index;
+    function enviarLembreteCobrancaZap(index) {
       let c = clientes[index];
-      document.getElementById('form-cliente-titulo').innerText = "✏️ Editar Cliente: " + c.nome;
-      document.getElementById('cli-nome').value = c.nome;
-      document.getElementById('cli-tel').value = c.telefone || '';
-      document.getElementById('cli-debito-inicial').value = c.debito || 0;
-      document.getElementById('btn-cancelar-edit-cli').classList.remove('hidden');
-    }
+      if (!c.telefone) { alert("Este cliente não possui WhatsApp cadastrado!"); return; }
 
-    function cancelarEdicaoCliente() {
-      cliEditandoIndex = null;
-      renderAba();
-    }
+      const hojeStr = new Date().toISOString().split('T')[0];
+      let ehAtrasado = c.prazoPagamento && c.prazoPagamento <= hojeStr;
+      let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
 
-    function cadastrarOuAtualizarCliente() {
-      const nome = document.getElementById('cli-nome').value;
-      const tel = document.getElementById('cli-tel').value;
-      const debitoInicial = parseFloat(document.getElementById('cli-debito-inicial').value || 0);
-
-      if (!nome) { alert("Digite o nome do cliente!"); return; }
-
-      let cliData = {
-        id: cliEditandoIndex !== null ? clientes[cliEditandoIndex].id : Date.now(),
-        nome: nome,
-        telefone: tel,
-        debito: debitoInicial
-      };
-
-      if (cliEditandoIndex !== null) {
-        clientes[cliEditandoIndex] = cliData;
-        cliEditandoIndex = null;
-      } else {
-        clientes.push(cliData);
+      let texto = `Olá *${c.nome}*, tudo bem?\n\n`;
+      texto += `Passando para lembrar referente à sua conta pendente no *${perfilNegocio.nomeLoja}*.\n`;
+      texto += `Valor do saldo pendente: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
+      
+      if (c.prazoPagamento) {
+        texto += `Prazo combinado: *${dataFormatada}*\n\n`;
       }
+      texto += `Obrigado pela preferência e parceria de sempre!`;
 
-      localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-
-      const user = auth.currentUser;
-      if (user) {
-        db.collection("clientes").doc(user.uid + "_" + cliData.id).set({ ...cliData, userId: user.uid }, { merge: true });
-      }
-
-      alert("Cliente salvo com sucesso!");
-      renderAba();
+      let numLimpo = c.telefone.replace(/\D/g, '');
+      let linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
+      window.open(linkZap, '_blank');
     }
 
     function abaterDebitoCliente(index) {
@@ -1635,19 +1846,19 @@
         db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
       }
 
-      alert(`Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
+      alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
       renderAba();
     }
 
     function excluirCliente(index) {
-      if (confirm("Deseja excluir este cliente?")) {
+      if (confirm("Deseja excluir este registro de cliente?")) {
         clientes.splice(index, 1);
         localStorage.setItem('crm_clientes', JSON.stringify(clientes));
         renderAba();
       }
     }
 
-    // ABA 4: RELATÓRIOS
+    // ABA 4: RELATÓRIOS & FECHAMENTOS DE CAIXA SALVOS
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -1657,14 +1868,19 @@
       });
       const lucroLiquido = totalVendasGeral - totalCustoGeral;
 
-      let vendasInvertidas = [...vendas].reverse();
-      let ultimasVendasHTML = vendasInvertidas.map(v => `
-        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
-          <div>
-            <p class="font-bold text-gray-800">${v.item}</p>
-            <p class="text-gray-400">${v.formaPagto} ${v.cliente ? '• Cliente: ' + v.cliente : ''} • ${v.data}</p>
+      let fechamentosInvertidos = [...historicoFechamentos].reverse();
+      let historicoFechamentosHTML = fechamentosInvertidos.map(f => `
+        <div class="bg-white p-3 rounded-lg border text-xs space-y-1">
+          <div class="flex justify-between items-center font-bold text-gray-800">
+            <span>📅 ${f.data} (${f.hora || '23:59'})</span>
+            <span class="${f.automatico ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-800'} text-[10px] px-2 py-0.5 rounded font-bold">
+              ${f.automatico ? '⚡ Automático' : '👤 Manual (Turno)'}
+            </span>
           </div>
-          <span class="font-bold text-teal-700">R$ ${parseFloat(v.valor).toFixed(2)}</span>
+          <div class="grid grid-cols-2 gap-1 text-[11px] text-gray-600 pt-1 border-t">
+            <p>Vendas: <b>R$ ${parseFloat(f.totalVendas || 0).toFixed(2)}</b> (${f.vendasQtd || 0}x)</p>
+            <p>Gaveta: <b class="text-teal-700">R$ ${parseFloat(f.gavetaEsperada || 0).toFixed(2)}</b></p>
+          </div>
         </div>
       `).join('');
 
@@ -1686,6 +1902,16 @@
             <div class="flex justify-between items-center pt-1">
               <span class="text-xs text-teal-300 font-bold">LUCRO LÍQUIDO REAL:</span>
               <span class="font-extrabold text-base text-green-400">R$ ${lucroLiquido.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <!-- HISTÓRICO DE FECHAMENTOS DE CAIXA SALVOS -->
+          <div class="border-t pt-3 space-y-2">
+            <h3 class="font-bold text-xs text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-vault text-amber-600"></i> Histórico de Caixas Fechados (${historicoFechamentos.length})
+            </h3>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
             </div>
           </div>
 
@@ -1717,18 +1943,29 @@
             </button>
           </div>
 
-          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-2 shadow">
-            <i class="fa-solid fa-file-excel"></i> Baixar Dados em Excel (.CSV)
-          </button>
-
-          <div class="border-t pt-3 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Histórico de Vendas (${vendas.length})</h3>
-            <div class="space-y-1.5 max-h-52 overflow-y-auto">
-              ${ultimasVendasHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhuma venda salva.</p>'}
-            </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="exportarBackupCSV()" class="bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-1.5 shadow">
+              <i class="fa-solid fa-file-excel"></i> Excel (.CSV)
+            </button>
+            <button onclick="executarLimpezaTotalManual()" class="bg-red-50 text-red-700 border border-red-200 font-bold py-2.5 rounded-lg hover:bg-red-100 transition text-xs flex justify-center items-center gap-1.5 shadow">
+              <i class="fa-solid fa-trash-can"></i> Limpar Dados
+            </button>
           </div>
         </div>
       `;
+    }
+
+    function executarLimpezaTotalManual() {
+      if (confirm("⚠️ ATENÇÃO: Deseja apagar TODO o histórico de vendas, fechamentos e movimentações de caixa?\n\n(Os produtos cadastrados e clientes serão mantidos)")) {
+        vendas = [];
+        sangriasSuprimentos = [];
+        historicoFechamentos = [];
+        localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+        localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
+        localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+        alert("✅ Histórico zerado com sucesso!");
+        renderAba();
+      }
     }
 
     function gerarPDFProfissional() {
@@ -1821,7 +2058,7 @@
       doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
     }
 
-    // FECHAMENTO DE CAIXA
+    // FECHAMENTO DE CAIXA DE TURNO MANUAL
     function openModalFechamento() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -1837,7 +2074,7 @@
 
       document.getElementById('fechamento-conteudo').innerHTML = `
         <div class="bg-gray-50 p-3 rounded-lg border space-y-1.5">
-          <p class="font-bold text-gray-800 text-xs">Resumo do Dia (${hojeStr}):</p>
+          <p class="font-bold text-gray-800 text-xs">Resumo do Turno Atual (${hojeStr}):</p>
           <div class="flex justify-between"><span>Vendas Realizadas:</span> <b>${vendasHoje.length}</b></div>
           <div class="flex justify-between text-teal-700 font-bold"><span>Total Vendas:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
           <hr>
@@ -1850,8 +2087,8 @@
         <div class="space-y-2 pt-2">
           <label class="block font-semibold text-gray-700">Contagem Física na Gaveta (R$):</label>
           <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
-          <button onclick="conferirFechamentoCaixa(${saldoEsperadoGaveta})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
-            Conferir Fechamento
+          <button onclick="conferirEGravarFechamentoCaixaManual(${saldoEsperadoGaveta}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
+            Conferir e Salvar Fechamento
           </button>
         </div>
       `;
@@ -1860,17 +2097,39 @@
 
     function closeModalFechamento() { document.getElementById('modal-fechamento').classList.add('hidden'); }
 
-    function conferirFechamentoCaixa(totalEsperado) {
+    function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, qtdVendas) {
       const gaveta = parseFloat(document.getElementById('fechamento-gaveta').value || 0);
       const diferenca = gaveta - totalEsperado;
 
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+      const registro = {
+        id: Date.now(),
+        data: hojeStr,
+        hora: horaStr,
+        automatico: false,
+        vendasQtd: qtdVendas,
+        totalVendas: totalVendas,
+        gavetaEsperada: totalEsperado,
+        gavetaContada: gaveta,
+        diferenca: diferenca
+      };
+
+      historicoFechamentos.push(registro);
+      localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+
+      closeModalFechamento();
+
       if (diferenca === 0) {
-        alert("✅ Fechamento Perfeito! A contagem da gaveta bateu exatamente com o sistema.");
+        alert("✅ Fechamento Registrado! A contagem da gaveta bateu com o sistema.");
       } else if (diferenca > 0) {
-        alert(`⚠️ Sobra no Caixa: Há R$ ${diferenca.toFixed(2)} a MAIS na gaveta do que o registrado.`);
+        alert(`⚠️ Fechamento Registrado com Sobra de R$ ${diferenca.toFixed(2)}.`);
       } else {
-        alert(`🚨 Falta no Caixa: Faltam R$ ${Math.abs(diferenca).toFixed(2)} na gaveta em relação ao registrado.`);
+        alert(`🚨 Fechamento Registrado com Falta de R$ ${Math.abs(diferenca).toFixed(2)}.`);
       }
+
+      renderAba();
     }
 
     // FINALIZAÇÃO DE VENDA
@@ -1880,6 +2139,7 @@
       const pagto = document.getElementById('venda-pagto').value;
       const clienteNome = document.getElementById('venda-cliente-nome') ? document.getElementById('venda-cliente-nome').value.trim() : '';
       const clienteZap = document.getElementById('venda-cliente-zap') ? document.getElementById('venda-cliente-zap').value.trim() : '';
+      const prazoFiado = document.getElementById('venda-fiado-prazo') ? document.getElementById('venda-fiado-prazo').value : '';
 
       if (pagto === 'Fiado' && !clienteNome) {
         alert("Digite o nome do cliente para registrar o fiado!");
@@ -1925,14 +2185,18 @@
       if (clienteNome) {
         let cli = clientes.find(c => c.nome.toLowerCase() === clienteNome.toLowerCase());
         if (cli) {
-          if (pagto === 'Fiado') cli.debito = (parseFloat(cli.debito) || 0) + totalVenda;
+          if (pagto === 'Fiado') {
+            cli.debito = (parseFloat(cli.debito) || 0) + totalVenda;
+            if (prazoFiado) cli.prazoPagamento = prazoFiado;
+          }
           if (clienteZap) cli.telefone = clienteZap;
         } else {
           cli = {
             id: Date.now(),
             nome: clienteNome,
             telefone: clienteZap,
-            debito: pagto === 'Fiado' ? totalVenda : 0
+            debito: pagto === 'Fiado' ? totalVenda : 0,
+            prazoPagamento: pagto === 'Fiado' ? prazoFiado : ''
           };
           clientes.push(cli);
         }
@@ -1967,7 +2231,8 @@
       }
 
       if (produtosComEstoqueCritico.length > 0) {
-        iniciarAlertaEstoqueCritico(produtosComEstoqueCritico);
+        let msg = produtosComEstoqueCritico.map(p => `<span class="block"><b>${p.nome}</b>: Restam ${p.estoque} ${p.medida || 'un'}</span>`).join('');
+        iniciarAlertaGeral("🚨 ATENÇÃO: ESTOQUE CRÍTICO!", msg);
       }
 
       renderAba();
@@ -2046,9 +2311,11 @@
       }
     }
 
-    // MONITOR DE SESSÃO
+    // MONITOR DE SESSÃO E RELÓGIO DE FECHAMENTO AUTOMÁTICO
     auth.onAuthStateChanged((user) => {
-      const statusText = document.getElementById('header-aba-atual');
+      verificarLicencaStatus();
+      monitorarFechamentoAutomaticoMeiaNoite();
+
       if (user) {
         db.collection("perfis").doc(user.uid).get().then(doc => {
           if (doc.exists) {
@@ -2067,7 +2334,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v9.0 Fiado Limpo & Busca Dinâmica!");
+    console.log("Caixa Rápido Móvel Pro v13.0 Com Fechamento Automático e Sistema de Licenciamento Serial!");
   </script>
 </body>
 </html>

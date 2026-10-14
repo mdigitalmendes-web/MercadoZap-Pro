@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Caixa Rápido Móvel Pro</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
@@ -10,40 +10,40 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Gerador de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Leitor de Código de Barras via Câmera (HTML5-QRCode) -->
+  <!-- Leitor de Código de Barras via Câmera -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; touch-action: pan-y; }
     .whatsapp-green { background-color: #075e54; }
-    .whatsapp-teal { background-color: #128c7e; }
     
     @keyframes pulse-red {
       0%, 100% { transform: scale(1); border-color: #ef4444; }
       50% { transform: scale(1.02); border-color: #dc2626; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
     }
-    .alerta-saltando {
-      animation: pulse-red 1.5s infinite;
-    }
+    .alerta-saltando { animation: pulse-red 1.5s infinite; }
 
     @keyframes modal-alarm-flash {
       0%, 100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
       50% { border-color: #b91c1c; box-shadow: 0 0 25px rgba(185, 28, 28, 0.9); }
     }
-    .modal-alerta-emergencia {
-      animation: modal-alarm-flash 1s infinite;
-    }
+    .modal-alerta-emergencia { animation: modal-alarm-flash 1s infinite; }
+
+    .drawer-overlay { transition: opacity 0.3s ease; }
+    .drawer-content { transition: transform 0.3s ease-in-out; }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
-  <!-- BARRA SUPERIOR (HEADER) -->
+  <!-- BARRA SUPERIOR (HEADER) COM MENU HAMBÚRGUER (☰) -->
   <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
-      <i class="fa-solid fa-cash-register text-2xl text-green-300"></i>
+      <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-green-200">
+        <i class="fa-solid fa-bars"></i>
+      </button>
       <div>
         <h1 id="header-app-name" class="font-bold text-base leading-tight">Caixa Rápido Móvel Pro</h1>
-        <p id="user-status" class="text-xs text-green-200">Verificando conexão...</p>
+        <p id="header-aba-atual" class="text-[11px] text-green-200 font-semibold">Aba: Caixa</p>
       </div>
     </div>
     
@@ -66,8 +66,50 @@
     </div>
   </header>
 
+  <!-- PAINEL LATERAL DE NAVEGAÇÃO DE ABAS (DRAWER LATERAL OCULTO) -->
+  <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
+    <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
+    <div class="drawer-content relative bg-white w-64 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
+      <div>
+        <div class="whatsapp-green p-4 text-white flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-cash-register text-xl text-green-300"></i>
+            <span class="font-bold text-sm">Navegação Principal</span>
+          </div>
+          <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
+        </div>
+
+        <div class="p-3 space-y-1.5">
+          <button onclick="selecionarAbaDrawer('vendas')" id="drawer-btn-vendas" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i>
+            <span>Caixa / Frente de Vendas</span>
+          </button>
+          
+          <button onclick="selecionarAbaDrawer('estoque')" id="drawer-btn-estoque" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-boxes-stacked text-base w-5 text-center"></i>
+            <span>Estoque & Validades</span>
+          </button>
+
+          <button onclick="selecionarAbaDrawer('clientes')" id="drawer-btn-clientes" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-users text-base w-5 text-center"></i>
+            <span>Fiado & Clientes</span>
+          </button>
+
+          <button onclick="selecionarAbaDrawer('relatorios')" id="drawer-btn-relatorios" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold transition">
+            <i class="fa-solid fa-chart-line text-base w-5 text-center"></i>
+            <span>Relatórios & Financeiro</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-3 bg-gray-50 border-t text-[10px] text-gray-500 text-center">
+        💡 <b>Dica Prática:</b> Passe o dedo para os lados (swipe) na tela para trocar de aba!
+      </div>
+    </div>
+  </div>
+
   <!-- CONTEÚDO PRINCIPAL -->
-  <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full mb-20">
+  <main id="main-swipe-area" class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full pb-6">
     <div id="main-content" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
       <div class="text-center py-8">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600 mb-3"></i>
@@ -76,27 +118,31 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS -->
-  <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around items-center py-2.5 z-40 max-w-md mx-auto shadow-lg">
-    <button onclick="switchTab('vendas')" id="nav-vendas" class="flex flex-col items-center text-teal-700 font-bold text-xs py-1 px-3 border-b-2 border-teal-600">
-      <i class="fa-solid fa-cart-shopping text-xl mb-0.5"></i>
-      <span>Caixa</span>
-    </button>
-    <button onclick="switchTab('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
-      <i class="fa-solid fa-boxes-stacked text-xl mb-0.5"></i>
-      <span>Estoque</span>
-    </button>
-    <button onclick="switchTab('clientes')" id="nav-clientes" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
-      <i class="fa-solid fa-users text-xl mb-0.5"></i>
-      <span>Fiado</span>
-    </button>
-    <button onclick="switchTab('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
-      <i class="fa-solid fa-chart-line text-xl mb-0.5"></i>
-      <span>Relatórios</span>
-    </button>
-  </nav>
+  <!-- MODAL: SANGRIA E SUPRIMENTO -->
+  <div id="modal-sangria-suprimento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 id="sangria-modal-titulo" class="font-bold text-gray-800 text-sm">Registrar Movimentação</h3>
+        <button onclick="fecharModalSangria()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <div class="space-y-3">
+        <input type="hidden" id="sangria-tipo" value="sangria">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Valor R$:</label>
+          <input type="number" step="0.01" id="sangria-valor" placeholder="0.00" class="w-full p-2.5 border rounded-lg text-sm font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo / Descrição:</label>
+          <input type="text" id="sangria-motivo" placeholder="Ex: Pagar fornecedor / Troco inicial" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+        </div>
+        <button onclick="confirmarSangriaSuprimento()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
+          Confirmar e Salvar no Caixa
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA DO CELULAR -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
       <div class="flex justify-between items-center border-b pb-2">
@@ -113,7 +159,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE ALERTA DE EMERGÊNCIA DE ESTOQUE (SOM + VIBRAÇÃO CONTINUA ATÉ CLIQUE MANUAL) -->
+  <!-- MODAL DE ALERTA DE EMERGÊNCIA DE ESTOQUE -->
   <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
       <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl">
@@ -204,7 +250,7 @@
     </div>
   </div>
 
-  <!-- MODAL: FRACIONADOS (PESAGEM / LITRAGEM NO CAIXA) -->
+  <!-- MODAL: FRACIONADOS -->
   <div id="modal-fracionado" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -245,9 +291,9 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>📷 Leitor de Código de Barras:</b> Clique no ícone de câmera no caixa ou no cadastro de estoque para bipar pelo celular!</p>
-        <p><b>📅 Validades Críticas:</b> O estoque monitora automaticamente mercadorias perecíveis e próximas ao vencimento.</p>
-        <p><b>🛒 Caixa Reorganizado:</b> Atalhos no topo para acesso rápido e pesquisa/avulso logo abaixo.</p>
+        <p><b>🔍 Busca de Clientes / Fiado:</b> A lista longa foi substituída pela Busca Inteligente! Digite o nome para cobrar, abater o saldo devedor ou editar o cliente.</p>
+        <p><b>🔍 Busca no Estoque:</b> Pesquise pelo nome para alterar preços, estoque ou marcar como atalho no caixa.</p>
+        <p><b>☰ Menu de Navegação:</b> Clique nos três tracinhos no topo esquerdo para trocar de aba ou deslize o dedo na tela para os lados.</p>
       </div>
     </div>
   </div>
@@ -283,14 +329,17 @@
     // Estado
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
+    let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
-      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00 }
+      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00 },
+      { id: 102, nome: "Maria Oliveira", telefone: "(75) 98888-2222", debito: 50.00 }
     ];
     let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
     
     let carrinho = [];
     let abaAtual = 'vendas';
-    let subAbaEstoque = 'todos'; // 'todos', 'minimos', 'validades'
+    const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
+    let subAbaEstoque = 'gerenciar';
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let cliEditandoIndex = null;
@@ -298,11 +347,51 @@
     let timerVibracaoAlerta = null;
     let audioCtxAlerta = null;
     let html5QrcodeScanner = null;
-    let modoScannerDestino = 'caixa'; // 'caixa' ou 'cadastro'
+    let modoScannerDestino = 'caixa';
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // Dropdown
+    // DETECÇÃO DE GESTO TOUCH SWIPE
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const swipeArea = document.getElementById('main-swipe-area');
+
+    swipeArea.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    swipeArea.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      tratarSwipeDedo();
+    }, false);
+
+    function tratarSwipeDedo() {
+      const diferenca = touchEndX - touchStartX;
+      if (Math.abs(diferenca) > 80) {
+        let idxAtual = ordemAbas.indexOf(abaAtual);
+        if (diferenca < 0 && idxAtual < ordemAbas.length - 1) {
+          switchTab(ordemAbas[idxAtual + 1]);
+        } else if (diferenca > 0 && idxAtual > 0) {
+          switchTab(ordemAbas[idxAtual - 1]);
+        }
+      }
+    }
+
+    // CONTROLE DO PAINEL LATERAL (DRAWER)
+    function abrirDrawerNavegacao() {
+      document.getElementById('drawer-menu').classList.remove('hidden');
+    }
+
+    function fecharDrawerNavegacao() {
+      document.getElementById('drawer-menu').classList.add('hidden');
+    }
+
+    function selecionarAbaDrawer(aba) {
+      fecharDrawerNavegacao();
+      switchTab(aba);
+    }
+
+    // DROPDOWN MENU SUPERIOR
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -344,7 +433,6 @@
 
     // ONBOARDING
     function showOnboardingStep1() {
-      document.getElementById('bottom-nav').classList.add('hidden');
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
@@ -434,7 +522,6 @@
     }
 
     function showLoginForm() {
-      document.getElementById('bottom-nav').classList.add('hidden');
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
@@ -501,19 +588,24 @@
     // NAVEGAÇÃO DE ABAS
     function switchTab(aba) {
       abaAtual = aba;
-      ['vendas', 'estoque', 'clientes', 'relatorios'].forEach(a => {
-        const btn = document.getElementById('nav-' + a);
-        if (a === aba) {
-          btn.className = "flex flex-col items-center text-teal-700 font-bold text-xs py-1 px-3 border-b-2 border-teal-600";
-        } else {
-          btn.className = "flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3";
+      const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado', relatorios: 'Relatórios' };
+      document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
+
+      ordemAbas.forEach(a => {
+        const btn = document.getElementById('drawer-btn-' + a);
+        if (btn) {
+          if (a === aba) {
+            btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
+          } else {
+            btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
+          }
         }
       });
+
       renderAba();
     }
 
     function renderAba() {
-      document.getElementById('bottom-nav').classList.remove('hidden');
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
 
       if (abaAtual === 'vendas') renderAbaVendas();
@@ -522,7 +614,7 @@
       else if (abaAtual === 'relatorios') renderAbaRelatorios();
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA DO CELULAR
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
     function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
@@ -552,12 +644,13 @@
       } else if (modoScannerDestino === 'cadastro') {
         document.getElementById('cad-prod-ean').value = decodedText;
         alert(`✅ Código de barras lido: ${decodedText}`);
+      } else if (modoScannerDestino === 'busca_estoque') {
+        document.getElementById('busca-estoque-input').value = decodedText;
+        buscarEExibirProdutoEstoque(decodedText);
       }
     }
 
-    function onScanError(errorMessage) {
-      // Ignorar erros comuns de frame contínuo sem código
-    }
+    function onScanError(errorMessage) {}
 
     function fecharScanner() {
       if (html5QrcodeScanner) {
@@ -566,15 +659,61 @@
       document.getElementById('modal-scanner').classList.add('hidden');
     }
 
-    // ABA 1: CAIXA (REORGANIZADO: ATALHOS NO TOPO + PESQUISA/AVULSO EMBAIXO)
+    // SANGRIA E SUPRIMENTO
+    function abrirModalSangriaSuprimento(tipo) {
+      document.getElementById('sangria-tipo').value = tipo;
+      document.getElementById('sangria-modal-titulo').innerText = tipo === 'sangria' ? '💸 Registrar Sangria (Retirada)' : '💰 Registrar Suprimento (Entrada)';
+      document.getElementById('sangria-valor').value = '';
+      document.getElementById('sangria-motivo').value = '';
+      document.getElementById('modal-sangria-suprimento').classList.remove('hidden');
+    }
+
+    function fecharModalSangria() {
+      document.getElementById('modal-sangria-suprimento').classList.add('hidden');
+    }
+
+    function confirmarSangriaSuprimento() {
+      const tipo = document.getElementById('sangria-tipo').value;
+      const valor = parseFloat(document.getElementById('sangria-valor').value);
+      const motivo = document.getElementById('sangria-motivo').value.trim() || (tipo === 'sangria' ? 'Retirada de caixa' : 'Entrada de troco');
+
+      if (!valor || valor <= 0) { alert("Informe um valor válido!"); return; }
+
+      const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+      const registro = {
+        id: Date.now(),
+        tipo: tipo,
+        valor: valor,
+        motivo: motivo,
+        data: hojeStr
+      };
+
+      sangriasSuprimentos.push(registro);
+      localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
+      }
+
+      fecharModalSangria();
+      alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado com sucesso!`);
+      renderAbaVendas();
+    }
+
+    // ABA 1: CAIXA
     function renderAbaVendas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
-      const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
 
-      // Grade de Atalhos
+      const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+      const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+
+      const saldoGavetaDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0) - totalSangrias + totalSuprimentos;
+
       let atalhosProdutos = produtos.filter(p => p.atalho !== false);
       let atalhosProdutosHTML = atalhosProdutos.map((p) => {
         let idxReal = produtos.findIndex(prod => prod.id === p.id);
@@ -600,7 +739,6 @@
         `;
       }).join('');
 
-      // Carrinho
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
         <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border text-xs">
@@ -624,24 +762,22 @@
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
-          <!-- RESUMO DO DIA -->
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-teal-600 text-white p-3 rounded-lg shadow-sm">
               <p class="text-[10px] text-teal-100 uppercase font-bold">Vendido Hoje</p>
-              <p class="text-lg font-extrabold mt-0.5">R$ ${totalHoje.toFixed(2)}</p>
+              <p class="text-lg font-extrabold mt-0.5">R$ ${totalVendasBruto.toFixed(2)}</p>
               <p class="text-[10px] text-teal-200 mt-0.5">${vendasHoje.length} venda(s)</p>
             </div>
             
             <div class="bg-gray-800 text-white p-3 rounded-lg shadow-sm flex flex-col justify-between">
               <div>
-                <p class="text-[10px] text-gray-300">PIX: <b class="text-white">R$ ${totalPix.toFixed(2)}</b></p>
-                <p class="text-[10px] text-gray-300">Dinheiro: <b class="text-white">R$ ${totalDinheiro.toFixed(2)}</b></p>
+                <p class="text-[10px] text-gray-300">Gaveta (Dinheiro):</p>
+                <p class="text-base font-bold text-amber-400">R$ ${saldoGavetaDinheiro.toFixed(2)}</p>
               </div>
-              <span class="text-[9px] text-teal-400 font-semibold">Resumo Automático</span>
+              <span class="text-[9px] text-teal-400 font-semibold">Considerando Sangrias</span>
             </div>
           </div>
 
-          <!-- CLIENTE E WHATSAPP NO CAIXA -->
           <div class="bg-gray-50 p-2.5 rounded-lg border space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
@@ -653,7 +789,6 @@
             </div>
           </div>
 
-          <!-- 1º) ATALHOS DE PRODUTOS NO TOPO DA TELA -->
           <div class="border-t pt-3 space-y-2">
             <div class="flex justify-between items-center">
               <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -668,7 +803,6 @@
             </div>
           </div>
 
-          <!-- 2º) PESQUISA INTELIGENTE E ITEM AVULSO DESLOCADOS PARA BAIXO -->
           <div class="border-t pt-3 space-y-2 relative">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto no Estoque ou Avulso
@@ -687,7 +821,6 @@
             </button>
           </div>
 
-          <!-- CARRINHO -->
           <div class="border-t pt-3 space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
@@ -727,6 +860,20 @@
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div class="border-t pt-3 space-y-2">
+            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-vault text-amber-600"></i> Movimentação de Caixa (Sangria / Troco)
+            </h2>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-lg hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-arrow-down text-red-600"></i> - Sangria (Retirar)
+              </button>
+              <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-lg hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-arrow-up text-green-600"></i> + Suprimento (Entrada)
+              </button>
             </div>
           </div>
         </div>
@@ -876,7 +1023,7 @@
       switchTab('estoque');
     }
 
-    // ABA 2: ESTOQUE ORGANIZADO COM SUB-ABAS (TODOS / MÍNIMOS / VALIDADES CRÍTICAS) E CONFIGURAÇÃO DE PADRÕES
+    // ABA 2: ESTOQUE
     function setSubAbaEstoque(sub) {
       subAbaEstoque = sub;
       renderAbaEstoque();
@@ -920,77 +1067,63 @@
       let trintaDiasFrente = new Date();
       trintaDiasFrente.setDate(hoje.getDate() + 30);
 
-      // Filtragem por Sub-aba
-      let produtosExibicao = [...produtos].map((p, originalIdx) => ({ ...p, originalIdx }));
-
-      if (subAbaEstoque === 'minimos') {
-        produtosExibicao = produtosExibicao.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-      } else if (subAbaEstoque === 'validades') {
-        produtosExibicao = produtosExibicao.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
-      }
-
-      produtosExibicao.sort((a, b) => {
-        let aAlerta = (a.estoque <= (a.estMin || 3)) ? 1 : 0;
-        let bAlerta = (b.estoque <= (b.estMin || 3)) ? 1 : 0;
-        return bAlerta - aAlerta;
-      });
-
-      let listaEstoqueHTML = produtosExibicao.map((p) => {
-        let ehAlertaEstoque = (p.estoque || 0) <= (p.estMin || 3);
-        let dataVal = p.validade ? new Date(p.validade) : null;
-        let ehVencido = dataVal && dataVal < hoje;
-        let ehAlertaValidade = dataVal && dataVal <= trintaDiasFrente;
-
-        return `
-          <div class="flex justify-between items-center ${ehAlertaEstoque || ehVencido ? 'alerta-saltando bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
-            <div>
-              <p class="font-bold text-gray-800">
-                ${p.nome} 
-                ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded ml-1">MÍNIMO!</span>' : ''}
-                ${ehVencido ? '<span class="text-[9px] bg-black text-white px-1.5 py-0.5 rounded ml-1 font-bold">VENCIDO</span>' : (ehAlertaValidade ? '<span class="text-[9px] bg-amber-500 text-white px-1 rounded ml-1 font-bold">VENCENDO</span>' : '')}
-              </p>
-              <p class="text-gray-500">
-                Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> (Mín: ${p.estMin || 3}) 
-                ${p.validade ? '• Val: <b>' + p.validade + '</b>' : ''}
-              </p>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="toggleAtalhoEstoque(${p.originalIdx})" class="text-xs p-1 ${p.atalho !== false ? 'text-amber-500' : 'text-gray-300'}" title="Exibir nos Atalhos">
-                <i class="fa-solid fa-star text-base"></i>
-              </button>
-              <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-              <button onclick="prepararEditarProduto(${p.originalIdx})" class="text-blue-600 text-xs p-1 hover:bg-blue-100 rounded" title="Editar"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="excluirProduto(${p.originalIdx})" class="text-red-500 text-xs p-1 hover:bg-red-100 rounded" title="Excluir"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      let qtdMinimosAlert = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
+      let qtdValidadesAlert = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente).length;
 
       document.getElementById('main-content').innerHTML = `
-        <div class="space-y-3">
+        <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Controle de Estoque
+              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
             </h2>
             <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
               <i class="fa-solid fa-sliders text-teal-600"></i> Padrões Mínimos
             </button>
           </div>
 
-          <!-- NAVEGAÇÃO ORGANIZADA POR SUB-ABAS / PASTAS -->
-          <div class="flex border-b border-gray-200 text-xs font-bold space-x-1">
-            <button onclick="setSubAbaEstoque('todos')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600'}">
-              Todos (${produtos.length})
+          <div class="grid grid-cols-3 gap-1 text-[11px] font-bold">
+            <button onclick="setSubAbaEstoque('gerenciar')" class="py-2 rounded-lg text-center ${subAbaEstoque === 'gerenciar' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              ➕ Cadastrar / Buscar
             </button>
-            <button onclick="setSubAbaEstoque('minimos')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'}">
+            <button onclick="setSubAbaEstoque('minimos')" class="py-2 rounded-lg text-center relative ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               ⚠️ Mínimos
+              ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdMinimosAlert}</span>` : ''}
             </button>
-            <button onclick="setSubAbaEstoque('validades')" class="py-1.5 px-3 rounded-t-lg ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-600'}">
-              📅 Validades Críticas
+            <button onclick="setSubAbaEstoque('validades')" class="py-2 rounded-lg text-center relative ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              📅 Validades
+              ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdValidadesAlert}</span>` : ''}
             </button>
           </div>
 
-          <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-lg border">
+          <div id="subaba-estoque-conteudo">
+            ${subAbaEstoque === 'gerenciar' ? renderSubAbaGerenciar() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
+          </div>
+        </div>
+      `;
+
+      if (subAbaEstoque === 'gerenciar') {
+        document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
+        preencherMinimoAutomaticoPorMedida();
+      }
+    }
+
+    function renderSubAbaGerenciar() {
+      return `
+        <div class="space-y-4">
+          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
+            <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
+              <span>🔍 Buscar Produto Cadastrado para Alterar ou Marcar Atalho</span>
+              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded font-bold">
+                <i class="fa-solid fa-barcode"></i> Bipar
+              </button>
+            </label>
+            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
+            
+            <div id="resultado-busca-estoque" class="hidden space-y-2 pt-1">
+            </div>
+          </div>
+
+          <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-xl border">
             <div class="flex justify-between items-center">
               <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
               <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2 py-1 rounded flex items-center gap-1">
@@ -1037,7 +1170,7 @@
 
             <div class="flex items-center gap-2 pt-1">
               <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
-              <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos do Caixa</label>
+              <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos Rápidos do Caixa</label>
             </div>
 
             <div class="flex gap-2 pt-1">
@@ -1049,23 +1182,158 @@
               </button>
             </div>
           </div>
+        </div>
+      `;
+    }
 
-          <div class="space-y-1.5">
-            <div class="space-y-2 max-h-52 overflow-y-auto">
-              ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum produto nesta pasta.</p>'}
+    function buscarEExibirProdutoEstoque(termo) {
+      const box = document.getElementById('resultado-busca-estoque');
+      if (!termo || termo.trim().length < 1) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
+      if (filtro.length === 0) {
+        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-2">Nenhum produto encontrado com "${termo}".</p>`;
+        box.classList.remove('hidden');
+        return;
+      }
+
+      box.innerHTML = filtro.map(p => {
+        let idxReal = produtos.findIndex(prod => prod.id === p.id);
+        let ehAtalho = p.atalho !== false;
+
+        return `
+          <div class="bg-white p-3 rounded-lg border border-teal-300 shadow-sm space-y-2 text-xs">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
+                <p class="text-gray-500">
+                  Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b>
+                </p>
+                ${p.validade ? `<p class="text-[10px] text-amber-700 font-semibold">Validade: ${p.validade}</p>` : ''}
+              </div>
+              <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
+                ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
+              </span>
             </div>
+
+            <div class="flex justify-between items-center border-t pt-2 gap-1">
+              <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
+                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Nos Atalhos'}
+              </button>
+              <button onclick="prepararEditarProduto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
+                <i class="fa-solid fa-pen"></i> Editar
+              </button>
+              <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      box.classList.remove('hidden');
+    }
+
+    function renderSubAbaMinimos() {
+      let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+
+      if (minimos.length === 0) {
+        return `
+          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+            <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
+            <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
+            <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-2">
+          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">
+            ⚠️ Produtos que necessitam de reposição imediata (${minimos.length}):
+          </p>
+          <div class="space-y-2 max-h-80 overflow-y-auto">
+            ${minimos.map(p => {
+              let idxReal = produtos.findIndex(prod => prod.id === p.id);
+              return `
+                <div class="bg-red-50 border border-red-300 p-3 rounded-lg flex justify-between items-center text-xs alerta-saltando">
+                  <div>
+                    <p class="font-bold text-gray-800">${p.nome}</p>
+                    <p class="text-red-700 font-bold">
+                      Restam apenas: ${p.estoque}${p.medida || 'un'} <span class="text-gray-500 font-normal">(Mínimo: ${p.estMin || 3})</span>
+                    </p>
+                  </div>
+                  <button onclick="prepararEditarProduto(${idxReal}); setSubAbaEstoque('gerenciar');" class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">
+                    Repor / Editar
+                  </button>
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
+    }
 
-      document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
-      preencherMinimoAutomaticoPorMedida();
+    function renderSubAbaValidades() {
+      let hoje = new Date();
+      let trintaDiasFrente = new Date();
+      trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+      let validadesCriticas = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+
+      if (validadesCriticas.length === 0) {
+        return `
+          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+            <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
+            <h3 class="font-bold text-green-800 text-sm">Nenhum produto em risco de vencimento!</h3>
+            <p class="text-xs text-green-600">Todos os produtos perecíveis estão com datas de validade distantes.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-2">
+          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">
+            📅 Semáforo de Validades Críticas (${validadesCriticas.length} itens):
+          </p>
+          <div class="space-y-2 max-h-80 overflow-y-auto">
+            ${validadesCriticas.map(p => {
+              let idxReal = produtos.findIndex(prod => prod.id === p.id);
+              let dataVal = new Date(p.validade);
+              let ehVencido = dataVal < hoje;
+
+              return `
+                <div class="p-3 rounded-lg border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
+                  <div>
+                    <p class="font-bold text-gray-800">${p.nome}</p>
+                    <p class="text-gray-600">
+                      Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
+                    </p>
+                    <p class="text-gray-500">Estoque atual: ${p.estoque}${p.medida || 'un'}</p>
+                  </div>
+                  <button onclick="prepararEditarProduto(${idxReal}); setSubAbaEstoque('gerenciar');" class="bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">
+                    Desconto / Ajustar
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
     }
 
     function toggleAtalhoEstoque(index) {
       produtos[index].atalho = !(produtos[index].atalho !== false);
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
-      renderAba();
+      const buscaInput = document.getElementById('busca-estoque-input');
+      if (buscaInput && buscaInput.value) {
+        buscarEExibirProdutoEstoque(buscaInput.value);
+      } else {
+        renderAba();
+      }
     }
 
     function prepararEditarProduto(index) {
@@ -1160,42 +1428,41 @@
       }
     }
 
-    // ABA 3: FIADO / CLIENTES
+    // ABA 3: FIADO / CLIENTES (COM BUSCA DINÂMICA INTELIGENTE & SEM LISTA FIXA)
     function renderAbaClientes() {
-      let clientesHTML = clientes.map((c, i) => `
-        <div class="bg-gray-50 p-3 rounded-lg border text-xs space-y-2.5">
-          <div class="flex justify-between items-center">
-            <div>
-              <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
-              <p class="text-gray-500">Tel: ${c.telefone || 'Não informado'}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-xs ${c.debito > 0 ? 'text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200' : 'text-green-600'}">
-                Fiado: R$ ${parseFloat(c.debito || 0).toFixed(2)}
-              </span>
-              <button onclick="prepararEditarCliente(${i})" class="text-blue-600 text-xs p-1" title="Editar"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="excluirCliente(${i})" class="text-red-500 text-xs p-1" title="Excluir"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </div>
-
-          ${c.debito > 0 ? `
-            <div class="flex gap-2 pt-1 border-t border-gray-200">
-              <input type="number" step="0.01" id="abatimento-val-${i}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs bg-white">
-              <button onclick="abaterDebitoCliente(${i})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
-                Abater / Pagar
-              </button>
-            </div>
-          ` : '<p class="text-[11px] text-green-700 font-semibold italic">Conta em dia!</p>'}
-        </div>
-      `).join('');
+      const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
+      const devedoresQtd = clientes.filter(c => c.debito > 0).length;
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
-          <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-users text-teal-600"></i> Cadastro de Clientes & Gestão de Fiado
-          </h2>
+          <!-- PAINEL SUPERIOR: RESUMO DO FIADO -->
+          <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="text-[10px] text-red-600 font-bold uppercase">Total a Receber (Fiado)</p>
+              <p class="text-lg font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
+            </div>
+            <span class="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold">
+              ${devedoresQtd} Devedor(es)
+            </span>
+          </div>
 
-          <div class="space-y-2 bg-gray-50 p-3 rounded-lg border">
+          <!-- BUSCA ATIVA DE CLIENTES / FIADO -->
+          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
+            <label class="block text-xs font-bold text-teal-900 flex justify-between items-center">
+              <span>🔍 Buscar Cliente para Cobrar ou Abater Débito</span>
+              <button onclick="exibirTodosOuDevedores('devedores')" class="text-[10px] text-red-700 font-bold underline">
+                Ver Devedores
+              </button>
+            </label>
+            <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome do cliente..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
+            
+            <div id="resultado-busca-clientes" class="hidden space-y-2 pt-1">
+              <!-- Resultados via JS -->
+            </div>
+          </div>
+
+          <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DE CLIENTE -->
+          <div class="space-y-2 bg-gray-50 p-3 rounded-xl border">
             <h3 id="form-cliente-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Cliente</h3>
             
             <input type="text" id="cli-nome" placeholder="Nome Completo do Cliente" class="w-full p-2.5 border rounded-lg text-xs bg-white">
@@ -1211,15 +1478,98 @@
               </button>
             </div>
           </div>
-
-          <div class="border-t pt-3 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Clientes & Fiados (${clientes.length})</h3>
-            <div class="space-y-2 max-h-60 overflow-y-auto">
-              ${clientesHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum cliente cadastrado.</p>'}
-            </div>
-          </div>
         </div>
       `;
+    }
+
+    // LÓGICA DA BUSCA DINÂMICA DE CLIENTES E ABATIMENTO
+    function buscarEExibirClientes(termo) {
+      const box = document.getElementById('resultado-busca-clientes');
+      if (!termo || termo.trim().length < 1) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
+      
+      if (filtro.length === 0) {
+        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-2">Nenhum cliente localizado com "${termo}".</p>`;
+        box.classList.remove('hidden');
+        return;
+      }
+
+      box.innerHTML = filtro.map(c => {
+        let idxReal = clientes.findIndex(cli => cli.id === c.id);
+        let temDebito = c.debito > 0;
+
+        return `
+          <div class="bg-white p-3 rounded-lg border ${temDebito ? 'border-red-300 bg-red-50/30' : 'border-gray-200'} shadow-sm space-y-2 text-xs">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
+                <p class="text-gray-500">Tel: ${c.telefone || 'Não cadastrado'}</p>
+              </div>
+              <span class="font-extrabold text-xs px-2 py-0.5 rounded border ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
+                ${temDebito ? 'Fiado: R$ ' + parseFloat(c.debito).toFixed(2) : 'Conta Em Dia'}
+              </span>
+            </div>
+
+            ${temDebito ? `
+              <div class="flex gap-2 pt-1 border-t border-gray-200">
+                <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+                <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
+                  Abater
+                </button>
+              </div>
+            ` : ''}
+
+            <div class="flex justify-end gap-2 border-t pt-1">
+              <button onclick="prepararEditarCliente(${idxReal})" class="text-blue-600 font-bold text-[11px] hover:underline"><i class="fa-solid fa-pen"></i> Editar</button>
+              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold text-[11px] hover:underline ml-2"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      box.classList.remove('hidden');
+    }
+
+    function exibirTodosOuDevedores(modo) {
+      const input = document.getElementById('busca-cliente-input');
+      if (modo === 'devedores') {
+        input.value = '';
+        const box = document.getElementById('resultado-busca-clientes');
+        let devedores = clientes.filter(c => c.debito > 0);
+
+        if (devedores.length === 0) {
+          box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-2">✅ Não há clientes devendo fiado no momento!</p>`;
+        } else {
+          box.innerHTML = devedores.map(c => {
+            let idxReal = clientes.findIndex(cli => cli.id === c.id);
+            return `
+              <div class="bg-white p-3 rounded-lg border border-red-300 bg-red-50/30 shadow-sm space-y-2 text-xs">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
+                    <p class="text-gray-500">Tel: ${c.telefone || 'Não cadastrado'}</p>
+                  </div>
+                  <span class="font-extrabold text-xs px-2 py-0.5 rounded border text-red-700 bg-red-100 border-red-300">
+                    Fiado: R$ ${parseFloat(c.debito).toFixed(2)}
+                  </span>
+                </div>
+
+                <div class="flex gap-2 pt-1 border-t border-gray-200">
+                  <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+                  <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
+                    Abater
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        box.classList.remove('hidden');
+      }
     }
 
     function prepararEditarCliente(index) {
@@ -1475,28 +1825,32 @@
     function openModalFechamento() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+      const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
+
       const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalCartao = vendasHoje.filter(v => v.formaPagto.includes('Cartão')).reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalFiado = vendasHoje.filter(v => v.formaPagto === 'Fiado').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalDinheiroVendas = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+      const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+
+      const saldoEsperadoGaveta = totalDinheiroVendas - totalSangrias + totalSuprimentos;
 
       document.getElementById('fechamento-conteudo').innerHTML = `
         <div class="bg-gray-50 p-3 rounded-lg border space-y-1.5">
           <p class="font-bold text-gray-800 text-xs">Resumo do Dia (${hojeStr}):</p>
           <div class="flex justify-between"><span>Vendas Realizadas:</span> <b>${vendasHoje.length}</b></div>
-          <div class="flex justify-between text-teal-700 font-bold"><span>Total Faturado:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
+          <div class="flex justify-between text-teal-700 font-bold"><span>Total Vendas:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
           <hr>
-          <div class="flex justify-between"><span>Dinheiro:</span> <span>R$ ${totalDinheiro.toFixed(2)}</span></div>
-          <div class="flex justify-between"><span>PIX:</span> <span>R$ ${totalPix.toFixed(2)}</span></div>
-          <div class="flex justify-between"><span>Cartão:</span> <span>R$ ${totalCartao.toFixed(2)}</span></div>
-          <div class="flex justify-between text-red-600"><span>Fiado / A Prazo:</span> <span>R$ ${totalFiado.toFixed(2)}</span></div>
+          <div class="flex justify-between"><span>Dinheiro Vendas:</span> <span>R$ ${totalDinheiroVendas.toFixed(2)}</span></div>
+          <div class="flex justify-between text-red-600"><span>(-) Sangrias:</span> <span>R$ ${totalSangrias.toFixed(2)}</span></div>
+          <div class="flex justify-between text-green-600"><span>(+) Suprimentos:</span> <span>R$ ${totalSuprimentos.toFixed(2)}</span></div>
+          <div class="flex justify-between text-amber-800 font-bold border-t pt-1"><span>Gaveta Esperada:</span> <span>R$ ${saldoEsperadoGaveta.toFixed(2)}</span></div>
         </div>
 
         <div class="space-y-2 pt-2">
-          <label class="block font-semibold text-gray-700">Contagem de Dinheiro Físico na Gaveta (R$):</label>
+          <label class="block font-semibold text-gray-700">Contagem Física na Gaveta (R$):</label>
           <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
-          <button onclick="conferirFechamentoCaixa(${totalDinheiro})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
+          <button onclick="conferirFechamentoCaixa(${saldoEsperadoGaveta})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
             Conferir Fechamento
           </button>
         </div>
@@ -1506,9 +1860,9 @@
 
     function closeModalFechamento() { document.getElementById('modal-fechamento').classList.add('hidden'); }
 
-    function conferirFechamentoCaixa(totalDinheiroEsperado) {
+    function conferirFechamentoCaixa(totalEsperado) {
       const gaveta = parseFloat(document.getElementById('fechamento-gaveta').value || 0);
-      const diferenca = gaveta - totalDinheiroEsperado;
+      const diferenca = gaveta - totalEsperado;
 
       if (diferenca === 0) {
         alert("✅ Fechamento Perfeito! A contagem da gaveta bateu exatamente com o sistema.");
@@ -1520,25 +1874,6 @@
     }
 
     // FINALIZAÇÃO DE VENDA
-    function removerDoCarrinho(index) {
-      carrinho.splice(index, 1);
-      renderAba();
-    }
-
-    function adicionarManualAoCarrinho() {
-      const nome = document.getElementById('venda-nome-manual').value;
-      const valor = document.getElementById('venda-valor-manual').value;
-      if (!nome || !valor) { alert("Informe o nome e valor do item!"); return; }
-
-      let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
-      let medida = prodExistente ? prodExistente.medida : 'un';
-
-      carrinho.push({ nome: nome, preco: parseFloat(valor), qtd: 1, medida: medida });
-      document.getElementById('venda-nome-manual').value = '';
-      document.getElementById('venda-valor-manual').value = '';
-      renderAba();
-    }
-
     function processarFinalizarVenda(modoEnvio) {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       
@@ -1713,9 +2048,8 @@
 
     // MONITOR DE SESSÃO
     auth.onAuthStateChanged((user) => {
-      const statusText = document.getElementById('user-status');
+      const statusText = document.getElementById('header-aba-atual');
       if (user) {
-        statusText.innerText = "Online • " + user.email;
         db.collection("perfis").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             perfilNegocio = doc.data();
@@ -1724,7 +2058,6 @@
           renderAba();
         }).catch(() => renderAba());
       } else {
-        statusText.innerText = "Desconectado";
         showOnboardingStep1();
       }
     });
@@ -1734,7 +2067,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v6.0 Integrado!");
+    console.log("Caixa Rápido Móvel Pro v9.0 Fiado Limpo & Busca Dinâmica!");
   </script>
 </body>
 </html>

@@ -23,6 +23,14 @@
     .alerta-saltando {
       animation: pulse-red 1.5s infinite;
     }
+
+    @keyframes modal-alarm-flash {
+      0%, 100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+      50% { border-color: #b91c1c; box-shadow: 0 0 25px rgba(185, 28, 28, 0.9); }
+    }
+    .modal-alerta-emergencia {
+      animation: modal-alarm-flash 1s infinite;
+    }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
@@ -86,6 +94,28 @@
     </button>
   </nav>
 
+  <!-- MODAL DE ALERTA DE EMERGÊNCIA DE ESTOQUE (SOM + VIBRAÇÃO CONTINUA ATÉ CLIQUE MANUAL) -->
+  <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
+      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-red-600 text-lg uppercase tracking-wide">🚨 ATENÇÃO: ESTOQUE CRÍTICO!</h3>
+        <p id="alerta-estoque-mensagem" class="text-xs font-semibold text-gray-700 mt-2 leading-relaxed">
+          O produto atingiu o limite mínimo cadastrado!
+        </p>
+      </div>
+      <div class="bg-red-50 p-3 rounded-lg border border-red-200 text-xs text-gray-700 space-y-1">
+        <p><b>Local de Ajuste:</b> Aba <span class="font-bold text-teal-800">Estoque</span></p>
+        <p class="text-[10px] text-red-500 font-medium">O alarme sonoro e vibração continuarão até você clicar abaixo.</p>
+      </div>
+      <button onclick="interromperAlertaEstoqueManual()" class="w-full bg-red-600 text-white font-extrabold py-3.5 rounded-xl hover:bg-red-700 transition text-xs shadow-lg uppercase tracking-wider">
+        <i class="fa-solid fa-bell-slash mr-1"></i> Parar Alerta e Ir para o Estoque
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL: PERFIL DO NEGÓCIO -->
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
@@ -141,30 +171,6 @@
     </div>
   </div>
 
-  <!-- MODAL: COMPROVANTE & RECIBO DE VENDA -->
-  <div id="modal-comprovante" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-receipt text-teal-600"></i> Venda Concluída!</h3>
-        <button onclick="closeModalComprovante()" class="text-gray-500 text-xl font-bold">&times;</button>
-      </div>
-      <div id="comprovante-conteudo" class="space-y-2 text-xs bg-gray-50 p-3 rounded border font-mono">
-        <!-- Gerado via JS -->
-      </div>
-      <div class="space-y-2 pt-1">
-        <button onclick="enviarComprovanteZap()" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-2">
-          <i class="fa-brands fa-whatsapp text-base"></i> Enviar Comprovante no WhatsApp
-        </button>
-        <button onclick="imprimirReciboProfissional()" class="w-full bg-gray-800 text-white font-bold py-2.5 rounded-lg hover:bg-gray-900 transition text-xs shadow flex justify-center items-center gap-2">
-          <i class="fa-solid fa-print text-base"></i> Imprimir Recibo / Cupom
-        </button>
-        <button onclick="closeModalComprovante()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
-          Nova Venda
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: FECHAMENTO DE CAIXA -->
   <div id="modal-fechamento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
@@ -186,10 +192,9 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>🛒 Caixa:</b> Clique nos botões de atalho ou busques itens avulsos. Ajuste as quantidades com `+` e `-`. Quando o estoque de um item acaba, o botão fica cinza e bloqueado.</p>
-        <p><b>⚖️ Vendas Fracionadas:</b> Produtos cadastrados em kg ou Litros abrem uma janela para você digitar a pesagem exata.</p>
-        <p><b>📲 Comprovante & Recibo:</b> Ao confirmar a venda, você pode enviar o recibo pelo WhatsApp ou imprimir direto.</p>
-        <p><b>⭐ Gerenciador de Atalhos:</b> Na aba Estoque, clique no ícone da estrela (⭐) para escolher quais produtos aparecem no caixa.</p>
+        <p><b>🛒 Caixa:</b> Escolha a forma de envio ao confirmar a venda (WhatsApp, Impressão ou Concluir direto sem mensagem).</p>
+        <p><b>🚨 Alerta de Estoque Mínimo:</b> Caso o produto atinja o limite, o alarme e a vibração tocarão direto até você clicar no botão manual para desligar.</p>
+        <p><b>🤝 Fiado Integrado:</b> Vendas em Fiado acumulam no cadastro do cliente automaticamente.</p>
       </div>
     </div>
   </div>
@@ -233,7 +238,9 @@
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let cliEditandoIndex = null;
-    let ultimaVendaRealizada = null;
+    let timerSomAlerta = null;
+    let timerVibracaoAlerta = null;
+    let audioCtxAlerta = null;
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
@@ -465,13 +472,12 @@
       const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
 
-      // Atalhos de Produtos com Atualização Dinâmica de Estoque e Bloqueio ao Zerar
+      // Grade de Atalhos
       let atalhosProdutos = produtos.filter(p => p.atalho !== false);
       let atalhosProdutosHTML = atalhosProdutos.map((p) => {
         let idxReal = produtos.findIndex(prod => prod.id === p.id);
         let ehFracionado = ['kg', 'g', 'L'].includes(p.medida);
 
-        // Desconto dinâmico do que já está no carrinho
         let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === p.nome.toLowerCase());
         let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
         let estoqueDisponivelNoAto = (p.estoque || 0) - qtdNoCarrinho;
@@ -492,7 +498,7 @@
         `;
       }).join('');
 
-      // Carrinho com Botões [+] e [-]
+      // Carrinho
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
         <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border text-xs">
@@ -512,10 +518,7 @@
         </div>
       `).join('');
 
-      let clientesOptionsHTML = clientes.map(c => `<option value="${c.nome}">${c.nome} (Débito: R$ ${parseFloat(c.debito || 0).toFixed(2)})</option>`).join('');
-
-      // Opções para a Busca com Auto-Completar de Item Avulso
-      let datalistProdutosHTML = produtos.map(p => `<option value="${p.nome}">R$ ${p.preco.toFixed(2)} (${p.medida})</option>`).join('');
+      let clientesDatalistHTML = clientes.map(c => `<option value="${c.nome}">${c.telefone || ''}</option>`).join('');
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -536,17 +539,35 @@
             </div>
           </div>
 
-          <!-- VALOR RÁPIDO -->
-          <div class="border-t pt-3 space-y-2">
+          <!-- CLIENTE E WHATSAPP NO CAIXA -->
+          <div class="bg-gray-50 p-2.5 rounded-lg border space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-calculator text-teal-600"></i> Valor Rápido
+              <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
             </h2>
-            <div class="grid grid-cols-4 gap-1.5">
-              <button onclick="adicionarValorRapido(5)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 5</button>
-              <button onclick="adicionarValorRapido(10)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 10</button>
-              <button onclick="adicionarValorRapido(20)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 20</button>
-              <button onclick="adicionarValorRapido(50)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 50</button>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="venda-cliente-nome" list="lista-clientes-sugestao" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-lg text-xs bg-white">
+              <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
+              <input type="text" id="venda-cliente-zap" placeholder="WhatsApp / Telefone" class="p-2 border rounded-lg text-xs bg-white">
             </div>
+          </div>
+
+          <!-- PESQUISA INTELIGENTE E ITEM AVULSO -->
+          <div class="border-t pt-3 space-y-2 relative">
+            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto ou Item Avulso
+            </h2>
+            
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-2 relative">
+                <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome do produto..." class="w-full p-2 border rounded-lg text-xs bg-white">
+                <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto divide-y">
+                </div>
+              </div>
+              <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs bg-white">
+            </div>
+            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
+              + Adicionar Item ao Carrinho
+            </button>
           </div>
 
           <!-- ATALHOS -->
@@ -554,7 +575,7 @@
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos
             </h2>
-            <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1">
+            <div class="grid grid-cols-2 gap-2">
               ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos nos atalhos.</p>'}
             </div>
           </div>
@@ -565,25 +586,11 @@
               <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
             </h2>
 
-            <!-- BUSCA INTELIGENTE DE ITEM AVULSO / ESTOQUE -->
-            <div class="grid grid-cols-3 gap-2">
-              <div class="col-span-2 relative">
-                <input type="text" id="venda-nome-manual" list="sugestoes-produtos" onchange="autoPreencherValorItemAvulso()" placeholder="Pesquisar produto ou item avulso..." class="w-full p-2 border rounded-lg text-xs">
-                <datalist id="sugestoes-produtos">
-                  ${datalistProdutosHTML}
-                </datalist>
-              </div>
-              <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs">
-            </div>
-            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
-              + Adicionar Item ao Carrinho
-            </button>
-
-            <div class="space-y-1.5 max-h-36 overflow-y-auto">
+            <div class="space-y-1.5 max-h-40 overflow-y-auto">
               ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
             </div>
 
-            <!-- FINALIZAÇÃO DE VENDA -->
+            <!-- FINALIZAÇÃO DE VENDA COM OPÇÕES DE ENVIO E RECIBO LOGO ABAIXO -->
             <div class="bg-gray-50 p-3 rounded-lg border space-y-2.5">
               <div class="flex justify-between items-center font-bold text-xs text-gray-800">
                 <span>Total a Pagar:</span>
@@ -591,25 +598,29 @@
               </div>
 
               <div class="space-y-2">
-                <select id="venda-pagto" onchange="toggleClienteFiadoSelect()" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
-                  <option value="PIX">PIX</option>
-                  <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão de Crédito">Cartão de Crédito</option>
-                  <option value="Cartão de Débito">Cartão de Débito</option>
-                  <option value="Fiado">Fiado / A Prazo</option>
-                </select>
-
-                <div id="select-cliente-fiado-box" class="hidden">
-                  <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Selecione o Cliente do Fiado:</label>
-                  <select id="venda-cliente-fiado" class="w-full p-2.5 border border-red-300 rounded-lg text-xs bg-red-50">
-                    <option value="">-- Escolher Cliente Cadastrado --</option>
-                    ${clientesOptionsHTML}
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Forma de Pagamento:</label>
+                  <select id="venda-pagto" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
+                    <option value="PIX">PIX</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Fiado">Fiado / A Prazo</option>
                   </select>
                 </div>
 
-                <button onclick="finalizarCarrinho()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-sm shadow-md flex justify-center items-center gap-2">
-                  <i class="fa-solid fa-check-circle text-base"></i> Confirmar e Finalizar Venda
-                </button>
+                <!-- TRÊS OPÇÕES DE FINALIZAÇÃO ORGANIZADAS -->
+                <div class="space-y-1.5 pt-1">
+                  <button onclick="processarFinalizarVenda('whatsapp')" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Finalizar & Enviar no WhatsApp
+                  </button>
+                  <button onclick="processarFinalizarVenda('imprimir')" class="w-full bg-gray-800 text-white font-bold py-2.5 rounded-lg hover:bg-gray-900 transition text-xs shadow flex justify-center items-center gap-1.5">
+                    <i class="fa-solid fa-print text-sm"></i> Finalizar & Imprimir Recibo
+                  </button>
+                  <button onclick="processarFinalizarVenda('sem_envio')" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+                    <i class="fa-solid fa-check-circle text-sm"></i> Finalizar Direto (Sem Envio)
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -617,30 +628,52 @@
       `;
     }
 
-    function autoPreencherValorItemAvulso() {
-      const nomeDigitado = document.getElementById('venda-nome-manual').value;
-      let prodEncontrado = produtos.find(p => p.nome.toLowerCase() === nomeDigitado.toLowerCase());
-      if (prodEncontrado) {
-        document.getElementById('venda-valor-manual').value = prodEncontrado.preco;
+    function autoPreencherZapCliente() {
+      const nomeInput = document.getElementById('venda-cliente-nome').value;
+      let cli = clientes.find(c => c.nome.toLowerCase() === nomeInput.toLowerCase());
+      if (cli && cli.telefone) {
+        document.getElementById('venda-cliente-zap').value = cli.telefone;
       }
     }
 
-    function toggleClienteFiadoSelect() {
-      const pagto = document.getElementById('venda-pagto').value;
-      const box = document.getElementById('select-cliente-fiado-box');
-      if (pagto === 'Fiado') { box.classList.remove('hidden'); }
-      else { box.classList.add('hidden'); }
+    function filtrarSugestoesProdutos(texto) {
+      const box = document.getElementById('dropdown-busca-produtos');
+      if (!texto || texto.trim().length < 1) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      let filtro = produtos.filter(p => p.nome.toLowerCase().includes(texto.toLowerCase()));
+      if (filtro.length === 0) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      box.innerHTML = filtro.map(p => {
+        let idxReal = produtos.findIndex(prod => prod.id === p.id);
+        return `
+          <div onclick="selecionarProdutoDaBusca(${idxReal})" class="p-2 hover:bg-teal-50 cursor-pointer flex justify-between items-center text-xs">
+            <div>
+              <p class="font-bold text-gray-800">${p.nome}</p>
+              <p class="text-[10px] text-gray-500">Estoque: ${p.estoque} ${p.medida || 'un'}</p>
+            </div>
+            <span class="font-bold text-teal-700">R$ ${p.preco.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+
+      box.classList.remove('hidden');
     }
 
-    function adicionarValorRapido(valor) {
-      carrinho.push({ nome: `Item R$ ${valor}`, preco: parseFloat(valor), qtd: 1, medida: 'un' });
-      renderAba();
+    function selecionarProdutoDaBusca(index) {
+      document.getElementById('dropdown-busca-produtos').classList.add('hidden');
+      document.getElementById('venda-nome-manual').value = '';
+      adicionarAoCarrinho(index);
     }
 
     function adicionarAoCarrinho(index) {
       let prod = produtos[index];
 
-      // Verificação de Estoque Disponível
       let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
       let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
       let estoqueRestante = prod.estoque - qtdNoCarrinho;
@@ -650,7 +683,6 @@
         return;
       }
 
-      // Venda em Kg ou Litros
       if (['kg', 'g', 'L'].includes(prod.medida)) {
         prodFracionadoTemp = prod;
         document.getElementById('fracionado-titulo').innerText = `Venda em ${prod.medida.toUpperCase()}: ${prod.nome}`;
@@ -658,10 +690,6 @@
         document.getElementById('fracionado-qtd').value = '';
         document.getElementById('modal-fracionado').classList.remove('hidden');
         return;
-      }
-
-      if (estoqueRestante <= (prod.estMin || 3)) {
-        dispararAlertaEstoque(prod);
       }
 
       if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
@@ -704,20 +732,48 @@
       renderAba();
     }
 
-    function dispararAlertaEstoque(prod) {
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-      try {
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let osc = audioCtx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        osc.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.4);
-      } catch(e) {}
+    // ALERTA CONTINUO DE ESTOQUE (SOM + VIBRAÇÃO CONTINUA ATÉ DESLIGAR MANUALMENTE)
+    function iniciarAlertaEstoqueCritico(produtosAlertados) {
+      document.getElementById('alerta-estoque-mensagem').innerHTML = produtosAlertados.map(p => `
+        <span class="block"><b>${p.nome}</b>: Restam apenas <span class="text-red-600 font-extrabold text-sm">${p.estoque} ${p.medida || 'un'}</span> (Limite Mínimo: ${p.estMin || 3})</span>
+      `).join('');
+
+      document.getElementById('modal-alerta-estoque-continua').classList.remove('hidden');
+
+      // Toca bipe contínuo em loop
+      if (!timerSomAlerta) {
+        timerSomAlerta = setInterval(() => {
+          try {
+            if (!audioCtxAlerta) audioCtxAlerta = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtxAlerta.createOscillator();
+            let gain = audioCtxAlerta.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, audioCtxAlerta.currentTime);
+            gain.gain.setValueAtTime(0.3, audioCtxAlerta.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtxAlerta.destination);
+            osc.start();
+            osc.stop(audioCtxAlerta.currentTime + 0.3);
+          } catch(e) {}
+        }, 700);
+      }
+
+      // Vibração contínua em loop
+      if (!timerVibracaoAlerta && navigator.vibrate) {
+        timerVibracaoAlerta = setInterval(() => {
+          navigator.vibrate([300, 200, 300]);
+        }, 1000);
+      }
     }
 
-    // ABA 2: ESTOQUE, COMPRAS, UNIDADES, MARCAR ATALHOS & DESTAQUE DE MÍNIMO
+    function interromperAlertaEstoqueManual() {
+      if (timerSomAlerta) { clearInterval(timerSomAlerta); timerSomAlerta = null; }
+      if (timerVibracaoAlerta) { clearInterval(timerVibracaoAlerta); timerVibracaoAlerta = null; }
+      document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
+      switchTab('estoque');
+    }
+
+    // ABA 2: ESTOQUE
     function renderAbaEstoque() {
       let produtosOrdenados = [...produtos].map((p, originalIdx) => ({ ...p, originalIdx }));
       produtosOrdenados.sort((a, b) => {
@@ -780,7 +836,6 @@
               </select>
             </div>
 
-            <!-- CAMPO DE ALERTA DE ESTOQUE MÍNIMO COM DESTAQUE DESTACADO -->
             <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200 space-y-1">
               <label class="block text-xs font-bold text-amber-900 flex items-center gap-1">
                 <i class="fa-solid fa-bell text-amber-600"></i> Defina o Limite Mínimo para Receber Alerta:
@@ -1279,7 +1334,7 @@
       }
     }
 
-    // FINALIZAÇÃO DE VENDA & COMPROVANTES
+    // FINALIZAÇÃO PROCESSADA COM MODO ESCOLHIDO
     function removerDoCarrinho(index) {
       carrinho.splice(index, 1);
       renderAba();
@@ -1288,9 +1343,8 @@
     function adicionarManualAoCarrinho() {
       const nome = document.getElementById('venda-nome-manual').value;
       const valor = document.getElementById('venda-valor-manual').value;
-      if (!nome || !valor) { alert("Informe o nome e valor!"); return; }
+      if (!nome || !valor) { alert("Informe o nome e valor do item!"); return; }
 
-      // Se o item digitado for um produto em estoque, dá baixa no estoque dele
       let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
       let medida = prodExistente ? prodExistente.medida : 'un';
 
@@ -1300,13 +1354,15 @@
       renderAba();
     }
 
-    function finalizarCarrinho() {
+    function processarFinalizarVenda(modoEnvio) {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
+      
       const pagto = document.getElementById('venda-pagto').value;
-      const clienteFiado = document.getElementById('venda-cliente-fiado') ? document.getElementById('venda-cliente-fiado').value : '';
+      const clienteNome = document.getElementById('venda-cliente-nome') ? document.getElementById('venda-cliente-nome').value.trim() : '';
+      const clienteZap = document.getElementById('venda-cliente-zap') ? document.getElementById('venda-cliente-zap').value.trim() : '';
 
-      if (pagto === 'Fiado' && !clienteFiado) {
-        alert("Selecione o cliente para registrar o fiado!");
+      if (pagto === 'Fiado' && !clienteNome) {
+        alert("Digite o nome do cliente para registrar o fiado!");
         return;
       }
 
@@ -1315,10 +1371,16 @@
 
       let totalVenda = 0;
       let itensResumo = [];
+      let produtosComEstoqueCritico = [];
 
       carrinho.forEach(item => {
         let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
-        if (prod && prod.estoque >= item.qtd) { prod.estoque -= item.qtd; }
+        if (prod) {
+          prod.estoque = Math.max(0, prod.estoque - item.qtd);
+          if (prod.estoque <= (prod.estMin || 3)) {
+            produtosComEstoqueCritico.push(prod);
+          }
+        }
 
         let valorItemTotal = item.preco * item.qtd;
         totalVenda += valorItemTotal;
@@ -1328,7 +1390,7 @@
           item: `${item.qtd}x ${item.nome}`,
           valor: valorItemTotal,
           formaPagto: pagto,
-          cliente: pagto === 'Fiado' ? clienteFiado : '',
+          cliente: clienteNome,
           data: dataAtual
         };
 
@@ -1340,73 +1402,84 @@
         }
       });
 
-      if (pagto === 'Fiado' && clienteFiado) {
-        let cli = clientes.find(c => c.nome === clienteFiado);
+      // Atualizar Fiado
+      if (clienteNome) {
+        let cli = clientes.find(c => c.nome.toLowerCase() === clienteNome.toLowerCase());
         if (cli) {
-          cli.debito = (parseFloat(cli.debito) || 0) + totalVenda;
-          localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-          if (user) {
-            db.collection("clientes").doc(user.uid + "_" + cli.id).set(cli, { merge: true });
-          }
+          if (pagto === 'Fiado') cli.debito = (parseFloat(cli.debito) || 0) + totalVenda;
+          if (clienteZap) cli.telefone = clienteZap;
+        } else {
+          cli = {
+            id: Date.now(),
+            nome: clienteNome,
+            telefone: clienteZap,
+            debito: pagto === 'Fiado' ? totalVenda : 0
+          };
+          clientes.push(cli);
+        }
+
+        localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+        if (user) {
+          db.collection("clientes").doc(user.uid + "_" + cli.id).set({ ...cli, userId: user.uid }, { merge: true });
         }
       }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       localStorage.setItem('crm_vendas', JSON.stringify(vendas));
 
-      ultimaVendaRealizada = {
+      let dadosVenda = {
         loja: perfilNegocio.nomeLoja,
         data: dataAtual,
         itens: itensResumo,
         total: totalVenda,
         pagto: pagto,
-        cliente: clienteFiado
+        cliente: clienteNome,
+        telefone: clienteZap
       };
 
       carrinho = [];
-      exibirModalComprovante();
+
+      // Ações por Modo de Envio
+      if (modoEnvio === 'whatsapp') {
+        enviarComprovanteDiretoWhatsApp(dadosVenda);
+      } else if (modoEnvio === 'imprimir') {
+        imprimirReciboDireto(dadosVenda);
+      } else {
+        alert("✅ Venda finalizada e registrada no caixa!");
+      }
+
+      // Se houver produto em estoque mínimo, ativa alarme contínuo
+      if (produtosComEstoqueCritico.length > 0) {
+        iniciarAlertaEstoqueCritico(produtosComEstoqueCritico);
+      }
+
       renderAba();
     }
 
-    function exibirModalComprovante() {
-      if (!ultimaVendaRealizada) return;
-      document.getElementById('comprovante-conteudo').innerHTML = `
-        <p class="font-bold text-center border-b pb-1 text-gray-800">${ultimaVendaRealizada.loja}</p>
-        <p class="text-[10px] text-gray-500 text-center">${ultimaVendaRealizada.data}</p>
-        <div class="py-2 space-y-1 border-b border-t my-1">
-          ${ultimaVendaRealizada.itens.map(i => `<p class="flex justify-between"><span>${i}</span></p>`).join('')}
-        </div>
-        <p class="font-bold flex justify-between text-teal-800"><span>TOTAL:</span> <span>R$ ${ultimaVendaRealizada.total.toFixed(2)}</span></p>
-        <p class="text-[10px] text-gray-600">Forma Pagto: <b>${ultimaVendaRealizada.pagto}</b> ${ultimaVendaRealizada.cliente ? `(${ultimaVendaRealizada.cliente})` : ''}</p>
-      `;
-      document.getElementById('modal-comprovante').classList.remove('hidden');
-    }
-
-    function closeModalComprovante() {
-      document.getElementById('modal-comprovante').classList.add('hidden');
-    }
-
-    function enviarComprovanteZap() {
-      if (!ultimaVendaRealizada) return;
-      let texto = `*COMPROVANTE DE COMPRA - ${ultimaVendaRealizada.loja.toUpperCase()}*\n`;
-      texto += `Data: ${ultimaVendaRealizada.data}\n\n`;
-      texto += `*Itens:*\n${ultimaVendaRealizada.itens.join('\n')}\n\n`;
-      texto += `*TOTAL: R$ ${ultimaVendaRealizada.total.toFixed(2)}*\n`;
-      texto += `Forma de Pagamento: ${ultimaVendaRealizada.pagto}\n`;
-      if (ultimaVendaRealizada.cliente) texto += `Cliente: ${ultimaVendaRealizada.cliente}\n`;
+    function enviarComprovanteDiretoWhatsApp(vendaObj) {
+      let texto = `*COMPROVANTE DE COMPRA - ${vendaObj.loja.toUpperCase()}*\n`;
+      texto += `Data: ${vendaObj.data}\n\n`;
+      texto += `*Itens:*\n${vendaObj.itens.join('\n')}\n\n`;
+      texto += `*TOTAL: R$ ${vendaObj.total.toFixed(2)}*\n`;
+      texto += `Forma de Pagamento: ${vendaObj.pagto}\n`;
+      if (vendaObj.cliente) texto += `Cliente: ${vendaObj.cliente}\n`;
       texto += `\nAgradecemos a preferência!`;
 
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
+      let linkZap = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      if (vendaObj.telefone) {
+        let numLimpo = vendaObj.telefone.replace(/\D/g, '');
+        if (numLimpo.length >= 10) linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
+      }
+
+      window.open(linkZap, '_blank');
     }
 
-    function imprimirReciboProfissional() {
-      if (!ultimaVendaRealizada) return;
+    function imprimirReciboDireto(vendaObj) {
       let janelaImp = window.open('', '_blank');
       janelaImp.document.write(`
         <html>
         <head>
-          <title>Recibo - ${ultimaVendaRealizada.loja}</title>
+          <title>Recibo - ${vendaObj.loja}</title>
           <style>
             body { font-family: monospace; width: 250px; padding: 10px; margin: 0 auto; font-size: 12px; }
             .text-center { text-align: center; }
@@ -1416,14 +1489,14 @@
           </style>
         </head>
         <body onload="window.print(); window.close();">
-          <div class="text-center bold">${ultimaVendaRealizada.loja}</div>
-          <div class="text-center">${ultimaVendaRealizada.data}</div>
+          <div class="text-center bold">${vendaObj.loja}</div>
+          <div class="text-center">${vendaObj.data}</div>
           <div class="line"></div>
-          ${ultimaVendaRealizada.itens.map(i => `<div class="flex"><span>${i}</span></div>`).join('')}
+          ${vendaObj.itens.map(i => `<div class="flex"><span>${i}</span></div>`).join('')}
           <div class="line"></div>
-          <div class="flex bold"><span>TOTAL:</span> <span>R$ ${ultimaVendaRealizada.total.toFixed(2)}</span></div>
-          <div>Pagto: ${ultimaVendaRealizada.pagto}</div>
-          ${ultimaVendaRealizada.cliente ? `<div>Cliente: ${ultimaVendaRealizada.cliente}</div>` : ''}
+          <div class="flex bold"><span>TOTAL:</span> <span>R$ ${vendaObj.total.toFixed(2)}</span></div>
+          <div>Pagto: ${vendaObj.pagto}</div>
+          ${vendaObj.cliente ? `<div>Cliente: ${vendaObj.cliente}</div>` : ''}
           <div class="line"></div>
           <div class="text-center">Obrigado pela preferência!</div>
         </body>
@@ -1479,7 +1552,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro Atualizado com Sucesso!");
+    console.log("Caixa Rápido Móvel Pro v5.6 Definitivo!");
   </script>
 </body>
 </html>

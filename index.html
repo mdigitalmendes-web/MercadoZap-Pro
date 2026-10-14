@@ -13,12 +13,12 @@
     h1 { font-size: 1.1rem; margin-bottom: 8px; text-align: center; color: #1a252f; display: flex; justify-content: space-between; align-items: center; }
     .card { background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 12px; }
     .tab-bar { display: flex; gap: 4px; margin-bottom: 10px; overflow-x: auto; }
-    .tab-btn { flex: 1; padding: 10px 2px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; color: #475569; min-width: 65px; }
+    .tab-btn { flex: 1; padding: 10px 2px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; color: #475569; min-width: 65px; cursor: pointer; }
     .tab-btn.active { background: #25d366; color: white; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .quick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; }
+    .btn-quick { background: #eef2f7; border: 1px solid #cbd5e1; padding: 12px 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; color: #1e293b; position: relative; cursor: pointer; }
     .btn-quick.esgotado { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; opacity: 0.6; cursor: not-allowed; }
     .badge-estq { position: absolute; top: 2px; right: 2px; background: #0284c7; color: white; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
     .badge-esgotado { position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
@@ -26,32 +26,32 @@
     .custom-item input, .input-field { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; width: 100%; }
     .custom-item input[type="text"] { flex: 2; }
     .custom-item input[type="number"] { flex: 1; }
-    .btn-add { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: bold; }
+    .btn-add { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     .cart-list { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid #eee; }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
     .qty-controls { display: flex; align-items: center; gap: 6px; }
-    .btn-qty { background: #e2e8f0; border: none; width: 26px; height: 26px; border-radius: 4px; font-weight: bold; font-size: 1rem; }
+    .btn-qty { background: #e2e8f0; border: none; width: 26px; height: 26px; border-radius: 4px; font-weight: bold; font-size: 1rem; cursor: pointer; }
     .total-box { font-size: 1.2rem; font-weight: bold; text-align: right; color: #16a34a; margin-bottom: 4px; }
     .lucro-box { font-size: 0.85rem; font-weight: bold; text-align: right; color: #0284c7; margin-bottom: 10px; }
     .pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-    .pay-btn { padding: 10px 4px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; }
+    .pay-btn { padding: 10px 4px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; cursor: pointer; }
     .pay-btn.selected { background: #16a34a; color: white; border-color: #16a34a; }
     .pay-btn.fiado { color: #d97706; border-color: #f59e0b; }
     .pay-btn.fiado.selected { background: #d97706; color: white; }
     .troco-box { background: #fef3c7; border: 1px solid #fde047; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; }
-    .btn-finish { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; }
-    .btn-client-receipt { width: 100%; background: #25d366; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; }
-    .btn-clear { width: 100%; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
+    .btn-finish { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; cursor: pointer; }
+    .btn-client-receipt { width: 100%; background: #25d366; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; cursor: pointer; }
+    .btn-clear { width: 100%; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding: 16px; box-sizing: border-box; overflow-y: auto; z-index: 100; }
     .modal-content { background: white; padding: 16px; border-radius: 10px; max-width: 500px; margin: 10px auto; }
-    .btn-help { background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+    .btn-help { background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
     .filter-btn-group { display: flex; gap: 4px; margin: 8px 0; }
-    .btn-filter { flex: 1; padding: 6px; border: 1px solid #0284c7; background: white; color: #0284c7; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+    .btn-filter { flex: 1; padding: 6px; border: 1px solid #0284c7; background: white; color: #0284c7; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
     .btn-filter.selected { background: #0284c7; color: white; }
-    .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+    .btn-small-edit { background: #0284c7; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
     .toggle-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px; font-weight: bold; color: #475569; }
     
-    .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
+    .cad-type-btn { flex: 1; padding: 8px 2px; border: 1px solid #0284c7; background: #f0f9ff; color: #0284c7; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; cursor: pointer; }
     .cad-type-btn.active { background: #0284c7; color: white; }
 
     .search-results-box {
@@ -112,10 +112,10 @@
       </div>
 
       <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:16px; line-height:1.4;" id="textoMotivoBloqueio">
-        Informe o Código Único acima ao desenvolvedor para obter a sua chave individual de liberação.
+        Informe o Código Único acima para obter a sua chave de liberação.
       </p>
 
-      <input type="text" id="chaveAtivacaoInput" class="input-field" placeholder="Digite a Chave Única de Liberação..." style="text-align:center; text-transform:uppercase; font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
+      <input type="text" id="chaveAtivacaoInput" class="input-field" placeholder="Digite a Chave de Liberação..." style="text-align:center; text-transform:uppercase; font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
       
       <button onclick="validarChaveAtivacao()" class="btn-finish" style="background:#2563eb;">🔓 Validar e Desbloquear</button>
     </div>
@@ -124,7 +124,7 @@
   <!-- BANNER DETALHADO DE EMERGÊNCIA -->
   <div id="bannerAlarmeSilenciar">
     <div id="textoDetalhadoAlarme" style="margin-bottom:6px;">⚠️ ALERTA CRÍTICO ATIVO!</div>
-    <button onclick="silenciarAlarmeManual()" style="background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%;">🔕 Silenciar Alarme Automático</button>
+    <button onclick="silenciarAlarmeManual()" style="background:white; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; width:100%; cursor:pointer;">🔕 Silenciar Alarme Automático</button>
   </div>
 
   <!-- BANNER INDICADOR DE LICENÇA NO TOPO -->
@@ -311,12 +311,26 @@
         <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar no Estoque</button>
       </div>
 
-      <!-- CONFIGURAÇÃO DE LIMITE DE ATALHOS EXIBIDOS -->
+      <!-- CONFIGURAÇÃO DE LIMITE DE ATALHOS EXIBIDOS E LIMITES DE ESTOQUE CRÍTICO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
-        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:4px;">⚙️ Organização de Atalhos do Caixa:</strong>
-        <div style="display:flex; gap:8px; align-items:center;">
+        <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Ajuste de Atalhos & Alertas de Estoque Crítico:</strong>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
           <label style="font-size:0.8rem;">Limite máx. de botões no Caixa:</label>
           <input type="number" id="cfgLimiteAtalhosTela" class="input-field" style="width:70px; padding:4px;" value="8" min="2" max="30" onchange="salvarConfiguracoes()">
+        </div>
+        <div style="display:flex; gap:6px;">
+          <div>
+            <label style="font-size:0.7rem; color:#64748b; font-weight:bold;">Mín. KG:</label>
+            <input type="number" id="cfgLimiteEstqKg" class="input-field" style="padding:4px;" value="2.5" step="0.5" onchange="salvarConfiguracoes()">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#64748b; font-weight:bold;">Mín. UN:</label>
+            <input type="number" id="cfgLimiteEstqUn" class="input-field" style="padding:4px;" value="5" onchange="salvarConfiguracoes()">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#64748b; font-weight:bold;">Mín. CX:</label>
+            <input type="number" id="cfgLimiteEstqCx" class="input-field" style="padding:4px;" value="2" onchange="salvarConfiguracoes()">
+          </div>
         </div>
       </div>
 
@@ -331,7 +345,7 @@
     </div>
   </div>
 
-  <!-- ABA NOVO: MÓDULO DE SERVIÇOS -->
+  <!-- ABA 3: MÓDULO DE SERVIÇOS -->
   <div class="tab-content" id="tab-servicos">
     <div class="card" style="border: 2px solid #059669; background: #ecfdf5;">
       <strong style="color:#047857; font-size:1rem; display:block; margin-bottom:8px;">🛠️ Cadastro & Gestão de Serviços (Mão de Obra)</strong>
@@ -360,7 +374,7 @@
     </div>
   </div>
 
-  <!-- ABA 3: MONITOR DE VALIDADES AUTOMÁTICO -->
+  <!-- ABA 4: MONITOR DE VALIDADES AUTOMÁTICO -->
   <div class="tab-content" id="tab-validade">
     <div class="card" style="border: 2px solid #7c3aed; background: #faf5ff;">
       <strong style="color:#6b21a8; font-size:1rem; display:block; margin-bottom:8px;">⚠️ Monitor de Validades & Horários de Alarme</strong>
@@ -406,7 +420,7 @@
     </div>
   </div>
 
-  <!-- ABA 4: RELATÓRIOS EXCLUSIVOS -->
+  <!-- ABA 5: RELATÓRIOS EXCLUSIVOS -->
   <div class="tab-content" id="tab-relatorios">
     <div class="card">
       <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
@@ -558,7 +572,8 @@
 
     function verificarLicencaAcesso() {
       const serialUnico = obterOuGerarSerialDispositivo();
-      document.getElementById('displayDeviceSerial').innerText = serialUnico;
+      const displayEl = document.getElementById('displayDeviceSerial');
+      if (displayEl) displayEl.innerText = serialUnico;
 
       let dataInstalacaoFixa = localStorage.getItem('crm_data_primeira_instalacao');
       let diasLicencaLiberados = parseInt(localStorage.getItem('crm_dias_licenca_liberados')) || 20;
@@ -584,7 +599,8 @@
         document.getElementById('textoMotivoBloqueio').innerHTML = `Seu período liberado para este dispositivo (<strong>${serialUnico}</strong>) expirou.<br><br>Solicite a sua chave individual de liberação.`;
         return false;
       } else {
-        document.getElementById('diasRestantesTrialText').innerText = diasRestantes;
+        const txtEl = document.getElementById('diasRestantesTrialText');
+        if (txtEl) txtEl.innerText = diasRestantes;
         return true;
       }
     }
@@ -611,16 +627,27 @@
         alert('🎉 Licença de 30 DIAS ativada com sucesso neste dispositivo!');
         location.reload();
       } 
+      else if (chaveDigitada === "MERCADO20DIAS") {
+        localStorage.setItem('crm_data_primeira_instalacao', new Date().getTime().toString());
+        localStorage.setItem('crm_dias_licenca_liberados', '20');
+        localStorage.setItem('crm_licenca_vitalicia', 'false');
+        document.getElementById('telaBloqueioLicenca').style.display = 'none';
+        alert('🎉 Licença de 20 DIAS ativada com sucesso neste dispositivo!');
+        location.reload();
+      }
       else {
         alert('❌ Chave inválida para este dispositivo!');
       }
     }
 
+    // LISTA DE PRODUTOS COMPLETA E RESTAURADA
     const atalhosPadrao = [
       { id: 1, nome: '🎱 Sinuca', dataRecebimento: '2026-10-01', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50, ean: '', validade: '', exibirAtalho: true },
       { id: 2, nome: '🍺 Skol 350ml', dataRecebimento: '2026-10-01', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100, ean: '7891991000823', validade: '', exibirAtalho: true },
       { id: 3, nome: '🔥 Botijão de Gás', dataRecebimento: '2026-10-01', precoCusto: 85.00, preco: 105.00, tipo: 'UN', estoque: 15, ean: '', validade: '', exibirAtalho: true },
-      { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15', exibirAtalho: true }
+      { id: 4, nome: '🧀 Queijo Prato', dataRecebimento: '2026-10-01', precoCusto: 35.00, preco: 50.00, tipo: 'KG', estoque: 10, ean: '', validade: '2026-11-15', exibirAtalho: true },
+      { id: 5, nome: '🥖 Pão Francês', dataRecebimento: '2026-10-01', precoCusto: 8.00, preco: 14.00, tipo: 'KG', estoque: 25, ean: '', validade: '', exibirAtalho: true },
+      { id: 6, nome: '🥤 Refrigerante 2L', dataRecebimento: '2026-10-01', precoCusto: 6.50, preco: 9.50, tipo: 'UN', estoque: 40, ean: '7894900011517', validade: '', exibirAtalho: true }
     ];
 
     let atalhos = JSON.parse(localStorage.getItem('crm_atalhos_v3_0')) || atalhosPadrao;
@@ -651,8 +678,9 @@
 
     document.addEventListener('click', (e) => {
       verificarAlertasECorrerAlarme();
-      if (!e.target.closest('.custom-item')) {
-        document.getElementById('boxBuscaRapida').style.display = 'none';
+      const box = document.getElementById('boxBuscaRapida');
+      if (box && !e.target.closest('.custom-item')) {
+        box.style.display = 'none';
       }
     });
 
@@ -743,8 +771,8 @@
         if (itensEstoqueCritico.length > 0) mensagem += `[ESTOQUE CRÍTICO: ${itensEstoqueCritico.join(', ')}] `;
         if (itensValidadeCritico.length > 0) mensagem += `[VALIDADE PRÓXIMA: ${itensValidadeCritico.join(', ')}]`;
 
-        textoBanner.innerText = mensagem;
-        banner.style.display = 'block';
+        if (textoBanner) textoBanner.innerText = mensagem;
+        if (banner) banner.style.display = 'block';
 
         if (!alarmeLoopInterval) {
           dispararPulsoAlarme();
@@ -753,7 +781,7 @@
           }, 3000);
         }
       } else {
-        banner.style.display = 'none';
+        if (banner) banner.style.display = 'none';
         if (alarmeLoopInterval) {
           clearInterval(alarmeLoopInterval);
           alarmeLoopInterval = null;
@@ -767,7 +795,8 @@
         clearInterval(alarmeLoopInterval);
         alarmeLoopInterval = null;
       }
-      document.getElementById('bannerAlarmeSilenciar').style.display = 'none';
+      const banner = document.getElementById('bannerAlarmeSilenciar');
+      if (banner) banner.style.display = 'none';
     }
 
     function testarSomValidade() {
@@ -934,7 +963,8 @@
       formaPagamento = tipo;
       document.querySelectorAll('.pay-btn').forEach(btn => btn.classList.remove('selected'));
       const idMap = { 'Dinheiro': 'pag-Dinheiro', 'PIX': 'pag-PIX', 'Cartão': 'pag-Cartao', 'Fiado': 'pag-Fiado' };
-      document.getElementById(idMap[tipo]).classList.add('selected');
+      const targetBtn = document.getElementById(idMap[tipo]);
+      if (targetBtn) targetBtn.classList.add('selected');
       document.getElementById('boxTroco').style.display = tipo === 'Dinheiro' ? 'block' : 'none';
     }
 
@@ -1228,6 +1258,7 @@
 
     function renderizarServicos() {
       const container = document.getElementById('listaServicos');
+      if (!container) return;
       container.innerHTML = '';
 
       if (servicos.length === 0) {
@@ -1243,9 +1274,9 @@
               <small style="color:#047857;">Preço: R$ ${s.preco.toFixed(2)} | Custo: R$ ${(s.custo||0).toFixed(2)}</small>
             </div>
             <div style="display:flex; gap:4px;">
-              <button onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})" style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">🚀 Lançar</button>
-              <button onclick="editarServico(${s.id})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Editar</button>
-              <button onclick="excluirServico(${s.id})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✕</button>
+              <button onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})" style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">🚀 Lançar</button>
+              <button onclick="editarServico(${s.id})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✏️ Editar</button>
+              <button onclick="excluirServico(${s.id})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✕</button>
             </div>
           </div>
         `;
@@ -1293,6 +1324,7 @@
 
     function renderizarEstoque() {
       const container = document.getElementById('listaEstoque');
+      if (!container) return;
       container.innerHTML = '';
 
       let custoTotal = 0;
@@ -1331,8 +1363,8 @@
               ${txtVal}${txtEan}
             </div>
             <div style="display:flex; flex-direction:column; gap:4px;">
-              <button onclick="editarProdutoCompleto(${item.id})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✏️ Editar</button>
-              <button onclick="excluirProdutoEstoque(${item.id})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">✕ Excluir</button>
+              <button onclick="editarProdutoCompleto(${item.id})" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✏️ Editar</button>
+              <button onclick="excluirProdutoEstoque(${item.id})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✕ Excluir</button>
             </div>
           </div>
         `;
@@ -1345,6 +1377,7 @@
 
     function renderizarValidades() {
       const container = document.getElementById('listaValidades');
+      if (!container) return;
       container.innerHTML = '';
 
       const itensComValidade = atalhos.filter(a => a.validade);
@@ -1393,7 +1426,7 @@
               <strong>${item.nome}</strong> (${item.estoque} em estoque)<br>
               <span style="color:${statusCor}; font-weight:bold;">${statusTexto}</span>
             </div>
-            <button onclick="mudarAba('estoque')" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">Ver no Estoque</button>
+            <button onclick="mudarAba('estoque')" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">Ver no Estoque</button>
           </div>
         `;
       });
@@ -1524,10 +1557,10 @@
       document.getElementById('valorLucroVenda').innerText = calcularLucroVenda().toFixed(2);
       calcularTroco();
 
-      document.getElementById('cfgNomeLoja').value = config.loja;
-      document.getElementById('cfgAtendente').value = config.atendente;
-      document.getElementById('cfgTelSocio').value = config.socio;
-      document.getElementById('cfgChavePix').value = config.pix;
+      document.getElementById('cfgNomeLoja').value = config.loja || '';
+      document.getElementById('cfgAtendente').value = config.atendente || '';
+      document.getElementById('cfgTelSocio').value = config.socio || '';
+      document.getElementById('cfgChavePix').value = config.pix || '';
       
       document.getElementById('cfgLimiteEstqKg').value = config.limiteKg || 2.5;
       document.getElementById('cfgLimiteEstqUn').value = config.limiteUn || 5;
@@ -1563,4 +1596,201 @@
     }
 
     function enviarWhatsappSocio() {
-      if (!config.socio)
+      if (!config.socio) return alert('Cadastre o WhatsApp do Sócio no menu ⚙️ Config!');
+
+      const vendasFiltradas = obterVendasFiltradas();
+      const periodoTexto = { 'hoje': 'DO DIA', 'semana': 'DA SEMANA', 'mes': 'DO MÊS' }[filtroAtual];
+
+      let texto = `📊 *FECHAMENTO DE CAIXA ${periodoTexto} - ${config.loja.toUpperCase()}*\n\n`;
+      let totalGeral = 0;
+      let totalLucroGeral = 0;
+
+      vendasFiltradas.forEach((v, i) => {
+        totalGeral += v.total;
+        totalLucroGeral += (v.lucro || 0);
+
+        texto += `*#${i+1} (${v.hora}) - ${v.cliente}*\n`;
+        v.itens.forEach(it => { texto += ` • ${it.qtd}x ${it.nome}: R$ ${(it.preco * it.qtd).toFixed(2)}\n`; });
+        texto += `Total: R$ ${v.total.toFixed(2)} (${v.pagamento})\n\n`;
+      });
+
+      texto += `💰 *TOTAL FATURADO: R$ ${totalGeral.toFixed(2)}*\n`;
+      texto += `📈 *LUCRO LÍQUIDO: R$ ${totalLucroGeral.toFixed(2)}*\n`;
+
+      const url = `https://api.whatsapp.com/send?phone=55${config.socio}&text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    }
+
+    function gerarPDFTipo(tipo) {
+      gerarPDFCompletoComExtrato(tipo);
+    }
+
+    function gerarPDFCompletoComExtrato(tipoFiltroPDF = 'completo') {
+      const vendasFiltradas = obterVendasFiltradas();
+      const periodoTexto = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' }[filtroAtual];
+
+      document.getElementById('pdfNomeLoja').innerText = config.loja.toUpperCase();
+      document.getElementById('pdfPeriodoTexto').innerText = periodoTexto;
+      document.getElementById('pdfDataGeracao').innerText = new Date().toLocaleString('pt-BR');
+
+      const divExtrato = document.getElementById('pdfExtratoVendas');
+      divExtrato.innerHTML = '';
+
+      if (tipoFiltroPDF === 'estoque') {
+        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Geral de Estoque & Investimento';
+        let totCusto = 0, totVenda = 0;
+        atalhos.forEach(a => {
+          totCusto += (a.precoCusto || 0) * a.estoque;
+          totVenda += a.preco * a.estoque;
+          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: ${a.estoque} ${a.tipo} | Custo: R$ ${(a.precoCusto||0).toFixed(2)} | Venda: R$ ${a.preco.toFixed(2)}</p>`;
+        });
+        document.getElementById('pdfTotalFaturado').innerText = totVenda.toFixed(2);
+        document.getElementById('pdfTotalLucro').innerText = (totVenda - totCusto).toFixed(2);
+      } 
+      else if (tipoFiltroPDF === 'validade') {
+        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Detalhado de Validades';
+        atalhos.filter(a => a.validade).forEach(a => {
+          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: Validade ${a.validade} (${a.estoque} em estoque)</p>`;
+        });
+      }
+      else {
+        const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
+        const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
+        const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+        const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+        const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+        const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+
+        document.getElementById('pdfTotalFaturado').innerText = totalAcumulado.toFixed(2);
+        document.getElementById('pdfTotalLucro').innerText = totalLucro.toFixed(2);
+        document.getElementById('pdfTotalDinheiro').innerText = totalDinheiro.toFixed(2);
+        document.getElementById('pdfTotalPix').innerText = totalPix.toFixed(2);
+        document.getElementById('pdfTotalCartao').innerText = totalCartao.toFixed(2);
+        document.getElementById('pdfTotalFiado').innerText = totalFiado.toFixed(2);
+
+        let listaParaExibir = vendasFiltradas;
+        if (tipoFiltroPDF === 'fiados') listaParaExibir = vendasFiltradas.filter(v => v.pagamento === 'Fiado');
+
+        if (listaParaExibir.length === 0) {
+          divExtrato.innerHTML = '<p>Nenhuma venda localizada para este filtro.</p>';
+        } else {
+          listaParaExibir.forEach((v, i) => {
+            let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
+            divExtrato.innerHTML += `
+              <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px;">
+                <strong>#${i+1} [${v.hora}] ${v.cliente}</strong> (${v.pagamento})<br>
+                <small>Itens: ${itensTxt}</small><br>
+                <strong>Total Venda: R$ ${v.total.toFixed(2)}</strong>
+              </div>
+            `;
+          });
+        }
+      }
+
+      const areaPrint = document.getElementById('areaRelatorioPrint');
+      areaPrint.style.display = 'block';
+      window.print();
+      areaPrint.style.display = 'none';
+    }
+
+    function iniciarLeitorCamera(modo) {
+      const readerEl = document.getElementById('reader');
+      readerEl.style.display = 'block';
+
+      html5QrcodeScanner = new Html5QrcodeScanner("readerContainer", { fps: 10, qrbox: 250 });
+      html5QrcodeScanner.render((decodedText) => {
+        fecharLeitorCamera();
+
+        if (modo === 'cadastro') {
+          document.getElementById('cadEan').value = decodedText;
+          alert(`Código de barras ${decodedText} capturado para o cadastro!`);
+        } else if (modo === 'venda') {
+          const prodEncontrado = atalhos.find(a => a.ean === decodedText);
+          if (prodEncontrado) {
+            clicarAtalho(prodEncontrado);
+          } else {
+            alert(`Código ${decodedText} lido, mas não foi localizado no estoque. Cadastre-o na aba Estoque!`);
+          }
+        }
+      });
+    }
+
+    function fecharLeitorCamera() {
+      if (html5QrcodeScanner) {
+        try { html5QrcodeScanner.clear(); } catch(e){}
+      }
+      document.getElementById('reader').style.display = 'none';
+    }
+
+    function zerarTelaCaixaVisual() {
+      if (confirm('Deseja iniciar um novo turno visual no caixa? O faturamento da tela será zerado, mas todos os relatórios do dia continuarão salvos!')) {
+        idTurnoAtual = Date.now().toString();
+        localStorage.setItem('crm_turno_atual', idTurnoAtual);
+        carrinho = [];
+        document.getElementById('nomeCliente').value = '';
+        document.getElementById('telCliente').value = '';
+        document.getElementById('valorDesconto').value = '0';
+        document.getElementById('valorPago').value = '';
+        salvarEstado();
+      }
+    }
+
+    function apagarTodoOHistoricoVendas() {
+      if (confirm('⚠️ ATENÇÃO: Tem certeza que deseja apagar TODO o histórico permanente de vendas do aplicativo? Esta ação não pode ser desfeita.')) {
+        vendasDoDia = [];
+        sangriasDoDia = [];
+        carrinho = [];
+        salvarEstado();
+        alert('Todo o histórico de vendas foi apagado com sucesso!');
+      }
+    }
+
+    function abrirModalAjuda() { document.getElementById('modalAjuda').style.display = 'block'; }
+    function fecharModalAjuda() { document.getElementById('modalAjuda').style.display = 'none'; }
+    function abrirManualCompleto() {
+      const box = document.getElementById('boxManualTexto');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function mudarAba(aba) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      const btnAlvo = document.getElementById('btn-tab-' + aba);
+      const abaAlvo = document.getElementById('tab-' + aba);
+
+      if (btnAlvo) btnAlvo.classList.add('active');
+      if (abaAlvo) abaAlvo.classList.add('active');
+    }
+
+    function selecionarFiltro(tipo) {
+      filtroAtual = tipo;
+      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('selected'));
+      const btn = document.getElementById('flt-' + tipo);
+      if (btn) btn.classList.add('selected');
+      document.getElementById('nomeFiltro').innerText = tipo === 'hoje' ? 'Hoje' : (tipo === 'semana' ? 'Esta Semana' : 'Este Mês');
+      renderizar();
+    }
+
+    setInterval(() => {
+      verificarLicencaAcesso();
+      verificarViradaDeDiaAuto();
+      
+      const agora = new Date();
+      const horaStr = agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      if (config.modoValidade === 'fixo') {
+        if (horaStr === '10:00' || horaStr === '15:00') {
+          alarmeSilenciadoManual = false;
+          verificarAlertasECorrerAlarme();
+        }
+      } else {
+        verificarAlertasECorrerAlarme();
+      }
+    }, 15000);
+
+    // INICIALIZAÇÃO SEGURA
+    renderizar();
+  </script>
+</body>
+</html>

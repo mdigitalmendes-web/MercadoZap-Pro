@@ -8,7 +8,7 @@
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Gerador de PDF -->
+  <!-- Gerador de PDF (jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Leitor de Código de Barras via Câmera -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -72,6 +72,7 @@
         ⏳ 19 dias
       </span>
 
+      <!-- DROPDOWN TRÊS PONTINHOS -->
       <div class="relative">
         <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
           <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -79,7 +80,6 @@
 
         <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-60 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
           <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
-          <button onclick="openModalFechamento()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Caixa / Turno</button>
           <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
           <button onclick="sincronizarNuvemManual()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Backup & Sincronizar Nuvem</button>
           <button onclick="openModalAjuda()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
@@ -90,7 +90,7 @@
     </div>
   </header>
 
-  <!-- PAINEL LATERAL DE NAVEGAÇÃO -->
+  <!-- DRAWER LATERAL -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-64 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -142,7 +142,7 @@
     </div>
   </main>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (OTIMIZADO) -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
       <div class="flex justify-between items-center border-b pb-2">
@@ -161,7 +161,42 @@
     </div>
   </div>
 
-  <!-- MODAIS RESTANTES (AJUSTE RÁPIDO, SANGRIA, ALERTA, PERFIL, MÍNIMOS, FRACIONADOS, FECHAMENTO, AJUDA) -->
+  <!-- MODAL: EDITAR CLIENTE E PRAZO -->
+  <div id="modal-editar-cliente" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-user-pen text-teal-600"></i> Editar Cliente / Prazo
+        </h3>
+        <button onclick="fecharModalEditarCliente()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+
+      <input type="hidden" id="edit-cli-index">
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Nome do Cliente:</label>
+          <input type="text" id="edit-cli-nome" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">WhatsApp / Telefone:</label>
+          <input type="text" id="edit-cli-telefone" placeholder="(00) 00000-0000" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Prazo Combinado de Pagamento:</label>
+          <input type="date" id="edit-cli-prazo" class="w-full p-2.5 border rounded-lg font-bold text-teal-800 bg-white">
+        </div>
+      </div>
+
+      <button onclick="salvarEdicaoCliente()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+        💾 Salvar Alterações
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAIS COMPLEMENTARES -->
   <div id="modal-ajuste-rapido-prod" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -331,7 +366,7 @@
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
         <p><b>🔒 Fechamento de Caixa:</b> Botão direto na tela principal do Caixa para o vendedor fazer a contagem da gaveta ao final do turno.</p>
         <p><b>⏰ Fechamento Automático:</b> Às 23:59 todos os dias o sistema faz o fechamento do caixa do dia automaticamente e salva em relatórios.</p>
-        <p><b>⚡ Edição Instantânea:</b> Altere estoques, dê descontos e atualize validades direto na sub-aba de Mínimos e Validades.</p>
+        <p><b>⚡ Fiados e Prazos:</b> A tela fica limpa. Digite o nome do cliente para abrir suas opções, abater dívida, editar prazo ou mandar WhatsApp com 1 clique.</p>
       </div>
     </div>
   </div>
@@ -341,7 +376,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA COMPLETA -->
+  <!-- LÓGICA PRINCIPAL DO APLICATIVO -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
@@ -355,6 +390,9 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+
+    // HABILITAR NUVEM OFFLINE (SUPORTE SEM INTERNET)
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
     const produtosExemplo = [
       { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
@@ -394,7 +432,7 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // VERIFICAÇÃO DO PERÍODO DE LICENÇA
+    // LICENCIAMENTO
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -435,32 +473,28 @@
         alert("⏳ Mais +30 dias de teste liberados!");
         verificarLicencaStatus();
       } else {
-        msgErro.innerText = "Senha / Serial inválido! Tente novamente.";
+        msgErro.innerText = "Senha / Serial inválido!";
         msgErro.classList.remove('hidden');
       }
     }
 
     function openModalLicencaStatus() {
-      if (licencaInfo.vitalicio) {
-        alert("Sua licença é VITALÍCIA e ilimitada!");
-      } else {
+      if (licencaInfo.vitalicio) alert("Sua licença é VITALÍCIA e ilimitada!");
+      else {
         const msPassados = Date.now() - licencaInfo.dataInstalacao;
         const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
-        const diasRestantes = licencaInfo.diasDegustacao - diasUsados;
-        alert(`Licença de Demonstração:\nRestam ${diasRestantes} dia(s) de teste de uso do aplicativo.`);
+        alert(`Licença de Demonstração:\nRestam ${licencaInfo.diasDegustacao - diasUsados} dia(s) de uso.`);
       }
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS (OTIMIZADO COM ACESSO DIRETO À CÂMERA TRASEIRA)
+    // LEITOR DE CÓDIGO DE BARRAS
     function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
       document.getElementById('scanner-status').innerText = "Iniciando câmera traseira...";
 
       setTimeout(() => {
-        if (html5QrcodeScanner) {
-          html5QrcodeScanner.clear().catch(() => {});
-        }
+        if (html5QrcodeScanner) html5QrcodeScanner.clear().catch(() => {});
 
         html5QrcodeScanner = new Html5Qrcode("reader");
         const config = { fps: 15, qrbox: { width: 250, height: 150 } };
@@ -470,8 +504,8 @@
           config,
           onScanSuccess,
           onScanError
-        ).catch(err => {
-          document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique permissões.";
+        ).catch(() => {
+          document.getElementById('scanner-status').innerText = "Erro ao acessar câmera.";
         });
       }, 150);
     }
@@ -491,6 +525,7 @@
         }
       } else if (modoScannerDestino === 'cadastro') {
         document.getElementById('cad-prod-ean').value = decodedText;
+        document.getElementById('cad-prod-ean-display').innerText = `EAN LIDO: ${decodedText}`;
         alert(`✅ Código de barras lido: ${decodedText}`);
       } else if (modoScannerDestino === 'busca_estoque') {
         document.getElementById('busca-estoque-input').value = decodedText;
@@ -502,27 +537,19 @@
 
     function fecharScanner() {
       if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-          html5QrcodeScanner.clear();
-        }).catch(() => {});
+        html5QrcodeScanner.stop().then(() => html5QrcodeScanner.clear()).catch(() => {});
       }
       document.getElementById('modal-scanner').classList.add('hidden');
     }
 
-    // FECHAMENTO AUTOMÁTICO DE CAIXA ÀS 23:59
+    // FECHAMENTO AUTOMÁTICO 23:59
     function monitorarFechamentoAutomaticoMeiaNoite() {
       setInterval(() => {
         const agora = new Date();
-        const hora = agora.getHours();
-        const min = agora.getMinutes();
-
-        if (hora === 23 && min === 59) {
+        if (agora.getHours() === 23 && agora.getMinutes() === 59) {
           let hojeStr = agora.toLocaleDateString('pt-BR');
           let jaFechouHoje = historicoFechamentos.some(f => f.data === hojeStr && f.automatico);
-
-          if (!jaFechouHoje) {
-            executarFechamentoCaixaAutomatico(hojeStr);
-          }
+          if (!jaFechouHoje) executarFechamentoCaixaAutomatico(hojeStr);
         }
       }, 40000);
     }
@@ -533,12 +560,8 @@
 
       const totalVendas = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalCartoes = vendasHoje.filter(v => v.formaPagto.includes('Cartão')).reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
       const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-
-      const saldoEsperadoGaveta = totalDinheiro - totalSangrias + totalSuprimentos;
 
       const registroFechamento = {
         id: Date.now(),
@@ -547,24 +570,17 @@
         automatico: true,
         vendasQtd: vendasHoje.length,
         totalVendas: totalVendas,
-        totalDinheiro: totalDinheiro,
-        totalPix: totalPix,
-        totalCartoes: totalCartoes,
-        totalSangrias: totalSangrias,
-        totalSuprimentos: totalSuprimentos,
-        gavetaEsperada: saldoEsperadoGaveta
+        gavetaEsperada: totalDinheiro - totalSangrias + totalSuprimentos
       };
 
       historicoFechamentos.push(registroFechamento);
       localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
 
       const user = auth.currentUser;
-      if (user) {
-        db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
-      }
+      if (user) db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
     }
 
-    // SWIPE TOUCH
+    // SWIPE
     let touchStartX = 0;
     let touchEndX = 0;
     const swipeArea = document.getElementById('main-swipe-area');
@@ -618,7 +634,7 @@
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja;
 
       const user = auth.currentUser;
-      if (user) { db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true }); }
+      if (user) db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
       closeModalPerfil();
       renderAba();
       alert("Perfil atualizado!");
@@ -754,7 +770,7 @@
       const errBox = document.getElementById('auth-error');
 
       errBox.classList.add('hidden');
-      auth.signInWithEmailAndPassword(email, pass).catch(err => {
+      auth.signInWithEmailAndPassword(email, pass).catch(() => {
         errBox.innerText = "Erro ao entrar: E-mail ou senha incorretos.";
         errBox.classList.remove('hidden');
       });
@@ -787,11 +803,8 @@
       ordemAbas.forEach(a => {
         const btn = document.getElementById('drawer-btn-' + a);
         if (btn) {
-          if (a === aba) {
-            btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
-          } else {
-            btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
-          }
+          if (a === aba) btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
+          else btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
         }
       });
 
@@ -828,21 +841,12 @@
 
       const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
-      const registro = {
-        id: Date.now(),
-        tipo: tipo,
-        valor: valor,
-        motivo: motivo,
-        data: hojeStr
-      };
-
+      const registro = { id: Date.now(), tipo: tipo, valor: valor, motivo: motivo, data: hojeStr };
       sangriasSuprimentos.push(registro);
       localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
 
       const user = auth.currentUser;
-      if (user) {
-        db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
-      }
+      if (user) db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
 
       fecharModalSangria();
       alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado com sucesso!`);
@@ -877,7 +881,7 @@
             <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
               <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-gray-500'}">
-                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto}${p.medida || 'un'}</b>`}
+                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto} ${p.medida || 'un'}</b>`}
               </span>
               <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
             </div>
@@ -1209,8 +1213,25 @@
     function preencherMinimoAutomaticoPorMedida() {
       const medida = document.getElementById('cad-prod-medida').value;
       const campoMin = document.getElementById('cad-prod-estmin');
-      if (minimosPadrao[medida]) {
-        campoMin.value = minimosPadrao[medida];
+      if (minimosPadrao[medida]) campoMin.value = minimosPadrao[medida];
+    }
+
+    function calcularEExibirMargemLucro() {
+      const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
+      const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
+      const boxMargem = document.getElementById('margem-lucro-box');
+
+      if (venda > 0 && custo > 0) {
+        let lucro = venda - custo;
+        let pct = (lucro / venda) * 100;
+        boxMargem.innerText = `Margem de Lucro: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
+        if (pct < 15) {
+          boxMargem.className = "text-[11px] font-bold text-red-600 mt-1";
+        } else {
+          boxMargem.className = "text-[11px] font-bold text-green-700 mt-1";
+        }
+      } else {
+        boxMargem.innerText = "";
       }
     }
 
@@ -1277,18 +1298,27 @@
         <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-xl border">
           <div class="flex justify-between items-center">
             <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
-            <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2 py-1 rounded flex items-center gap-1">
-              <i class="fa-solid fa-barcode"></i> Bipar
+            <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2.5 py-1 rounded flex items-center gap-1 shadow">
+              <i class="fa-solid fa-barcode"></i> Bipar Código
             </button>
           </div>
           
           <input type="hidden" id="cad-prod-ean">
+          <p id="cad-prod-ean-display" class="text-[10px] text-teal-800 font-bold bg-teal-50 p-1 rounded border border-teal-200"></p>
+
           <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs bg-white">
           
           <div class="grid grid-cols-2 gap-2">
-            <input type="number" step="0.01" id="cad-prod-preco-custo" placeholder="Preço Custo R$" class="p-2 border rounded-lg text-xs bg-white">
-            <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda R$" class="p-2 border rounded-lg text-xs bg-white">
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Custo R$</label>
+              <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Venda R$</label>
+              <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+            </div>
           </div>
+          <p id="margem-lucro-box" class="text-[11px] font-bold text-teal-700"></p>
 
           <div class="grid grid-cols-2 gap-2">
             <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
@@ -1495,7 +1525,7 @@
               <div>
                 <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
                 <p class="text-gray-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-                ${p.validade ? `<p class="text-[10px] text-amber-700 font-semibold">Validade: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
+                ${p.ean ? `<p class="text-[10px] text-gray-400 font-mono">EAN: ${p.ean}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -1596,52 +1626,35 @@
       }
     }
 
+    // ABA 3: FIADOS E PRAZOS (LIMPA E FOCADA NA BUSCA INSTANTÂNEA)
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
-          <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
-            <div class="flex justify-between items-center">
-              <label class="block text-xs font-bold text-teal-900">
-                🔍 Pesquisar Cliente / Cobrar
-              </label>
-              <button onclick="exibirTodosOuDevedores('devedores')" class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold shadow-sm">
-                ⚠️ Apenas Devedores
-              </button>
-            </div>
-            
-            <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome do cliente..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            
-            <div id="resultado-busca-clientes" class="space-y-2 pt-1">
-            </div>
-          </div>
-
-          <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex justify-between items-center shadow-sm border-t pt-3">
+          <div class="bg-red-50 border border-red-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm">
             <div>
               <p class="text-[10px] text-red-600 font-bold uppercase">Total Geral a Receber (Fiado)</p>
-              <p class="text-lg font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
+              <p class="text-xl font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
             </div>
             <span class="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold">
               ${devedoresQtd} Devedor(es)
             </span>
           </div>
+
+          <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
+            <label class="block text-xs font-bold text-teal-900">
+              🔍 Digite o Nome do Cliente para Consultar ou Cobrar:
+            </label>
+            <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome..." class="w-full p-3 border rounded-xl text-xs bg-white shadow-sm font-bold focus:outline-none focus:border-teal-600">
+            
+            <div id="resultado-busca-clientes" class="space-y-2 pt-1">
+              <!-- CARDS EXIBIDOS APENAS QUANDO HOUVER BUSCA -->
+            </div>
+          </div>
         </div>
       `;
-
-      exibirTodosOuDevedores('devedores');
-      verificarEAlertarFiadosVencidos();
-    }
-
-    function verificarEAlertarFiadosVencidos() {
-      const hojeStr = new Date().toISOString().split('T')[0];
-      let vencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && c.prazoPagamento <= hojeStr);
-
-      if (vencidos.length > 0) {
-        let msg = vencidos.map(c => `<span class="block"><b>${c.nome}</b>: Venceu em <b>${c.prazoPagamento.split('-').reverse().join('/')}</b> (Saldo: R$ ${parseFloat(c.debito).toFixed(2)})</span>`).join('');
-        iniciarAlertaGeral("🚨 FIADO COM PRAZO VENCIDO!", msg);
-      }
     }
 
     function buscarEExibirClientes(termo) {
@@ -1649,7 +1662,7 @@
       if (!box) return;
 
       if (!termo || termo.trim().length < 1) {
-        exibirTodosOuDevedores('devedores');
+        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima para abrir os dados e ações do cliente.</p>`;
         return;
       }
 
@@ -1663,21 +1676,6 @@
       renderizarListaClientesCards(filtro);
     }
 
-    function exibirTodosOuDevedores(modo) {
-      const box = document.getElementById('resultado-busca-clientes');
-      if (!box) return;
-
-      let lista = clientes;
-      if (modo === 'devedores') lista = clientes.filter(c => c.debito > 0);
-
-      if (lista.length === 0) {
-        box.innerHTML = `<div class="bg-green-50 p-4 rounded-lg border border-green-200 text-center text-xs text-green-700 font-bold">✅ Não há clientes com débitos fiados pendentes!</div>`;
-        return;
-      }
-
-      renderizarListaClientesCards(lista);
-    }
-
     function renderizarListaClientesCards(lista) {
       const box = document.getElementById('resultado-busca-clientes');
       const hojeStr = new Date().toISOString().split('T')[0];
@@ -1688,37 +1686,96 @@
         let ehAtrasado = temDebito && c.prazoPagamento && c.prazoPagamento <= hojeStr;
 
         return `
-          <div class="bg-white p-3 rounded-lg border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : (temDebito ? 'border-amber-300 bg-amber-50/20' : 'border-gray-200')} shadow-sm space-y-2 text-xs">
+          <div class="bg-white p-3.5 rounded-xl border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : (temDebito ? 'border-amber-300 bg-amber-50/20' : 'border-gray-200')} shadow space-y-3 text-xs">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-bold text-gray-800 text-sm flex items-center gap-1">
+                <p class="font-extrabold text-gray-800 text-sm flex items-center gap-1">
                   ${c.nome}
-                  ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ NO PRAZO / VENCIDO</span>' : ''}
+                  ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ PRAZO VENCIDO</span>' : ''}
                 </p>
-                <p class="text-gray-500 text-[11px]">Tel/Zap: ${c.telefone || 'Não cadastrado'}</p>
-                ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-gray-600'}">Prazo Combinado: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
+                <p class="text-gray-500 text-[11px] mt-0.5">WhatsApp: <b>${c.telefone || 'Não informado'}</b></p>
+                ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-gray-600'}">Prazo: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
               </div>
               <div class="text-right">
-                <span class="font-extrabold text-xs px-2 py-0.5 rounded border block ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
+                <span class="font-extrabold text-xs px-2.5 py-1 rounded-lg border block ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
                   ${temDebito ? 'R$ ' + parseFloat(c.debito).toFixed(2) : 'Em dia'}
                 </span>
               </div>
             </div>
 
+            <!-- PAINEL DE AÇÕES DIRETAS DO CLIENTE -->
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200">
+              <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-lg hover:bg-green-700 text-xs shadow flex items-center justify-center gap-1">
+                <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Zap
+              </button>
+              
+              <button onclick="abrirModalEditarCliente(${idxReal})" class="bg-teal-50 text-teal-800 border border-teal-300 font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1">
+                <i class="fa-solid fa-pen-to-square"></i> Editar / Prazo
+              </button>
+            </div>
+
             ${temDebito ? `
-              <div class="flex gap-1.5 pt-1 border-t border-gray-200 items-center">
-                <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="R$ Abater" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-                <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow">Abater</button>
-                <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-700 text-white font-bold px-2.5 py-2 rounded-lg text-xs shadow flex items-center gap-1"><i class="fa-brands fa-whatsapp"></i> Zap</button>
+              <div class="flex gap-1.5 pt-1 items-center bg-gray-50 p-2 rounded-lg border">
+                <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor a Abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+                <button onclick="abaterDebitoCliente(${idxReal})" class="bg-teal-600 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-teal-700 text-xs shadow whitespace-nowrap">
+                  Confirmar Abatimento
+                </button>
               </div>
             ` : ''}
 
-            <div class="flex justify-end gap-2 border-t pt-1 text-[11px]">
-              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Excluir Registro</button>
+            <div class="flex justify-end pt-1 text-[11px]">
+              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Excluir Cadastro</button>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    function abrirModalEditarCliente(index) {
+      let c = clientes[index];
+      document.getElementById('edit-cli-index').value = index;
+      document.getElementById('edit-cli-nome').value = c.nome;
+      document.getElementById('edit-cli-telefone').value = c.telefone || '';
+      document.getElementById('edit-cli-prazo').value = c.prazoPagamento || '';
+      document.getElementById('modal-editar-cliente').classList.remove('hidden');
+    }
+
+    function fecharModalEditarCliente() { document.getElementById('modal-editar-cliente').classList.add('hidden'); }
+
+    function salvarEdicaoCliente() {
+      let idx = document.getElementById('edit-cli-index').value;
+      if (idx === "") return;
+
+      let c = clientes[idx];
+      c.nome = document.getElementById('edit-cli-nome').value.trim();
+      c.telefone = document.getElementById('edit-cli-telefone').value.trim();
+      c.prazoPagamento = document.getElementById('edit-cli-prazo').value;
+
+      localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+
+      const user = auth.currentUser;
+      if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
+
+      fecharModalEditarCliente();
+      alert("✅ Dados do cliente atualizados com sucesso!");
+      renderAba();
+    }
+
+    function enviarLembreteCobrancaZap(index) {
+      let c = clientes[index];
+      if (!c.telefone) { alert("Este cliente não possui telefone/WhatsApp cadastrado!"); return; }
+
+      const hojeStr = new Date().toISOString().split('T')[0];
+      let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
+
+      let texto = `Olá *${c.nome}*, tudo bem?\n\n Passando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n`;
+      texto += `💰 Valor Atual: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
+      if (c.prazoPagamento) texto += `📅 Prazo Combinado: *${dataFormatada}*\n\n`;
+      texto += `Agradecemos a parceria e preferência! Qualquer dúvida, estamos à disposição.`;
+
+      let numLimpo = c.telefone.replace(/\D/g, '');
+      let linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
+      window.open(linkZap, '_blank');
     }
 
     function abaterDebitoCliente(index) {
@@ -1733,9 +1790,7 @@
       localStorage.setItem('crm_clientes', JSON.stringify(clientes));
 
       const user = auth.currentUser;
-      if (user) {
-        db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
-      }
+      if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
 
       alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
       renderAba();
@@ -1749,6 +1804,7 @@
       }
     }
 
+    // ABA 4: RELATÓRIOS (FILTRO POR PERÍODO E CORREÇÃO DO GERADOR PDF)
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -1774,6 +1830,8 @@
         </div>
       `).join('');
 
+      let hojeStr = new Date().toISOString().split('T')[0];
+
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
@@ -1795,30 +1853,34 @@
             </div>
           </div>
 
-          <div class="border-t pt-3 space-y-2">
-            <h3 class="font-bold text-xs text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-vault text-amber-600"></i> Histórico de Caixas Fechados (${historicoFechamentos.length})
-            </h3>
-            <div class="space-y-2 max-h-48 overflow-y-auto">
-              ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
-            </div>
-          </div>
-
-          <div class="bg-gray-50 p-3 rounded-lg border space-y-3">
+          <!-- FILTRO POR PERÍODO DE RELATÓRIO -->
+          <div class="bg-gray-50 p-3 rounded-xl border space-y-3">
             <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
-              <i class="fa-solid fa-file-pdf text-red-600"></i> Gerar Relatório Profissional em PDF
+              <i class="fa-solid fa-filter text-teal-600"></i> Selecionar Período do Relatório
             </h3>
 
             <div>
-              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Selecione o Período:</label>
-              <select id="pdf-periodo" class="w-full p-2 border rounded-lg text-xs bg-white">
+              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Tipo de Filtro:</label>
+              <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
                 <option value="hoje">Apenas de Hoje</option>
+                <option value="periodo">Personalizado por Período (De / Até)</option>
                 <option value="todos">Todo o Histórico</option>
               </select>
             </div>
 
+            <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
+                <input type="date" id="pdf-data-inicio" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
+                <input type="date" id="pdf-data-fim" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
+              </div>
+            </div>
+
             <div>
-              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Checklist de Conteúdo do PDF:</label>
+              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Conteúdo Incluído no PDF:</label>
               <div class="space-y-1 text-xs text-gray-700">
                 <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-vendas" checked class="rounded text-teal-600"> Incluir Vendas e Faturamento</label>
                 <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-lucro" checked class="rounded text-teal-600"> Incluir Cálculo de Lucro Líquido</label>
@@ -1827,9 +1889,18 @@
               </div>
             </div>
 
-            <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-bold py-2.5 rounded-lg hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-2">
-              <i class="fa-solid fa-file-pdf"></i> Baixar Relatório em PDF
+            <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-3 rounded-xl hover:bg-red-700 transition text-xs shadow-md flex justify-center items-center gap-2">
+              <i class="fa-solid fa-file-pdf text-sm"></i> Baixar Relatório em PDF
             </button>
+          </div>
+
+          <div class="border-t pt-3 space-y-2">
+            <h3 class="font-bold text-xs text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-vault text-amber-600"></i> Histórico de Caixas Fechados (${historicoFechamentos.length})
+            </h3>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-1">
@@ -1842,6 +1913,123 @@
           </div>
         </div>
       `;
+    }
+
+    function toggleInputsDatasRelatorio(tipo) {
+      const box = document.getElementById('box-datas-periodo');
+      if (tipo === 'periodo') box.classList.remove('hidden');
+      else box.classList.add('hidden');
+    }
+
+    function gerarPDFProfissional() {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const tipoFiltro = document.getElementById('pdf-periodo-tipo').value;
+        const checkVendas = document.getElementById('pdf-check-vendas').checked;
+        const checkLucro = document.getElementById('pdf-check-lucro').checked;
+        const checkEstoque = document.getElementById('pdf-check-estoque').checked;
+        const checkFiado = document.getElementById('pdf-check-fiado').checked;
+
+        let listaVendasPDF = vendas;
+        let dataInicioStr = "";
+        let dataFimStr = "";
+
+        if (tipoFiltro === 'hoje') {
+          const hojeStr = new Date().toLocaleDateString('pt-BR');
+          listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStr));
+        } else if (tipoFiltro === 'periodo') {
+          dataInicioStr = document.getElementById('pdf-data-inicio').value;
+          dataFimStr = document.getElementById('pdf-data-fim').value;
+
+          if (dataInicioStr && dataFimStr) {
+            listaVendasPDF = vendas.filter(v => {
+              if (!v.data) return false;
+              let partes = v.data.split(' ')[0].split('/');
+              if (partes.length < 3) return false;
+              let dataVendaFormato = `${partes[2]}-${partes[1]}-${partes[0]}`;
+              return dataVendaFormato >= dataInicioStr && dataVendaFormato <= dataFimStr;
+            });
+          }
+        }
+
+        let y = 15;
+        doc.setFontSize(16);
+        doc.setTextColor(7, 94, 84);
+        doc.text(`Relatorio Comercial - ${perfilNegocio.nomeLoja || 'Caixa Rapido Movel Pro'}`, 14, y);
+        
+        y += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        let textoPeriodoHeader = tipoFiltro === 'hoje' ? 'Apenas Hoje' : (tipoFiltro === 'periodo' ? `De ${dataInicioStr} ate ${dataFimStr}` : 'Historico Total');
+        doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Periodo: ${textoPeriodoHeader}`, 14, y);
+
+        y += 8;
+        doc.setLineWidth(0.5);
+        doc.line(14, y, 196, y);
+        y += 8;
+
+        if (checkVendas) {
+          const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+
+          doc.setFontSize(12);
+          doc.setTextColor(0);
+          doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas no periodo)`, 14, y);
+          y += 6;
+          doc.setFontSize(10);
+          doc.text(`Total Faturado no Periodo: R$ ${totalVendas.toFixed(2)}`, 14, y);
+          y += 8;
+        }
+
+        if (checkLucro) {
+          let totalVendasGeral = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+          let totalCustoGeral = 0;
+          listaVendasPDF.forEach(v => {
+            let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
+            if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
+          });
+
+          doc.setFontSize(12);
+          doc.text(`2. Demonstrativo Financeiro de Lucro`, 14, y);
+          y += 6;
+          doc.setFontSize(10);
+          doc.text(`Custo Estimado dos Produtos Vendidos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+          y += 5;
+          doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendasGeral - totalCustoGeral).toFixed(2)}`, 14, y);
+          y += 8;
+        }
+
+        if (checkEstoque) {
+          doc.setFontSize(12);
+          doc.text(`3. Posicao Atual do Estoque (${produtos.length} itens)`, 14, y);
+          y += 6;
+          doc.setFontSize(9);
+          produtos.forEach(p => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Preco: R$ ${p.preco.toFixed(2)}`, 14, y);
+            y += 5;
+          });
+          y += 4;
+        }
+
+        if (checkFiado) {
+          let clientesComDebito = clientes.filter(c => c.debito > 0);
+          doc.setFontSize(12);
+          doc.text(`4. Contas Fiado Devedoras (${clientesComDebito.length} clientes)`, 14, y);
+          y += 6;
+          doc.setFontSize(9);
+          clientesComDebito.forEach(c => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Debito: R$ ${c.debito.toFixed(2)}`, 14, y);
+            y += 5;
+          });
+        }
+
+        doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
+      } catch(err) {
+        alert("Erro ao gerar o arquivo PDF. Tente exportar em Excel (.CSV).");
+      }
     }
 
     function executarLimpezaTotalManual() {
@@ -1969,9 +2157,7 @@
         vendas.push(novaVenda);
         itensResumo.push(`${item.qtd}x ${item.nome} - R$ ${valorItemTotal.toFixed(2)}`);
 
-        if (user) {
-          db.collection("vendas").add({ ...novaVenda, userId: user.uid, userEmail: user.email, createdAt: new Date() });
-        }
+        if (user) db.collection("vendas").add({ ...novaVenda, userId: user.uid, userEmail: user.email, createdAt: new Date() });
       });
 
       if (clienteNome) {
@@ -1994,9 +2180,7 @@
         }
 
         localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-        if (user) {
-          db.collection("clientes").doc(user.uid + "_" + cli.id).set({ ...cli, userId: user.uid }, { merge: true });
-        }
+        if (user) db.collection("clientes").doc(user.uid + "_" + cli.id).set({ ...cli, userId: user.uid }, { merge: true });
       }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
@@ -2098,7 +2282,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v14.0 Câmera Bipar Otimizada e Licenciamento Ativo!");
+    console.log("Caixa Rápido Móvel Pro v15.0 - Com Suporte Offline e Relatórios Customizados por Data!");
   </script>
 </body>
 </html>

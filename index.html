@@ -43,7 +43,7 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL -->
+  <!-- CONTEÚDO PRINCIPAL (TELA DINÂMICA) -->
   <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full mb-20">
     <div id="main-content" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
       <div class="text-center py-8">
@@ -53,8 +53,8 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS (BOTÕES GRANDES E CONFORTÁVEIS) -->
-  <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around items-center py-3 z-40 max-w-md mx-auto shadow-lg">
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS (ÍCONES GRANDES E CONFORTÁVEIS) -->
+  <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around items-center py-2.5 z-40 max-w-md mx-auto shadow-lg">
     <button onclick="switchTab('vendas')" id="nav-vendas" class="flex flex-col items-center text-teal-700 font-bold text-xs py-1 px-3 border-b-2 border-teal-600">
       <i class="fa-solid fa-cart-shopping text-xl mb-0.5"></i>
       <span>Caixa</span>
@@ -113,7 +113,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA BASE v5.6 + FIREBASE -->
+  <!-- LÓGICA COMPLETA E UNIFICADA DO APLICATIVO -->
   <script>
     // Configuração do Firebase
     const firebaseConfig = {
@@ -129,7 +129,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Dados Iniciais v5.6
+    // Produtos Iniciais da v5.6
     const produtosExemplo = [
       { id: 1, nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, medida: "un", validade: "2026-12-31", atalho: true },
       { id: 2, nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, medida: "kg", validade: "2027-05-10", atalho: true },
@@ -137,6 +137,7 @@
       { id: 4, nome: "Pão Francês", precoCusto: 8.00, preco: 14.00, estoque: 8, medida: "kg", validade: "", atalho: true }
     ];
 
+    // Estado Local
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
@@ -147,7 +148,7 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // Menu
+    // Menu Dropdown
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -189,10 +190,10 @@
 
       closeModalPerfil();
       renderAba();
-      alert("Perfil atualizado!");
+      alert("Perfil do negócio atualizado!");
     }
 
-    // ONBOARDING
+    // ONBOARDING PROGRESSIVO
     function showOnboardingStep1() {
       document.getElementById('bottom-nav').classList.add('hidden');
       document.getElementById('main-content').innerHTML = `
@@ -372,7 +373,7 @@
       else if (abaAtual === 'relatorios') renderAbaRelatorios();
     }
 
-    // ABA 1: CAIXA / VENDAS
+    // ABA 1: CAIXA COMPLETO (ATALHOS + VALORES RÁPIDOS + CARRINHO)
     function renderAbaVendas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -429,15 +430,28 @@
             </div>
           </div>
 
+          <!-- TECLAS DE VALOR RÁPIDO PARALELOS -->
+          <div class="border-t pt-3 space-y-2">
+            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-calculator text-teal-600"></i> Lançamento Rápido de Valor
+            </h2>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button onclick="adicionarValorRapido(5)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 5</button>
+              <button onclick="adicionarValorRapido(10)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 10</button>
+              <button onclick="adicionarValorRapido(20)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 20</button>
+              <button onclick="adicionarValorRapido(50)" class="bg-gray-100 hover:bg-gray-200 font-bold text-gray-800 py-2 rounded-lg text-xs border">R$ 50</button>
+            </div>
+          </div>
+
           <!-- ATALHOS RÁPIDOS DA TELA INICIAL -->
           <div class="border-t pt-3 space-y-2">
             <div class="flex justify-between items-center">
               <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos para Venda Rápida
+                <i class="fa-solid fa-bolt text-teal-600"></i> Produtos de Venda Rápida
               </h2>
             </div>
-            <div class="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto p-1">
-              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos marcados para atalho.</p>'}
+            <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1">
+              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos nos atalhos.</p>'}
             </div>
           </div>
 
@@ -459,7 +473,7 @@
               ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
             </div>
 
-            <!-- BOTÃO DE CONFIRMAR VENDA (DESTACADO E CONFORTÁVEL) -->
+            <!-- CONFIRMAÇÃO DE VENDA COM BOTÃO GRANDE E DESTACADO -->
             <div class="bg-gray-50 p-3 rounded-lg border space-y-2.5">
               <div class="flex justify-between items-center font-bold text-xs text-gray-800">
                 <span>Total a Pagar:</span>
@@ -503,7 +517,12 @@
       }
     }
 
-    // ABA 2: ESTOQUE COMPLETO v5.6 (UNIDADES, VALIDADE E ALERTAS)
+    function adicionarValorRapido(valor) {
+      carrinho.push({ nome: `Item R$ ${valor}`, preco: parseFloat(valor), qtd: 1 });
+      renderAba();
+    }
+
+    // ABA 2: ESTOQUE, COMPRAS, UNIDADES DE MEDIDA E VALIDADE COMPLETA
     function renderAbaEstoque() {
       let listaEstoqueHTML = produtos.map((p, i) => {
         let ehAlertaEstoque = (p.estoque || 0) <= 3;
@@ -530,7 +549,7 @@
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque & Compras (v5.6)
+            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque, Compras & Validade (v5.6)
           </h2>
 
           <div class="space-y-2">
@@ -565,7 +584,7 @@
             </div>
 
             <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
-              + Salvar no Estoque
+              + Salvar Entrada no Estoque
             </button>
           </div>
 
@@ -579,7 +598,7 @@
       `;
     }
 
-    // ABA 3: CLIENTES, FIADO E ABATIMENTO DE CONTAS
+    // ABA 3: FIADO / CLIENTES E SISTEMA DE ABATIMENTO DE DEVEDORES
     function renderAbaClientes() {
       let clientesHTML = clientes.map((c, i) => `
         <div class="bg-gray-50 p-3 rounded-lg border text-xs space-y-2.5">

@@ -22,7 +22,7 @@
     <div class="flex items-center space-x-3">
       <i class="fa-solid fa-cash-register text-2xl"></i>
       <div>
-        <h1 class="font-bold text-lg leading-tight">Caixa Rápido Móvel Pro</h1>
+        <h1 id="header-app-name" class="font-bold text-base leading-tight">Caixa Rápido Móvel Pro</h1>
         <p id="user-status" class="text-xs text-green-200">Verificando conexão...</p>
       </div>
     </div>
@@ -34,36 +34,68 @@
       </button>
 
       <!-- DROPDOWN DO MENU -->
-      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-md shadow-lg border border-gray-200 z-50">
-        <a href="#" id="menu-perfil" class="block px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-store text-gray-600"></i> Perfil do Negócio</a>
-        <a href="#" id="menu-backup" class="block px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar / Backup</a>
+      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-md shadow-lg border border-gray-200 z-50">
+        <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
+        <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar / Backup</button>
         <hr class="my-1 border-gray-200">
-        <a href="#" id="menu-logout" class="block px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</a>
+        <button id="menu-logout" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
       </div>
     </div>
   </header>
 
-  <!-- TELA PRINCIPAL (CONTEÚDO) -->
+  <!-- CONTEÚDO PRINCIPAL (TELA DINÂMICA) -->
   <main class="flex-1 overflow-y-auto p-4 max-w-md mx-auto w-full">
-    
-    <!-- CONTAINER DINÂMICO -->
     <div id="main-content" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div class="text-center py-6">
+      <div class="text-center py-8">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600 mb-3"></i>
         <p class="text-gray-600 font-medium">Carregando o aplicativo...</p>
       </div>
     </div>
-
   </main>
 
-  <!-- BIBLIOTECAS DO FIREBASE (NUVEM DO GOOGLE) -->
+  <!-- MODAL: PERFIL DO NEGÓCIO -->
+  <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</h3>
+        <button onclick="closeModalPerfil()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da Empresa / Loja</label>
+          <input type="text" id="perfil-nome-loja" required placeholder="Ex: Mercado do Rogério" class="w-full p-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Registro</label>
+          <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-sm bg-white">
+            <option value="PF">Pessoa Física (PF)</option>
+            <option value="MEI">MEI (Microempreendedor)</option>
+            <option value="ME">Microempresa (ME)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
+          <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-sm bg-white">
+            <option value="Produtos">Venda de Produtos</option>
+            <option value="Servicos">Prestação de Serviços</option>
+            <option value="Ambos">Produtos e Serviços</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition">
+          Salvar Perfil
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- BIBLIOTECAS DO FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA DO APLICATIVO E CHAVES DO PROJETO -->
+  <!-- LÓGICA DO APLICATIVO -->
   <script>
-    // 1. Chaves Oficiais do Firebase
+    // 1. Chaves do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
       authDomain: "caixa-rapido-movel.firebaseapp.com",
@@ -73,12 +105,16 @@
       appId: "1:741349314946:web:640b8d2baa0e257ed13f9b"
     };
 
-    // 2. Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 3. Controle do Menu de Três Pontinhos (⋮)
+    // Variáveis Globais de Dados
+    let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
+    let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
+    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
+
+    // 2. Menu Dropdown
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -91,7 +127,39 @@
       dropdownMenu.classList.add('hidden');
     });
 
-    // 4. Alternar entre as telas de Login e Cadastro
+    // Modais
+    function openModalPerfil() {
+      document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
+      document.getElementById('perfil-tipo-registro').value = perfilNegocio.tipo || 'PF';
+      document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Produtos';
+      document.getElementById('modal-perfil').classList.remove('hidden');
+    }
+
+    function closeModalPerfil() {
+      document.getElementById('modal-perfil').classList.add('hidden');
+    }
+
+    function salvarPerfilNegocio(e) {
+      e.preventDefault();
+      perfilNegocio = {
+        nomeLoja: document.getElementById('perfil-nome-loja').value,
+        tipo: document.getElementById('perfil-tipo-registro').value,
+        ramo: document.getElementById('perfil-ramo').value
+      };
+
+      localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+      document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja;
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+      }
+
+      closeModalPerfil();
+      alert("Perfil do negócio atualizado com sucesso!");
+    }
+
+    // 3. Telas de Login e Cadastro
     function showLoginForm() {
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -101,7 +169,7 @@
             <p class="text-xs text-gray-500">Acesse suas vendas salvas na nuvem</p>
           </div>
 
-          <form id="form-login" onsubmit="handleLogin(event)" class="space-y-3">
+          <form onsubmit="handleLogin(event)" class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
               <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
@@ -113,8 +181,8 @@
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" id="btn-submit-login" class="w-full bg-teal-600 text-white font-semibold py-2.5 rounded-lg hover:bg-teal-700 transition flex justify-center items-center gap-2">
-              <span>Entrar</span>
+            <button type="submit" class="w-full bg-teal-600 text-white font-semibold py-2.5 rounded-lg hover:bg-teal-700 transition">
+              Entrar
             </button>
           </form>
 
@@ -132,23 +200,23 @@
           <div class="text-center">
             <i class="fa-solid fa-user-plus text-4xl text-teal-600 mb-2"></i>
             <h2 class="text-xl font-bold text-gray-800">Criar Nova Conta</h2>
-            <p class="text-xs text-gray-500">Cadastre-se para começar a usar a nuvem</p>
+            <p class="text-xs text-gray-500">Cadastre-se para sincronizar na nuvem</p>
           </div>
 
-          <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3">
+          <form onsubmit="handleRegister(event)" class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail de acesso</label>
               <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Senha de acesso (mínimo 6 dígitos)</label>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Senha (mínimo 6 dígitos)</label>
               <input type="password" id="reg-password" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
             </div>
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" id="btn-submit-reg" class="w-full bg-teal-600 text-white font-semibold py-2.5 rounded-lg hover:bg-teal-700 transition flex justify-center items-center gap-2">
-              <span>Cadastrar e Entrar</span>
+            <button type="submit" class="w-full bg-teal-600 text-white font-semibold py-2.5 rounded-lg hover:bg-teal-700 transition">
+              Cadastrar e Entrar
             </button>
           </form>
 
@@ -160,7 +228,6 @@
       `;
     }
 
-    // 5. Funções de Autenticação no Firebase
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value;
@@ -169,7 +236,7 @@
 
       errBox.classList.add('hidden');
       auth.signInWithEmailAndPassword(email, pass).catch(err => {
-        errBox.innerText = "Erro ao entrar: " + (err.message.includes("user-not-found") ? "Usuário não encontrado" : "E-mail ou senha incorretos.");
+        errBox.innerText = "Erro ao entrar: E-mail ou senha incorretos.";
         errBox.classList.remove('hidden');
       });
     }
@@ -182,90 +249,212 @@
 
       errBox.classList.add('hidden');
       auth.createUserWithEmailAndPassword(email, pass).catch(err => {
-        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está em uso." : err.message);
+        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
         errBox.classList.remove('hidden');
       });
     }
 
-    // 6. Monitor de Estado de Login do Usuário
+    // 4. Interface Principal de Caixa Móvel
+    function renderCaixaApp() {
+      document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
+      
+      let produtosOptions = produtos.length > 0 
+        ? produtos.map((p, i) => `<option value="${i}">${p.nome} - R$ ${parseFloat(p.preco).toFixed(2)}</option>`).join('')
+        : `<option value="">Nenhum produto cadastrado</option>`;
+
+      let ultimasVendasHTML = vendas.slice(-5).reverse().map(v => `
+        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded border text-xs">
+          <div>
+            <p class="font-bold text-gray-800">${v.item}</p>
+            <p class="text-gray-400">${v.formaPagto} • ${v.data}</p>
+          </div>
+          <span class="font-bold text-teal-700">R$ ${parseFloat(v.valor).toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('main-content').innerHTML = `
+        <div class="space-y-5">
+          
+          <!-- REGISTRAR NOVA VENDA -->
+          <div class="space-y-3">
+            <h2 class="font-bold text-gray-800 text-sm flex items-center gap-2 border-b pb-2">
+              <i class="fa-solid fa-cart-shopping text-teal-600"></i> Registrar Venda
+            </h2>
+
+            <div class="space-y-2">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Item ou Digite</label>
+                <select id="venda-select-item" onchange="preencherPrecoItem()" class="w-full p-2 border rounded-lg text-sm bg-white">
+                  <option value="">-- Selecionar da lista --</option>
+                  ${produtosOptions}
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="venda-nome-manual" placeholder="Ou nome manual" class="p-2 border rounded-lg text-sm">
+                <input type="number" step="0.01" id="venda-valor" placeholder="Valor R$" class="p-2 border rounded-lg text-sm">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Forma de Pagamento</label>
+                <select id="venda-pagto" class="w-full p-2 border rounded-lg text-sm bg-white">
+                  <option value="PIX">PIX</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
+                  <option value="Cartão de Débito">Cartão de Débito</option>
+                </select>
+              </div>
+
+              <button onclick="confirmarVenda()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition shadow">
+                + Finalizar Venda
+              </button>
+            </div>
+          </div>
+
+          <!-- CADASTRAR NOVO PRODUTO -->
+          <div class="border-t pt-4 space-y-3">
+            <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-box text-teal-600"></i> Cadastrar Produto / Serviço
+            </h3>
+
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="cad-prod-nome" placeholder="Nome" class="col-span-2 p-2 border rounded-lg text-sm">
+              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço" class="p-2 border rounded-lg text-sm">
+            </div>
+            <button onclick="cadastrarProduto()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
+              Salvar Produto na Lista
+            </button>
+          </div>
+
+          <!-- HISTÓRICO RECENTE -->
+          <div class="border-t pt-4 space-y-2">
+            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Últimas Vendas</h3>
+            <div class="space-y-1.5">
+              ${ultimasVendasHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Nenhuma venda registrada ainda.</p>'}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function preencherPrecoItem() {
+      const idx = document.getElementById('venda-select-item').value;
+      if (idx !== "") {
+        document.getElementById('venda-nome-manual').value = produtos[idx].nome;
+        document.getElementById('venda-valor').value = produtos[idx].preco;
+      }
+    }
+
+    function cadastrarProduto() {
+      const nome = document.getElementById('cad-prod-nome').value;
+      const preco = document.getElementById('cad-prod-preco').value;
+
+      if (!nome || !preco) {
+        alert("Preencha o nome e o preço do produto!");
+        return;
+      }
+
+      const novoProd = { id: Date.now(), nome: nome, preco: parseFloat(preco) };
+      produtos.push(novoProd);
+      localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("produtos").add({ ...novoProd, userId: user.uid });
+      }
+
+      alert("Produto cadastrado com sucesso!");
+      renderCaixaApp();
+    }
+
+    function confirmarVenda() {
+      const item = document.getElementById('venda-nome-manual').value;
+      const valor = document.getElementById('venda-valor').value;
+      const pagto = document.getElementById('venda-pagto').value;
+      const user = auth.currentUser;
+
+      if (!item || !valor) {
+        alert("Informe o nome do item e o valor!");
+        return;
+      }
+
+      const novaVenda = {
+        id: Date.now(),
+        item: item,
+        valor: parseFloat(valor),
+        formaPagto: pagto,
+        data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})
+      };
+
+      vendas.push(novaVenda);
+      localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+
+      if (user) {
+        db.collection("vendas").add({
+          ...novaVenda,
+          userId: user.uid,
+          userEmail: user.email,
+          createdAt: new Date()
+        });
+      }
+
+      alert("Venda registrada e salva na nuvem!");
+      renderCaixaApp();
+    }
+
+    // 5. Exportar Backup em Excel (.CSV)
+    function exportarBackupCSV() {
+      if (vendas.length === 0) {
+        alert("Não há histórico de vendas para exportar.");
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,ID,Item,Valor,FormaPagamento,Data\n";
+      vendas.forEach(v => {
+        csvContent += `${v.id},"${v.item}",${v.valor},"${v.formaPagto}","${v.data}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Backup_Vendas_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 6. Monitor de Conexão e Sincronização
     auth.onAuthStateChanged((user) => {
       const statusText = document.getElementById('user-status');
-      const mainContent = document.getElementById('main-content');
 
       if (user) {
         statusText.innerText = "Online • " + user.email;
-        mainContent.innerHTML = `
-          <div class="space-y-4">
-            <div class="bg-green-50 border border-green-200 p-3 rounded-lg flex items-center gap-3">
-              <i class="fa-solid fa-cloud-check text-green-600 text-xl"></i>
-              <div>
-                <h3 class="font-bold text-green-800 text-sm">Nuvem Conectada</h3>
-                <p class="text-xs text-green-700">Conectado como: ${user.email}</p>
-              </div>
-            </div>
 
-            <!-- PAINEL DE CAIXA DE VENDAS -->
-            <div class="border-t pt-3 space-y-3">
-              <h2 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                <i class="fa-solid fa-cart-shopping text-teal-600"></i> Registrar Venda Rápidas
-              </h2>
+        // Carrega Perfil do Firestore se existir
+        db.collection("perfis").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            perfilNegocio = doc.data();
+            localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+          }
+          renderCaixaApp();
+        }).catch(() => renderCaixaApp());
 
-              <div class="space-y-2">
-                <input type="text" id="produto-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-sm">
-                <input type="number" id="produto-preco" placeholder="Valor (R$)" class="w-full p-2 border rounded-lg text-sm">
-                <button onclick="salvarVendaSimples()" class="w-full bg-whatsapp-teal text-white font-bold py-2 rounded-lg hover:opacity-90 transition">
-                  + Confirmar Venda
-                </button>
-              </div>
-            </div>
-
-            <div id="lista-vendas-box" class="border-t pt-3">
-              <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider mb-2">Últimas Atividades</h3>
-              <p class="text-xs text-gray-400 italic text-center py-2">Nenhuma venda registrada ainda hoje.</p>
-            </div>
-          </div>
-        `;
       } else {
         statusText.innerText = "Desconectado";
         showLoginForm();
       }
     });
 
-    // 7. Salvar Venda no Firestore
-    function salvarVendaSimples() {
-      const nome = document.getElementById('produto-nome').value;
-      const preco = document.getElementById('produto-preco').value;
-      const user = auth.currentUser;
-
-      if (!nome || !preco) {
-        alert("Preencha o nome e o valor do produto!");
-        return;
-      }
-
-      db.collection("vendas").add({
-        userId: user.uid,
-        userEmail: user.email,
-        produto: nome,
-        valor: parseFloat(preco),
-        data: new Date()
-      }).then(() => {
-        alert("Venda salva com sucesso na nuvem!");
-        document.getElementById('produto-nome').value = '';
-        document.getElementById('produto-preco').value = '';
-      }).catch(err => {
-        alert("Erro ao salvar venda: " + err.message);
-      });
-    }
-
-    // 8. Botão de Sair
+    // Logout
     document.getElementById('menu-logout').addEventListener('click', (e) => {
       e.preventDefault();
       auth.signOut().then(() => {
-        alert('Você saiu da conta!');
+        alert('Você desconectou da conta.');
       });
     });
 
-    console.log("Caixa Rápido Móvel Pro pronto!");
+    console.log("Caixa Rápido Móvel Pro unificado pronto!");
   </script>
 </body>
 </html>

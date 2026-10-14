@@ -43,7 +43,7 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL (TELA DINÂMICA) -->
+  <!-- CONTEÚDO PRINCIPAL -->
   <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full mb-16">
     <div id="main-content" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
       <div class="text-center py-8">
@@ -53,21 +53,21 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS (ESTILO APP PROFISSIONAL) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS -->
   <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 max-w-md mx-auto">
     <button onclick="switchTab('vendas')" id="nav-vendas" class="flex flex-col items-center text-teal-700 font-bold text-[11px]">
       <i class="fa-solid fa-cart-shopping text-lg"></i>
       <span>Caixa</span>
     </button>
-    <button onclick="switchTab('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-500 font-medium text-[11px]">
+    <button onclick="switchTab('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
       <i class="fa-solid fa-boxes-stacked text-lg"></i>
       <span>Estoque</span>
     </button>
-    <button onclick="switchTab('clientes')" id="nav-clientes" class="flex flex-col items-center text-gray-500 font-medium text-[11px]">
+    <button onclick="switchTab('clientes')" id="nav-clientes" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
       <i class="fa-solid fa-users text-lg"></i>
-      <span>Clientes</span>
+      <span>Fiado / Clientes</span>
     </button>
-    <button onclick="switchTab('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-500 font-medium text-[11px]">
+    <button onclick="switchTab('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
       <i class="fa-solid fa-chart-line text-lg"></i>
       <span>Relatórios</span>
     </button>
@@ -113,7 +113,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA UNIFICADA v5.6 -->
+  <!-- LÓGICA DO APLICATIVO -->
   <script>
     // Configuração do Firebase
     const firebaseConfig = {
@@ -129,10 +129,20 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Estado e Dados do Aplicativo
-    let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
+    // Produtos Padrões de Exemplo (se o estoque estiver vazio no primeiro acesso)
+    const produtosExemplo = [
+      { id: 1, nome: "Café 500g", preco: 16.50, estoque: 15, medida: "un", validade: "2026-12-31", atalho: true },
+      { id: 2, nome: "Açúcar 1kg", preco: 4.80, estoque: 20, medida: "kg", validade: "2027-05-10", atalho: true },
+      { id: 3, nome: "Leite Integral 1L", preco: 5.50, estoque: 12, medida: "L", validade: "2026-11-20", atalho: true },
+      { id: 4, nome: "Pão Francês (kg)", preco: 14.00, estoque: 8, medida: "kg", validade: "", atalho: true }
+    ];
+
+    // Estado e Dados Locais
+    let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
-    let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [];
+    let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
+      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00 }
+    ];
     let carrinho = [];
     let abaAtual = 'vendas';
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
@@ -371,15 +381,19 @@
       const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
 
-      let atalhosProdutosHTML = produtos.map((p, i) => `
-        <button onclick="adicionarAoCarrinho(${i})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
-          <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome}</span>
-          <div class="flex justify-between items-center w-full mt-1">
-            <span class="text-[10px] text-gray-500">Qtd: <b>${p.estoque || 0}</b></span>
-            <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-          </div>
-        </button>
-      `).join('');
+      let atalhosProdutos = produtos.filter(p => p.atalho !== false);
+      let atalhosProdutosHTML = atalhosProdutos.map((p, i) => {
+        let idxReal = produtos.findIndex(prod => prod.id === p.id);
+        return `
+          <button onclick="adicionarAoCarrinho(${idxReal})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
+            <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome}</span>
+            <div class="flex justify-between items-center w-full mt-1">
+              <span class="text-[10px] text-gray-500">Est: <b>${p.estoque || 0} ${p.medida || 'un'}</b></span>
+              <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
 
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
@@ -394,6 +408,8 @@
           </div>
         </div>
       `).join('');
+
+      let clientesOptionsHTML = clientes.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -414,7 +430,7 @@
             </div>
           </div>
 
-          <!-- ATALHOS RÁPIDOS -->
+          <!-- ATALHOS RÁPIDOS DA TELA INICIAL -->
           <div class="border-t pt-3 space-y-2">
             <div class="flex justify-between items-center">
               <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -422,7 +438,7 @@
               </h2>
             </div>
             <div class="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto p-1">
-              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Cadastre produtos no Estoque para aparecerem aqui.</p>'}
+              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos marcados para atalho.</p>'}
             </div>
           </div>
 
@@ -450,15 +466,24 @@
                 <span class="text-teal-700 text-base">R$ ${totalCarrinho.toFixed(2)}</span>
               </div>
 
-              <div class="grid grid-cols-2 gap-2">
-                <select id="venda-pagto" class="p-2 border rounded-lg text-xs bg-white">
+              <div class="space-y-2">
+                <select id="venda-pagto" onchange="toggleClienteFiadoSelect()" class="w-full p-2 border rounded-lg text-xs bg-white">
                   <option value="PIX">PIX</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
                   <option value="Cartão de Débito">Cartão de Débito</option>
                   <option value="Fiado">Fiado / A Prazo</option>
                 </select>
-                <button onclick="finalizarCarrinho()" class="bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
+
+                <div id="select-cliente-fiado-box" class="hidden">
+                  <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Selecione o Cliente do Fiado:</label>
+                  <select id="venda-cliente-fiado" class="w-full p-2 border border-red-300 rounded-lg text-xs bg-red-50">
+                    <option value="">-- Escolher Cliente Cadastrado --</option>
+                    ${clientesOptionsHTML}
+                  </select>
+                </div>
+
+                <button onclick="finalizarCarrinho()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
                   Finalizar Venda
                 </button>
               </div>
@@ -468,48 +493,75 @@
       `;
     }
 
-    // ABA 2: ESTOQUE, VALIDADE E COMPRAS
+    function toggleClienteFiadoSelect() {
+      const pagto = document.getElementById('venda-pagto').value;
+      const box = document.getElementById('select-cliente-fiado-box');
+      if (pagto === 'Fiado') {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    // ABA 2: ESTOQUE, UNIDADES, VALIDADE E ALERTAS
     function renderAbaEstoque() {
-      let listaEstoqueHTML = produtos.map((p, i) => `
-        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
-          <div>
-            <p class="font-bold text-gray-800">${p.nome}</p>
-            <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0}</span> ${p.validade ? '• Venc: ' + p.validade : ''}</p>
+      let listaEstoqueHTML = produtos.map((p, i) => {
+        let ehAlertaEstoque = p.estoque <= 3;
+        return `
+          <div class="flex justify-between items-center ${ehAlertaEstoque ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
+            <div>
+              <p class="font-bold text-gray-800">${p.nome} ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-200 text-red-800 px-1 rounded">Estoque Baixo!</span>' : ''}</p>
+              <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> ${p.validade ? '• Val: ' + p.validade : ''}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+              <button onclick="excluirProduto(${i})" class="text-red-500 text-xs p-1 hover:bg-red-50 rounded"><i class="fa-solid fa-trash"></i></button>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-            <button onclick="excluirProduto(${i})" class="text-red-500 text-xs p-1 hover:bg-red-50 rounded"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque e Entradas
+            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque, Unidades & Validade
           </h2>
 
           <div class="space-y-2">
             <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs">
             
-            <div class="grid grid-cols-2 gap-2">
-              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço de Venda R$" class="p-2 border rounded-lg text-xs">
-              <input type="number" id="cad-prod-qtd" placeholder="Qtd Entrada" class="p-2 border rounded-lg text-xs">
+            <div class="grid grid-cols-3 gap-2">
+              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço R$" class="p-2 border rounded-lg text-xs">
+              <input type="number" id="cad-prod-qtd" placeholder="Qtd" class="p-2 border rounded-lg text-xs">
+              <select id="cad-prod-medida" class="p-2 border rounded-lg text-xs bg-white">
+                <option value="un">Unidade (un)</option>
+                <option value="kg">Quilograma (kg)</option>
+                <option value="g">Grama (g)</option>
+                <option value="L">Litro (L)</option>
+                <option value="cx">Caixa (cx)</option>
+                <option value="pct">Pacote (pct)</option>
+              </select>
             </div>
 
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Opcional)</label>
-              <input type="date" id="cad-prod-validade" class="w-full p-2 border rounded-lg text-xs bg-white">
+            <div class="grid grid-cols-2 gap-2 items-center">
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade</label>
+                <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
+              </div>
+              <div class="flex items-center gap-2 pt-3">
+                <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600">
+                <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos</label>
+              </div>
             </div>
 
             <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-              + Salvar no Estoque
+              + Salvar Entrada no Estoque
             </button>
           </div>
 
           <div class="border-t pt-3 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Lista de Produtos (${produtos.length})</h3>
-            <div class="space-y-1.5 max-h-60 overflow-y-auto">
+            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Produtos em Estoque (${produtos.length})</h3>
+            <div class="space-y-1.5 max-h-56 overflow-y-auto">
               ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum produto cadastrado.</p>'}
             </div>
           </div>
@@ -517,22 +569,35 @@
       `;
     }
 
-    // ABA 3: CLIENTES E FIADO
+    // ABA 3: CLIENTES, FIADO E ABATIMENTO DE CONTAS
     function renderAbaClientes() {
       let clientesHTML = clientes.map((c, i) => `
-        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
-          <div>
-            <p class="font-bold text-gray-800">${c.nome}</p>
-            <p class="text-gray-500">Tel: ${c.telefone || 'Não informado'}</p>
+        <div class="bg-gray-50 p-2.5 rounded-lg border text-xs space-y-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="font-bold text-gray-800">${c.nome}</p>
+              <p class="text-gray-500">Tel: ${c.telefone || 'Não informado'}</p>
+            </div>
+            <span class="font-extrabold ${c.debito > 0 ? 'text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200' : 'text-green-600'}">
+              Fiado: R$ ${parseFloat(c.debito || 0).toFixed(2)}
+            </span>
           </div>
-          <span class="font-bold text-red-600">Fiado: R$ ${parseFloat(c.debito || 0).toFixed(2)}</span>
+
+          ${c.debito > 0 ? `
+            <div class="flex gap-2 pt-1 border-t border-gray-200">
+              <input type="number" step="0.01" id="abatimento-val-${i}" placeholder="Valor abater R$" class="w-full p-1 border rounded text-xs">
+              <button onclick="abaterDebitoCliente(${i})" class="bg-green-600 text-white font-bold px-2 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap">
+                Abater / Pagar
+              </button>
+            </div>
+          ` : '<p class="text-[10px] text-green-700 italic">Conta 100% em dia!</p>'}
         </div>
       `).join('');
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-users text-teal-600"></i> Cadastro de Clientes & Fiado
+            <i class="fa-solid fa-users text-teal-600"></i> Cadastro de Clientes & Controle de Fiado
           </h2>
 
           <div class="space-y-2">
@@ -545,12 +610,35 @@
 
           <div class="border-t pt-3 space-y-2">
             <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Clientes Cadastrados (${clientes.length})</h3>
-            <div class="space-y-1.5 max-h-60 overflow-y-auto">
+            <div class="space-y-2 max-h-60 overflow-y-auto">
               ${clientesHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum cliente cadastrado.</p>'}
             </div>
           </div>
         </div>
       `;
+    }
+
+    function abaterDebitoCliente(index) {
+      const valInput = document.getElementById(`abatimento-val-${index}`);
+      const valorAbater = parseFloat(valInput.value);
+
+      if (!valorAbater || valorAbater <= 0) {
+        alert("Digite um valor válido para abater!");
+        return;
+      }
+
+      let cliente = clientes[index];
+      cliente.debito = Math.max(0, cliente.debito - valorAbater);
+
+      localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
+      }
+
+      alert(`Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
+      renderAba();
     }
 
     // ABA 4: RELATÓRIOS E EXCEL
@@ -560,7 +648,7 @@
         <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
           <div>
             <p class="font-bold text-gray-800">${v.item}</p>
-            <p class="text-gray-400">${v.formaPagto} • ${v.data}</p>
+            <p class="text-gray-400">${v.formaPagto} ${v.cliente ? '• ' + v.cliente : ''} • ${v.data}</p>
           </div>
           <span class="font-bold text-teal-700">R$ ${parseFloat(v.valor).toFixed(2)}</span>
         </div>
@@ -586,9 +674,16 @@
       `;
     }
 
-    // LÓGICA DE DADOS
+    // LÓGICA DE DADOS DO CARRINHO E ESTOQUE
     function adicionarAoCarrinho(index) {
       let prod = produtos[index];
+      
+      // Alerta / Vibração se estoque estiver zerado ou baixo
+      if (prod.estoque <= 0) {
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        alert(`Atenção: O produto "${prod.nome}" está com estoque zerado!`);
+      }
+
       let item = carrinho.find(c => c.nome === prod.nome);
       if (item) { item.qtd += 1; }
       else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1 }); }
@@ -611,18 +706,31 @@
     function finalizarCarrinho() {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       const pagto = document.getElementById('venda-pagto').value;
+      const clienteFiado = document.getElementById('venda-cliente-fiado') ? document.getElementById('venda-cliente-fiado').value : '';
+
+      if (pagto === 'Fiado' && !clienteFiado) {
+        alert("Por favor, selecione o cliente para registrar o fiado!");
+        return;
+      }
+
       const user = auth.currentUser;
       const dataAtual = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+      let totalVenda = 0;
 
       carrinho.forEach(item => {
         let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
         if (prod && prod.estoque >= item.qtd) { prod.estoque -= item.qtd; }
 
+        let valorItemTotal = item.preco * item.qtd;
+        totalVenda += valorItemTotal;
+
         const novaVenda = {
           id: Date.now() + Math.random(),
           item: item.nome,
-          valor: item.preco * item.qtd,
+          valor: valorItemTotal,
           formaPagto: pagto,
+          cliente: pagto === 'Fiado' ? clienteFiado : '',
           data: dataAtual
         };
 
@@ -631,6 +739,18 @@
           db.collection("vendas").add({ ...novaVenda, userId: user.uid, userEmail: user.email, createdAt: new Date() });
         }
       });
+
+      // Se for Fiado, adiciona ao débito do cliente
+      if (pagto === 'Fiado' && clienteFiado) {
+        let cli = clientes.find(c => c.nome === clienteFiado);
+        if (cli) {
+          cli.debito = (parseFloat(cli.debito) || 0) + totalVenda;
+          localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+          if (user) {
+            db.collection("clientes").doc(user.uid + "_" + cli.id).set(cli, { merge: true });
+          }
+        }
+      }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       localStorage.setItem('crm_vendas', JSON.stringify(vendas));
@@ -643,7 +763,9 @@
       const nome = document.getElementById('cad-prod-nome').value;
       const preco = document.getElementById('cad-prod-preco').value;
       const qtd = document.getElementById('cad-prod-qtd').value || 1;
+      const medida = document.getElementById('cad-prod-medida').value;
       const validade = document.getElementById('cad-prod-validade').value;
+      const atalho = document.getElementById('cad-prod-atalho').checked;
 
       if (!nome || !preco) { alert("Preencha o nome e o preço!"); return; }
 
@@ -651,9 +773,19 @@
       if (prodExistente) {
         prodExistente.preco = parseFloat(preco);
         prodExistente.estoque = (parseInt(prodExistente.estoque) || 0) + parseInt(qtd);
+        prodExistente.medida = medida;
+        prodExistente.atalho = atalho;
         if (validade) prodExistente.validade = validade;
       } else {
-        produtos.push({ id: Date.now(), nome: nome, preco: parseFloat(preco), estoque: parseInt(qtd), validade: validade || '' });
+        produtos.push({ 
+          id: Date.now(), 
+          nome: nome, 
+          preco: parseFloat(preco), 
+          estoque: parseInt(qtd), 
+          medida: medida,
+          validade: validade || '',
+          atalho: atalho 
+        });
       }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
@@ -661,7 +793,8 @@
       if (user) {
         db.collection("produtos").doc(user.uid + "_" + nome).set({
           userId: user.uid, nome: nome, preco: parseFloat(preco),
-          estoque: prodExistente ? prodExistente.estoque : parseInt(qtd), validade: validade || ''
+          estoque: prodExistente ? prodExistente.estoque : parseInt(qtd),
+          medida: medida, validade: validade || '', atalho: atalho
         }, { merge: true });
       }
 
@@ -682,16 +815,23 @@
       const tel = document.getElementById('cli-tel').value;
       if (!nome) { alert("Digite o nome do cliente!"); return; }
 
-      clientes.push({ id: Date.now(), nome: nome, telefone: tel, debito: 0 });
+      const novoCli = { id: Date.now(), nome: nome, telefone: tel, debito: 0 };
+      clientes.push(novoCli);
       localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("clientes").doc(user.uid + "_" + novoCli.id).set({ ...novoCli, userId: user.uid });
+      }
+
       alert("Cliente cadastrado!");
       renderAba();
     }
 
     function exportarBackupCSV() {
       if (vendas.length === 0) { alert("Sem histórico de vendas para exportar."); return; }
-      let csvContent = "data:text/csv;charset=utf-8,ID,Item,Valor,FormaPagamento,Data\n";
-      vendas.forEach(v => { csvContent += `${v.id},"${v.item}",${v.valor},"${v.formaPagto}","${v.data}"\n`; });
+      let csvContent = "data:text/csv;charset=utf-8,ID,Item,Valor,FormaPagamento,Cliente,Data\n";
+      vendas.forEach(v => { csvContent += `${v.id},"${v.item}",${v.valor},"${v.formaPagto}","${v.cliente || ''}","${v.data}"\n`; });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -724,7 +864,7 @@
       auth.signOut().then(() => alert('Você desconectou.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v5.6 Unificado pronto!");
+    console.log("Caixa Rápido Móvel Pro Completo carregado com sucesso!");
   </script>
 </body>
 </html>

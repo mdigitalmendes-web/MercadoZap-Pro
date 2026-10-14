@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caixa Rápido Móvel Pro</title>
   
-  <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
+  <!-- Estilos (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -17,10 +17,10 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
-  <!-- BARRA SUPERIOR (HEADER) ESTILO WHATSAPP -->
-  <header class="whatsapp-green text-white p-4 flex justify-between items-center shadow-md z-10">
+  <!-- BARRA SUPERIOR ESTILO WHATSAPP -->
+  <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
-      <i class="fa-solid fa-cash-register text-2xl"></i>
+      <i class="fa-solid fa-cash-register text-2xl text-green-300"></i>
       <div>
         <h1 id="header-app-name" class="font-bold text-base leading-tight">Caixa Rápido Móvel Pro</h1>
         <p id="user-status" class="text-xs text-green-200">Verificando conexão...</p>
@@ -33,22 +33,22 @@
         <i class="fa-solid fa-ellipsis-vertical"></i>
       </button>
 
-      <!-- DROPDOWN DO MENU -->
-      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-md shadow-lg border border-gray-200 z-50">
-        <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
-        <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
+      <!-- DROPDOWN -->
+      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
+        <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
+        <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
         <hr class="my-1 border-gray-200">
-        <button id="menu-logout" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
+        <button id="menu-logout" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
       </div>
     </div>
   </header>
 
   <!-- CONTEÚDO PRINCIPAL (TELA DINÂMICA) -->
-  <main class="flex-1 overflow-y-auto p-4 max-w-md mx-auto w-full">
-    <div id="main-content" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+  <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full">
+    <div id="main-content" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
       <div class="text-center py-8">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600 mb-3"></i>
-        <p class="text-gray-600 font-medium">Carregando o aplicativo...</p>
+        <p class="text-gray-600 font-medium text-sm">Carregando o aplicativo...</p>
       </div>
     </div>
   </main>
@@ -62,11 +62,11 @@
       </div>
       <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento</label>
-          <input type="text" id="perfil-nome-loja" required placeholder="Ex: Mercado do Rogério" class="w-full p-2 border rounded-lg text-sm">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da Empresa / Loja</label>
+          <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-sm">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza / Categoria</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza / Registro</label>
           <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-sm bg-white">
             <option value="PF">Pessoa Física (Autônomo)</option>
             <option value="MEI">MEI (Microempreendedor)</option>
@@ -74,14 +74,14 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo Principal</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
           <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-sm bg-white">
-            <option value="Produtos">Venda de Produtos / Mercado</option>
+            <option value="Produtos">Venda de Produtos</option>
             <option value="Servicos">Prestação de Serviços</option>
             <option value="Ambos">Produtos e Serviços</option>
           </select>
         </div>
-        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition">
+        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-sm">
           Salvar Alterações
         </button>
       </form>
@@ -93,9 +93,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA COMPLETA DO APLICATIVO -->
+  <!-- LÓGICA UNIFICADA DO APLICATIVO -->
   <script>
-    // 1. Chaves Oficiais do Firebase
+    // 1. Chaves do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
       authDomain: "caixa-rapido-movel.firebaseapp.com",
@@ -109,9 +109,10 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Estado Local dos Dados (Com recuperação automática do armazenamento anterior)
+    // Estado e Dados Locais
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
+    let carrinho = [];
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
@@ -157,51 +158,51 @@
 
       closeModalPerfil();
       renderCaixaApp();
-      alert("Perfil do negócio atualizado com sucesso!");
+      alert("Perfil atualizado!");
     }
 
-    // ONBOARDING PASSO 1: Selecionar o Tipo de Negócio antes do Cadastro
+    // ONBOARDING PASSO 1: Escolha do Tipo de Negócio antes da Conta
     function showOnboardingStep1() {
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <i class="fa-solid fa-store text-4xl text-teal-600 mb-2"></i>
             <h2 class="text-xl font-bold text-gray-800">Seja Bem-Vindo!</h2>
-            <p class="text-xs text-gray-500">Selecione o perfil do seu negócio para personalizar seu caixa</p>
+            <p class="text-xs text-gray-500">Configure o perfil do seu negócio antes de acessar</p>
           </div>
 
           <form onsubmit="handleOnboardingStep1(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja ou Negócio</label>
-              <input type="text" id="step1-nome" required placeholder="Ex: Mercearia do Povo" class="w-full p-2.5 border rounded-lg text-sm">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento / Loja</label>
+              <input type="text" id="step1-nome" required placeholder="Ex: Mercado do Rogério" class="w-full p-2.5 border rounded-lg text-sm">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Categoria do Negócio</label>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Registro / Natureza</label>
               <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-sm bg-white">
                 <option value="PF">Pessoa Física (Autônomo / Informal)</option>
                 <option value="MEI">MEI (Microempreendedor Individual)</option>
-                <option value="ME">ME (Microempresa)</option>
+                <option value="ME">Microempresa (ME)</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo Principal</label>
               <select id="step1-ramo" class="w-full p-2.5 border rounded-lg text-sm bg-white">
-                <option value="Produtos">Venda de Produtos (Mercado, Loja, etc.)</option>
+                <option value="Produtos">Venda de Produtos / Mercado</option>
                 <option value="Servicos">Prestação de Serviços</option>
-                <option value="Ambos">Ambos (Produtos e Serviços)</option>
+                <option value="Ambos">Produtos e Serviços</option>
               </select>
             </div>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition">
-              Avançar para Criar Conta <i class="fa-solid fa-arrow-right ml-1"></i>
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-sm">
+              Continuar para Criar Conta <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Já possui uma conta?</p>
-            <button onclick="showLoginForm()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Entrar direto na conta</button>
+            <p class="text-xs text-gray-600">Já possui uma conta criada?</p>
+            <button onclick="showLoginForm()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Fazer Login</button>
           </div>
         </div>
       `;
@@ -217,14 +218,14 @@
       showRegisterForm();
     }
 
-    // ONBOARDING PASSO 2: Tela de Cadastro de Usuário
+    // ONBOARDING PASSO 2: Cadastro da Conta
     function showRegisterForm() {
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <i class="fa-solid fa-user-plus text-4xl text-teal-600 mb-2"></i>
             <h2 class="text-xl font-bold text-gray-800">Criar Sua Conta</h2>
-            <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja || 'Seu Negócio'}</b></p>
+            <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja}</b></p>
           </div>
 
           <form onsubmit="handleRegister(event)" class="space-y-3">
@@ -233,32 +234,32 @@
               <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-sm">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Crie uma Senha (mínimo 6 dígitos)</label>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Senha (mínimo 6 dígitos)</label>
               <input type="password" id="reg-password" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-sm">
             </div>
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition">
-              Concluir Cadastro e Abrir Caixa
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-sm">
+              Concluir e Entrar no Caixa
             </button>
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-gray-500 hover:underline">← Voltar para Perfil do Negócio</button>
+            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-gray-500 hover:underline">← Voltar para perfil</button>
           </div>
         </div>
       `;
     }
 
-    // Tela de Login
+    // TELA DE LOGIN
     function showLoginForm() {
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <i class="fa-solid fa-user-check text-4xl text-teal-600 mb-2"></i>
             <h2 class="text-xl font-bold text-gray-800">Entrar na Conta</h2>
-            <p class="text-xs text-gray-500">Acesse seu caixa e estoque na nuvem</p>
+            <p class="text-xs text-gray-500">Acesse seu caixa móvel sincronizado</p>
           </div>
 
           <form onsubmit="handleLogin(event)" class="space-y-3">
@@ -273,14 +274,14 @@
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition">
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-sm">
               Entrar
             </button>
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Primeiro acesso?</p>
-            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Configurar novo negócio</button>
+            <p class="text-xs text-gray-600">Ainda não tem conta?</p>
+            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-teal-700 hover:underline mt-1">Configurar Novo Negócio</button>
           </div>
         </div>
       `;
@@ -311,116 +312,167 @@
         localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
         db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
       }).catch(err => {
-        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está em uso." : err.message);
+        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
         errBox.classList.remove('hidden');
       });
     }
 
-    // 5. PAINEL PRINCIPAL (Estoque, Validade, Entradas e Caixa de Vendas)
+    // 2. PAINEL PRINCIPAL COMPLETO (RESUMO DO DIA + ATALHOS RÁPIDOS + CARRINHO + ESTOQUE)
     function renderCaixaApp() {
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
-      
-      let produtosOptions = produtos.length > 0 
-        ? produtos.map((p, i) => `<option value="${i}">${p.nome} - R$ ${parseFloat(p.preco).toFixed(2)} (Qtd: ${p.estoque || 0})</option>`).join('')
-        : `<option value="">Nenhum produto cadastrado</option>`;
 
+      // Cálculo dos Totais do Dia
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+      const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
+
+      // Grade de Botões de Atalho Rápido para Produtos
+      let atalhosProdutosHTML = produtos.map((p, i) => `
+        <button onclick="adicionarAoCarrinho(${i})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
+          <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome}</span>
+          <div class="flex justify-between items-center w-full mt-1">
+            <span class="text-xs text-gray-500">Est: <b>${p.estoque || 0}</b></span>
+            <span class="font-extrabold text-teal-800 text-sm">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+          </div>
+        </button>
+      `).join('');
+
+      // Itens no Carrinho
+      let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      let carrinhoHTML = carrinho.map((item, index) => `
+        <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
+          <div>
+            <p class="font-bold text-gray-800">${item.nome}</p>
+            <p class="text-gray-500">${item.qtd}x R$ ${item.preco.toFixed(2)}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-teal-700">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1.5 py-0.5 rounded hover:bg-red-100">&times;</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Lista do Estoque
       let listaEstoqueHTML = produtos.map((p, i) => `
         <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
           <div>
             <p class="font-bold text-gray-800">${p.nome}</p>
-            <p class="text-gray-500">Qtd em Estoque: <span class="font-bold text-teal-700">${p.estoque || 0}</span> ${p.validade ? '• Venc: ' + p.validade : ''}</p>
+            <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0}</span> ${p.validade ? '• Val: ' + p.validade : ''}</p>
           </div>
-          <span class="font-bold text-gray-700">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-        </div>
-      `).join('');
-
-      let ultimasVendasHTML = vendas.slice(-5).reverse().map(v => `
-        <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
-          <div>
-            <p class="font-bold text-gray-800">${v.item}</p>
-            <p class="text-gray-400">${v.formaPagto} • ${v.data}</p>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-gray-700">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+            <button onclick="excluirProduto(${i})" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
           </div>
-          <span class="font-bold text-teal-700">R$ ${parseFloat(v.valor).toFixed(2)}</span>
         </div>
       `).join('');
 
       document.getElementById('main-content').innerHTML = `
-        <div class="space-y-5">
+        <div class="space-y-4">
           
-          <!-- REGISTRO DE VENDA -->
-          <div class="space-y-3">
-            <h2 class="font-bold text-gray-800 text-sm flex items-center gap-2 border-b pb-2">
-              <i class="fa-solid fa-cart-shopping text-teal-600"></i> Registrar Venda
+          <!-- CARDS DE RESUMO DO DIA -->
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-teal-600 text-white p-3 rounded-lg shadow-sm">
+              <p class="text-xs text-teal-100 font-medium">Vendido Hoje</p>
+              <p class="text-lg font-extrabold mt-0.5">R$ ${totalHoje.toFixed(2)}</p>
+              <p class="text-[10px] text-teal-200 mt-1">${vendasHoje.length} venda(s) realizada(s)</p>
+            </div>
+            
+            <div class="bg-gray-800 text-white p-3 rounded-lg shadow-sm flex flex-col justify-between">
+              <div>
+                <p class="text-[11px] text-gray-300">PIX: <b class="text-white">R$ ${totalPix.toFixed(2)}</b></p>
+                <p class="text-[11px] text-gray-300">Dinheiro: <b class="text-white">R$ ${totalDinheiro.toFixed(2)}</b></p>
+              </div>
+              <span class="text-[10px] text-teal-400 font-semibold">Resumo Automático</span>
+            </div>
+          </div>
+
+          <!-- GRADE DE BOTÕES DE ATALHO RÁPIDO PARA VENDER EM 1 CLIQUE -->
+          <div class="border-t pt-3 space-y-2">
+            <div class="flex justify-between items-center">
+              <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos Rápido de Vendas
+              </h2>
+              <span class="text-[10px] text-gray-400">Clique para adicionar</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Nenhum produto cadastrado nos atalhos ainda.</p>'}
+            </div>
+          </div>
+
+          <!-- TELA DE REGISTRO / CARRINHO DE COMPRAS -->
+          <div class="border-t pt-3 space-y-3">
+            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
             </h2>
 
-            <div class="space-y-2">
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Produto do Estoque</label>
-                <select id="venda-select-item" onchange="preencherPrecoEItem()" class="w-full p-2 border rounded-lg text-sm bg-white">
-                  <option value="">-- Selecionar item cadastrado --</option>
-                  ${produtosOptions}
-                </select>
+            <!-- Opção de Item Avulso -->
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="venda-nome-manual" placeholder="Item Avulso" class="col-span-2 p-2 border rounded-lg text-xs">
+              <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs">
+            </div>
+            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1 rounded-lg border hover:bg-gray-200 text-xs">
+              + Adicionar Item Avulso ao Carrinho
+            </button>
+
+            <!-- Lista de Itens no Carrinho -->
+            <div class="space-y-1.5 max-h-32 overflow-y-auto">
+              ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
+            </div>
+
+            <!-- Total e Finalização -->
+            <div class="bg-gray-50 p-2.5 rounded-lg border space-y-2">
+              <div class="flex justify-between items-center font-bold text-sm text-gray-800">
+                <span>Total do Carrinho:</span>
+                <span class="text-teal-700 text-base">R$ ${totalCarrinho.toFixed(2)}</span>
               </div>
 
               <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="venda-nome-manual" placeholder="Ou digite o nome" class="p-2 border rounded-lg text-sm">
-                <input type="number" step="0.01" id="venda-valor" placeholder="Valor R$" class="p-2 border rounded-lg text-sm">
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Forma de Pagamento</label>
-                <select id="venda-pagto" class="w-full p-2 border rounded-lg text-sm bg-white">
+                <select id="venda-pagto" class="p-2 border rounded-lg text-xs bg-white">
                   <option value="PIX">PIX</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
                   <option value="Cartão de Débito">Cartão de Débito</option>
                 </select>
+                <button onclick="finalizarCarrinho()" class="bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
+                  Finalizar Venda
+                </button>
               </div>
-
-              <button onclick="confirmarVenda()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition shadow">
-                + Confirmar Venda (Baixa no Estoque)
-              </button>
             </div>
           </div>
 
-          <!-- COMPRA / CADASTRO DE PRODUTO E ESTOQUE -->
-          <div class="border-t pt-4 space-y-3">
-            <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-2">
-              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Entrada / Cadastro de Estoque
+          <!-- COMPRA / CADASTRO DE ESTOQUE E VALIDADE -->
+          <div class="border-t pt-3 space-y-2">
+            <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Entrada / Cadastro de Produtos
             </h3>
 
             <div class="space-y-2">
-              <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-sm">
+              <input type="text" id="cad-prod-nome" placeholder="Nome do Produto" class="w-full p-2 border rounded-lg text-xs">
               
               <div class="grid grid-cols-2 gap-2">
-                <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda (R$)" class="p-2 border rounded-lg text-sm">
-                <input type="number" id="cad-prod-qtd" placeholder="Quantidade Entrada" class="p-2 border rounded-lg text-sm">
+                <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda (R$)" class="p-2 border rounded-lg text-xs">
+                <input type="number" id="cad-prod-qtd" placeholder="Qtd Entrada" class="p-2 border rounded-lg text-xs">
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Data de Validade (Opcional)</label>
-                <input type="date" id="cad-prod-validade" class="w-full p-2 border rounded-lg text-sm bg-white">
+                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Opcional)</label>
+                <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
               </div>
 
-              <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-gray-100 text-gray-800 font-semibold py-2 rounded-lg border hover:bg-gray-200 text-xs">
-                + Salvar Entrada no Estoque
+              <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg border hover:bg-gray-300 text-xs">
+                + Salvar no Estoque e Atalhos
               </button>
             </div>
           </div>
 
-          <!-- LISTA DE ESTOQUE ATUAL -->
-          <div class="border-t pt-4 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Produtos em Estoque</h3>
+          <!-- LISTA DE ESTOQUE COMPLETA -->
+          <div class="border-t pt-3 space-y-2">
+            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Produtos Cadastrados</h3>
             <div class="space-y-1.5 max-h-36 overflow-y-auto">
-              ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Nenhum produto em estoque.</p>'}
-            </div>
-          </div>
-
-          <!-- HISTÓRICO DE VENDAS -->
-          <div class="border-t pt-4 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Últimas Vendas Realizadas</h3>
-            <div class="space-y-1.5">
-              ${ultimasVendasHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Nenhuma venda registrada ainda.</p>'}
+              ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Nenhum produto no estoque.</p>'}
             </div>
           </div>
 
@@ -428,14 +480,86 @@
       `;
     }
 
-    function preencherPrecoEItem() {
-      const idx = document.getElementById('venda-select-item').value;
-      if (idx !== "") {
-        document.getElementById('venda-nome-manual').value = produtos[idx].nome;
-        document.getElementById('venda-valor').value = produtos[idx].preco;
+    // Funções do Carrinho
+    function adicionarAoCarrinho(index) {
+      let prod = produtos[index];
+      let itemNoCarrinho = carrinho.find(c => c.nome === prod.nome);
+
+      if (itemNoCarrinho) {
+        itemNoCarrinho.qtd += 1;
+      } else {
+        carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1 });
       }
+
+      renderCaixaApp();
     }
 
+    function adicionarManualAoCarrinho() {
+      const nome = document.getElementById('venda-nome-manual').value;
+      const valor = document.getElementById('venda-valor-manual').value;
+
+      if (!nome || !valor) {
+        alert("Preencha o nome e o valor do item avulso!");
+        return;
+      }
+
+      carrinho.push({ nome: nome, preco: parseFloat(valor), qtd: 1 });
+      renderCaixaApp();
+    }
+
+    function removerDoCarrinho(index) {
+      carrinho.splice(index, 1);
+      renderCaixaApp();
+    }
+
+    function finalizarCarrinho() {
+      if (carrinho.length === 0) {
+        alert("O carrinho está vazio!");
+        return;
+      }
+
+      const pagto = document.getElementById('venda-pagto').value;
+      const user = auth.currentUser;
+      const dataAtual = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+      carrinho.forEach(item => {
+        // Baixa no Estoque
+        let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
+        if (prod && prod.estoque >= item.qtd) {
+          prod.estoque -= item.qtd;
+        }
+
+        const novaVenda = {
+          id: Date.now() + Math.random(),
+          item: item.nome,
+          valor: item.preco * item.qtd,
+          formaPagto: pagto,
+          data: dataAtual
+        };
+
+        vendas.push(novaVenda);
+
+        // Salva no Firebase
+        if (user) {
+          db.collection("vendas").add({
+            ...novaVenda,
+            userId: user.uid,
+            userEmail: user.email,
+            createdAt: new Date()
+          });
+        }
+      });
+
+      // Atualiza o local storage
+      localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+      localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+
+      carrinho = [];
+      alert("Venda finalizada com sucesso e salva na nuvem!");
+      renderCaixaApp();
+    }
+
+    // Gestão de Produtos
     function cadastrarOuAtualizarProduto() {
       const nome = document.getElementById('cad-prod-nome').value;
       const preco = document.getElementById('cad-prod-preco').value;
@@ -443,7 +567,7 @@
       const validade = document.getElementById('cad-prod-validade').value;
 
       if (!nome || !preco) {
-        alert("Preencha o nome e o preço de venda!");
+        alert("Preencha o nome e o preço!");
         return;
       }
 
@@ -476,50 +600,16 @@
         }, { merge: true });
       }
 
-      alert("Entrada de estoque salva!");
+      alert("Produto salvo!");
       renderCaixaApp();
     }
 
-    function confirmarVenda() {
-      const item = document.getElementById('venda-nome-manual').value;
-      const valor = document.getElementById('venda-valor').value;
-      const pagto = document.getElementById('venda-pagto').value;
-      const user = auth.currentUser;
-
-      if (!item || !valor) {
-        alert("Informe o item e o valor!");
-        return;
-      }
-
-      // Baixa no Estoque se o produto estiver cadastrado
-      let prod = produtos.find(p => p.nome.toLowerCase() === item.toLowerCase());
-      if (prod && prod.estoque > 0) {
-        prod.estoque -= 1;
+    function excluirProduto(index) {
+      if (confirm("Deseja excluir este produto do estoque?")) {
+        produtos.splice(index, 1);
         localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+        renderCaixaApp();
       }
-
-      const novaVenda = {
-        id: Date.now(),
-        item: item,
-        valor: parseFloat(valor),
-        formaPagto: pagto,
-        data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})
-      };
-
-      vendas.push(novaVenda);
-      localStorage.setItem('crm_vendas', JSON.stringify(vendas));
-
-      if (user) {
-        db.collection("vendas").add({
-          ...novaVenda,
-          userId: user.uid,
-          userEmail: user.email,
-          createdAt: new Date()
-        });
-      }
-
-      alert("Venda registrada e salva na nuvem!");
-      renderCaixaApp();
     }
 
     function exportarBackupCSV() {
@@ -571,7 +661,7 @@
       });
     });
 
-    console.log("Caixa Rápido Móvel Pro carregado com sucesso!");
+    console.log("Caixa Rápido Móvel Pro unificado com sucesso!");
   </script>
 </body>
 </html>

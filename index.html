@@ -8,7 +8,7 @@
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Gerador de PDF Profissional -->
+  <!-- Gerador de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -141,6 +141,30 @@
     </div>
   </div>
 
+  <!-- MODAL: COMPROVANTE & RECIBO DE VENDA -->
+  <div id="modal-comprovante" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-receipt text-teal-600"></i> Venda Concluída!</h3>
+        <button onclick="closeModalComprovante()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <div id="comprovante-conteudo" class="space-y-2 text-xs bg-gray-50 p-3 rounded border font-mono">
+        <!-- Gerado via JS -->
+      </div>
+      <div class="space-y-2 pt-1">
+        <button onclick="enviarComprovanteZap()" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-base"></i> Enviar Comprovante no WhatsApp
+        </button>
+        <button onclick="imprimirReciboProfissional()" class="w-full bg-gray-800 text-white font-bold py-2.5 rounded-lg hover:bg-gray-900 transition text-xs shadow flex justify-center items-center gap-2">
+          <i class="fa-solid fa-print text-base"></i> Imprimir Recibo / Cupom
+        </button>
+        <button onclick="closeModalComprovante()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
+          Nova Venda
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: FECHAMENTO DE CAIXA -->
   <div id="modal-fechamento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
@@ -149,12 +173,12 @@
         <button onclick="closeModalFechamento()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div id="fechamento-conteudo" class="space-y-3 text-xs">
-        <!-- Preenchido dinamicamente via JS -->
+        <!-- Preenchido via JS -->
       </div>
     </div>
   </div>
 
-  <!-- MODAL: AJUDA & COMO USAR -->
+  <!-- MODAL: AJUDA -->
   <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -162,11 +186,10 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>🛒 Caixa:</b> Selecione os atalhos de produtos ou digite itens avulsos. Escolha a forma de pagamento (PIX, Dinheiro, Cartão ou Fiado) e confirme.</p>
-        <p><b>⚖️ Venda Fracionada (kg/L):</b> Ao clicar em um produto cadastrado em kg ou Litros, o sistema pede o peso/volume para calcular o valor proporcional e dar baixa exata.</p>
-        <p><b>📦 Estoque:</b> Cadastre produtos, preços de custo/venda, unidades e estoque mínimo. Produtos abaixo do estoque mínimo surgem no topo saltando em vermelho!</p>
-        <p><b>🤝 Fiado:</b> Selecione o cliente ao registrar a venda. Na aba Fiado, use o botão "Abater / Pagar" para registrar recebimentos parciais do cliente.</p>
-        <p><b>☁️ Nuvem & Backup:</b> Suas vendas e estoque são sincronizados automaticamente com a nuvem do Firebase.</p>
+        <p><b>🛒 Caixa:</b> Clique nos botões de atalho ou busques itens avulsos. Ajuste as quantidades com `+` e `-`. Quando o estoque de um item acaba, o botão fica cinza e bloqueado.</p>
+        <p><b>⚖️ Vendas Fracionadas:</b> Produtos cadastrados em kg ou Litros abrem uma janela para você digitar a pesagem exata.</p>
+        <p><b>📲 Comprovante & Recibo:</b> Ao confirmar a venda, você pode enviar o recibo pelo WhatsApp ou imprimir direto.</p>
+        <p><b>⭐ Gerenciador de Atalhos:</b> Na aba Estoque, clique no ícone da estrela (⭐) para escolher quais produtos aparecem no caixa.</p>
       </div>
     </div>
   </div>
@@ -191,15 +214,15 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Produtos Padrões Inicial
+    // Produtos Iniciais
     const produtosExemplo = [
       { id: 1, nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
       { id: 2, nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
-      { id: 3, nome: "Leite Integral", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true },
+      { id: 3, nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true },
       { id: 4, nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-15", atalho: true }
     ];
 
-    // Estado Local
+    // Estado
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
@@ -210,10 +233,11 @@
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let cliEditandoIndex = null;
+    let ultimaVendaRealizada = null;
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // Menu Dropdown
+    // Dropdown
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -222,9 +246,7 @@
       dropdownMenu.classList.toggle('hidden');
     });
 
-    document.addEventListener('click', () => {
-      dropdownMenu.classList.add('hidden');
-    });
+    document.addEventListener('click', () => { dropdownMenu.classList.add('hidden'); });
 
     function openModalPerfil() {
       document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
@@ -443,37 +465,57 @@
       const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
 
+      // Atalhos de Produtos com Atualização Dinâmica de Estoque e Bloqueio ao Zerar
       let atalhosProdutos = produtos.filter(p => p.atalho !== false);
       let atalhosProdutosHTML = atalhosProdutos.map((p) => {
         let idxReal = produtos.findIndex(prod => prod.id === p.id);
         let ehFracionado = ['kg', 'g', 'L'].includes(p.medida);
 
+        // Desconto dinâmico do que já está no carrinho
+        let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === p.nome.toLowerCase());
+        let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
+        let estoqueDisponivelNoAto = (p.estoque || 0) - qtdNoCarrinho;
+
+        let ehEsgotado = estoqueDisponivelNoAto <= 0;
+
         return `
-          <button onclick="adicionarAoCarrinho(${idxReal})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm active:scale-95">
+          <button onclick="${ehEsgotado ? 'alert(\'Produto esgotado no estoque!\')' : `adicionarAoCarrinho(${idxReal})`}" 
+                  class="${ehEsgotado ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 active:scale-95'} border p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
             <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
-              <span class="text-[10px] text-gray-500">Est: <b>${p.estoque || 0} ${p.medida || 'un'}</b></span>
-              <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}/${p.medida || 'un'}</span>
+              <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-gray-500'}">
+                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto}${p.medida || 'un'}</b>`}
+              </span>
+              <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
             </div>
           </button>
         `;
       }).join('');
 
+      // Carrinho com Botões [+] e [-]
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
-        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
+        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border text-xs">
           <div>
             <p class="font-bold text-gray-800">${item.nome}</p>
-            <p class="text-gray-500">${item.qtd} ${item.medida || 'un'} x R$ ${item.preco.toFixed(2)}</p>
+            <p class="text-gray-500">R$ ${item.preco.toFixed(2)} / ${item.medida || 'un'}</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-teal-700 text-sm">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
-            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-2 py-1 hover:bg-red-100 rounded">&times;</button>
+            <div class="flex items-center border rounded bg-white overflow-hidden">
+              <button onclick="alterarQtdCarrinho(${index}, -1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-bold text-gray-700">-</button>
+              <span class="px-2 font-bold text-gray-800 text-xs">${item.qtd}</span>
+              <button onclick="alterarQtdCarrinho(${index}, 1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-bold text-gray-700">+</button>
+            </div>
+            <span class="font-bold text-teal-700 text-xs w-16 text-right">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1 py-1 hover:bg-red-100 rounded">&times;</button>
           </div>
         </div>
       `).join('');
 
-      let clientesOptionsHTML = clientes.map(c => `<option value="${c.nome}">${c.nome} (Deb: R$ ${parseFloat(c.debito || 0).toFixed(2)})</option>`).join('');
+      let clientesOptionsHTML = clientes.map(c => `<option value="${c.nome}">${c.nome} (Débito: R$ ${parseFloat(c.debito || 0).toFixed(2)})</option>`).join('');
+
+      // Opções para a Busca com Auto-Completar de Item Avulso
+      let datalistProdutosHTML = produtos.map(p => `<option value="${p.nome}">R$ ${p.preco.toFixed(2)} (${p.medida})</option>`).join('');
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -494,7 +536,7 @@
             </div>
           </div>
 
-          <!-- VALORES RÁPIDOS -->
+          <!-- VALOR RÁPIDO -->
           <div class="border-t pt-3 space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-calculator text-teal-600"></i> Valor Rápido
@@ -523,12 +565,18 @@
               <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
             </h2>
 
+            <!-- BUSCA INTELIGENTE DE ITEM AVULSO / ESTOQUE -->
             <div class="grid grid-cols-3 gap-2">
-              <input type="text" id="venda-nome-manual" placeholder="Item Avulso" class="col-span-2 p-2 border rounded-lg text-xs">
+              <div class="col-span-2 relative">
+                <input type="text" id="venda-nome-manual" list="sugestoes-produtos" onchange="autoPreencherValorItemAvulso()" placeholder="Pesquisar produto ou item avulso..." class="w-full p-2 border rounded-lg text-xs">
+                <datalist id="sugestoes-produtos">
+                  ${datalistProdutosHTML}
+                </datalist>
+              </div>
               <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs">
             </div>
             <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
-              + Adicionar Item Avulso
+              + Adicionar Item ao Carrinho
             </button>
 
             <div class="space-y-1.5 max-h-36 overflow-y-auto">
@@ -569,6 +617,14 @@
       `;
     }
 
+    function autoPreencherValorItemAvulso() {
+      const nomeDigitado = document.getElementById('venda-nome-manual').value;
+      let prodEncontrado = produtos.find(p => p.nome.toLowerCase() === nomeDigitado.toLowerCase());
+      if (prodEncontrado) {
+        document.getElementById('venda-valor-manual').value = prodEncontrado.preco;
+      }
+    }
+
     function toggleClienteFiadoSelect() {
       const pagto = document.getElementById('venda-pagto').value;
       const box = document.getElementById('select-cliente-fiado-box');
@@ -584,24 +640,50 @@
     function adicionarAoCarrinho(index) {
       let prod = produtos[index];
 
-      // Se for fracionado (kg, g, L), abre modal de peso/medida
+      // Verificação de Estoque Disponível
+      let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
+      let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
+      let estoqueRestante = prod.estoque - qtdNoCarrinho;
+
+      if (estoqueRestante <= 0) {
+        alert(`O produto "${prod.nome}" está totalmente esgotado no estoque!`);
+        return;
+      }
+
+      // Venda em Kg ou Litros
       if (['kg', 'g', 'L'].includes(prod.medida)) {
         prodFracionadoTemp = prod;
         document.getElementById('fracionado-titulo').innerText = `Venda em ${prod.medida.toUpperCase()}: ${prod.nome}`;
-        document.getElementById('fracionado-sub').innerText = `Preço do produto: R$ ${prod.preco.toFixed(2)} por ${prod.medida}`;
+        document.getElementById('fracionado-sub').innerText = `Preço: R$ ${prod.preco.toFixed(2)} / ${prod.medida} (Disponível: ${estoqueRestante} ${prod.medida})`;
         document.getElementById('fracionado-qtd').value = '';
         document.getElementById('modal-fracionado').classList.remove('hidden');
         return;
       }
 
-      // Venda por Unidade Padrão
-      if (prod.estoque <= (prod.estMin || 3)) {
+      if (estoqueRestante <= (prod.estMin || 3)) {
         dispararAlertaEstoque(prod);
       }
 
-      let item = carrinho.find(c => c.nome === prod.nome);
-      if (item) { item.qtd += 1; }
+      if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
       else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un' }); }
+      renderAba();
+    }
+
+    function alterarQtdCarrinho(index, delta) {
+      let item = carrinho[index];
+      let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
+
+      if (delta > 0 && prod) {
+        if (item.qtd + delta > prod.estoque) {
+          alert(`Limite de estoque atingido! (${prod.estoque} ${prod.medida} disponíveis)`);
+          return;
+        }
+      }
+
+      item.qtd += delta;
+      if (item.qtd <= 0) {
+        carrinho.splice(index, 1);
+      }
       renderAba();
     }
 
@@ -610,10 +692,6 @@
     function confirmarItemFracionado() {
       const qtdInput = parseFloat(document.getElementById('fracionado-qtd').value);
       if (!qtdInput || qtdInput <= 0) { alert("Informe uma quantidade válida!"); return; }
-
-      if (prodFracionadoTemp.estoque <= (prodFracionadoTemp.estMin || 3)) {
-        dispararAlertaEstoque(prodFracionadoTemp);
-      }
 
       carrinho.push({
         nome: prodFracionadoTemp.nome,
@@ -637,13 +715,10 @@
         osc.start();
         osc.stop(audioCtx.currentTime + 0.4);
       } catch(e) {}
-
-      alert(`🚨 ALERTA DE ESTOQUE MÍNIMO!\nO produto "${prod.nome}" atingiu o estoque limite (${prod.estoque} ${prod.medida}).\nEle foi movido para o TOPO da lista de Estoque!`);
     }
 
-    // ABA 2: ESTOQUE, COMPRAS, UNIDADES, DATA DE ENTRADA, EDITAR & ALERTAS SALTANDO
+    // ABA 2: ESTOQUE, COMPRAS, UNIDADES, MARCAR ATALHOS & DESTAQUE DE MÍNIMO
     function renderAbaEstoque() {
-      // Ordenação: Produtos em Alerta Mínimo Ficam no TOPO
       let produtosOrdenados = [...produtos].map((p, originalIdx) => ({ ...p, originalIdx }));
       produtosOrdenados.sort((a, b) => {
         let aAlerta = (a.estoque <= (a.estMin || 3)) ? 1 : 0;
@@ -663,10 +738,12 @@
                 ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded ml-1">ALERTA ESTOQUE!</span>' : ''}
                 ${ehAlertaValidade ? '<span class="text-[9px] bg-orange-200 text-orange-800 px-1 rounded ml-1">Vencendo!</span>' : ''}
               </p>
-              <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> (Mín: ${p.estMin || 3}) ${p.validade ? '• Val: ' + p.validade : ''}</p>
-              ${p.dataEntrada ? `<p class="text-[9px] text-gray-400">Entrada: ${p.dataEntrada}</p>` : ''}
+              <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> (Mínimo: ${p.estMin || 3}) ${p.validade ? '• Val: ' + p.validade : ''}</p>
             </div>
             <div class="flex items-center gap-1.5">
+              <button onclick="toggleAtalhoEstoque(${p.originalIdx})" class="text-xs p-1 ${p.atalho !== false ? 'text-amber-500' : 'text-gray-300'}" title="Exibir nos Atalhos do Caixa">
+                <i class="fa-solid fa-star text-base"></i>
+              </button>
               <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
               <button onclick="prepararEditarProduto(${p.originalIdx})" class="text-blue-600 text-xs p-1 hover:bg-blue-100 rounded" title="Editar"><i class="fa-solid fa-pen"></i></button>
               <button onclick="excluirProduto(${p.originalIdx})" class="text-red-500 text-xs p-1 hover:bg-red-100 rounded" title="Excluir"><i class="fa-solid fa-trash"></i></button>
@@ -678,7 +755,7 @@
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque, Entradas & Validades
+            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque & Alertas Mínimos
           </h2>
 
           <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-lg border">
@@ -691,9 +768,8 @@
               <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda R$" class="p-2 border rounded-lg text-xs bg-white">
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
-              <input type="number" id="cad-prod-qtd" placeholder="Qtd Entrada" class="p-2 border rounded-lg text-xs bg-white">
-              <input type="number" id="cad-prod-estmin" placeholder="Qtd Mínima" class="p-2 border rounded-lg text-xs bg-white">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
               <select id="cad-prod-medida" class="p-2 border rounded-lg text-xs bg-white">
                 <option value="un">Unidades (un)</option>
                 <option value="kg">Quilogramas (kg)</option>
@@ -702,6 +778,14 @@
                 <option value="cx">Caixas (cx)</option>
                 <option value="pct">Pacotes (pct)</option>
               </select>
+            </div>
+
+            <!-- CAMPO DE ALERTA DE ESTOQUE MÍNIMO COM DESTAQUE DESTACADO -->
+            <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200 space-y-1">
+              <label class="block text-xs font-bold text-amber-900 flex items-center gap-1">
+                <i class="fa-solid fa-bell text-amber-600"></i> Defina o Limite Mínimo para Receber Alerta:
+              </label>
+              <input type="number" id="cad-prod-estmin" placeholder="Ex: 5 (Avisa quando tiver 5 ou menos)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -722,7 +806,7 @@
 
             <div class="flex gap-2 pt-2">
               <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
-                + Salvar no Estoque
+                + Salvar Produto
               </button>
               <button id="btn-cancelar-edit-prod" onclick="cancelarEdicaoProduto()" class="hidden bg-gray-300 text-gray-700 font-bold px-3 py-2.5 rounded-lg text-xs">
                 Cancelar
@@ -739,8 +823,13 @@
         </div>
       `;
 
-      // Define a data de hoje padrão no campo de entrada
       document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
+    }
+
+    function toggleAtalhoEstoque(index) {
+      produtos[index].atalho = !(produtos[index].atalho !== false);
+      localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+      renderAba();
     }
 
     function prepararEditarProduto(index) {
@@ -831,7 +920,7 @@
       }
     }
 
-    // ABA 3: FIADO / CLIENTES (EDITAR, EXCLUIR E ABATER)
+    // ABA 3: FIADO / CLIENTES
     function renderAbaClientes() {
       let clientesHTML = clientes.map((c, i) => `
         <div class="bg-gray-50 p-3 rounded-lg border text-xs space-y-2.5">
@@ -968,18 +1057,13 @@
       }
     }
 
-    // ABA 4: RELATÓRIOS PROFISSIONAIS & EXCEL & PDF COM CHECKLIST
+    // ABA 4: RELATÓRIOS
     function renderAbaRelatorios() {
-      // Cálculos de Lucro Líquido
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      
-      // Cálculo de Custos
       let totalCustoGeral = 0;
       vendas.forEach(v => {
         let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-        if (prod && prod.precoCusto) {
-          totalCustoGeral += prod.precoCusto;
-        }
+        if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
       });
       const lucroLiquido = totalVendasGeral - totalCustoGeral;
 
@@ -1000,7 +1084,6 @@
             <i class="fa-solid fa-chart-line text-teal-600"></i> Painel de Lucros & Relatórios Profissionais
           </h2>
 
-          <!-- VISOR DE LUCROS EM TEMPO REAL -->
           <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border space-y-2">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
               <span class="text-xs text-gray-300">Faturamento Bruto:</span>
@@ -1016,7 +1099,6 @@
             </div>
           </div>
 
-          <!-- GERADOR DE PDF PROFISSIONAL COM CHECKLIST -->
           <div class="bg-gray-50 p-3 rounded-lg border space-y-3">
             <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
               <i class="fa-solid fa-file-pdf text-red-600"></i> Gerar Relatório Profissional em PDF
@@ -1045,12 +1127,10 @@
             </button>
           </div>
 
-          <!-- EXCEL -->
           <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-2 shadow">
             <i class="fa-solid fa-file-excel"></i> Baixar Dados em Excel (.CSV)
           </button>
 
-          <!-- HISTÓRICO -->
           <div class="border-t pt-3 space-y-2">
             <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Histórico de Vendas (${vendas.length})</h3>
             <div class="space-y-1.5 max-h-52 overflow-y-auto">
@@ -1151,7 +1231,7 @@
       doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
     }
 
-    // FECHAMENTO DE CAIXA / TURNO
+    // FECHAMENTO DE CAIXA
     function openModalFechamento() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -1199,7 +1279,7 @@
       }
     }
 
-    // LÓGICA DE FINALIZAÇÃO E BANCO DE DADOS
+    // FINALIZAÇÃO DE VENDA & COMPROVANTES
     function removerDoCarrinho(index) {
       carrinho.splice(index, 1);
       renderAba();
@@ -1209,7 +1289,14 @@
       const nome = document.getElementById('venda-nome-manual').value;
       const valor = document.getElementById('venda-valor-manual').value;
       if (!nome || !valor) { alert("Informe o nome e valor!"); return; }
-      carrinho.push({ nome: nome, preco: parseFloat(valor), qtd: 1, medida: 'un' });
+
+      // Se o item digitado for um produto em estoque, dá baixa no estoque dele
+      let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+      let medida = prodExistente ? prodExistente.medida : 'un';
+
+      carrinho.push({ nome: nome, preco: parseFloat(valor), qtd: 1, medida: medida });
+      document.getElementById('venda-nome-manual').value = '';
+      document.getElementById('venda-valor-manual').value = '';
       renderAba();
     }
 
@@ -1227,6 +1314,7 @@
       const dataAtual = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
       let totalVenda = 0;
+      let itensResumo = [];
 
       carrinho.forEach(item => {
         let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
@@ -1237,7 +1325,7 @@
 
         const novaVenda = {
           id: Date.now() + Math.random(),
-          item: item.nome,
+          item: `${item.qtd}x ${item.nome}`,
           valor: valorItemTotal,
           formaPagto: pagto,
           cliente: pagto === 'Fiado' ? clienteFiado : '',
@@ -1245,6 +1333,8 @@
         };
 
         vendas.push(novaVenda);
+        itensResumo.push(`${item.qtd}x ${item.nome} - R$ ${valorItemTotal.toFixed(2)}`);
+
         if (user) {
           db.collection("vendas").add({ ...novaVenda, userId: user.uid, userEmail: user.email, createdAt: new Date() });
         }
@@ -1263,9 +1353,83 @@
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+
+      ultimaVendaRealizada = {
+        loja: perfilNegocio.nomeLoja,
+        data: dataAtual,
+        itens: itensResumo,
+        total: totalVenda,
+        pagto: pagto,
+        cliente: clienteFiado
+      };
+
       carrinho = [];
-      alert("Venda realizada com sucesso!");
+      exibirModalComprovante();
       renderAba();
+    }
+
+    function exibirModalComprovante() {
+      if (!ultimaVendaRealizada) return;
+      document.getElementById('comprovante-conteudo').innerHTML = `
+        <p class="font-bold text-center border-b pb-1 text-gray-800">${ultimaVendaRealizada.loja}</p>
+        <p class="text-[10px] text-gray-500 text-center">${ultimaVendaRealizada.data}</p>
+        <div class="py-2 space-y-1 border-b border-t my-1">
+          ${ultimaVendaRealizada.itens.map(i => `<p class="flex justify-between"><span>${i}</span></p>`).join('')}
+        </div>
+        <p class="font-bold flex justify-between text-teal-800"><span>TOTAL:</span> <span>R$ ${ultimaVendaRealizada.total.toFixed(2)}</span></p>
+        <p class="text-[10px] text-gray-600">Forma Pagto: <b>${ultimaVendaRealizada.pagto}</b> ${ultimaVendaRealizada.cliente ? `(${ultimaVendaRealizada.cliente})` : ''}</p>
+      `;
+      document.getElementById('modal-comprovante').classList.remove('hidden');
+    }
+
+    function closeModalComprovante() {
+      document.getElementById('modal-comprovante').classList.add('hidden');
+    }
+
+    function enviarComprovanteZap() {
+      if (!ultimaVendaRealizada) return;
+      let texto = `*COMPROVANTE DE COMPRA - ${ultimaVendaRealizada.loja.toUpperCase()}*\n`;
+      texto += `Data: ${ultimaVendaRealizada.data}\n\n`;
+      texto += `*Itens:*\n${ultimaVendaRealizada.itens.join('\n')}\n\n`;
+      texto += `*TOTAL: R$ ${ultimaVendaRealizada.total.toFixed(2)}*\n`;
+      texto += `Forma de Pagamento: ${ultimaVendaRealizada.pagto}\n`;
+      if (ultimaVendaRealizada.cliente) texto += `Cliente: ${ultimaVendaRealizada.cliente}\n`;
+      texto += `\nAgradecemos a preferência!`;
+
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    }
+
+    function imprimirReciboProfissional() {
+      if (!ultimaVendaRealizada) return;
+      let janelaImp = window.open('', '_blank');
+      janelaImp.document.write(`
+        <html>
+        <head>
+          <title>Recibo - ${ultimaVendaRealizada.loja}</title>
+          <style>
+            body { font-family: monospace; width: 250px; padding: 10px; margin: 0 auto; font-size: 12px; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-bottom: 1px dashed #000; margin: 8px 0; }
+            .flex { display: flex; justify-content: space-between; }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          <div class="text-center bold">${ultimaVendaRealizada.loja}</div>
+          <div class="text-center">${ultimaVendaRealizada.data}</div>
+          <div class="line"></div>
+          ${ultimaVendaRealizada.itens.map(i => `<div class="flex"><span>${i}</span></div>`).join('')}
+          <div class="line"></div>
+          <div class="flex bold"><span>TOTAL:</span> <span>R$ ${ultimaVendaRealizada.total.toFixed(2)}</span></div>
+          <div>Pagto: ${ultimaVendaRealizada.pagto}</div>
+          ${ultimaVendaRealizada.cliente ? `<div>Cliente: ${ultimaVendaRealizada.cliente}</div>` : ''}
+          <div class="line"></div>
+          <div class="text-center">Obrigado pela preferência!</div>
+        </body>
+        </html>
+      `);
+      janelaImp.document.close();
     }
 
     function exportarBackupCSV() {
@@ -1315,7 +1479,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro Definitivo Carregado!");
+    console.log("Caixa Rápido Móvel Pro Atualizado com Sucesso!");
   </script>
 </body>
 </html>

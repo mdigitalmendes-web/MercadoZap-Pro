@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caixa Rápido Móvel Pro 5.0 - Gestão Comercial Integrada</title>
+  <title>Caixa Rápido Móvel Pro 5.6 - Gestão Comercial Integrada</title>
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -92,15 +92,16 @@
     
     @media print {
       body * { visibility: hidden; }
-      #areaRelatorioPrint, #areaRelatorioPrint * { visibility: visible; }
+      #areaRelatorioPrint, #areaRelatorioPrint *, #areaCupomTermicoPrint, #areaCupomTermicoPrint * { visibility: visible; }
       #areaRelatorioPrint { position: absolute; left: 0; top: 0; width: 100%; font-size: 11pt; color: black; background: white; }
+      #areaCupomTermicoPrint { position: absolute; left: 0; top: 0; width: 58mm; font-family: monospace; font-size: 9pt; color: black; background: white; padding: 2mm; }
       .page-break { page-break-before: always; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TELA DE BLOQUEIO DE LICENÇA COM ID ÚNICO -->
+  <!-- TELA DE BLOQUEIO DE LICENÇA -->
   <div id="telaBloqueioLicenca">
     <div style="max-width:400px; margin:20px auto;">
       <span style="font-size:2.8rem;">🔒</span>
@@ -133,7 +134,7 @@
   </div>
 
   <h1>
-    <span>⚡ Caixa Rápido Móvel Pro 5.0</span>
+    <span>⚡ Caixa Rápido Móvel Pro 5.6</span>
     <button class="btn-help" onclick="abrirModalAjuda()">⚙️ Config & Guia</button>
   </h1>
 
@@ -147,6 +148,7 @@
     <button class="tab-btn active" id="btn-tab-caixa" onclick="mudarAba('caixa')">🛒 Caixa</button>
     <button class="tab-btn" id="btn-tab-estoque" onclick="mudarAba('estoque')">📦 Estoque</button>
     <button class="tab-btn" id="btn-tab-servicos" onclick="mudarAba('servicos')">🛠️ Serviços</button>
+    <button class="tab-btn" id="btn-tab-fiados" onclick="mudarAba('fiados')">📝 Fiados</button>
     <button class="tab-btn" id="btn-tab-validade" onclick="mudarAba('validade')">⚠️ Validades</button>
     <button class="tab-btn" id="btn-tab-relatorios" onclick="mudarAba('relatorios')">📊 Relatórios</button>
   </div>
@@ -156,7 +158,7 @@
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <strong style="font-size: 0.85rem; color: #64748b;">ATENDIMENTO DE BALCÃO:</strong>
-        <button class="btn-small-edit" onclick="iniciarLeitorCamera('venda')">📷 Bipar p/ Vender</button>
+        <button class="btn-small-edit" id="btnBiparVendaCaixa" onclick="iniciarLeitorCamera('venda')">📷 Bipar p/ Vender</button>
       </div>
 
       <div style="display:flex; gap:6px; margin-bottom:10px;">
@@ -164,7 +166,7 @@
         <input type="text" id="telCliente" class="input-field" placeholder="Zap Cliente (DDD)" style="width:130px;">
       </div>
       
-      <strong style="display:block; margin-bottom:6px; font-size: 0.85rem; color: #64748b;">ATALHOS RÁPIDOS NO CAIXA:</strong>
+      <strong style="display:block; margin-bottom:6px; font-size: 0.85rem; color: #64748b;" id="lblAtalhosCaixa">ATALHOS RÁPIDOS NO CAIXA:</strong>
       <div class="quick-buttons" id="containerAtalhos"></div>
 
       <strong style="display:block; margin-top:10px; margin-bottom:4px; font-size:0.85rem; color:#64748b;">BUSCA DE PRODUTOS OU SERVIÇOS / ITEM AVULSO:</strong>
@@ -196,6 +198,13 @@
         <button class="pay-btn fiado" id="pag-Fiado" onclick="selecionarPagamento('Fiado')">📝 FIADO / Caderno</button>
       </div>
 
+      <!-- BOX PIX RAPIDO -->
+      <div id="boxPixInfo" style="display:none; background:#e0f2fe; border:1px solid #0284c7; padding:8px; border-radius:6px; margin-bottom:10px; font-size:0.85rem;">
+        <strong style="color:#0369a1;">📱 Cobrança no PIX:</strong>
+        <div style="margin-top:2px; font-size:0.8rem; color:#0284c7;">Chave: <span id="txtChavePixCaixa">--</span></div>
+        <button onclick="copiarChavePixOuWhatsApp()" class="btn-small-edit" style="width:100%; margin-top:4px; background:#0284c7;">📋 Copiar Chave PIX</button>
+      </div>
+
       <div class="troco-box" id="boxTroco">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span>Valor Recebido em Dinheiro:</span>
@@ -210,6 +219,7 @@
       </div>
 
       <button class="btn-client-receipt" onclick="enviarComprovanteCliente()">📲 Finalizar & Enviar Comprovante no WhatsApp</button>
+      <button class="btn-small-edit" style="width:100%; padding:10px; background:#475569; margin-bottom:8px;" onclick="imprimirCupomTermicoVisual()">🪟 Imprimir Cupom Térmico (58mm/80mm)</button>
       <button class="btn-finish" onclick="finalizarVenda(false)">✅ Finalizar Apenas (Sem Zap)</button>
       <button class="btn-clear" onclick="limparCarrinho()">Cancelar Venda</button>
     </div>
@@ -311,7 +321,6 @@
         <button class="btn-finish" style="background:#0284c7; margin-bottom:0;" onclick="salvarNovoProdutoEstoque()">Salvar no Estoque</button>
       </div>
 
-      <!-- CONFIGURAÇÃO DE LIMITE DE ATALHOS EXIBIDOS E LIMITES DE ESTOQUE CRÍTICO -->
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #bae6fd; margin-bottom:10px;">
         <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:6px;">⚙️ Ajuste de Atalhos & Alertas de Estoque Crítico:</strong>
         <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
@@ -345,10 +354,10 @@
     </div>
   </div>
 
-  <!-- ABA 3: MÓDULO DE SERVIÇOS -->
+  <!-- ABA 3: MÓDULO DE SERVIÇOS & ORÇAMENTOS -->
   <div class="tab-content" id="tab-servicos">
     <div class="card" style="border: 2px solid #059669; background: #ecfdf5;">
-      <strong style="color:#047857; font-size:1rem; display:block; margin-bottom:8px;">🛠️ Cadastro & Gestão de Serviços (Mão de Obra)</strong>
+      <strong style="color:#047857; font-size:1rem; display:block; margin-bottom:8px;">🛠️ Cadastro de Serviços & Emissão de Orçamentos</strong>
 
       <div style="background:white; padding:10px; border-radius:8px; border:1px solid #a7f3d0; margin-bottom:10px;">
         <strong style="font-size:0.85rem; color:#047857; display:block; margin-bottom:6px;" id="tituloFormServico">+ Cadastrar Novo Serviço:</strong>
@@ -371,6 +380,21 @@
 
       <strong style="font-size:0.85rem; color:#065f46;">📋 Serviços Cadastrados:</strong>
       <div id="listaServicos" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ABA: GESTÃO COMPLETA DE FIADOS POR CLIENTE -->
+  <div class="tab-content" id="tab-fiados">
+    <div class="card" style="border: 2px solid #d97706; background: #fffbeb;">
+      <strong style="color:#b45309; font-size:1rem; display:block; margin-bottom:8px;">📝 Gestão do Caderno de Fiados (Saldos Devedores)</strong>
+      
+      <div style="background:white; padding:10px; border-radius:8px; border:1px solid #fde68a; margin-bottom:10px; font-size:0.85rem;">
+        <span style="color:#b45309; font-weight:bold; display:block;">💸 Total Geral Devedor no Caderno:</span>
+        <span style="font-size:1.3rem; font-weight:bold; color:#dc2626;">R$ <span id="totalFiadoCadernoAcumulado">0.00</span></span>
+      </div>
+
+      <strong style="font-size:0.85rem; color:#92400e;">👥 Clientes com Contas em Aberto:</strong>
+      <div id="listaFiadosPorCliente" style="margin-top:6px;"></div>
     </div>
   </div>
 
@@ -420,7 +444,7 @@
     </div>
   </div>
 
-  <!-- ABA 5: RELATÓRIOS EXCLUSIVOS -->
+  <!-- ABA 5: CENTRAL INTELIGENTE DE RELATÓRIOS -->
   <div class="tab-content" id="tab-relatorios">
     <div class="card">
       <strong style="font-size:1.1rem; color:#0f172a; display:block; margin-bottom:8px;">📊 Central Profissional de Relatórios</strong>
@@ -437,23 +461,73 @@
         <div style="margin-top:6px; font-size:0.8rem;" id="detalheRelatorio"></div>
       </div>
 
-      <!-- MÓDULO DE EXPORTAÇÃO PARA CONTADOR -->
+      <!-- MONTAGEM DE RELATÓRIO VIA CHECKLIST DINÂMICO -->
+      <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:12px; border-radius:8px; margin-top:12px;">
+        <strong style="font-size:0.9rem; color:#0369a1; display:block; margin-bottom:8px;">📄 Montar Relatório Personalizado em PDF (Checklist):</strong>
+
+        <div style="margin-bottom:10px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:#0369a1; display:block; margin-bottom:4px;">1. Escolha o Período do Relatório:</label>
+          <div style="display:flex; gap:8px; font-size:0.8rem; flex-wrap:wrap;">
+            <label><input type="radio" name="radioPeriodoPDF" value="hoje" checked onchange="alternarCamposDataCustomPDF()"> Hoje</label>
+            <label><input type="radio" name="radioPeriodoPDF" value="semana" onchange="alternarCamposDataCustomPDF()"> Esta Semana</label>
+            <label><input type="radio" name="radioPeriodoPDF" value="mes" onchange="alternarCamposDataCustomPDF()"> Este Mês</label>
+            <label><input type="radio" name="radioPeriodoPDF" value="custom" onchange="alternarCamposDataCustomPDF()"> Período Específico</label>
+          </div>
+
+          <div id="boxDatasCustomPDF" style="display:none; gap:6px; margin-top:6px;">
+            <input type="date" id="dataInicioPDF" class="input-field" style="padding:4px; font-size:0.8rem;">
+            <input type="date" id="dataFimPDF" class="input-field" style="padding:4px; font-size:0.8rem;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:#0369a1; display:block; margin-bottom:4px;">2. Marque o que deseja incluir no documento:</label>
+          
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:0.85rem; color:#334155;">
+            <label class="toggle-option" style="margin-bottom:0;">
+              <input type="checkbox" id="chkPDFResumoFinanceiro" checked>
+              <span>💰 Demonstrativo de Faturamento & Lucro</span>
+            </label>
+
+            <label class="toggle-option" style="margin-bottom:0;">
+              <input type="checkbox" id="chkPDFMeiosPagamento" checked>
+              <span>💳 Detalhamento por Meios de Pagamento (Dinheiro, PIX, Cartão)</span>
+            </label>
+
+            <label class="toggle-option" style="margin-bottom:0;">
+              <input type="checkbox" id="chkPDFExtratoVendas" checked>
+              <span>📑 Extrato de Compras / Vendas Detalhado por Cliente</span>
+            </label>
+
+            <label class="toggle-option" style="margin-bottom:0;" id="boxChkPDFFiados">
+              <input type="checkbox" id="chkPDFFiados">
+              <span>📝 Caderno de Fiados e Saldos Devedores</span>
+            </label>
+
+            <label class="toggle-option" style="margin-bottom:0;" id="boxChkPDFEstoque">
+              <input type="checkbox" id="chkPDFEstoque">
+              <span>📦 Posição Geral do Estoque e Investimento</span>
+            </label>
+
+            <label class="toggle-option" style="margin-bottom:0;" id="boxChkPDFValidades">
+              <input type="checkbox" id="chkPDFValidades">
+              <span>⚠️ Produtos com Validade Próxima ou Vencidos</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-finish" style="background:#0284c7; margin-bottom:0; font-size:0.95rem; padding:10px;" onclick="gerarPDFPersonalizadoChecklist()">🖨️ Gerar PDF Personalizado</button>
+      </div>
+
+      <!-- MÓDULO DO CONTADOR -->
       <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:10px;">
         <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">🏛️ Módulo do Contador (.CSV / Excel):</strong>
         <p style="font-size:0.75rem; color:#15803d; margin-bottom:8px;">Gera planilha com codificação compatível para abrir direto no Microsoft Excel, Google Planilhas ou WPS Office.</p>
         <button class="btn-small-edit" style="width:100%; padding:10px; background:#059669; font-weight:bold;" onclick="exportarRelatorioContadorCSV()">📥 Exportar Dados para Contador (.CSV / Excel)</button>
       </div>
 
-      <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-top:12px; margin-bottom:6px;">📄 Gerar Relatórios Específicos em PDF:</strong>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:10px;">
-        <button class="btn-small-edit" style="padding:10px; background:#0284c7;" onclick="gerarPDFTipo('faturamento')">💰 Ganhos & Faturamento</button>
-        <button class="btn-small-edit" style="padding:10px; background:#059669;" onclick="gerarPDFTipo('pagamentos')">💳 Meios de Pagamento</button>
-        <button class="btn-small-edit" style="padding:10px; background:#d97706;" onclick="gerarPDFTipo('fiados')">📝 Fiados / Caderno</button>
-        <button class="btn-small-edit" style="padding:10px; background:#475569;" onclick="gerarPDFTipo('estoque')">📦 Relatório de Estoque</button>
-        <button class="btn-small-edit" style="padding:10px; background:#7c3aed; grid-column: span 2;" onclick="gerarPDFTipo('validade')">⚠️ Relatório Detalhado de Validades</button>
-      </div>
-
-      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:6px;">
+      <!-- CONFERÊNCIA DE GAVETA -->
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; margin-top:10px;">
         <strong style="font-size:0.85rem; color:#166534; display:block; margin-bottom:4px;">💵 Conferência de Caixa (Gaveta):</strong>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
           <span>Dinheiro em Vendas Hoje:</span>
@@ -471,7 +545,6 @@
       </div>
 
       <button class="btn-client-receipt" style="background:#0284c7; margin-top:10px;" onclick="enviarWhatsappSocio()">📲 Enviar Relatório Resumido ao Sócio no Zap</button>
-      <button class="btn-client-receipt" style="background:#475569;" onclick="gerarPDFCompletoComExtrato()">📄 Gerar PDF Completo com Extrato por Cliente</button>
       
       <div style="display:flex; gap:6px; margin-top:8px;">
         <button class="btn-clear" style="flex:1; background:#0284c7;" onclick="zerarTelaCaixaVisual()">🧹 Fechar/Iniciar Novo Turno do Caixa</button>
@@ -482,30 +555,48 @@
     <div id="areaRelatorioPrint" style="display:none; padding:10px;">
       <h2 style="text-align:center; margin-bottom:4px;" id="pdfNomeLoja">RELATÓRIO FINANCEIRO EXECUTIVO</h2>
       <p style="text-align:center; font-size:0.85rem; margin-bottom:12px;">Período: <span id="pdfPeriodoTexto">Hoje</span> | Gerado em: <span id="pdfDataGeracao"></span></p>
+      
+      <div id="pdfConteudoDinamicoChecklist"></div>
+    </div>
 
-      <div style="border:1px solid #000; padding:10px; margin-bottom:12px;">
-        <h3 id="pdfTituloSecao1">1. Demonstrativo de Ganhos & Faturamento</h3>
-        <p><strong>Faturamento Total:</strong> R$ <span id="pdfTotalFaturado">0.00</span></p>
-        <p><strong>Lucro Líquido Estimado:</strong> R$ <span id="pdfTotalLucro">0.00</span></p>
-        <hr style="margin:6px 0;">
-        <p>💵 Dinheiro: R$ <span id="pdfTotalDinheiro">0.00</span> | 📱 PIX: R$ <span id="pdfTotalPix">0.00</span></p>
-        <p>💳 Cartão: R$ <span id="pdfTotalCartao">0.00</span> | 📝 Fiado a Receber: R$ <span id="pdfTotalFiado">0.00</span></p>
-      </div>
-
-      <div class="page-break"></div>
-
-      <div style="border:1px solid #000; padding:10px;">
-        <h3>2. Extrato Detalhado de Compras por Cliente / Lotes</h3>
-        <div id="pdfExtratoVendas"></div>
-      </div>
+    <div id="areaCupomTermicoPrint" style="display:none;">
+      <div style="text-align:center; font-weight:bold;" id="cupomNomeLoja">MINHA LOJA</div>
+      <div style="text-align:center; font-size:8pt;" id="cupomSubtitulo">Comprovante de Venda</div>
+      <div>--------------------------------</div>
+      <div id="cupomItensLista"></div>
+      <div>--------------------------------</div>
+      <div style="text-align:right; font-weight:bold;" id="cupomTotalText">TOTAL: R$ 0.00</div>
+      <div style="text-align:right;" id="cupomPagamentoText">Forma: Dinheiro</div>
+      <div>--------------------------------</div>
+      <div style="text-align:center; font-size:8pt;">Obrigado pela preferência!</div>
     </div>
   </div>
 
-  <!-- MODAL CONFIGURAÇÕES, BACKUP E GUIA -->
+  <!-- MODAL CONFIGURAÇÕES E PERFIL DE ONBOARDING ADAPTATIVO -->
   <div class="modal" id="modalAjuda">
     <div class="modal-content">
-      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Segurança</h2>
+      <h2 style="font-size:1.1rem; margin-bottom:10px; color:#0f172a;">⚙️ Configurações & Perfil do Negócio</h2>
       
+      <!-- ONBOARDING - PERGUNTA 1: TIPO DE EMPRESA -->
+      <div style="margin-bottom:10px; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
+        <strong style="font-size:0.85rem; color:#1e40af; display:block; margin-bottom:6px;">1. Enquadramento da Empresa:</strong>
+        <div style="display:flex; gap:6px;">
+          <button class="cad-type-btn" id="btnPerfilMEI" onclick="selecionarPerfilNegocio('MEI')">👤 Modo MEI (Simplificado)</button>
+          <button class="cad-type-btn active" id="btnPerfilME" onclick="selecionarPerfilNegocio('ME')">🏢 Modo ME (Completo)</button>
+        </div>
+      </div>
+
+      <!-- ONBOARDING - PERGUNTA 2: RAMO DE ATIVIDADE -->
+      <div style="margin-bottom:12px; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
+        <strong style="font-size:0.85rem; color:#1e40af; display:block; margin-bottom:6px;">2. O que o seu comércio vende?</strong>
+        <div style="display:flex; gap:4px; margin-bottom:6px;">
+          <button class="cad-type-btn" id="btnRamoProds" onclick="selecionarRamoAtividade('PRODUTOS')">🛍️ Só Produtos</button>
+          <button class="cad-type-btn" id="btnRamoServs" onclick="selecionarRamoAtividade('SERVICOS')">🛠️ Só Serviços</button>
+          <button class="cad-type-btn active" id="btnRamoAmbos" onclick="selecionarRamoAtividade('AMBOS')">🔄 Ambos</button>
+        </div>
+        <span style="font-size:0.7rem; color:#3b82f6; display:block;" id="descRamoAtividade">Exibindo ferramentas para produtos e serviços simultaneamente.</span>
+      </div>
+
       <div style="margin-bottom:12px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
         <strong style="font-size:0.85rem; color:#0369a1; display:block; margin-bottom:8px;">🏢 Dados do Estabelecimento & Atendente:</strong>
         
@@ -536,10 +627,11 @@
       <button class="btn-finish" style="background:#0284c7; margin-bottom:8px;" onclick="abrirManualCompleto()">📘 Tour & Explicação das Funcionalidades</button>
       
       <div id="boxManualTexto" style="display:none; background:#f0f9ff; padding:10px; border-radius:8px; border:1px solid #bae6fd; max-height:220px; overflow-y:auto; font-size:0.8rem; color:#0369a1; line-height:1.4;">
-        <p><strong>🛒 Caixa / Vendas:</strong> Atendimento com suporte a busca rápida de produtos, venda fracionada por kg/g e controle direto de estoque.</p><br>
+        <p><strong>🛒 Caixa / Vendas:</strong> Atendimento com suporte a busca rápida de produtos, venda fracionada por kg/g e cobrança via PIX.</p><br>
         <p><strong>📦 Estoque & Atalhos:</strong> Controle limite de produtos visíveis nos atalhos rápidos e cadastre mercadorias (KG, UN, CX).</p><br>
-        <p><strong>🛠️ Serviços:</strong> Cadastre serviços com valor e custo para serem lançados rapidamente sem interferir no estoque físico.</p><br>
-        <p><strong>📊 Relatórios & Contador:</strong> Fechamento financeiro do dia atual, controle de sangria, fundo de troco, PDF executivo e exportação em CSV/Excel.</p>
+        <p><strong>🛠️ Serviços:</strong> Cadastre serviços com valor e custo e emita orçamentos em texto/PDF para o cliente via WhatsApp.</p><br>
+        <p><strong>📝 Caderno de Fiados:</strong> Módulo exclusivo de controle de devedores com abates parciais e emissão de recibo no Zap.</p><br>
+        <p><strong>📊 Relatórios Inteligentes:</strong> Monte relatórios em PDF via Checklist personalizado e exportação em CSV para contabilidade.</p>
       </div>
 
       <hr style="margin:12px 0; border:0; border-top:1px solid #ddd;">
@@ -549,7 +641,6 @@
   </div>
 
   <script>
-    // SISTEMA DE SERIAL ÚNICO POR DISPOSITIVO E SENHA INDIVIDUAL
     function obterOuGerarSerialDispositivo() {
       let serial = localStorage.getItem('crm_serial_unico_dispositivo');
       if (!serial) {
@@ -640,7 +731,6 @@
       }
     }
 
-    // LISTA DE PRODUTOS COMPLETA E RESTAURADA
     const atalhosPadrao = [
       { id: 1, nome: '🎱 Sinuca', dataRecebimento: '2026-10-01', precoCusto: 1.00, preco: 2.00, tipo: 'UN', estoque: 50, ean: '', validade: '', exibirAtalho: true },
       { id: 2, nome: '🍺 Skol 350ml', dataRecebimento: '2026-10-01', precoCusto: 3.20, preco: 4.50, tipo: 'UN', estoque: 100, ean: '7891991000823', validade: '', exibirAtalho: true },
@@ -657,9 +747,13 @@
     let carrinho = JSON.parse(localStorage.getItem('crm_carrinho_v3_0')) || [];
     let vendasDoDia = JSON.parse(localStorage.getItem('crm_vendas_v3_0')) || [];
     let sangriasDoDia = JSON.parse(localStorage.getItem('crm_sangrias_v4_0')) || [];
+    let pagamentosFiadoHistorico = JSON.parse(localStorage.getItem('crm_pagamentos_fiado_v5_5')) || [];
     let ultimoDiaAcesso = localStorage.getItem('crm_ultimo_dia') || new Date().toLocaleDateString();
     let idTurnoAtual = localStorage.getItem('crm_turno_atual') || Date.now().toString();
 
+    let perfilNegocio = localStorage.getItem('crm_perfil_negocio') || 'ME';
+    let ramoAtividade = localStorage.getItem('crm_ramo_atividade') || 'AMBOS';
+    
     let tipoCadastroAtivo = 'KG';
     let idEditando = null;
     let idEditandoServico = null;
@@ -688,6 +782,77 @@
       alarmeSilenciadoManual = false;
       verificarAlertasECorrerAlarme();
     });
+
+    function selecionarPerfilNegocio(perfil) {
+      perfilNegocio = perfil;
+      localStorage.setItem('crm_perfil_negocio', perfil);
+      
+      document.getElementById('btnPerfilMEI').classList.toggle('active', perfil === 'MEI');
+      document.getElementById('btnPerfilME').classList.toggle('active', perfil === 'ME');
+
+      aplicarVisibilidadeAbas();
+    }
+
+    function selecionarRamoAtividade(ramo) {
+      ramoAtividade = ramo;
+      localStorage.setItem('crm_ramo_atividade', ramo);
+
+      document.getElementById('btnRamoProds').classList.toggle('active', ramo === 'PRODUTOS');
+      document.getElementById('btnRamoServs').classList.toggle('active', ramo === 'SERVICOS');
+      document.getElementById('btnRamoAmbos').classList.toggle('active', ramo === 'AMBOS');
+
+      const desc = document.getElementById('descRamoAtividade');
+      if (desc) {
+        if (ramo === 'PRODUTOS') desc.innerText = 'Exibindo apenas ferramentas de produtos e estoque.';
+        else if (ramo === 'SERVICOS') desc.innerText = 'Exibindo apenas ferramentas para prestação de serviços.';
+        else desc.innerText = 'Exibindo ferramentas para produtos e serviços simultaneamente.';
+      }
+
+      aplicarVisibilidadeAbas();
+    }
+
+    function aplicarVisibilidadeAbas() {
+      const tabEstoque = document.getElementById('btn-tab-estoque');
+      const tabServicos = document.getElementById('btn-tab-servicos');
+      const tabFiados = document.getElementById('btn-tab-fiados');
+      const tabValidade = document.getElementById('btn-tab-validade');
+
+      const boxEstqPDF = document.getElementById('boxChkPDFEstoque');
+      const boxValPDF = document.getElementById('boxChkPDFValidades');
+
+      // PERFIL MEI OCULTA FIADOS SEGUNDO REGRA DA ME
+      if (perfilNegocio === 'MEI') {
+        if (tabFiados) tabFiados.style.display = 'none';
+      } else {
+        if (tabFiados) tabFiados.style.display = 'block';
+      }
+
+      // RAMO DE ATIVIDADE OCULTA/EXIBE ABAS DEDICADAS
+      if (ramoAtividade === 'PRODUTOS') {
+        if (tabEstoque) tabEstoque.style.display = 'block';
+        if (tabValidade) tabValidade.style.display = 'block';
+        if (tabServicos) tabServicos.style.display = 'none';
+
+        if (boxEstqPDF) boxEstqPDF.style.display = 'flex';
+        if (boxValPDF) boxValPDF.style.display = 'flex';
+      } 
+      else if (ramoAtividade === 'SERVICOS') {
+        if (tabEstoque) tabEstoque.style.display = 'none';
+        if (tabValidade) tabValidade.style.display = 'none';
+        if (tabServicos) tabServicos.style.display = 'block';
+
+        if (boxEstqPDF) boxEstqPDF.style.display = 'none';
+        if (boxValPDF) boxValPDF.style.display = 'none';
+      } 
+      else {
+        if (tabEstoque) tabEstoque.style.display = 'block';
+        if (tabValidade) tabValidade.style.display = 'block';
+        if (tabServicos) tabServicos.style.display = 'block';
+
+        if (boxEstqPDF) boxEstqPDF.style.display = 'flex';
+        if (boxValPDF) boxValPDF.style.display = 'flex';
+      }
+    }
 
     function selecionarTipoCadastro(tipo) {
       tipoCadastroAtivo = tipo;
@@ -738,7 +903,7 @@
     }
 
     function verificarAlertasECorrerAlarme() {
-      if (alarmeSilenciadoManual) return;
+      if (alarmeSilenciadoManual || ramoAtividade === 'SERVICOS') return;
 
       const hoje = new Date();
       const limiteDiasVal = parseInt(config.diasValAlert) || 30;
@@ -822,6 +987,7 @@
       localStorage.setItem('crm_carrinho_v3_0', JSON.stringify(carrinho));
       localStorage.setItem('crm_vendas_v3_0', JSON.stringify(vendasDoDia));
       localStorage.setItem('crm_sangrias_v4_0', JSON.stringify(sangriasDoDia));
+      localStorage.setItem('crm_pagamentos_fiado_v5_5', JSON.stringify(pagamentosFiadoHistorico));
       localStorage.setItem('crm_config_v3_0', JSON.stringify(config));
       renderizar();
     }
@@ -864,6 +1030,21 @@
       mudarAba('caixa');
     }
 
+    function gerarOrcamentoServicoZap(serv) {
+      const cli = prompt('Nome do Cliente para o Orçamento:', 'Cliente') || 'Cliente';
+      let texto = `🏢 *${config.loja.toUpperCase()}*\n`;
+      texto += `📋 *ORÇAMENTO DE SERVIÇO*\n`;
+      texto += `----------------------------------\n`;
+      texto += `👤 *Cliente:* ${cli}\n`;
+      texto += `🛠️ *Serviço:* ${serv.nome}\n`;
+      texto += `💰 *Valor Estimado:* R$ ${serv.preco.toFixed(2)}\n`;
+      texto += `----------------------------------\n`;
+      texto += `*Orçamento válido por 10 dias. Ficamos à disposição!*`;
+
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    }
+
     function adicionarAoCarrinho(nome, preco, custo, qtd = 1, ehFracionado = false, atalhoId = null, qtdEstoqueAbater = 1, precoPorKg = null) {
       const itemExistente = carrinho.find(it => it.nome === nome);
       if (itemExistente && !ehFracionado) {
@@ -883,8 +1064,8 @@
       }
 
       const t = termo.toLowerCase();
-      const prodsEncontrados = atalhos.filter(a => a.nome.toLowerCase().includes(t) || (a.ean && a.ean.includes(t)));
-      const servsEncontrados = servicos.filter(s => s.nome.toLowerCase().includes(t));
+      const prodsEncontrados = ramoAtividade !== 'SERVICOS' ? atalhos.filter(a => a.nome.toLowerCase().includes(t) || (a.ean && a.ean.includes(t))) : [];
+      const servsEncontrados = ramoAtividade !== 'PRODUTOS' ? servicos.filter(s => s.nome.toLowerCase().includes(t)) : [];
 
       if (prodsEncontrados.length === 0 && servsEncontrados.length === 0) {
         box.style.display = 'none';
@@ -965,7 +1146,18 @@
       const idMap = { 'Dinheiro': 'pag-Dinheiro', 'PIX': 'pag-PIX', 'Cartão': 'pag-Cartao', 'Fiado': 'pag-Fiado' };
       const targetBtn = document.getElementById(idMap[tipo]);
       if (targetBtn) targetBtn.classList.add('selected');
+
       document.getElementById('boxTroco').style.display = tipo === 'Dinheiro' ? 'block' : 'none';
+      document.getElementById('boxPixInfo').style.display = tipo === 'PIX' ? 'block' : 'none';
+      if (tipo === 'PIX') {
+        document.getElementById('txtChavePixCaixa').innerText = config.pix || 'Não Cadastrada nas Configurações';
+      }
+    }
+
+    function copiarChavePixOuWhatsApp() {
+      if (!config.pix) return alert('Cadastre a sua chave PIX nas Configurações!');
+      navigator.clipboard.writeText(config.pix);
+      alert('Chave PIX copiada para a área de transferência!');
     }
 
     function calcularTotal() {
@@ -1009,6 +1201,7 @@
       const cliente = document.getElementById('nomeCliente').value.trim() || (formaPagamento === 'Fiado' ? 'Fiado Sem Nome' : 'Cliente');
 
       vendasDoDia.push({
+        idVenda: Date.now(),
         turnoId: idTurnoAtual,
         dataTimestamp: new Date().getTime(),
         dataDataStr: new Date().toLocaleDateString('pt-BR'),
@@ -1090,6 +1283,27 @@
       window.open(url, '_blank');
     }
 
+    function imprimirCupomTermicoVisual() {
+      if (carrinho.length === 0) return alert('Carrinho vazio!');
+
+      document.getElementById('cupomNomeLoja').innerText = config.loja.toUpperCase();
+      const containerItens = document.getElementById('cupomItensLista');
+      containerItens.innerHTML = '';
+
+      carrinho.forEach(it => {
+        containerItens.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:8pt;"><span>${it.qtd}x ${it.nome}</span><span>R$ ${(it.preco*it.qtd).toFixed(2)}</span></div>`;
+      });
+
+      const totalCalculado = calcularTotal();
+      document.getElementById('cupomTotalText').innerText = `TOTAL: R$ ${totalCalculado.toFixed(2)}`;
+      document.getElementById('cupomPagamentoText').innerText = `Forma: ${formaPagamento}`;
+
+      const areaPrint = document.getElementById('areaCupomTermicoPrint');
+      areaPrint.style.display = 'block';
+      window.print();
+      areaPrint.style.display = 'none';
+    }
+
     function registrarSangria() {
       const valStr = prompt('Digite o valor que deseja RETIRAR do caixa (Sangria em R$):');
       const val = parseFloat(valStr);
@@ -1149,7 +1363,7 @@
 
     function fazerBackupManualJSON() {
       const dadosCompletos = {
-        atalhos, servicos, carrinho, vendasDoDia, sangriasDoDia, config,
+        atalhos, servicos, carrinho, vendasDoDia, sangriasDoDia, pagamentosFiadoHistorico, config, perfilNegocio, ramoAtividade,
         dataBackup: new Date().toLocaleString('pt-BR')
       };
 
@@ -1174,7 +1388,10 @@
             if (dados.servicos) servicos = dados.servicos;
             vendasDoDia = dados.vendasDoDia;
             if (dados.sangriasDoDia) sangriasDoDia = dados.sangriasDoDia;
+            if (dados.pagamentosFiadoHistorico) pagamentosFiadoHistorico = dados.pagamentosFiadoHistorico;
             if (dados.config) config = dados.config;
+            if (dados.perfilNegocio) selecionarPerfilNegocio(dados.perfilNegocio);
+            if (dados.ramoAtividade) selecionarRamoAtividade(dados.ramoAtividade);
             salvarEstado();
             alert('🎉 Backup restaurado com sucesso!');
           } else {
@@ -1185,6 +1402,230 @@
         }
       };
       reader.readAsText(file);
+    }
+
+    function renderizarFiadosCaderno() {
+      const container = document.getElementById('listaFiadosPorCliente');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const vendasFiado = vendasDoDia.filter(v => v.pagamento === 'Fiado');
+      if (vendasFiado.length === 0) {
+        container.innerHTML = `<p style="font-size:0.85rem; color:#64748b;">Nenhuma conta no Fiado/Caderno registrada no momento.</p>`;
+        document.getElementById('totalFiadoCadernoAcumulado').innerText = '0.00';
+        return;
+      }
+
+      const clientesMap = {};
+      vendasFiado.forEach(v => {
+        const nomeUpper = (v.cliente || 'Fiado Sem Nome').trim().toUpperCase();
+        if (!clientesMap[nomeUpper]) {
+          clientesMap[nomeUpper] = { clienteOriginal: v.cliente, totalDevido: 0, compras: [] };
+        }
+        clientesMap[nomeUpper].totalDevido += v.total;
+        clientesMap[nomeUpper].compras.push(v);
+      });
+
+      pagamentosFiadoHistorico.forEach(p => {
+        const nomeUpper = p.cliente.trim().toUpperCase();
+        if (clientesMap[nomeUpper]) {
+          clientesMap[nomeUpper].totalDevido -= p.valorPagamento;
+        }
+      });
+
+      let totalGeralDevido = 0;
+
+      Object.keys(clientesMap).forEach(key => {
+        const cli = clientesMap[key];
+        if (cli.totalDevido > 0.01) {
+          totalGeralDevido += cli.totalDevido;
+
+          let extratoComprasTxt = cli.compras.map(c => `• ${c.dataDataStr} (${c.hora}): R$ ${c.total.toFixed(2)}`).join('<br>');
+
+          container.innerHTML += `
+            <div style="background:white; border:1px solid #fde68a; padding:10px; border-radius:8px; margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>👤 ${cli.clienteOriginal}</strong>
+                <span style="font-size:1.05rem; font-weight:bold; color:#dc2626;">R$ ${cli.totalDevido.toFixed(2)}</span>
+              </div>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:4px; margin-bottom:8px;">
+                ${extratoComprasTxt}
+              </div>
+              <button onclick="abaterDebitoClienteFiado('${cli.clienteOriginal.replace(/'/g, "")}', ${cli.totalDevido})" style="background:#059669; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:0.8rem; cursor:pointer; width:100%;">💸 Abater / Quitar Dívida</button>
+            </div>
+          `;
+        }
+      });
+
+      document.getElementById('totalFiadoCadernoAcumulado').innerText = totalGeralDevido.toFixed(2);
+    }
+
+    function abaterDebitoClienteFiado(nomeCliente, saldoDevidoAtual) {
+      const valStr = prompt(`ABATER DÍVIDA DE: ${nomeCliente}\nSaldo Devedor Atual: R$ ${saldoDevidoAtual.toFixed(2)}\n\nDigite o valor pago pelo cliente (R$):`, saldoDevidoAtual.toFixed(2));
+      const valPago = parseFloat(valStr);
+      if (isNaN(valPago) || valPago <= 0) return;
+
+      const meio = prompt('Forma em que recebeu este pagamento (Dinheiro, PIX ou Cartão):', 'PIX') || 'Dinheiro';
+
+      pagamentosFiadoHistorico.push({
+        timestamp: Date.now(),
+        dataStr: new Date().toLocaleDateString('pt-BR'),
+        horaStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        cliente: nomeCliente,
+        valorPagamento: valPago,
+        formaPagamento: meio
+      });
+
+      const saldoRestante = Math.max(0, saldoDevidoAtual - valPago);
+
+      salvarEstado();
+
+      const enviarZap = confirm(`Pagamento de R$ ${valPago.toFixed(2)} abatido com sucesso!\n\nDeseja enviar o Recibo de Quitação para o cliente pelo WhatsApp?`);
+      if (enviarZap) {
+        let texto = `🏢 *${config.loja.toUpperCase()}*\n`;
+        texto += `🧾 *RECIBO DE PAGAMENTO / QUITAÇÃO DE FIADO*\n`;
+        texto += `----------------------------------\n`;
+        texto += `👤 *Cliente:* ${nomeCliente}\n`;
+        texto += `💵 *Valor Recebido:* R$ ${valPago.toFixed(2)} (${meio})\n`;
+        texto += `💰 *Saldo Devedor Restante:* R$ ${saldoRestante.toFixed(2)}\n`;
+        texto += `----------------------------------\n`;
+        texto += `*Obrigado pela preferência! Mantenha suas contas em dia!* 😊`;
+
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+        window.open(url, '_blank');
+      }
+    }
+
+    function alternarCamposDataCustomPDF() {
+      const radCustom = document.querySelector('input[name="radioPeriodoPDF"][value="custom"]').checked;
+      document.getElementById('boxDatasCustomPDF').style.display = radCustom ? 'flex' : 'none';
+    }
+
+    function gerarPDFPersonalizadoChecklist() {
+      const periodoOpcao = document.querySelector('input[name="radioPeriodoPDF"]:checked').value;
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      const agoraMs = new Date().getTime();
+      const umDiaMs = 24 * 60 * 60 * 1000;
+
+      let vendasFiltradasPDF = [];
+      let textoPeriodoPDF = 'Hoje';
+
+      if (periodoOpcao === 'hoje') {
+        vendasFiltradasPDF = vendasDoDia.filter(v => v.dataDataStr === hojeStr);
+        textoPeriodoPDF = 'Hoje';
+      } else if (periodoOpcao === 'semana') {
+        vendasFiltradasPDF = vendasDoDia.filter(v => ((agoraMs - (v.dataTimestamp || agoraMs)) / umDiaMs) <= 7);
+        textoPeriodoPDF = 'Esta Semana';
+      } else if (periodoOpcao === 'mes') {
+        vendasFiltradasPDF = vendasDoDia.filter(v => ((agoraMs - (v.dataTimestamp || agoraMs)) / umDiaMs) <= 30);
+        textoPeriodoPDF = 'Este Mês';
+      } else if (periodoOpcao === 'custom') {
+        const dtIni = document.getElementById('dataInicioPDF').value;
+        const dtFim = document.getElementById('dataFimPDF').value;
+        if (!dtIni || !dtFim) return alert('Selecione as datas Inicial e Final para o relatório personalizado!');
+
+        const iniMs = new Date(dtIni + 'T00:00:00').getTime();
+        const fimMs = new Date(dtFim + 'T23:59:59').getTime();
+
+        vendasFiltradasPDF = vendasDoDia.filter(v => (v.dataTimestamp >= iniMs && v.dataTimestamp <= fimMs));
+        textoPeriodoPDF = `${dtIni} até ${dtFim}`;
+      }
+
+      document.getElementById('pdfNomeLoja').innerText = config.loja.toUpperCase();
+      document.getElementById('pdfPeriodoTexto').innerText = textoPeriodoPDF;
+      document.getElementById('pdfDataGeracao').innerText = new Date().toLocaleString('pt-BR');
+
+      const container = document.getElementById('pdfConteudoDinamicoChecklist');
+      container.innerHTML = '';
+
+      if (document.getElementById('chkPDFResumoFinanceiro').checked) {
+        const totFaturado = vendasFiltradasPDF.reduce((acc, v) => acc + v.total, 0);
+        const totLucro = vendasFiltradasPDF.reduce((acc, v) => acc + (v.lucro || 0), 0);
+
+        container.innerHTML += `
+          <div style="border:1px solid #000; padding:10px; margin-bottom:12px;">
+            <h3>1. Demonstrativo de Faturamento & Lucro</h3>
+            <p><strong>Faturamento Total no Período:</strong> R$ ${totFaturado.toFixed(2)}</p>
+            <p><strong>Lucro Líquido Estimado:</strong> R$ ${totLucro.toFixed(2)}</p>
+          </div>
+        `;
+      }
+
+      if (document.getElementById('chkPDFMeiosPagamento').checked) {
+        const tDinheiro = vendasFiltradasPDF.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
+        const tPix = vendasFiltradasPDF.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
+        const tCartao = vendasFiltradasPDF.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
+        const tFiado = vendasFiltradasPDF.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
+
+        container.innerHTML += `
+          <div style="border:1px solid #000; padding:10px; margin-bottom:12px;">
+            <h3>2. Detalhamento por Meios de Pagamento</h3>
+            <p>💵 Dinheiro: R$ ${tDinheiro.toFixed(2)} | 📱 PIX: R$ ${tPix.toFixed(2)}</p>
+            <p>💳 Cartão: R$ ${tCartao.toFixed(2)} | 📝 Fiado / Caderno: R$ ${tFiado.toFixed(2)}</p>
+          </div>
+        `;
+      }
+
+      if (document.getElementById('chkPDFExtratoVendas').checked) {
+        let extratoHtml = `<h3>3. Extrato Detalhado de Compras / Vendas</h3>`;
+        if (vendasFiltradasPDF.length === 0) {
+          extratoHtml += `<p>Nenhuma venda localizada para este período.</p>`;
+        } else {
+          vendasFiltradasPDF.forEach((v, i) => {
+            let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
+            extratoHtml += `
+              <div style="border-bottom:1px solid #ccc; padding:4px 0; font-size:9pt;">
+                <strong>#${i+1} [${v.dataDataStr} ${v.hora}] ${v.cliente}</strong> (${v.pagamento}) - <strong>Total: R$ ${v.total.toFixed(2)}</strong><br>
+                <small>Itens: ${itensTxt}</small>
+              </div>
+            `;
+          });
+        }
+        container.innerHTML += `<div style="border:1px solid #000; padding:10px; margin-bottom:12px;">${extratoHtml}</div>`;
+      }
+
+      if (document.getElementById('chkPDFFiados') && document.getElementById('chkPDFFiados').checked) {
+        let fiadosHtml = `<h3>4. Caderno de Fiados e Saldos Devedores</h3>`;
+        const vendasFiado = vendasDoDia.filter(v => v.pagamento === 'Fiado');
+        if (vendasFiado.length === 0) {
+          fiadosHtml += `<p>Nenhuma conta em aberto no Fiado.</p>`;
+        } else {
+          vendasFiado.forEach((v) => {
+            fiadosHtml += `<p style="font-size:9pt;">• <strong>${v.cliente}</strong>: R$ ${v.total.toFixed(2)} em ${v.dataDataStr}</p>`;
+          });
+        }
+        container.innerHTML += `<div style="border:1px solid #000; padding:10px; margin-bottom:12px;">${fiadosHtml}</div>`;
+      }
+
+      if (document.getElementById('chkPDFEstoque') && document.getElementById('chkPDFEstoque').checked) {
+        let estqHtml = `<h3>5. Posição Geral do Estoque & Investimento</h3>`;
+        let totCusto = 0, totVenda = 0;
+        atalhos.forEach(a => {
+          totCusto += (a.precoCusto || 0) * a.estoque;
+          totVenda += a.preco * a.estoque;
+          estqHtml += `<p style="font-size:8.5pt;">• <strong>${a.nome}</strong>: ${a.estoque} ${a.tipo} | Custo: R$ ${(a.precoCusto||0).toFixed(2)} | Venda: R$ ${a.preco.toFixed(2)}</p>`;
+        });
+        estqHtml += `<hr><p><strong>Custo Total:</strong> R$ ${totCusto.toFixed(2)} | <strong>Projeção Venda:</strong> R$ ${totVenda.toFixed(2)}</p>`;
+        container.innerHTML += `<div style="border:1px solid #000; padding:10px; margin-bottom:12px;">${estqHtml}</div>`;
+      }
+
+      if (document.getElementById('chkPDFValidades') && document.getElementById('chkPDFValidades').checked) {
+        let valHtml = `<h3>6. Monitor de Validades dos Lotes</h3>`;
+        const itensVal = atalhos.filter(a => a.validade);
+        if (itensVal.length === 0) {
+          valHtml += `<p>Nenhum produto com validade cadastrada.</p>`;
+        } else {
+          itensVal.forEach(a => {
+            valHtml += `<p style="font-size:8.5pt;">• <strong>${a.nome}</strong>: Validade ${a.validade} (${a.estoque} em estoque)</p>`;
+          });
+        }
+        container.innerHTML += `<div style="border:1px solid #000; padding:10px; margin-bottom:12px;">${valHtml}</div>`;
+      }
+
+      const areaPrint = document.getElementById('areaRelatorioPrint');
+      areaPrint.style.display = 'block';
+      window.print();
+      areaPrint.style.display = 'none';
     }
 
     function salvarNovoProdutoEstoque() {
@@ -1274,8 +1715,9 @@
               <small style="color:#047857;">Preço: R$ ${s.preco.toFixed(2)} | Custo: R$ ${(s.custo||0).toFixed(2)}</small>
             </div>
             <div style="display:flex; gap:4px;">
-              <button onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})" style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">🚀 Lançar</button>
-              <button onclick="editarServico(${s.id})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✏️ Editar</button>
+              <button onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})" style="background:#059669; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">🚀 Lançar</button>
+              <button onclick="gerarOrcamentoServicoZap({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}})" style="background:#d97706; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">📄 Orçamento</button>
+              <button onclick="editarServico(${s.id})" style="background:#0284c7; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✏️</button>
               <button onclick="excluirServico(${s.id})" style="background:#ef4444; color:white; border:none; padding:4px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;">✕</button>
             </div>
           </div>
@@ -1475,7 +1917,6 @@
         <small style="color:#10b981; font-weight:bold;">Margem Média de Lucro: ${percLucro}%</small>
       `;
 
-      // RESUMO EXATO DE HOJE NA ABA CAIXA
       const vendasHoje = obterVendasDoDiaExatas();
       const sangriasHoje = sangriasDoDia.filter(s => s.dataStr === new Date().toLocaleDateString('pt-BR')).reduce((acc, s) => acc + s.valor, 0);
 
@@ -1504,34 +1945,54 @@
       verificarViradaDeDiaAuto();
       verificarAlertasECorrerAlarme();
 
+      selecionarPerfilNegocio(perfilNegocio);
+      selecionarRamoAtividade(ramoAtividade);
+
       const containerAtalhos = document.getElementById('containerAtalhos');
       containerAtalhos.innerHTML = '';
       
       const limiteMaxAtalhos = parseInt(config.limiteAtalhosTela) || 8;
       const atalhosFiltrados = atalhos.filter(a => a.exibirAtalho !== false).slice(0, limiteMaxAtalhos);
 
-      if (atalhosFiltrados.length === 0) {
-        containerAtalhos.innerHTML = `<p style="grid-column: span 2; font-size:0.8rem; color:#64748b; text-align:center;">Nenhum atalho selecionado. Marque os produtos na aba Estoque!</p>`;
+      if (ramoAtividade === 'SERVICOS') {
+        document.getElementById('lblAtalhosCaixa').innerText = 'SERVIÇOS RÁPIDOS NO CAIXA:';
+        if (servicos.length === 0) {
+          containerAtalhos.innerHTML = `<p style="grid-column: span 2; font-size:0.8rem; color:#64748b; text-align:center;">Nenhum serviço cadastrado na aba Serviços.</p>`;
+        } else {
+          servicos.forEach(s => {
+            containerAtalhos.innerHTML += `
+              <button class="btn-quick" onclick="lancarServicoNoCaixa({id:${s.id}, nome:'${s.nome.replace(/'/g, "")}', preco:${s.preco}, custo:${s.custo}})">
+                🛠️ ${s.nome}<br>
+                <span style="font-size:0.8rem; color:#059669;">R$ ${s.preco.toFixed(2)}</span>
+              </button>
+            `;
+          });
+        }
       } else {
-        atalhosFiltrados.forEach(item => {
-          const txtKg = item.tipo === 'KG' ? '/kg' : '';
-          const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
-          const saldoEfetivo = item.estoque - pendenteNoCarrinho;
-          const esgotado = saldoEfetivo <= 0;
-          
-          const classeEsgotado = esgotado ? 'esgotado' : '';
-          const badgeEstq = esgotado 
-            ? `<span class="badge-esgotado">Esgotado</span>` 
-            : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo}</span>`;
+        document.getElementById('lblAtalhosCaixa').innerText = 'ATALHOS RÁPIDOS NO CAIXA:';
+        if (atalhosFiltrados.length === 0) {
+          containerAtalhos.innerHTML = `<p style="grid-column: span 2; font-size:0.8rem; color:#64748b; text-align:center;">Nenhum atalho selecionado. Marque os produtos na aba Estoque!</p>`;
+        } else {
+          atalhosFiltrados.forEach(item => {
+            const txtKg = item.tipo === 'KG' ? '/kg' : '';
+            const pendenteNoCarrinho = obterQtdCarrinhoPendentes(item.id);
+            const saldoEfetivo = item.estoque - pendenteNoCarrinho;
+            const esgotado = saldoEfetivo <= 0;
+            
+            const classeEsgotado = esgotado ? 'esgotado' : '';
+            const badgeEstq = esgotado 
+              ? `<span class="badge-esgotado">Esgotado</span>` 
+              : `<span class="badge-estq">${saldoEfetivo.toFixed(item.tipo === 'KG' ? 1 : 0)} ${item.tipo}</span>`;
 
-          containerAtalhos.innerHTML += `
-            <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
-              ${badgeEstq}
-              ${item.nome}<br>
-              <span style="font-size:0.8rem; color:${esgotado ? '#94a3b8' : '#2563eb'};">R$ ${item.preco.toFixed(2)}${txtKg}</span>
-            </button>
-          `;
-        });
+            containerAtalhos.innerHTML += `
+              <button class="btn-quick ${classeEsgotado}" onclick='clicarAtalho(${JSON.stringify(item)})' ${esgotado ? 'disabled' : ''}>
+                ${badgeEstq}
+                ${item.nome}<br>
+                <span style="font-size:0.8rem; color:${esgotado ? '#94a3b8' : '#2563eb'};">R$ ${item.preco.toFixed(2)}${txtKg}</span>
+              </button>
+            `;
+          });
+        }
       }
 
       const listaEl = document.getElementById('listaCarrinho');
@@ -1573,6 +2034,7 @@
 
       renderizarEstoque();
       renderizarServicos();
+      renderizarFiadosCaderno();
       renderizarValidades();
       renderizarRelatorios();
     }
@@ -1621,78 +2083,6 @@
       window.open(url, '_blank');
     }
 
-    function gerarPDFTipo(tipo) {
-      gerarPDFCompletoComExtrato(tipo);
-    }
-
-    function gerarPDFCompletoComExtrato(tipoFiltroPDF = 'completo') {
-      const vendasFiltradas = obterVendasFiltradas();
-      const periodoTexto = { 'hoje': 'Hoje', 'semana': 'Esta Semana', 'mes': 'Este Mês' }[filtroAtual];
-
-      document.getElementById('pdfNomeLoja').innerText = config.loja.toUpperCase();
-      document.getElementById('pdfPeriodoTexto').innerText = periodoTexto;
-      document.getElementById('pdfDataGeracao').innerText = new Date().toLocaleString('pt-BR');
-
-      const divExtrato = document.getElementById('pdfExtratoVendas');
-      divExtrato.innerHTML = '';
-
-      if (tipoFiltroPDF === 'estoque') {
-        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Geral de Estoque & Investimento';
-        let totCusto = 0, totVenda = 0;
-        atalhos.forEach(a => {
-          totCusto += (a.precoCusto || 0) * a.estoque;
-          totVenda += a.preco * a.estoque;
-          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: ${a.estoque} ${a.tipo} | Custo: R$ ${(a.precoCusto||0).toFixed(2)} | Venda: R$ ${a.preco.toFixed(2)}</p>`;
-        });
-        document.getElementById('pdfTotalFaturado').innerText = totVenda.toFixed(2);
-        document.getElementById('pdfTotalLucro').innerText = (totVenda - totCusto).toFixed(2);
-      } 
-      else if (tipoFiltroPDF === 'validade') {
-        document.getElementById('pdfTituloSecao1').innerText = '1. Relatório Detalhado de Validades';
-        atalhos.filter(a => a.validade).forEach(a => {
-          divExtrato.innerHTML += `<p style="font-size:0.85rem;">• <strong>${a.nome}</strong>: Validade ${a.validade} (${a.estoque} em estoque)</p>`;
-        });
-      }
-      else {
-        const totalAcumulado = vendasFiltradas.reduce((acc, v) => acc + v.total, 0);
-        const totalLucro = vendasFiltradas.reduce((acc, v) => acc + (v.lucro || 0), 0);
-        const totalDinheiro = vendasFiltradas.filter(v => v.pagamento === 'Dinheiro').reduce((acc, v) => acc + v.total, 0);
-        const totalPix = vendasFiltradas.filter(v => v.pagamento === 'PIX').reduce((acc, v) => acc + v.total, 0);
-        const totalCartao = vendasFiltradas.filter(v => v.pagamento === 'Cartão').reduce((acc, v) => acc + v.total, 0);
-        const totalFiado = vendasFiltradas.filter(v => v.pagamento === 'Fiado').reduce((acc, v) => acc + v.total, 0);
-
-        document.getElementById('pdfTotalFaturado').innerText = totalAcumulado.toFixed(2);
-        document.getElementById('pdfTotalLucro').innerText = totalLucro.toFixed(2);
-        document.getElementById('pdfTotalDinheiro').innerText = totalDinheiro.toFixed(2);
-        document.getElementById('pdfTotalPix').innerText = totalPix.toFixed(2);
-        document.getElementById('pdfTotalCartao').innerText = totalCartao.toFixed(2);
-        document.getElementById('pdfTotalFiado').innerText = totalFiado.toFixed(2);
-
-        let listaParaExibir = vendasFiltradas;
-        if (tipoFiltroPDF === 'fiados') listaParaExibir = vendasFiltradas.filter(v => v.pagamento === 'Fiado');
-
-        if (listaParaExibir.length === 0) {
-          divExtrato.innerHTML = '<p>Nenhuma venda localizada para este filtro.</p>';
-        } else {
-          listaParaExibir.forEach((v, i) => {
-            let itensTxt = v.itens.map(it => `${it.qtd}x ${it.nome} (R$ ${(it.preco * it.qtd).toFixed(2)})`).join(', ');
-            divExtrato.innerHTML += `
-              <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px;">
-                <strong>#${i+1} [${v.hora}] ${v.cliente}</strong> (${v.pagamento})<br>
-                <small>Itens: ${itensTxt}</small><br>
-                <strong>Total Venda: R$ ${v.total.toFixed(2)}</strong>
-              </div>
-            `;
-          });
-        }
-      }
-
-      const areaPrint = document.getElementById('areaRelatorioPrint');
-      areaPrint.style.display = 'block';
-      window.print();
-      areaPrint.style.display = 'none';
-    }
-
     function iniciarLeitorCamera(modo) {
       const readerEl = document.getElementById('reader');
       readerEl.style.display = 'block';
@@ -1739,6 +2129,7 @@
       if (confirm('⚠️ ATENÇÃO: Tem certeza que deseja apagar TODO o histórico permanente de vendas do aplicativo? Esta ação não pode ser desfeita.')) {
         vendasDoDia = [];
         sangriasDoDia = [];
+        pagamentosFiadoHistorico = [];
         carrinho = [];
         salvarEstado();
         alert('Todo o histórico de vendas foi apagado com sucesso!');

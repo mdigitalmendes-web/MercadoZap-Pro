@@ -35,7 +35,7 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
-  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA (OCULTA POR PADRÃO) -->
+  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
       <i class="fa-solid fa-lock"></i>
@@ -55,7 +55,7 @@
     <p class="text-[10px] text-gray-500 mt-8">Suporte & Licenciamento Comercial</p>
   </div>
 
-  <!-- BARRA SUPERIOR (HEADER) COM MENU HAMBÚRGUER (☰) -->
+  <!-- BARRA SUPERIOR (HEADER) -->
   <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
       <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-green-200">
@@ -67,19 +67,16 @@
       </div>
     </div>
     
-    <!-- BANNER DE LICENÇA / TESTE NO HEADER -->
     <div class="flex items-center gap-2">
       <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
         ⏳ 19 dias
       </span>
 
-      <!-- MENU DE TRÊS PONTINHOS (⋮) -->
       <div class="relative">
         <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
 
-        <!-- DROPDOWN DO MENU -->
         <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-60 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
           <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
           <button onclick="openModalFechamento()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Caixa / Turno</button>
@@ -93,7 +90,7 @@
     </div>
   </header>
 
-  <!-- PAINEL LATERAL DE NAVEGAÇÃO DE ABAS (DRAWER LATERAL OCULTO) -->
+  <!-- PAINEL LATERAL DE NAVEGAÇÃO -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-64 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -145,7 +142,26 @@
     </div>
   </main>
 
-  <!-- MODAL: AJUSTE DIRETO / REPOSIÇÃO RÁPIDA DE ESTOQUE E VALIDADE -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (OTIMIZADO) -->
+  <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-barcode text-teal-600"></i> Bipar Código de Barras
+        </h3>
+        <button onclick="fecharScanner()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      
+      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[220px]"></div>
+      <p id="scanner-status" class="text-[11px] text-teal-700 font-bold text-center">Iniciando câmera traseira...</p>
+      
+      <button onclick="fecharScanner()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAIS RESTANTES (AJUSTE RÁPIDO, SANGRIA, ALERTA, PERFIL, MÍNIMOS, FRACIONADOS, FECHAMENTO, AJUDA) -->
   <div id="modal-ajuste-rapido-prod" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -192,7 +208,6 @@
     </div>
   </div>
 
-  <!-- MODAL: SANGRIA E SUPRIMENTO -->
   <div id="modal-sangria-suprimento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -216,24 +231,6 @@
     </div>
   </div>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
-  <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
-          <i class="fa-solid fa-barcode text-teal-600"></i> Aponte para o Código de Barras
-        </h3>
-        <button onclick="fecharScanner()" class="text-gray-500 text-xl font-bold">&times;</button>
-      </div>
-      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[200px]"></div>
-      <p id="scanner-status" class="text-[11px] text-gray-500 text-center font-semibold">Iniciando câmera...</p>
-      <button onclick="fecharScanner()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">
-        Cancelar Leitura
-      </button>
-    </div>
-  </div>
-
-  <!-- MODAL DE ALERTA DE EMERGÊNCIA (ESTOQUE E FIADO VENCIDO) -->
   <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
       <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl">
@@ -245,16 +242,12 @@
           Notificação crítica pendente!
         </p>
       </div>
-      <div class="bg-red-50 p-3 rounded-lg border border-red-200 text-xs text-gray-700 space-y-1">
-        <p class="text-[10px] text-red-500 font-medium">O alarme sonoro e vibração continuarão até você clicar abaixo.</p>
-      </div>
       <button onclick="interromperAlertaEstoqueManual()" class="w-full bg-red-600 text-white font-extrabold py-3.5 rounded-xl hover:bg-red-700 transition text-xs shadow-lg uppercase tracking-wider">
         <i class="fa-solid fa-bell-slash mr-1"></i> Entendido / Ciente
       </button>
     </div>
   </div>
 
-  <!-- MODAL: PERFIL DO NEGÓCIO -->
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -289,41 +282,22 @@
     </div>
   </div>
 
-  <!-- MODAL: MÍNIMOS PADRÃO POR UNIDADE -->
   <div id="modal-minimos-padrao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Limites Mínimos Padrão</h3>
         <button onclick="fecharModalMinimosPadrao()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
-      <p class="text-[11px] text-gray-500 leading-relaxed">
-        Defina o estoque mínimo automático por tipo de medida ao cadastrar novos produtos:
-      </p>
       <div class="space-y-2 text-xs">
-        <div>
-          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Unidades (un):</label>
-          <input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg bg-white font-bold">
-        </div>
-        <div>
-          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Quilogramas (kg):</label>
-          <input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg bg-white font-bold">
-        </div>
-        <div>
-          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Caixas (cx):</label>
-          <input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg bg-white font-bold">
-        </div>
-        <div>
-          <label class="block font-semibold text-gray-700 mb-0.5">Mínimo para Litros (L):</label>
-          <input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg bg-white font-bold">
-        </div>
+        <div><label class="block font-semibold text-gray-700">Unidades (un):</label><input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-gray-700">Quilogramas (kg):</label><input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-gray-700">Caixas (cx):</label><input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-gray-700">Litros (L):</label><input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg font-bold"></div>
       </div>
-      <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">
-        Salvar Padrões
-      </button>
+      <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">Salvar Padrões</button>
     </div>
   </div>
 
-  <!-- MODAL: FRACIONADOS -->
   <div id="modal-fracionado" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -332,31 +306,22 @@
       </div>
       <div class="space-y-3">
         <p id="fracionado-sub" class="text-xs text-gray-500"></p>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Quantidade / Peso / Litros:</label>
-          <input type="number" step="0.001" id="fracionado-qtd" placeholder="Ex: 0.350 ou 1.5" class="w-full p-2.5 border rounded-lg text-sm font-bold text-center">
-        </div>
-        <button onclick="confirmarItemFracionado()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-          Adicionar ao Carrinho
-        </button>
+        <input type="number" step="0.001" id="fracionado-qtd" placeholder="Ex: 0.350 ou 1.5" class="w-full p-2.5 border rounded-lg text-sm font-bold text-center">
+        <button onclick="confirmarItemFracionado()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">Adicionar ao Carrinho</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: FECHAMENTO DE CAIXA DE TURNO -->
   <div id="modal-fechamento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Turno / Caixa</h3>
         <button onclick="closeModalFechamento()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
-      <div id="fechamento-conteudo" class="space-y-3 text-xs">
-        <!-- Preenchido via JS -->
-      </div>
+      <div id="fechamento-conteudo" class="space-y-3 text-xs"></div>
     </div>
   </div>
 
-  <!-- MODAL: AJUDA -->
   <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -376,7 +341,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA COMPLETA DO APLICATIVO -->
+  <!-- LÓGICA COMPLETA -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
@@ -391,7 +356,6 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Produtos Iniciais
     const produtosExemplo = [
       { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
       { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
@@ -399,7 +363,6 @@
       { id: 4, ean: "", nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-01", atalho: true }
     ];
 
-    // LICENCIAMENTO SERIAL E DIAS DE TESTE (INICIANDO EM 19 DIAS RESTANTES DE TESTE)
     const ONTEM_MS = Date.now() - (24 * 60 * 60 * 1000);
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
       dataInstalacao: ONTEM_MS,
@@ -407,7 +370,6 @@
       vitalicio: false
     };
 
-    // Estado
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
@@ -432,7 +394,7 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // VERIFICAÇÃO DO PERÍODO DE LICENÇA (SERIAL E CONTAGEM REGRESSIVA)
+    // VERIFICAÇÃO DO PERÍODO DE LICENÇA
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -489,6 +451,64 @@
       }
     }
 
+    // LEITOR DE CÓDIGO DE BARRAS (OTIMIZADO COM ACESSO DIRETO À CÂMERA TRASEIRA)
+    function abrirScanner(destino) {
+      modoScannerDestino = destino;
+      document.getElementById('modal-scanner').classList.remove('hidden');
+      document.getElementById('scanner-status').innerText = "Iniciando câmera traseira...";
+
+      setTimeout(() => {
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner.clear().catch(() => {});
+        }
+
+        html5QrcodeScanner = new Html5Qrcode("reader");
+        const config = { fps: 15, qrbox: { width: 250, height: 150 } };
+
+        html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanError
+        ).catch(err => {
+          document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique permissões.";
+        });
+      }, 150);
+    }
+
+    function onScanSuccess(decodedText) {
+      fecharScanner();
+      
+      if (modoScannerDestino === 'caixa') {
+        let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
+        if (prod) {
+          let idxReal = produtos.findIndex(p => p.id === prod.id);
+          adicionarAoCarrinho(idxReal);
+          alert(`✅ Código lido: ${prod.nome} adicionado!`);
+        } else {
+          alert(`🔍 Código ${decodedText} lido, mas não está cadastrado.`);
+          document.getElementById('venda-nome-manual').value = `Item ${decodedText}`;
+        }
+      } else if (modoScannerDestino === 'cadastro') {
+        document.getElementById('cad-prod-ean').value = decodedText;
+        alert(`✅ Código de barras lido: ${decodedText}`);
+      } else if (modoScannerDestino === 'busca_estoque') {
+        document.getElementById('busca-estoque-input').value = decodedText;
+        buscarEExibirProdutoEstoque(decodedText);
+      }
+    }
+
+    function onScanError(errorMessage) {}
+
+    function fecharScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner.clear();
+        }).catch(() => {});
+      }
+      document.getElementById('modal-scanner').classList.add('hidden');
+    }
+
     // FECHAMENTO AUTOMÁTICO DE CAIXA ÀS 23:59
     function monitorarFechamentoAutomaticoMeiaNoite() {
       setInterval(() => {
@@ -504,7 +524,7 @@
             executarFechamentoCaixaAutomatico(hojeStr);
           }
         }
-      }, 40000); // Checa a cada 40 segundos
+      }, 40000);
     }
 
     function executarFechamentoCaixaAutomatico(hojeStr) {
@@ -544,55 +564,35 @@
       }
     }
 
-    // DETECÇÃO DE GESTO TOUCH SWIPE
+    // SWIPE TOUCH
     let touchStartX = 0;
     let touchEndX = 0;
     const swipeArea = document.getElementById('main-swipe-area');
 
-    swipeArea.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
-
-    swipeArea.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      tratarSwipeDedo();
-    }, false);
+    swipeArea.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, false);
+    swipeArea.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; tratarSwipeDedo(); }, false);
 
     function tratarSwipeDedo() {
       const diferenca = touchEndX - touchStartX;
       if (Math.abs(diferenca) > 80) {
         let idxAtual = ordemAbas.indexOf(abaAtual);
-        if (diferenca < 0 && idxAtual < ordemAbas.length - 1) {
-          switchTab(ordemAbas[idxAtual + 1]);
-        } else if (diferenca > 0 && idxAtual > 0) {
-          switchTab(ordemAbas[idxAtual - 1]);
-        }
+        if (diferenca < 0 && idxAtual < ordemAbas.length - 1) switchTab(ordemAbas[idxAtual + 1]);
+        else if (diferenca > 0 && idxAtual > 0) switchTab(ordemAbas[idxAtual - 1]);
       }
     }
 
-    // CONTROLE DO PAINEL LATERAL (DRAWER)
-    function abrirDrawerNavegacao() {
-      document.getElementById('drawer-menu').classList.remove('hidden');
-    }
-
-    function fecharDrawerNavegacao() {
-      document.getElementById('drawer-menu').classList.add('hidden');
-    }
+    function abrirDrawerNavegacao() { document.getElementById('drawer-menu').classList.remove('hidden'); }
+    function fecharDrawerNavegacao() { document.getElementById('drawer-menu').classList.add('hidden'); }
 
     function selecionarAbaDrawer(aba) {
       fecharDrawerNavegacao();
       switchTab(aba);
     }
 
-    // DROPDOWN MENU SUPERIOR
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
-    btnMenu.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdownMenu.classList.toggle('hidden');
-    });
-
+    btnMenu.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('hidden'); });
     document.addEventListener('click', () => { dropdownMenu.classList.add('hidden'); });
 
     function openModalPerfil() {
@@ -624,7 +624,6 @@
       alert("Perfil atualizado!");
     }
 
-    // ONBOARDING
     function showOnboardingStep1() {
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -778,7 +777,6 @@
       });
     }
 
-    // NAVEGAÇÃO DE ABAS
     function switchTab(aba) {
       if (!verificarLicencaStatus()) return;
 
@@ -811,52 +809,6 @@
       else if (abaAtual === 'relatorios') renderAbaRelatorios();
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
-    function abrirScanner(destino) {
-      modoScannerDestino = destino;
-      document.getElementById('modal-scanner').classList.remove('hidden');
-      document.getElementById('scanner-status').innerText = "Iniciando câmera...";
-
-      setTimeout(() => {
-        if (!html5QrcodeScanner) {
-          html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-        }
-        html5QrcodeScanner.render(onScanSuccess, onScanError);
-      }, 300);
-    }
-
-    function onScanSuccess(decodedText) {
-      fecharScanner();
-      
-      if (modoScannerDestino === 'caixa') {
-        let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
-        if (prod) {
-          let idxReal = produtos.findIndex(p => p.id === prod.id);
-          adicionarAoCarrinho(idxReal);
-          alert(`✅ Código lido: ${prod.nome} adicionado!`);
-        } else {
-          alert(`🔍 Código ${decodedText} lido, mas não está cadastrado. Preencha o nome para adicionar avulso.`);
-          document.getElementById('venda-nome-manual').value = `Item ${decodedText}`;
-        }
-      } else if (modoScannerDestino === 'cadastro') {
-        document.getElementById('cad-prod-ean').value = decodedText;
-        alert(`✅ Código de barras lido: ${decodedText}`);
-      } else if (modoScannerDestino === 'busca_estoque') {
-        document.getElementById('busca-estoque-input').value = decodedText;
-        buscarEExibirProdutoEstoque(decodedText);
-      }
-    }
-
-    function onScanError(errorMessage) {}
-
-    function fecharScanner() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(() => {});
-      }
-      document.getElementById('modal-scanner').classList.add('hidden');
-    }
-
-    // SANGRIA E SUPRIMENTO
     function abrirModalSangriaSuprimento(tipo) {
       document.getElementById('sangria-tipo').value = tipo;
       document.getElementById('sangria-modal-titulo').innerText = tipo === 'sangria' ? '💸 Registrar Sangria (Retirada)' : '💰 Registrar Suprimento (Entrada)';
@@ -865,9 +817,7 @@
       document.getElementById('modal-sangria-suprimento').classList.remove('hidden');
     }
 
-    function fecharModalSangria() {
-      document.getElementById('modal-sangria-suprimento').classList.add('hidden');
-    }
+    function fecharModalSangria() { document.getElementById('modal-sangria-suprimento').classList.add('hidden'); }
 
     function confirmarSangriaSuprimento() {
       const tipo = document.getElementById('sangria-tipo').value;
@@ -899,7 +849,6 @@
       renderAbaVendas();
     }
 
-    // ABA 1: CAIXA (COM BOTÃO DE FECHAMENTO DE CAIXA DE TURNO INTEGRADO)
     function renderAbaVendas() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -928,7 +877,7 @@
             <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
               <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-gray-500'}">
-                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto} ${p.medida || 'un'}</b>`}
+                ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto}${p.medida || 'un'}</b>`}
               </span>
               <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
             </div>
@@ -1045,7 +994,6 @@
                   </select>
                 </div>
 
-                <!-- CAMPO OPCIONAL: PRAZO DO FIADO -->
                 <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-lg border border-amber-300 space-y-1">
                   <label class="block text-[10px] font-bold text-amber-900">
                     📅 Data Limite para Pagamento (Opcional):
@@ -1068,7 +1016,6 @@
             </div>
           </div>
 
-          <!-- MOVIMENTAÇÃO DE CAIXA E BOTÃO DE FECHAMENTO DE TURNO DESTACADO -->
           <div class="border-t pt-3 space-y-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-vault text-amber-600"></i> Gestão de Gaveta & Turno
@@ -1092,11 +1039,8 @@
 
     function toggleOpcoesFiadoPrazo(pagto) {
       const box = document.getElementById('box-prazo-fiado');
-      if (pagto === 'Fiado') {
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-      }
+      if (pagto === 'Fiado') box.classList.remove('hidden');
+      else box.classList.add('hidden');
     }
 
     function autoPreencherZapCliente() {
@@ -1150,7 +1094,7 @@
       let estoqueRestante = prod.estoque - qtdNoCarrinho;
 
       if (estoqueRestante <= 0) {
-        alert(`O produto "${prod.nome}" está totalmente esgotado no estoque!`);
+        alert(`O produto "${prod.nome}" está totalmente esgotado!`);
         return;
       }
 
@@ -1180,9 +1124,7 @@
       }
 
       item.qtd += delta;
-      if (item.qtd <= 0) {
-        carrinho.splice(index, 1);
-      }
+      if (item.qtd <= 0) carrinho.splice(index, 1);
       renderAba();
     }
 
@@ -1203,7 +1145,6 @@
       renderAba();
     }
 
-    // ALERTA CONTINUO DE ESTOQUE OU FIADO VENCIDO
     function iniciarAlertaGeral(titulo, mensagemHTML) {
       document.getElementById('alerta-modal-titulo').innerText = titulo;
       document.getElementById('alerta-estoque-mensagem').innerHTML = mensagemHTML;
@@ -1227,9 +1168,7 @@
       }
 
       if (!timerVibracaoAlerta && navigator.vibrate) {
-        timerVibracaoAlerta = setInterval(() => {
-          navigator.vibrate([300, 200, 300]);
-        }, 1000);
+        timerVibracaoAlerta = setInterval(() => { navigator.vibrate([300, 200, 300]); }, 1000);
       }
     }
 
@@ -1239,7 +1178,6 @@
       document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
     }
 
-    // ABA 2: ESTOQUE
     function setSubAbaEstoque(sub) {
       subAbaEstoque = sub;
       renderAbaEstoque();
@@ -1253,9 +1191,7 @@
       document.getElementById('modal-minimos-padrao').classList.remove('hidden');
     }
 
-    function fecharModalMinimosPadrao() {
-      document.getElementById('modal-minimos-padrao').classList.add('hidden');
-    }
+    function fecharModalMinimosPadrao() { document.getElementById('modal-minimos-padrao').classList.add('hidden'); }
 
     function salvarMinimosPadrao() {
       minimosPadrao = {
@@ -1297,7 +1233,6 @@
             </button>
           </div>
 
-          <!-- BOTÕES DE NAVEGAÇÃO DE SUB-ABAS -->
           <div class="grid grid-cols-3 gap-1 text-[11px] font-bold">
             <button onclick="setSubAbaEstoque('gerenciar')" class="py-2 rounded-lg text-center ${subAbaEstoque === 'gerenciar' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               ➕ Cadastrar
@@ -1312,12 +1247,10 @@
             </button>
           </div>
 
-          <!-- CONTEÚDO PRINCIPAL DA SUB-ABA -->
           <div id="subaba-estoque-conteudo">
             ${subAbaEstoque === 'gerenciar' ? renderSubAbaGerenciar() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
           </div>
 
-          <!-- PAINEL DE BUSCA NO RODAPÉ -->
           <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2 border-t pt-3">
             <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
               <span>🔍 Buscar Produto Cadastrado no Estoque</span>
@@ -1494,7 +1427,6 @@
       `;
     }
 
-    // MODAL DE AJUSTE DIRETO E INSTANTÂNEO
     function abrirModalAjusteRapido(index) {
       let p = produtos[index];
       document.getElementById('ajuste-prod-index').value = index;
@@ -1505,21 +1437,17 @@
       document.getElementById('modal-ajuste-rapido-prod').classList.remove('hidden');
     }
 
-    function fecharModalAjusteRapido() {
-      document.getElementById('modal-ajuste-rapido-prod').classList.add('hidden');
-    }
+    function fecharModalAjusteRapido() { document.getElementById('modal-ajuste-rapido-prod').classList.add('hidden'); }
 
     function adicionarQtdDireta(qtd) {
       let campo = document.getElementById('ajuste-prod-qtd');
-      let valAtual = parseFloat(campo.value || 0);
-      campo.value = valAtual + qtd;
+      campo.value = parseFloat(campo.value || 0) + qtd;
     }
 
     function aplicarDescontoPorcentagem(pct) {
       let campo = document.getElementById('ajuste-prod-preco');
       let valAtual = parseFloat(campo.value || 0);
-      let novoPreco = valAtual * (1 - pct / 100);
-      campo.value = novoPreco.toFixed(2);
+      campo.value = (valAtual * (1 - pct / 100)).toFixed(2);
     }
 
     function salvarAjusteRapidoProduto() {
@@ -1566,9 +1494,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
-                <p class="text-gray-500">
-                  Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b>
-                </p>
+                <p class="text-gray-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
                 ${p.validade ? `<p class="text-[10px] text-amber-700 font-semibold">Validade: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
@@ -1598,11 +1524,8 @@
       produtos[index].atalho = !(produtos[index].atalho !== false);
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       const buscaInput = document.getElementById('busca-estoque-input');
-      if (buscaInput && buscaInput.value) {
-        buscarEExibirProdutoEstoque(buscaInput.value);
-      } else {
-        renderAba();
-      }
+      if (buscaInput && buscaInput.value) buscarEExibirProdutoEstoque(buscaInput.value);
+      else renderAba();
     }
 
     function cadastrarOuAtualizarProduto() {
@@ -1673,14 +1596,12 @@
       }
     }
 
-    // ABA 3: FIADO & PRAZOS
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
-          <!-- BUSCA DINÂMICA DE CLIENTES (POSICIONADA NO TOPO) -->
           <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
             <div class="flex justify-between items-center">
               <label class="block text-xs font-bold text-teal-900">
@@ -1694,11 +1615,9 @@
             <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome do cliente..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
             
             <div id="resultado-busca-clientes" class="space-y-2 pt-1">
-              <!-- Cards exibidos dinamicamente -->
             </div>
           </div>
 
-          <!-- RESUMO FINANCEIRO E TOTAL DE DEVEDORES (DESLOCADO PARA BAIXO) -->
           <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex justify-between items-center shadow-sm border-t pt-3">
             <div>
               <p class="text-[10px] text-red-600 font-bold uppercase">Total Geral a Receber (Fiado)</p>
@@ -1749,9 +1668,7 @@
       if (!box) return;
 
       let lista = clientes;
-      if (modo === 'devedores') {
-        lista = clientes.filter(c => c.debito > 0);
-      }
+      if (modo === 'devedores') lista = clientes.filter(c => c.debito > 0);
 
       if (lista.length === 0) {
         box.innerHTML = `<div class="bg-green-50 p-4 rounded-lg border border-green-200 text-center text-xs text-green-700 font-bold">✅ Não há clientes com débitos fiados pendentes!</div>`;
@@ -1791,12 +1708,8 @@
             ${temDebito ? `
               <div class="flex gap-1.5 pt-1 border-t border-gray-200 items-center">
                 <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="R$ Abater" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-                <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
-                  Abater
-                </button>
-                <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-700 text-white font-bold px-2.5 py-2 rounded-lg hover:bg-green-800 text-xs whitespace-nowrap shadow flex items-center gap-1">
-                  <i class="fa-brands fa-whatsapp"></i> Zap
-                </button>
+                <button onclick="abaterDebitoCliente(${idxReal})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow">Abater</button>
+                <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-700 text-white font-bold px-2.5 py-2 rounded-lg text-xs shadow flex items-center gap-1"><i class="fa-brands fa-whatsapp"></i> Zap</button>
               </div>
             ` : ''}
 
@@ -1806,28 +1719,6 @@
           </div>
         `;
       }).join('');
-    }
-
-    function enviarLembreteCobrancaZap(index) {
-      let c = clientes[index];
-      if (!c.telefone) { alert("Este cliente não possui WhatsApp cadastrado!"); return; }
-
-      const hojeStr = new Date().toISOString().split('T')[0];
-      let ehAtrasado = c.prazoPagamento && c.prazoPagamento <= hojeStr;
-      let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
-
-      let texto = `Olá *${c.nome}*, tudo bem?\n\n`;
-      texto += `Passando para lembrar referente à sua conta pendente no *${perfilNegocio.nomeLoja}*.\n`;
-      texto += `Valor do saldo pendente: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
-      
-      if (c.prazoPagamento) {
-        texto += `Prazo combinado: *${dataFormatada}*\n\n`;
-      }
-      texto += `Obrigado pela preferência e parceria de sempre!`;
-
-      let numLimpo = c.telefone.replace(/\D/g, '');
-      let linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
-      window.open(linkZap, '_blank');
     }
 
     function abaterDebitoCliente(index) {
@@ -1858,7 +1749,6 @@
       }
     }
 
-    // ABA 4: RELATÓRIOS & FECHAMENTOS DE CAIXA SALVOS
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -1905,7 +1795,6 @@
             </div>
           </div>
 
-          <!-- HISTÓRICO DE FECHAMENTOS DE CAIXA SALVOS -->
           <div class="border-t pt-3 space-y-2">
             <h3 class="font-bold text-xs text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-vault text-amber-600"></i> Histórico de Caixas Fechados (${historicoFechamentos.length})
@@ -1956,7 +1845,7 @@
     }
 
     function executarLimpezaTotalManual() {
-      if (confirm("⚠️ ATENÇÃO: Deseja apagar TODO o histórico de vendas, fechamentos e movimentações de caixa?\n\n(Os produtos cadastrados e clientes serão mantidos)")) {
+      if (confirm("⚠️ Deseja apagar o histórico de vendas e fechamentos de caixa?\n\n(Produtos e clientes cadastrados NÃO serão apagados)")) {
         vendas = [];
         sangriasSuprimentos = [];
         historicoFechamentos = [];
@@ -1968,104 +1857,12 @@
       }
     }
 
-    function gerarPDFProfissional() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const periodo = document.getElementById('pdf-periodo').value;
-      const checkVendas = document.getElementById('pdf-check-vendas').checked;
-      const checkLucro = document.getElementById('pdf-check-lucro').checked;
-      const checkEstoque = document.getElementById('pdf-check-estoque').checked;
-      const checkFiado = document.getElementById('pdf-check-fiado').checked;
-
-      let y = 15;
-      doc.setFontSize(16);
-      doc.setTextColor(7, 94, 84);
-      doc.text(`Relatório - ${perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro'}`, 14, y);
-      
-      y += 8;
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Período: ${periodo === 'hoje' ? 'Hoje' : 'Histórico Total'}`, 14, y);
-
-      y += 10;
-      doc.setLineWidth(0.5);
-      doc.line(14, y, 196, y);
-      y += 8;
-
-      if (checkVendas) {
-        let listaVendasPDF = vendas;
-        if (periodo === 'hoje') {
-          const hojeStr = new Date().toLocaleDateString('pt-BR');
-          listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStr));
-        }
-
-        const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-        doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas)`, 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`Total Faturado: R$ ${totalVendas.toFixed(2)}`, 14, y);
-        y += 8;
-      }
-
-      if (checkLucro) {
-        let totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-        let totalCustoGeral = 0;
-        vendas.forEach(v => {
-          let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-          if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
-        });
-
-        doc.setFontSize(12);
-        doc.text(`2. Resumo Financeiro & Lucro Líquido`, 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`Custo Estimado dos Produtos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
-        y += 5;
-        doc.text(`LUCRO LÍQUIDO ESTIMADO: R$ ${(totalVendasGeral - totalCustoGeral).toFixed(2)}`, 14, y);
-        y += 8;
-      }
-
-      if (checkEstoque) {
-        doc.setFontSize(12);
-        doc.text(`3. Posição Atual do Estoque (${produtos.length} itens)`, 14, y);
-        y += 6;
-        doc.setFontSize(9);
-        produtos.forEach(p => {
-          if (y > 270) { doc.addPage(); y = 15; }
-          doc.text(`• ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Preço: R$ ${p.preco.toFixed(2)}`, 14, y);
-          y += 5;
-        });
-        y += 4;
-      }
-
-      if (checkFiado) {
-        let clientesComDebito = clientes.filter(c => c.debito > 0);
-        doc.setFontSize(12);
-        doc.text(`4. Contas Fiado Devedoras (${clientesComDebito.length} clientes)`, 14, y);
-        y += 6;
-        doc.setFontSize(9);
-        clientesComDebito.forEach(c => {
-          if (y > 270) { doc.addPage(); y = 15; }
-          doc.text(`• ${c.nome} - Tel: ${c.telefone || 'N/I'} - Débito Pendente: R$ ${c.debito.toFixed(2)}`, 14, y);
-          y += 5;
-        });
-      }
-
-      doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
-    }
-
-    // FECHAMENTO DE CAIXA DE TURNO MANUAL
     function openModalFechamento() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
       const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
 
       const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalPix = vendasHoje.filter(v => v.formaPagto === 'PIX').reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalDinheiroVendas = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
       const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
       const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
@@ -2121,18 +1918,13 @@
 
       closeModalFechamento();
 
-      if (diferenca === 0) {
-        alert("✅ Fechamento Registrado! A contagem da gaveta bateu com o sistema.");
-      } else if (diferenca > 0) {
-        alert(`⚠️ Fechamento Registrado com Sobra de R$ ${diferenca.toFixed(2)}.`);
-      } else {
-        alert(`🚨 Fechamento Registrado com Falta de R$ ${Math.abs(diferenca).toFixed(2)}.`);
-      }
+      if (diferenca === 0) alert("✅ Fechamento Registrado! Gaveta exata.");
+      else if (diferenca > 0) alert(`⚠️ Fechamento Registrado com Sobra de R$ ${diferenca.toFixed(2)}.`);
+      else alert(`🚨 Fechamento Registrado com Falta de R$ ${Math.abs(diferenca).toFixed(2)}.`);
 
       renderAba();
     }
 
-    // FINALIZAÇÃO DE VENDA
     function processarFinalizarVenda(modoEnvio) {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       
@@ -2222,13 +2014,9 @@
 
       carrinho = [];
 
-      if (modoEnvio === 'whatsapp') {
-        enviarComprovanteDiretoWhatsApp(dadosVenda);
-      } else if (modoEnvio === 'imprimir') {
-        imprimirReciboDireto(dadosVenda);
-      } else {
-        alert("✅ Venda finalizada e registrada no caixa!");
-      }
+      if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
+      else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
+      else alert("✅ Venda finalizada!");
 
       if (produtosComEstoqueCritico.length > 0) {
         let msg = produtosComEstoqueCritico.map(p => `<span class="block"><b>${p.nome}</b>: Restam ${p.estoque} ${p.medida || 'un'}</span>`).join('');
@@ -2239,11 +2027,7 @@
     }
 
     function enviarComprovanteDiretoWhatsApp(vendaObj) {
-      let texto = `*COMPROVANTE DE COMPRA - ${vendaObj.loja.toUpperCase()}*\n`;
-      texto += `Data: ${vendaObj.data}\n\n`;
-      texto += `*Itens:*\n${vendaObj.itens.join('\n')}\n\n`;
-      texto += `*TOTAL: R$ ${vendaObj.total.toFixed(2)}*\n`;
-      texto += `Forma de Pagamento: ${vendaObj.pagto}\n`;
+      let texto = `*COMPROVANTE DE COMPRA - ${vendaObj.loja.toUpperCase()}*\nData: ${vendaObj.data}\n\n*Itens:*\n${vendaObj.itens.join('\n')}\n\n*TOTAL: R$ ${vendaObj.total.toFixed(2)}*\nForma de Pagamento: ${vendaObj.pagto}\n`;
       if (vendaObj.cliente) texto += `Cliente: ${vendaObj.cliente}\n`;
       texto += `\nAgradecemos a preferência!`;
 
@@ -2252,37 +2036,21 @@
         let numLimpo = vendaObj.telefone.replace(/\D/g, '');
         if (numLimpo.length >= 10) linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
       }
-
       window.open(linkZap, '_blank');
     }
 
     function imprimirReciboDireto(vendaObj) {
       let janelaImp = window.open('', '_blank');
       janelaImp.document.write(`
-        <html>
-        <head>
-          <title>Recibo - ${vendaObj.loja}</title>
-          <style>
-            body { font-family: monospace; width: 250px; padding: 10px; margin: 0 auto; font-size: 12px; }
-            .text-center { text-align: center; }
-            .bold { font-weight: bold; }
-            .line { border-bottom: 1px dashed #000; margin: 8px 0; }
-            .flex { display: flex; justify-content: space-between; }
-          </style>
-        </head>
-        <body onload="window.print(); window.close();">
-          <div class="text-center bold">${vendaObj.loja}</div>
-          <div class="text-center">${vendaObj.data}</div>
-          <div class="line"></div>
-          ${vendaObj.itens.map(i => `<div class="flex"><span>${i}</span></div>`).join('')}
-          <div class="line"></div>
-          <div class="flex bold"><span>TOTAL:</span> <span>R$ ${vendaObj.total.toFixed(2)}</span></div>
-          <div>Pagto: ${vendaObj.pagto}</div>
-          ${vendaObj.cliente ? `<div>Cliente: ${vendaObj.cliente}</div>` : ''}
-          <div class="line"></div>
-          <div class="text-center">Obrigado pela preferência!</div>
-        </body>
-        </html>
+        <html><head><title>Recibo - ${vendaObj.loja}</title>
+        <style>body { font-family: monospace; width: 250px; padding: 10px; margin: 0 auto; font-size: 12px; } .text-center { text-align: center; } .bold { font-weight: bold; } .line { border-bottom: 1px dashed #000; margin: 8px 0; } .flex { display: flex; justify-content: space-between; }</style>
+        </head><body onload="window.print(); window.close();">
+        <div class="text-center bold">${vendaObj.loja}</div><div class="text-center">${vendaObj.data}</div><div class="line"></div>
+        ${vendaObj.itens.map(i => `<div class="flex"><span>${i}</span></div>`).join('')}
+        <div class="line"></div><div class="flex bold"><span>TOTAL:</span> <span>R$ ${vendaObj.total.toFixed(2)}</span></div>
+        <div>Pagto: ${vendaObj.pagto}</div>${vendaObj.cliente ? `<div>Cliente: ${vendaObj.cliente}</div>` : ''}
+        <div class="line"></div><div class="text-center">Obrigado pela preferência!</div>
+        </body></html>
       `);
       janelaImp.document.close();
     }
@@ -2303,15 +2071,11 @@
     function sincronizarNuvemManual() {
       const user = auth.currentUser;
       if (user) {
-        alert("Sincronizando dados com a nuvem do Firebase...");
         db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
         alert("✅ Sincronização concluída com sucesso!");
-      } else {
-        alert("Você está desconectado. Faça login para sincronizar.");
-      }
+      } else alert("Você está desconectado. Faça login para sincronizar.");
     }
 
-    // MONITOR DE SESSÃO E RELÓGIO DE FECHAMENTO AUTOMÁTICO
     auth.onAuthStateChanged((user) => {
       verificarLicencaStatus();
       monitorarFechamentoAutomaticoMeiaNoite();
@@ -2334,7 +2098,7 @@
       auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro v13.0 Com Fechamento Automático e Sistema de Licenciamento Serial!");
+    console.log("Caixa Rápido Móvel Pro v14.0 Câmera Bipar Otimizada e Licenciamento Ativo!");
   </script>
 </body>
 </html>

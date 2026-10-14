@@ -17,7 +17,7 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
-  <!-- BARRA SUPERIOR (HEADER) ESTILO WHATSAPP -->
+  <!-- BARRA SUPERIOR (HEADER) -->
   <header class="whatsapp-green text-white p-3.5 flex justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
       <i class="fa-solid fa-cash-register text-2xl text-green-300"></i>
@@ -33,7 +33,7 @@
         <i class="fa-solid fa-ellipsis-vertical"></i>
       </button>
 
-      <!-- DROPDOWN DO MENU -->
+      <!-- DROPDOWN -->
       <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-md shadow-xl border border-gray-200 z-50">
         <button onclick="openModalPerfil()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
         <button onclick="exportarBackupCSV()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 flex items-center gap-2 text-xs"><i class="fa-solid fa-file-excel text-green-600"></i> Exportar Vendas (Excel)</button>
@@ -44,7 +44,7 @@
   </header>
 
   <!-- CONTEÚDO PRINCIPAL -->
-  <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full mb-16">
+  <main class="flex-1 overflow-y-auto p-3 max-w-md mx-auto w-full mb-20">
     <div id="main-content" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
       <div class="text-center py-8">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600 mb-3"></i>
@@ -53,22 +53,22 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS -->
-  <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 max-w-md mx-auto">
-    <button onclick="switchTab('vendas')" id="nav-vendas" class="flex flex-col items-center text-teal-700 font-bold text-[11px]">
-      <i class="fa-solid fa-cart-shopping text-lg"></i>
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR POR ABAS (BOTÕES GRANDES E CONFORTÁVEIS) -->
+  <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around items-center py-3 z-40 max-w-md mx-auto shadow-lg">
+    <button onclick="switchTab('vendas')" id="nav-vendas" class="flex flex-col items-center text-teal-700 font-bold text-xs py-1 px-3 border-b-2 border-teal-600">
+      <i class="fa-solid fa-cart-shopping text-xl mb-0.5"></i>
       <span>Caixa</span>
     </button>
-    <button onclick="switchTab('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
-      <i class="fa-solid fa-boxes-stacked text-lg"></i>
+    <button onclick="switchTab('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
+      <i class="fa-solid fa-boxes-stacked text-xl mb-0.5"></i>
       <span>Estoque</span>
     </button>
-    <button onclick="switchTab('clientes')" id="nav-clientes" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
-      <i class="fa-solid fa-users text-lg"></i>
-      <span>Fiado / Clientes</span>
+    <button onclick="switchTab('clientes')" id="nav-clientes" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
+      <i class="fa-solid fa-users text-xl mb-0.5"></i>
+      <span>Fiado</span>
     </button>
-    <button onclick="switchTab('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-400 font-medium text-[11px]">
-      <i class="fa-solid fa-chart-line text-lg"></i>
+    <button onclick="switchTab('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3">
+      <i class="fa-solid fa-chart-line text-xl mb-0.5"></i>
       <span>Relatórios</span>
     </button>
   </nav>
@@ -101,7 +101,7 @@
             <option value="Ambos">Produtos e Serviços</option>
           </select>
         </div>
-        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs">
+        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
           Salvar Alterações
         </button>
       </form>
@@ -113,7 +113,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA DO APLICATIVO -->
+  <!-- LÓGICA BASE v5.6 + FIREBASE -->
   <script>
     // Configuração do Firebase
     const firebaseConfig = {
@@ -129,15 +129,14 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Produtos Padrões de Exemplo (se o estoque estiver vazio no primeiro acesso)
+    // Dados Iniciais v5.6
     const produtosExemplo = [
-      { id: 1, nome: "Café 500g", preco: 16.50, estoque: 15, medida: "un", validade: "2026-12-31", atalho: true },
-      { id: 2, nome: "Açúcar 1kg", preco: 4.80, estoque: 20, medida: "kg", validade: "2027-05-10", atalho: true },
-      { id: 3, nome: "Leite Integral 1L", preco: 5.50, estoque: 12, medida: "L", validade: "2026-11-20", atalho: true },
-      { id: 4, nome: "Pão Francês (kg)", preco: 14.00, estoque: 8, medida: "kg", validade: "", atalho: true }
+      { id: 1, nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, medida: "un", validade: "2026-12-31", atalho: true },
+      { id: 2, nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, medida: "kg", validade: "2027-05-10", atalho: true },
+      { id: 3, nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, medida: "L", validade: "2026-10-25", atalho: true },
+      { id: 4, nome: "Pão Francês", precoCusto: 8.00, preco: 14.00, estoque: 8, medida: "kg", validade: "", atalho: true }
     ];
 
-    // Estado e Dados Locais
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
@@ -148,7 +147,7 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // Menu Dropdown
+    // Menu
     const btnMenu = document.getElementById('btn-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -193,7 +192,7 @@
       alert("Perfil atualizado!");
     }
 
-    // ONBOARDING INICIAL
+    // ONBOARDING
     function showOnboardingStep1() {
       document.getElementById('bottom-nav').classList.add('hidden');
       document.getElementById('main-content').innerHTML = `
@@ -228,7 +227,7 @@
               </select>
             </div>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs">
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
               Avançar para Criar Conta <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
           </form>
@@ -272,7 +271,7 @@
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs">
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
               Concluir e Abrir Caixa
             </button>
           </form>
@@ -306,7 +305,7 @@
             
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs">
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
               Entrar
             </button>
           </form>
@@ -349,15 +348,15 @@
       });
     }
 
-    // ALTERNÂNCIA DE ABAS
+    // CONTROLE DE ABAS
     function switchTab(aba) {
       abaAtual = aba;
       ['vendas', 'estoque', 'clientes', 'relatorios'].forEach(a => {
         const btn = document.getElementById('nav-' + a);
         if (a === aba) {
-          btn.className = "flex flex-col items-center text-teal-700 font-bold text-[11px]";
+          btn.className = "flex flex-col items-center text-teal-700 font-bold text-xs py-1 px-3 border-b-2 border-teal-600";
         } else {
-          btn.className = "flex flex-col items-center text-gray-400 font-medium text-[11px]";
+          btn.className = "flex flex-col items-center text-gray-400 font-medium text-xs py-1 px-3";
         }
       });
       renderAba();
@@ -382,10 +381,10 @@
       const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
 
       let atalhosProdutos = produtos.filter(p => p.atalho !== false);
-      let atalhosProdutosHTML = atalhosProdutos.map((p, i) => {
+      let atalhosProdutosHTML = atalhosProdutos.map((p) => {
         let idxReal = produtos.findIndex(prod => prod.id === p.id);
         return `
-          <button onclick="adicionarAoCarrinho(${idxReal})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
+          <button onclick="adicionarAoCarrinho(${idxReal})" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm active:scale-95">
             <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome}</span>
             <div class="flex justify-between items-center w-full mt-1">
               <span class="text-[10px] text-gray-500">Est: <b>${p.estoque || 0} ${p.medida || 'un'}</b></span>
@@ -397,14 +396,14 @@
 
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
-        <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
+        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
           <div>
             <p class="font-bold text-gray-800">${item.nome}</p>
             <p class="text-gray-500">${item.qtd}x R$ ${item.preco.toFixed(2)}</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-teal-700">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
-            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1.5 py-0.5 hover:bg-red-100 rounded">&times;</button>
+            <span class="font-bold text-teal-700 text-sm">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-2 py-1 hover:bg-red-100 rounded">&times;</button>
           </div>
         </div>
       `).join('');
@@ -452,22 +451,23 @@
               <input type="text" id="venda-nome-manual" placeholder="Item Avulso" class="col-span-2 p-2 border rounded-lg text-xs">
               <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs">
             </div>
-            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1 rounded-lg border hover:bg-gray-200 text-xs">
+            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
               + Adicionar Item Avulso
             </button>
 
-            <div class="space-y-1.5 max-h-32 overflow-y-auto">
+            <div class="space-y-1.5 max-h-36 overflow-y-auto">
               ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
             </div>
 
-            <div class="bg-gray-50 p-2.5 rounded-lg border space-y-2">
+            <!-- BOTÃO DE CONFIRMAR VENDA (DESTACADO E CONFORTÁVEL) -->
+            <div class="bg-gray-50 p-3 rounded-lg border space-y-2.5">
               <div class="flex justify-between items-center font-bold text-xs text-gray-800">
-                <span>Total:</span>
-                <span class="text-teal-700 text-base">R$ ${totalCarrinho.toFixed(2)}</span>
+                <span>Total a Pagar:</span>
+                <span class="text-teal-700 text-lg">R$ ${totalCarrinho.toFixed(2)}</span>
               </div>
 
               <div class="space-y-2">
-                <select id="venda-pagto" onchange="toggleClienteFiadoSelect()" class="w-full p-2 border rounded-lg text-xs bg-white">
+                <select id="venda-pagto" onchange="toggleClienteFiadoSelect()" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
                   <option value="PIX">PIX</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
@@ -477,14 +477,14 @@
 
                 <div id="select-cliente-fiado-box" class="hidden">
                   <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Selecione o Cliente do Fiado:</label>
-                  <select id="venda-cliente-fiado" class="w-full p-2 border border-red-300 rounded-lg text-xs bg-red-50">
+                  <select id="venda-cliente-fiado" class="w-full p-2.5 border border-red-300 rounded-lg text-xs bg-red-50">
                     <option value="">-- Escolher Cliente Cadastrado --</option>
                     ${clientesOptionsHTML}
                   </select>
                 </div>
 
-                <button onclick="finalizarCarrinho()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-                  Finalizar Venda
+                <button onclick="finalizarCarrinho()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-sm shadow-md flex justify-center items-center gap-2">
+                  <i class="fa-solid fa-check-circle text-base"></i> Confirmar e Finalizar Venda
                 </button>
               </div>
             </div>
@@ -503,19 +503,25 @@
       }
     }
 
-    // ABA 2: ESTOQUE, UNIDADES, VALIDADE E ALERTAS
+    // ABA 2: ESTOQUE COMPLETO v5.6 (UNIDADES, VALIDADE E ALERTAS)
     function renderAbaEstoque() {
       let listaEstoqueHTML = produtos.map((p, i) => {
-        let ehAlertaEstoque = p.estoque <= 3;
+        let ehAlertaEstoque = (p.estoque || 0) <= 3;
+        let ehAlertaValidade = p.validade && new Date(p.validade) <= new Date(new Date().setDate(new Date().getDate() + 30));
+
         return `
-          <div class="flex justify-between items-center ${ehAlertaEstoque ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
+          <div class="flex justify-between items-center ${ehAlertaEstoque || ehAlertaValidade ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'} p-2.5 rounded-lg border text-xs">
             <div>
-              <p class="font-bold text-gray-800">${p.nome} ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-200 text-red-800 px-1 rounded">Estoque Baixo!</span>' : ''}</p>
+              <p class="font-bold text-gray-800">
+                ${p.nome} 
+                ${ehAlertaEstoque ? '<span class="text-[9px] bg-red-200 text-red-800 px-1 rounded ml-1">Estoque Baixo!</span>' : ''}
+                ${ehAlertaValidade ? '<span class="text-[9px] bg-orange-200 text-orange-800 px-1 rounded ml-1">Vencendo!</span>' : ''}
+              </p>
               <p class="text-gray-500">Qtd: <span class="font-bold text-teal-700">${p.estoque || 0} ${p.medida || 'un'}</span> ${p.validade ? '• Val: ' + p.validade : ''}</p>
             </div>
             <div class="flex items-center gap-2">
               <span class="font-bold text-gray-800">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-              <button onclick="excluirProduto(${i})" class="text-red-500 text-xs p-1 hover:bg-red-50 rounded"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="excluirProduto(${i})" class="text-red-500 text-xs p-1 hover:bg-red-100 rounded"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
         `;
@@ -524,44 +530,48 @@
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque, Unidades & Validade
+            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque & Compras (v5.6)
           </h2>
 
           <div class="space-y-2">
-            <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs">
+            <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2.5 border rounded-lg text-xs">
             
-            <div class="grid grid-cols-3 gap-2">
-              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço R$" class="p-2 border rounded-lg text-xs">
-              <input type="number" id="cad-prod-qtd" placeholder="Qtd" class="p-2 border rounded-lg text-xs">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" step="0.01" id="cad-prod-preco-custo" placeholder="Preço Custo R$" class="p-2 border rounded-lg text-xs">
+              <input type="number" step="0.01" id="cad-prod-preco" placeholder="Preço Venda R$" class="p-2 border rounded-lg text-xs">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" id="cad-prod-qtd" placeholder="Qtd Entrada" class="p-2 border rounded-lg text-xs">
               <select id="cad-prod-medida" class="p-2 border rounded-lg text-xs bg-white">
-                <option value="un">Unidade (un)</option>
-                <option value="kg">Quilograma (kg)</option>
-                <option value="g">Grama (g)</option>
-                <option value="L">Litro (L)</option>
-                <option value="cx">Caixa (cx)</option>
-                <option value="pct">Pacote (pct)</option>
+                <option value="un">Unidades (un)</option>
+                <option value="kg">Quilogramas (kg)</option>
+                <option value="g">Gramas (g)</option>
+                <option value="L">Litros (L)</option>
+                <option value="cx">Caixas (cx)</option>
+                <option value="pct">Pacotes (pct)</option>
               </select>
             </div>
 
             <div class="grid grid-cols-2 gap-2 items-center">
               <div>
                 <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade</label>
-                <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
+                <input type="date" id="cad-prod-validade" class="w-full p-2 border rounded-lg text-xs bg-white">
               </div>
               <div class="flex items-center gap-2 pt-3">
-                <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600">
-                <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos</label>
+                <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
+                <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Atalho no Caixa</label>
               </div>
             </div>
 
-            <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-              + Salvar Entrada no Estoque
+            <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
+              + Salvar no Estoque
             </button>
           </div>
 
           <div class="border-t pt-3 space-y-2">
             <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Produtos em Estoque (${produtos.length})</h3>
-            <div class="space-y-1.5 max-h-56 overflow-y-auto">
+            <div class="space-y-1.5 max-h-52 overflow-y-auto">
               ${listaEstoqueHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum produto cadastrado.</p>'}
             </div>
           </div>
@@ -572,25 +582,25 @@
     // ABA 3: CLIENTES, FIADO E ABATIMENTO DE CONTAS
     function renderAbaClientes() {
       let clientesHTML = clientes.map((c, i) => `
-        <div class="bg-gray-50 p-2.5 rounded-lg border text-xs space-y-2">
+        <div class="bg-gray-50 p-3 rounded-lg border text-xs space-y-2.5">
           <div class="flex justify-between items-center">
             <div>
-              <p class="font-bold text-gray-800">${c.nome}</p>
+              <p class="font-bold text-gray-800 text-sm">${c.nome}</p>
               <p class="text-gray-500">Tel: ${c.telefone || 'Não informado'}</p>
             </div>
-            <span class="font-extrabold ${c.debito > 0 ? 'text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200' : 'text-green-600'}">
+            <span class="font-extrabold text-sm ${c.debito > 0 ? 'text-red-600 bg-red-50 px-2.5 py-1 rounded border border-red-200' : 'text-green-600'}">
               Fiado: R$ ${parseFloat(c.debito || 0).toFixed(2)}
             </span>
           </div>
 
           ${c.debito > 0 ? `
             <div class="flex gap-2 pt-1 border-t border-gray-200">
-              <input type="number" step="0.01" id="abatimento-val-${i}" placeholder="Valor abater R$" class="w-full p-1 border rounded text-xs">
-              <button onclick="abaterDebitoCliente(${i})" class="bg-green-600 text-white font-bold px-2 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap">
+              <input type="number" step="0.01" id="abatimento-val-${i}" placeholder="Valor abater R$" class="w-full p-2 border rounded-lg text-xs">
+              <button onclick="abaterDebitoCliente(${i})" class="bg-green-600 text-white font-bold px-3 py-2 rounded-lg hover:bg-green-700 text-xs whitespace-nowrap shadow">
                 Abater / Pagar
               </button>
             </div>
-          ` : '<p class="text-[10px] text-green-700 italic">Conta 100% em dia!</p>'}
+          ` : '<p class="text-[11px] text-green-700 font-semibold italic">Conta zerada / Em dia!</p>'}
         </div>
       `).join('');
 
@@ -601,15 +611,15 @@
           </h2>
 
           <div class="space-y-2">
-            <input type="text" id="cli-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-lg text-xs">
-            <input type="text" id="cli-tel" placeholder="Telefone / WhatsApp" class="w-full p-2 border rounded-lg text-xs">
-            <button onclick="cadastrarCliente()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg hover:bg-teal-700 transition text-xs">
+            <input type="text" id="cli-nome" placeholder="Nome Completo do Cliente" class="w-full p-2.5 border rounded-lg text-xs">
+            <input type="text" id="cli-tel" placeholder="Telefone / WhatsApp" class="w-full p-2.5 border rounded-lg text-xs">
+            <button onclick="cadastrarCliente()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
               + Cadastrar Cliente
             </button>
           </div>
 
           <div class="border-t pt-3 space-y-2">
-            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Clientes Cadastrados (${clientes.length})</h3>
+            <h3 class="font-semibold text-xs text-gray-500 uppercase tracking-wider">Clientes & Contas (${clientes.length})</h3>
             <div class="space-y-2 max-h-60 overflow-y-auto">
               ${clientesHTML || '<p class="text-xs text-gray-400 italic text-center py-4">Nenhum cliente cadastrado.</p>'}
             </div>
@@ -641,14 +651,14 @@
       renderAba();
     }
 
-    // ABA 4: RELATÓRIOS E EXCEL
+    // ABA 4: RELATÓRIOS EXCEL v5.6
     function renderAbaRelatorios() {
       let vendasInvertidas = [...vendas].reverse();
       let ultimasVendasHTML = vendasInvertidas.map(v => `
-        <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-xs">
+        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border text-xs">
           <div>
             <p class="font-bold text-gray-800">${v.item}</p>
-            <p class="text-gray-400">${v.formaPagto} ${v.cliente ? '• ' + v.cliente : ''} • ${v.data}</p>
+            <p class="text-gray-400">${v.formaPagto} ${v.cliente ? '• Cliente: ' + v.cliente : ''} • ${v.data}</p>
           </div>
           <span class="font-bold text-teal-700">R$ ${parseFloat(v.valor).toFixed(2)}</span>
         </div>
@@ -660,8 +670,8 @@
             <i class="fa-solid fa-chart-line text-teal-600"></i> Histórico e Relatórios
           </h2>
 
-          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-2 shadow">
-            <i class="fa-solid fa-file-excel"></i> Baixar Relatório em Excel (.CSV)
+          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-2 shadow-md">
+            <i class="fa-solid fa-file-excel text-base"></i> Baixar Relatório Completo em Excel (.CSV)
           </button>
 
           <div class="border-t pt-3 space-y-2">
@@ -674,14 +684,13 @@
       `;
     }
 
-    // LÓGICA DE DADOS DO CARRINHO E ESTOQUE
+    // LÓGICA DE DADOS v5.6
     function adicionarAoCarrinho(index) {
       let prod = produtos[index];
       
-      // Alerta / Vibração se estoque estiver zerado ou baixo
       if (prod.estoque <= 0) {
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        alert(`Atenção: O produto "${prod.nome}" está com estoque zerado!`);
+        alert(`Atenção: O produto "${prod.nome}" está com o estoque esgotado!`);
       }
 
       let item = carrinho.find(c => c.nome === prod.nome);
@@ -709,7 +718,7 @@
       const clienteFiado = document.getElementById('venda-cliente-fiado') ? document.getElementById('venda-cliente-fiado').value : '';
 
       if (pagto === 'Fiado' && !clienteFiado) {
-        alert("Por favor, selecione o cliente para registrar o fiado!");
+        alert("Por favor, selecione o cliente para registrar a conta do fiado!");
         return;
       }
 
@@ -740,7 +749,6 @@
         }
       });
 
-      // Se for Fiado, adiciona ao débito do cliente
       if (pagto === 'Fiado' && clienteFiado) {
         let cli = clientes.find(c => c.nome === clienteFiado);
         if (cli) {
@@ -755,22 +763,24 @@
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       localStorage.setItem('crm_vendas', JSON.stringify(vendas));
       carrinho = [];
-      alert("Venda realizada com sucesso!");
+      alert("Venda realizada com sucesso e salva na nuvem!");
       renderAba();
     }
 
     function cadastrarOuAtualizarProduto() {
       const nome = document.getElementById('cad-prod-nome').value;
+      const precoCusto = document.getElementById('cad-prod-preco-custo').value || 0;
       const preco = document.getElementById('cad-prod-preco').value;
       const qtd = document.getElementById('cad-prod-qtd').value || 1;
       const medida = document.getElementById('cad-prod-medida').value;
       const validade = document.getElementById('cad-prod-validade').value;
       const atalho = document.getElementById('cad-prod-atalho').checked;
 
-      if (!nome || !preco) { alert("Preencha o nome e o preço!"); return; }
+      if (!nome || !preco) { alert("Preencha o nome e o preço de venda!"); return; }
 
       let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
       if (prodExistente) {
+        prodExistente.precoCusto = parseFloat(precoCusto);
         prodExistente.preco = parseFloat(preco);
         prodExistente.estoque = (parseInt(prodExistente.estoque) || 0) + parseInt(qtd);
         prodExistente.medida = medida;
@@ -780,6 +790,7 @@
         produtos.push({ 
           id: Date.now(), 
           nome: nome, 
+          precoCusto: parseFloat(precoCusto),
           preco: parseFloat(preco), 
           estoque: parseInt(qtd), 
           medida: medida,
@@ -792,7 +803,7 @@
       const user = auth.currentUser;
       if (user) {
         db.collection("produtos").doc(user.uid + "_" + nome).set({
-          userId: user.uid, nome: nome, preco: parseFloat(preco),
+          userId: user.uid, nome: nome, precoCusto: parseFloat(precoCusto), preco: parseFloat(preco),
           estoque: prodExistente ? prodExistente.estoque : parseInt(qtd),
           medida: medida, validade: validade || '', atalho: atalho
         }, { merge: true });
@@ -824,7 +835,7 @@
         db.collection("clientes").doc(user.uid + "_" + novoCli.id).set({ ...novoCli, userId: user.uid });
       }
 
-      alert("Cliente cadastrado!");
+      alert("Cliente cadastrado com sucesso!");
       renderAba();
     }
 
@@ -861,10 +872,10 @@
 
     document.getElementById('menu-logout').addEventListener('click', (e) => {
       e.preventDefault();
-      auth.signOut().then(() => alert('Você desconectou.'));
+      auth.signOut().then(() => alert('Você desconectou da conta.'));
     });
 
-    console.log("Caixa Rápido Móvel Pro Completo carregado com sucesso!");
+    console.log("Caixa Rápido Móvel Pro v5.6 Completo!");
   </script>
 </body>
 </html>

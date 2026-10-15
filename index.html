@@ -27,7 +27,6 @@
 
     .whatsapp-green { background-color: #075e54; }
 
-    /* ESTRUTURA E ENQUADRAMENTO PERFEITO DA TELA */
     #app-container {
       display: flex;
       flex-direction: column;
@@ -55,11 +54,11 @@
     .slide-page {
       width: 25%;
       height: 100%;
-      overflow-y: auto; /* Rolagem vertical garantida para visualizar todo o conteúdo */
-      touch-action: pan-y; /* Permite rolagem vertical livre */
+      overflow-y: auto !important;
+      touch-action: pan-y !important;
       overscroll-behavior-y: contain;
       padding: 12px;
-      padding-bottom: 40px; /* Garante que o final da página fique visível */
+      padding-bottom: 60px;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
@@ -138,12 +137,12 @@
 
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Módulos de Trabalho</p>
-          
+
           <button onclick="selecionarAbaDrawer('vendas')" id="drawer-btn-vendas" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
             <i class="fa-solid fa-cart-shopping text-base w-5 text-center text-teal-600"></i>
             <span>Caixa / Frente de Vendas</span>
           </button>
-          
+
           <button onclick="selecionarAbaDrawer('estoque')" id="drawer-btn-estoque" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
             <i class="fa-solid fa-boxes-stacked text-base w-5 text-center text-teal-600"></i>
             <span>Estoque & Validades</span>
@@ -559,11 +558,15 @@
       appId: "1:741349314946:web:640b8d2baa0e257ed13f9b"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    let auth, db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    } catch(e) {
+      console.warn("Firebase offline ou inicializado parcialmente.");
+    }
 
     const produtosExemplo = [
       { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
@@ -592,7 +595,7 @@
     let carrinho = [];
     let abaAtual = 'vendas';
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
-    let subAbaEstoque = 'none'; // 'none' (limpo), 'todos', 'minimos', 'validades'
+    let subAbaEstoque = 'none';
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let timerSomAlerta = null;
@@ -605,6 +608,7 @@
 
     function mostrarInterfaceAutenticada(mostrar) {
       const header = document.getElementById('app-main-header');
+      if (!header) return;
       if (mostrar) {
         header.classList.remove('hidden');
         header.classList.add('flex');
@@ -617,8 +621,11 @@
 
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
-        document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
-        document.getElementById('badge-licenca').className = "bg-green-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer";
+        const badge = document.getElementById('badge-licenca');
+        if (badge) {
+          badge.innerText = "⭐ VITALÍCIO";
+          badge.className = "bg-green-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer";
+        }
         document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
         return true;
       }
@@ -632,9 +639,12 @@
         return false;
       } else {
         document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
-        document.getElementById('badge-licenca').innerText = `⏳ ${diasRestantes} dia(s)`;
-        if (diasRestantes <= 5) {
-          document.getElementById('badge-licenca').className = "bg-red-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer animate-pulse";
+        const badge = document.getElementById('badge-licenca');
+        if (badge) {
+          badge.innerText = `⏳ ${diasRestantes} dia(s)`;
+          if (diasRestantes <= 5) {
+            badge.className = "bg-red-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer animate-pulse";
+          }
         }
         return true;
       }
@@ -777,44 +787,45 @@
       historicoFechamentos.push(registroFechamento);
       localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
 
-      const user = auth.currentUser;
-      if (user) db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
+      if (auth && auth.currentUser) db.collection("fechamentos").add({ ...registroFechamento, userId: auth.currentUser.uid, createdAt: new Date() });
     }
 
-    // CONTROLE RIGOROSO E PRECISO DE GESTOS HORIZONTAIS PASSO-A-PASSO
+    // GESTOS HORIZONTAIS
     let touchStartX = 0;
     let touchStartY = 0;
     let isSwiping = false;
-    const swipeArea = document.getElementById('main-swipe-area');
 
-    swipeArea.addEventListener('touchstart', (e) => { 
-      touchStartX = e.changedTouches[0].screenX; 
-      touchStartY = e.changedTouches[0].screenY;
-      isSwiping = true;
-    }, { passive: true });
+    function configurarGestos() {
+      const swipeArea = document.getElementById('main-swipe-area');
+      if (!swipeArea) return;
 
-    swipeArea.addEventListener('touchend', (e) => { 
-      if (!isSwiping) return;
-      isSwiping = false;
-      const touchEndX = e.changedTouches[0].screenX; 
-      const touchEndY = e.changedTouches[0].screenY;
+      swipeArea.addEventListener('touchstart', (e) => { 
+        touchStartX = e.changedTouches[0].screenX; 
+        touchStartY = e.changedTouches[0].screenY;
+        isSwiping = true;
+      }, { passive: true });
 
-      const diffX = touchEndX - touchStartX;
-      const diffY = touchEndY - touchStartY;
+      swipeArea.addEventListener('touchend', (e) => { 
+        if (!isSwiping) return;
+        isSwiping = false;
+        const touchEndX = e.changedTouches[0].screenX; 
+        const touchEndY = e.changedTouches[0].screenY;
 
-      // Trava de Trajetória: Só troca de página se for nitidamente um movimento HORIZONTAL
-      if (Math.abs(diffX) > 70 && Math.abs(diffX) > Math.abs(diffY) * 2.0) {
-        let idxAtual = ordemAbas.indexOf(abaAtual);
-        if (diffX < 0 && idxAtual < ordemAbas.length - 1) {
-          switchTab(ordemAbas[idxAtual + 1]);
-        } else if (diffX > 0 && idxAtual > 0) {
-          switchTab(ordemAbas[idxAtual - 1]);
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > 70 && Math.abs(diffX) > Math.abs(diffY) * 2.0) {
+          let idxAtual = ordemAbas.indexOf(abaAtual);
+          if (diffX < 0 && idxAtual < ordemAbas.length - 1) {
+            switchTab(ordemAbas[idxAtual + 1]);
+          } else if (diffX > 0 && idxAtual > 0) {
+            switchTab(ordemAbas[idxAtual - 1]);
+          }
         }
-      }
-    }, { passive: true });
+      }, { passive: true });
+    }
 
     function abrirDrawerNavegacao() { 
-      if (!auth.currentUser) return;
       document.getElementById('drawer-menu').classList.remove('hidden'); 
     }
     
@@ -849,8 +860,7 @@
       localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja;
 
-      const user = auth.currentUser;
-      if (user) db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+      if (auth && auth.currentUser) db.collection("perfis").doc(auth.currentUser.uid).set(perfilNegocio, { merge: true });
       closeModalPerfil();
       renderAba();
       alert("Perfil atualizado!");
@@ -859,8 +869,13 @@
     function showOnboardingStep1() {
       mostrarInterfaceAutenticada(false);
 
-      document.getElementById('slider-container').style.transform = `translateX(0%)`;
-      document.getElementById('content-vendas').innerHTML = `
+      const slider = document.getElementById('slider-container');
+      if (slider) slider.style.transform = `translateX(0%)`;
+
+      const target = document.getElementById('content-vendas');
+      if (!target) return;
+
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
@@ -920,7 +935,10 @@
     function showRegisterForm() {
       mostrarInterfaceAutenticada(false);
 
-      document.getElementById('content-vendas').innerHTML = `
+      const target = document.getElementById('content-vendas');
+      if (!target) return;
+
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
@@ -957,7 +975,10 @@
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
 
-      document.getElementById('content-vendas').innerHTML = `
+      const target = document.getElementById('content-vendas');
+      if (!target) return;
+
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
             <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
@@ -999,10 +1020,14 @@
       const errBox = document.getElementById('auth-error');
 
       errBox.classList.add('hidden');
-      auth.signInWithEmailAndPassword(email, pass).catch(() => {
-        errBox.innerText = "Erro ao entrar: E-mail ou senha incorretos.";
-        errBox.classList.remove('hidden');
-      });
+      if (auth) {
+        auth.signInWithEmailAndPassword(email, pass).catch(() => {
+          errBox.innerText = "Erro ao entrar: E-mail ou senha incorretos.";
+          errBox.classList.remove('hidden');
+        });
+      } else {
+        renderAba();
+      }
     }
 
     function handleRegister(e) {
@@ -1012,37 +1037,48 @@
       const errBox = document.getElementById('auth-error');
 
       errBox.classList.add('hidden');
-      auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
+      if (auth) {
+        auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
+          perfilNegocio = { ...perfilTemp };
+          localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+          db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
+        }).catch(err => {
+          errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
+          errBox.classList.remove('hidden');
+        });
+      } else {
         perfilNegocio = { ...perfilTemp };
         localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
-        db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
-      }).catch(err => {
-        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
-        errBox.classList.remove('hidden');
-      });
+        renderAba();
+      }
     }
 
     function fazerLogoutSeguro() {
       if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
-        auth.signOut().then(() => {
+        if (auth) {
+          auth.signOut().then(() => {
+            mostrarInterfaceAutenticada(false);
+            showOnboardingStep1();
+          });
+        } else {
           mostrarInterfaceAutenticada(false);
           showOnboardingStep1();
-        });
+        }
       }
     }
 
-    // SLIDER DE MUDANÇA DE ABA
     function switchTab(aba) {
-      if (!auth.currentUser) return;
       if (!verificarLicencaStatus()) return;
 
       abaAtual = aba;
       const idx = ordemAbas.indexOf(aba);
       
-      document.getElementById('slider-container').style.transform = `translateX(-${idx * 25}%)`;
+      const container = document.getElementById('slider-container');
+      if (container) container.style.transform = `translateX(-${idx * 25}%)`;
 
       const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
-      document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
+      const headerAba = document.getElementById('header-aba-atual');
+      if (headerAba) headerAba.innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
 
       ordemAbas.forEach(a => {
         const btn = document.getElementById('drawer-btn-' + a);
@@ -1056,16 +1092,12 @@
     }
 
     function renderAba() {
-      if (!auth.currentUser) {
-        showOnboardingStep1();
-        return;
-      }
-
       mostrarInterfaceAutenticada(true);
 
       if (!verificarLicencaStatus()) return;
 
-      document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
+      const headerName = document.getElementById('header-app-name');
+      if (headerName) headerName.innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
 
       renderAbaVendas();
       renderAbaEstoque();
@@ -1096,8 +1128,7 @@
       sangriasSuprimentos.push(registro);
       localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
 
-      const user = auth.currentUser;
-      if (user) db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
+      if (auth && auth.currentUser) db.collection("sangrias").add({ ...registro, userId: auth.currentUser.uid, createdAt: new Date() });
 
       fecharModalSangria();
       alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado com sucesso!`);
@@ -1105,6 +1136,9 @@
     }
 
     function renderAbaVendas() {
+      const target = document.getElementById('content-vendas');
+      if (!target) return;
+
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
       const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
@@ -1161,7 +1195,7 @@
 
       let clientesDatalistHTML = clientes.map(c => `<option value="${c.nome}">${c.telefone || ''}</option>`).join('');
 
-      document.getElementById('content-vendas').innerHTML = `
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-teal-600 text-white p-3 rounded-lg shadow-sm">
@@ -1405,45 +1439,11 @@
       renderAbaVendas();
     }
 
-    function iniciarAlertaGeral(titulo, mensagemHTML) {
-      document.getElementById('alerta-modal-titulo').innerText = titulo;
-      document.getElementById('alerta-estoque-mensagem').innerHTML = mensagemHTML;
-      document.getElementById('modal-alerta-estoque-continua').classList.remove('hidden');
-
-      if (!timerSomAlerta) {
-        timerSomAlerta = setInterval(() => {
-          try {
-            if (!audioCtxAlerta) audioCtxAlerta = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtxAlerta.createOscillator();
-            let gain = audioCtxAlerta.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(880, audioCtxAlerta.currentTime);
-            gain.gain.setValueAtTime(0.3, audioCtxAlerta.currentTime);
-            osc.connect(gain);
-            gain.connect(audioCtxAlerta.destination);
-            osc.start();
-            osc.stop(audioCtxAlerta.currentTime + 0.3);
-          } catch(e) {}
-        }, 700);
-      }
-
-      if (!timerVibracaoAlerta && navigator.vibrate) {
-        timerVibracaoAlerta = setInterval(() => { navigator.vibrate([300, 200, 300]); }, 1000);
-      }
-    }
-
-    function interromperAlertaEstoqueManual() {
-      if (timerSomAlerta) { clearInterval(timerSomAlerta); timerSomAlerta = null; }
-      if (timerVibracaoAlerta) { clearInterval(timerVibracaoAlerta); timerVibracaoAlerta = null; }
-      document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
-    }
-
-    // ALTERNÂNCIA (TOGGLE) DA EXIBIÇÃO NO ESTOQUE
     function toggleSubAbaEstoque(sub) {
       if (subAbaEstoque === sub) {
-        subAbaEstoque = 'none'; // Se clicar novamente no botão ativo, Oculta a lista
+        subAbaEstoque = 'none';
       } else {
-        subAbaEstoque = sub; // Se clicar em outro botão, ativa ele
+        subAbaEstoque = sub;
       }
       renderAbaEstoque();
     }
@@ -1496,8 +1496,10 @@
       }
     }
 
-    // ABA ESTOQUE - DESIGN LIMPO COM EXIBIÇÃO SOB DEMANDA
     function renderAbaEstoque() {
+      const target = document.getElementById('content-estoque');
+      if (!target) return;
+
       let hoje = new Date();
       let trintaDiasFrente = new Date();
       trintaDiasFrente.setDate(hoje.getDate() + 30);
@@ -1510,7 +1512,7 @@
       else if (subAbaEstoque === 'minimos') conteudoSubabaHTML = renderSubAbaMinimos();
       else if (subAbaEstoque === 'validades') conteudoSubabaHTML = renderSubAbaValidades();
 
-      document.getElementById('content-estoque').innerHTML = `
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-2">
             <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -1521,7 +1523,6 @@
             </button>
           </div>
 
-          <!-- BOTÕES SUPERIORES DE FILTRO & EXPANSÃO -->
           <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
             <button onclick="toggleSubAbaEstoque('todos')" class="py-2.5 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow ring-2 ring-teal-400' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               📋 Lista Completa ${subAbaEstoque === 'todos' ? '▲' : '▼'}
@@ -1550,7 +1551,6 @@
             <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
           </div>
 
-          <!-- ÁREA DA LISTA (OCULTA POR PADRÃO, APARECE APENAS AO CLICAR) -->
           <div id="subaba-estoque-conteudo">
             ${conteudoSubabaHTML}
           </div>
@@ -1774,9 +1774,8 @@
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
-      const user = auth.currentUser;
-      if (user) {
-        db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
+      if (auth && auth.currentUser) {
+        db.collection("produtos").doc(auth.currentUser.uid + "_" + p.nome).set({ ...p, userId: auth.currentUser.uid }, { merge: true });
       }
 
       fecharModalAjusteRapido();
@@ -1786,6 +1785,8 @@
 
     function buscarEExibirProdutoEstoque(termo) {
       const box = document.getElementById('subaba-estoque-conteudo');
+      if (!box) return;
+
       if (!termo || termo.trim().length < 1) {
         subAbaEstoque = 'none';
         renderAbaEstoque();
@@ -1892,9 +1893,8 @@
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
-      const user = auth.currentUser;
-      if (user) {
-        db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
+      if (auth && auth.currentUser) {
+        db.collection("produtos").doc(auth.currentUser.uid + "_" + prodData.nome).set({ ...prodData, userId: auth.currentUser.uid }, { merge: true });
       }
 
       fecharModalCadastroProduto();
@@ -1911,10 +1911,13 @@
     }
 
     function renderAbaClientes() {
+      const target = document.getElementById('content-clientes');
+      if (!target) return;
+
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
 
-      document.getElementById('content-clientes').innerHTML = `
+      target.innerHTML = `
         <div class="space-y-4">
           <div class="bg-red-50 border border-red-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm">
             <div>
@@ -1943,6 +1946,7 @@
     function filtrarApenasDevedores() {
       let devedores = clientes.filter(c => c.debito > 0);
       const box = document.getElementById('resultado-busca-clientes');
+      if (!box) return;
       
       if (devedores.length === 0) {
         box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
@@ -1974,6 +1978,8 @@
 
     function renderizarListaClientesCards(lista) {
       const box = document.getElementById('resultado-busca-clientes');
+      if (!box) return;
+
       const hojeStr = new Date().toISOString().split('T')[0];
 
       box.innerHTML = lista.map(c => {
@@ -2048,8 +2054,7 @@
 
       localStorage.setItem('crm_clientes', JSON.stringify(clientes));
 
-      const user = auth.currentUser;
-      if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
+      if (auth && auth.currentUser) db.collection("clientes").doc(auth.currentUser.uid + "_" + c.id).set(c, { merge: true });
 
       fecharModalEditarCliente();
       alert("✅ Dados do cliente atualizados com sucesso!");
@@ -2083,8 +2088,7 @@
 
       localStorage.setItem('crm_clientes', JSON.stringify(clientes));
 
-      const user = auth.currentUser;
-      if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
+      if (auth && auth.currentUser) db.collection("clientes").doc(auth.currentUser.uid + "_" + cliente.id).set(cliente, { merge: true });
 
       alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
       renderAba();
@@ -2099,6 +2103,9 @@
     }
 
     function renderAbaRelatorios() {
+      const target = document.getElementById('content-relatorios');
+      if (!target) return;
+
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
       vendas.forEach(v => {
@@ -2125,7 +2132,7 @@
 
       let hojeStr = new Date().toISOString().split('T')[0];
 
-      document.getElementById('content-relatorios').innerHTML = `
+      target.innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
             <i class="fa-solid fa-chart-line text-teal-600"></i> Painel de Lucros & Relatórios Profissionais
@@ -2418,7 +2425,6 @@
         return;
       }
 
-      const user = auth.currentUser;
       const dataAtual = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
       let totalVenda = 0;
@@ -2449,7 +2455,7 @@
         vendas.push(novaVenda);
         itensResumo.push(`${item.qtd}x ${item.nome} - R$ ${valorItemTotal.toFixed(2)}`);
 
-        if (user) db.collection("vendas").add({ ...novaVenda, userId: user.uid, userEmail: user.email, createdAt: new Date() });
+        if (auth && auth.currentUser) db.collection("vendas").add({ ...novaVenda, userId: auth.currentUser.uid, userEmail: auth.currentUser.email, createdAt: new Date() });
       });
 
       if (clienteNome) {
@@ -2472,7 +2478,7 @@
         }
 
         localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-        if (user) db.collection("clientes").doc(user.uid + "_" + cli.id).set({ ...cli, userId: user.uid }, { merge: true });
+        if (auth && auth.currentUser) db.collection("clientes").doc(auth.currentUser.uid + "_" + cli.id).set({ ...cli, userId: auth.currentUser.uid }, { merge: true });
       }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
@@ -2493,11 +2499,6 @@
       if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
       else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
       else alert("✅ Venda finalizada!");
-
-      if (produtosComEstoqueCritico.length > 0) {
-        let msg = produtosComEstoqueCritico.map(p => `<span class="block"><b>${p.nome}</b>: Restam ${p.estoque} ${p.medida || 'un'}</span>`).join('');
-        iniciarAlertaGeral("🚨 ATENÇÃO: ESTOQUE CRÍTICO!", msg);
-      }
 
       renderAba();
     }
@@ -2545,33 +2546,40 @@
     }
 
     function sincronizarNuvemManual() {
-      const user = auth.currentUser;
-      if (user) {
-        db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+      if (auth && auth.currentUser) {
+        db.collection("perfis").doc(auth.currentUser.uid).set(perfilNegocio, { merge: true });
         alert("✅ Sincronização concluída com sucesso!");
-      } else alert("Você está desconectado. Faça login para sincronizar.");
+      } else alert("Sincronização indisponível sem login ativo.");
     }
 
-    auth.onAuthStateChanged((user) => {
+    // INICIALIZAÇÃO SEGURA DO APLICATIVO
+    document.addEventListener("DOMContentLoaded", () => {
+      configurarGestos();
       verificarLicencaStatus();
       monitorarFechamentoAutomaticoMeiaNoite();
 
-      if (user) {
-        mostrarInterfaceAutenticada(true);
-        db.collection("perfis").doc(user.uid).get().then(doc => {
-          if (doc.exists) {
-            perfilNegocio = doc.data();
-            localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+      if (auth) {
+        auth.onAuthStateChanged((user) => {
+          if (user) {
+            mostrarInterfaceAutenticada(true);
+            db.collection("perfis").doc(user.uid).get().then(doc => {
+              if (doc.exists) {
+                perfilNegocio = doc.data();
+                localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+              }
+              renderAba();
+            }).catch(() => renderAba());
+          } else {
+            mostrarInterfaceAutenticada(false);
+            showOnboardingStep1();
           }
-          switchTab('vendas');
-        }).catch(() => switchTab('vendas'));
+        });
       } else {
-        mostrarInterfaceAutenticada(false);
-        showOnboardingStep1();
+        renderAba();
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Rolagem Vertical Liberada & Estoque Paginado sob Demanda!");
+    console.log("Caixa Rápido Móvel Pro - Inicialização Segura Concluída.");
   </script>
 </body>
 </html>

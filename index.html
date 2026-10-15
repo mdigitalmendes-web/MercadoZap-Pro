@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v21.0</title>
+  <title>Caixa Rápido Móvel Pro v22.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -78,11 +78,33 @@
       object-fit: cover !important;
       border-radius: 12px;
     }
+
+    /* MENSAGEM FLUTUANTE DE BOAS-VINDAS (TOAST) */
+    #toast-boas-vindas {
+      transition: all 0.4s ease-in-out;
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    #toast-boas-vindas.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
 
 <div id="app-container">
+
+  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS (v22.0) -->
+  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3">
+    <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+      👋
+    </div>
+    <div class="flex-1 min-w-0">
+      <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
+      <p id="toast-mensagem" class="text-[11px] text-gray-300 truncate">Login realizado. Caixa pronto para operar.</p>
+    </div>
+  </div>
 
   <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
@@ -122,17 +144,27 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU AUXILIAR & SEGURAÇA ORGANIZADA v21.0) -->
+  <!-- DRAWER LATERAL (MENU AUXILIAR & DADOS DO USUÁRIO v22.0) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
-        <div class="whatsapp-green p-4 text-white flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-cash-register text-xl text-green-300"></i>
-            <span class="font-bold text-sm">Opções & Conta</span>
+        
+        <!-- CARD DO USUÁRIO LOGADO (v22.0) -->
+        <div class="whatsapp-green p-4 text-white">
+          <div class="flex justify-between items-start mb-3">
+            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
+              <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
           </div>
-          <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
+          <p id="drawer-user-nome" class="font-extrabold text-sm leading-tight truncate">Usuário do Sistema</p>
+          <p id="drawer-user-email" class="text-[11px] text-green-200 truncate mb-2">email@exemplo.com</p>
+          
+          <div class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
+            <i class="fa-solid fa-id-badge"></i>
+            <span id="drawer-user-funcao">Proprietário / Gerente</span>
+          </div>
         </div>
 
         <div class="p-3 space-y-1 border-b">
@@ -140,7 +172,7 @@
 
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
-            <span>Alterar Senha do Login</span>
+            <span>Alterar Senha de Acesso</span>
           </button>
 
           <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
@@ -168,7 +200,7 @@
           </button>
         </div>
 
-        <!-- ZONA DE PERIGO (ORGANIZADA v21.0) -->
+        <!-- ZONA DE PERIGO -->
         <div class="p-3 space-y-1">
           <p class="text-[10px] font-extrabold text-red-500 uppercase tracking-wider px-2 mb-1">Zona de Perigo</p>
           <button onclick="executarLimpezaTotalManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600">
@@ -233,7 +265,7 @@
 
 </div>
 
-  <!-- MODAL: ALTERAR SENHA -->
+  <!-- MODAL: ALTERAR SENHA SEGURO (COM SENHA ANTERIOR v22.0) -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -245,17 +277,28 @@
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Nova Senha (mínimo 6 caracteres)</label>
-          <input type="password" id="input-nova-senha" minlength="6" placeholder="******" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">1. Digite sua Senha Atual *</label>
+          <input type="password" id="input-senha-atual" placeholder="Senha atual" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
         </div>
-        <button onclick="salvarNovaSenhaUsuario()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-          💾 Salvar Nova Senha
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">2. Digite a Nova Senha (mín. 6 dígitos) *</label>
+          <input type="password" id="input-nova-senha" minlength="6" placeholder="Nova senha" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">3. Confirme a Nova Senha *</label>
+          <input type="password" id="input-confirma-nova-senha" minlength="6" placeholder="Repita a nova senha" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
+        </div>
+
+        <p id="msg-erro-altera-senha" class="text-xs text-red-500 font-bold hidden text-center"></p>
+
+        <button onclick="salvarNovaSenhaUsuarioComReautenticacao()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          💾 Confirmar e Salvar Nova Senha
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAIS RESTANTES -->
+  <!-- MODAIS DIVERSOS -->
   <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -496,6 +539,14 @@
             <option value="Ambos">Produtos e Serviços</option>
           </select>
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Perfil / Função no App</label>
+          <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
+            <option value="Proprietário / Gerente">Proprietário / Gerente</option>
+            <option value="Caixa / Operador">Caixa / Operador</option>
+            <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+          </select>
+        </div>
         <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
           Salvar Alterações
         </button>
@@ -551,7 +602,7 @@
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
         <p><b>📁 Relatórios & Contabilidade:</b> Acesse pastas intuitivas na aba de relatórios para emitir PDFs e enviar arquivos formatados ao seu contador.</p>
-        <p><b>🔑 Alterar Senha:</b> Altere sua senha com facilidade clicando no menu sanduíche superior.</p>
+        <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
       </div>
     </div>
   </div>
@@ -606,13 +657,25 @@
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
     let subAbaEstoque = 'none'; 
     let listaDevedoresAberta = false; 
-    let pastaRelatorioAberta = 'none'; // CONTROLE DE PASTAS NA ABA RELATÓRIOS (v21.0)
+    let pastaRelatorioAberta = 'none'; 
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
-    let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
-    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
+    let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
+    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Usuário', funcaoUsuario: 'Proprietário / Gerente' };
+
+    function exibirBoasVindasToast(nome) {
+      const toast = document.getElementById('toast-boas-vindas');
+      const elNome = document.getElementById('toast-nome-usuario');
+      if (toast && elNome) {
+        elNome.innerText = `👋 Bem-vindo(a), ${nome || 'Usuário'}!`;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3500);
+      }
+    }
 
     function mostrarInterfaceAutenticada(mostrar) {
       const header = document.getElementById('app-main-header');
@@ -677,7 +740,10 @@
     }
 
     function abrirModalAlterarSenha() {
+      document.getElementById('input-senha-atual').value = '';
       document.getElementById('input-nova-senha').value = '';
+      document.getElementById('input-confirma-nova-senha').value = '';
+      document.getElementById('msg-erro-altera-senha').classList.add('hidden');
       document.getElementById('modal-alterar-senha').classList.remove('hidden');
     }
 
@@ -685,23 +751,46 @@
       document.getElementById('modal-alterar-senha').classList.add('hidden');
     }
 
-    function salvarNovaSenhaUsuario() {
+    function salvarNovaSenhaUsuarioComReautenticacao() {
+      const senhaAtual = document.getElementById('input-senha-atual').value.trim();
       const novaSenha = document.getElementById('input-nova-senha').value.trim();
-      const user = auth.currentUser;
+      const confirmaNovaSenha = document.getElementById('input-confirma-nova-senha').value.trim();
+      const msgErro = document.getElementById('msg-erro-altera-senha');
 
-      if (!novaSenha || novaSenha.length < 6) {
-        alert("A senha deve conter no mínimo 6 caracteres!");
+      msgErro.classList.add('hidden');
+
+      if (!senhaAtual) {
+        msgErro.innerText = "Digite sua senha atual por segurança!";
+        msgErro.classList.remove('hidden');
         return;
       }
 
-      if (user) {
-        user.updatePassword(novaSenha).then(() => {
-          fecharModalAlterarSenha();
-          alert("✅ Senha alterada com sucesso!");
-        }).catch((err) => {
-          alert("Erro ao alterar senha. Se necessário, faça login novamente e tente de novo.\n\nDetalhes: " + err.message);
-        });
+      if (!novaSenha || novaSenha.length < 6) {
+        msgErro.innerText = "A nova senha deve ter no mínimo 6 caracteres!";
+        msgErro.classList.remove('hidden');
+        return;
       }
+
+      if (novaSenha !== confirmaNovaSenha) {
+        msgErro.innerText = "A nova senha e a confirmação não coincidem!";
+        msgErro.classList.remove('hidden');
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const credencial = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtual);
+
+      user.reauthenticateWithCredential(credencial).then(() => {
+        return user.updatePassword(novaSenha);
+      }).then(() => {
+        fecharModalAlterarSenha();
+        alert("🎉 Senha de acesso alterada com sucesso! Use a nova senha no seu próximo login.");
+      }).catch((err) => {
+        msgErro.innerText = err.code === 'auth/wrong-password' ? "Senha atual incorreta!" : ("Erro: " + err.message);
+        msgErro.classList.remove('hidden');
+      });
     }
 
     async function abrirScanner(destino) {
@@ -829,6 +918,12 @@
 
     function abrirDrawerNavegacao() { 
       if (!auth.currentUser) return;
+      
+      const user = auth.currentUser;
+      document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Usuário Operador';
+      document.getElementById('drawer-user-email').innerText = user.email || '';
+      document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
+
       document.getElementById('drawer-menu').classList.remove('hidden'); 
     }
     
@@ -840,6 +935,7 @@
       document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
       document.getElementById('perfil-tipo-registro').value = perfilNegocio.tipo || 'PF';
       document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Produtos';
+      document.getElementById('perfil-user-funcao-modal').value = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
       document.getElementById('modal-perfil').classList.remove('hidden');
     }
 
@@ -850,9 +946,11 @@
     function salvarPerfilNegocio(e) {
       e.preventDefault();
       perfilNegocio = {
+        ...perfilNegocio,
         nomeLoja: document.getElementById('perfil-nome-loja').value,
         tipo: document.getElementById('perfil-tipo-registro').value,
-        ramo: document.getElementById('perfil-ramo').value
+        ramo: document.getElementById('perfil-ramo').value,
+        funcaoUsuario: document.getElementById('perfil-user-funcao-modal').value
       };
 
       localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
@@ -881,17 +979,33 @@
 
           <form onsubmit="handleOnboardingStep1(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja ou Negócio</label>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja ou Negócio *</label>
               <input type="text" id="step1-nome" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
-              <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                <option value="PF">Pessoa Física (Autônomo / Informal)</option>
-                <option value="MEI">MEI (Microempreendedor Individual)</option>
-                <option value="ME">Microempresa (ME)</option>
-              </select>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
+              <input type="text" id="step1-nome-usuario" required placeholder="Ex: João da Silva" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
+                <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                  <option value="PF">Pessoa Física (Autônomo)</option>
+                  <option value="MEI">MEI (Microempreendedor)</option>
+                  <option value="ME">Microempresa (ME)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Perfil / Função</label>
+                <select id="step1-funcao" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                  <option value="Proprietário / Gerente">Proprietário / Gerente</option>
+                  <option value="Caixa / Operador">Caixa / Operador</option>
+                  <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+                </select>
+              </div>
             </div>
 
             <div>
@@ -909,7 +1023,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Já possui uma conta criada?</p>
+            <p class="text-xs text-gray-600">Já possui uma conta registrada?</p>
             <button onclick="showLoginForm()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Fazer Login Direto</button>
           </div>
         </div>
@@ -920,7 +1034,9 @@
       e.preventDefault();
       perfilTemp = {
         nomeLoja: document.getElementById('step1-nome').value,
+        nomeUsuario: document.getElementById('step1-nome-usuario').value,
         tipo: document.getElementById('step1-tipo').value,
+        funcaoUsuario: document.getElementById('step1-funcao').value,
         ramo: document.getElementById('step1-ramo').value
       };
       showRegisterForm();
@@ -936,7 +1052,7 @@
               <i class="fa-solid fa-user-plus"></i>
             </div>
             <h2 class="text-xl font-bold text-gray-800">Criar Sua Conta</h2>
-            <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja}</b> (${perfilTemp.tipo})</p>
+            <p class="text-xs text-gray-500">Registrando: <b>${perfilTemp.nomeUsuario}</b> (${perfilTemp.funcaoUsuario})</p>
           </div>
 
           <form onsubmit="handleRegister(event)" class="space-y-3">
@@ -982,7 +1098,10 @@
               <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Senha</label>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-semibold text-gray-600">Sua Senha</label>
+                <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
+              </div>
               <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             
@@ -999,6 +1118,58 @@
           </div>
         </div>
       `;
+    }
+
+    /* RECURSO: ESQUECEU A SENHA / RECUPERAÇÃO OFICIAL (v22.0) */
+    function showEsqueceuSenhaForm() {
+      mostrarInterfaceAutenticada(false);
+
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Recuperar Acesso</h2>
+            <p class="text-xs text-gray-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
+          </div>
+
+          <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Digite seu E-mail Cadastrado *</label>
+              <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+            
+            <p id="recupera-msg" class="text-xs font-bold hidden text-center p-2 rounded-lg"></p>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              📩 Enviar E-mail de Redefinição
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para Tela de Login</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleEsqueceuSenha(e) {
+      e.preventDefault();
+      const email = document.getElementById('recupera-email').value.trim();
+      const msgBox = document.getElementById('recupera-msg');
+
+      msgBox.classList.add('hidden');
+
+      auth.sendPasswordResetEmail(email).then(() => {
+        msgBox.innerText = "✅ E-mail enviado com sucesso! Verifique sua caixa de entrada ou spam para redefinir sua senha.";
+        msgBox.className = "text-xs font-bold text-green-700 bg-green-50 border border-green-200 text-center p-2.5 rounded-lg";
+        msgBox.classList.remove('hidden');
+      }).catch((err) => {
+        msgBox.innerText = err.code === 'auth/user-not-found' ? "E-mail não localizado no sistema!" : ("Erro: " + err.message);
+        msgBox.className = "text-xs font-bold text-red-600 bg-red-50 border border-red-200 text-center p-2.5 rounded-lg";
+        msgBox.classList.remove('hidden');
+      });
     }
 
     function handleLogin(e) {
@@ -1023,6 +1194,7 @@
       errBox.classList.add('hidden');
       auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
         perfilNegocio = { ...perfilTemp };
+        userCredential.user.updateProfile({ displayName: perfilNegocio.nomeUsuario });
         localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
         db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
       }).catch(err => {
@@ -2114,7 +2286,6 @@
       }
     }
 
-    // ABA RELATÓRIOS REESTRUTURADA E ORGANIZADA EM PASTAS (v21.0)
     function toggleFolderRelatorios(pasta) {
       if (pastaRelatorioAberta === pasta) pastaRelatorioAberta = 'none';
       else pastaRelatorioAberta = pasta;
@@ -2154,7 +2325,6 @@
             <i class="fa-solid fa-chart-line text-teal-600"></i> Central de Relatórios & Finanças
           </h2>
 
-          <!-- RESUMO FINANCEIRO PRINCIPAL -->
           <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border space-y-2">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
               <span class="text-xs text-gray-300">Faturamento Bruto:</span>
@@ -2170,10 +2340,8 @@
             </div>
           </div>
 
-          <!-- PASTAS ORGANIZADAS E COMPACTAS (v21.0) -->
           <div class="space-y-2.5">
 
-            <!-- PASTA 1: GERAR PDF -->
             <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
               <button onclick="toggleFolderRelatorios('pdf')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
                 <div class="flex items-center gap-2.5">
@@ -2225,7 +2393,6 @@
               ` : ''}
             </div>
 
-            <!-- PASTA 2: DADOS CONTÁBEIS EXCEL/CSV -->
             <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
               <button onclick="toggleFolderRelatorios('excel')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
                 <div class="flex items-center gap-2.5">
@@ -2251,7 +2418,6 @@
               ` : ''}
             </div>
 
-            <!-- PASTA 3: HISTÓRICO DE FECHAMENTOS -->
             <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
               <button onclick="toggleFolderRelatorios('historico')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
                 <div class="flex items-center gap-2.5">
@@ -2597,7 +2763,6 @@
       janelaImp.document.close();
     }
 
-    // FORMATO DE EXPORTAÇÃO CONTÁBIL PADRÃO BRASIL (.CSV COM VÍRGULAS) (v21.0)
     function exportarBackupCSV() {
       if (vendas.length === 0) { alert("Sem histórico de vendas para exportação contábil."); return; }
       
@@ -2639,14 +2804,18 @@
             localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
           }
           switchTab('vendas');
-        }).catch(() => switchTab('vendas'));
+          exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
+        }).catch(() => {
+          switchTab('vendas');
+          exibirBoasVindasToast(user.displayName || 'Operador');
+        });
       } else {
         mostrarInterfaceAutenticada(false);
         showOnboardingStep1();
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 21.0 com pastas de relatórios e exportação contábil!");
+    console.log("Caixa Rápido Móvel Pro - Versão 22.0 carregada com sucesso!");
   </script>
 </body>
 </html>

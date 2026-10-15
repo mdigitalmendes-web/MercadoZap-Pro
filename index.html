@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v19.2</title>
+  <title>Caixa Rápido Móvel Pro v21.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,7 @@
 
     .whatsapp-green { background-color: #075e54; }
 
-    /* ESTRUTURA E ENQUADRAMENTO PERFEITO DA TELA */
+    /* ESTRUTURA FIXA DA TELA E NAVEGAÇÃO */
     #app-container {
       display: flex;
       flex-direction: column;
@@ -58,7 +58,7 @@
       overflow-y: auto;
       overscroll-behavior-y: contain;
       padding: 12px;
-      padding-bottom: 120px !important;
+      padding-bottom: 110px !important;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
@@ -69,16 +69,9 @@
     }
     .alerta-saltando { animation: pulse-red 1.5s infinite; }
 
-    @keyframes modal-alarm-flash {
-      0%, 100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
-      50% { border-color: #b91c1c; box-shadow: 0 0 25px rgba(185, 28, 28, 0.9); }
-    }
-    .modal-alerta-emergencia { animation: modal-alarm-flash 1s infinite; }
-
     .drawer-overlay { transition: opacity 0.3s ease; }
     .drawer-content { transition: transform 0.3s ease-in-out; }
 
-    /* Ajustes para renderização da câmera */
     #reader video {
       width: 100% !important;
       height: 100% !important;
@@ -98,7 +91,7 @@
     </div>
     <h2 class="text-2xl font-extrabold text-red-500">Período de Teste Expirado!</h2>
     <p class="text-xs text-gray-300 mt-2 max-w-xs leading-relaxed">
-      Sua licença de teste de 20 dias terminou. Para continuar utilizando o <b>Caixa Rápido Móvel Pro</b>, insira o Código de Desbloqueio / Serial fornecido pelo administrador.
+      Sua licença de teste de 20 dias terminou. Insira o Código de Desbloqueio / Serial para continuar.
     </p>
 
     <div class="mt-6 w-full max-w-xs space-y-3">
@@ -108,7 +101,6 @@
       </button>
       <p id="msg-serial-erro" class="text-xs text-red-400 font-bold hidden"></p>
     </div>
-    <p class="text-[10px] text-gray-500 mt-8">Suporte & Licenciamento Comercial</p>
   </div>
 
   <!-- BARRA SUPERIOR (HEADER FIXO) -->
@@ -130,7 +122,7 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (SANDUÍCHE) -->
+  <!-- DRAWER LATERAL (MENU AUXILIAR & SEGURAÇA ORGANIZADA v21.0) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -138,83 +130,63 @@
         <div class="whatsapp-green p-4 text-white flex justify-between items-center">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-cash-register text-xl text-green-300"></i>
-            <span class="font-bold text-sm">Menu do Aplicativo</span>
+            <span class="font-bold text-sm">Opções & Conta</span>
           </div>
           <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Módulos de Trabalho</p>
-          
-          <button onclick="selecionarAbaDrawer('vendas')" id="drawer-btn-vendas" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-cart-shopping text-base w-5 text-center text-teal-600"></i>
-            <span>Caixa / Frente de Vendas</span>
-          </button>
-          
-          <button onclick="selecionarAbaDrawer('estoque')" id="drawer-btn-estoque" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-boxes-stacked text-base w-5 text-center text-teal-600"></i>
-            <span>Estoque & Validades</span>
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Segurança & Conta</p>
+
+          <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
+            <span>Alterar Senha do Login</span>
           </button>
 
-          <button onclick="selecionarAbaDrawer('clientes')" id="drawer-btn-clientes" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-users text-base w-5 text-center text-teal-600"></i>
-            <span>Fiado & Prazos</span>
-          </button>
-
-          <button onclick="selecionarAbaDrawer('relatorios')" id="drawer-btn-relatorios" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition">
-            <i class="fa-solid fa-chart-line text-base w-5 text-center text-teal-600"></i>
-            <span>Relatórios & Financeiro</span>
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
+            <span>Sincronizar Nuvem</span>
           </button>
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Dados</p>
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações do Negócio</p>
 
-          <button onclick="fecharDrawerNavegacao(); selecionarAbaDrawer('relatorios');" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-file-pdf text-red-600 w-5 text-center"></i>
-            <span>Gerar Relatório em PDF</span>
-          </button>
-
-          <button onclick="exportarBackupCSV()" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-file-excel text-green-600 w-5 text-center"></i>
-            <span>Exportar Vendas em Excel (.CSV)</span>
-          </button>
-
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
-            <span>Backup & Sincronizar Nuvem</span>
-          </button>
-        </div>
-
-        <div class="p-3 space-y-1">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações & Conta</p>
-
-          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-store text-teal-600 w-5 text-center"></i>
             <span>Perfil do Estabelecimento</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); abrirModalMinimosPadrao();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); abrirModalMinimosPadrao();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-sliders text-amber-600 w-5 text-center"></i>
-            <span>Padrões de Mínimo do Estoque</span>
+            <span>Padrões do Estoque</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-circle-question text-purple-600 w-5 text-center"></i>
-            <span>Guia de Uso & Instruções</span>
+            <span>Guia de Uso</span>
+          </button>
+        </div>
+
+        <!-- ZONA DE PERIGO (ORGANIZADA v21.0) -->
+        <div class="p-3 space-y-1">
+          <p class="text-[10px] font-extrabold text-red-500 uppercase tracking-wider px-2 mb-1">Zona de Perigo</p>
+          <button onclick="executarLimpezaTotalManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600">
+            <i class="fa-solid fa-trash-can w-5 text-center"></i>
+            <span>Apagar Dados e Resetar App</span>
           </button>
         </div>
       </div>
 
       <div class="p-3 bg-gray-50 border-t">
         <button onclick="fazerLogoutSeguro()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
-          <i class="fa-solid fa-right-from-bracket"></i> Sair do Aplicativo
+          <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
         </button>
       </div>
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL COM TRANSIÇÃO STRICTA PASSO-A-PASSO -->
+  <!-- CONTEÚDO PRINCIPAL (SLIDER DE ABAS) -->
   <main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
     <div id="slider-wrapper">
       <div id="slider-container">
@@ -234,9 +206,56 @@
     </div>
   </main>
 
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR FIXA -->
+  <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 max-w-md mx-auto">
+    <div class="grid grid-cols-4 h-16">
+      <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="flex flex-col items-center justify-center space-y-1 text-teal-700 font-bold transition">
+        <i class="fa-solid fa-cart-shopping text-lg"></i>
+        <span class="text-[10px]">Caixa</span>
+      </button>
+
+      <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
+        <i class="fa-solid fa-boxes-stacked text-lg"></i>
+        <span class="text-[10px]">Estoque</span>
+      </button>
+
+      <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
+        <i class="fa-solid fa-users text-lg"></i>
+        <span class="text-[10px]">Fiado</span>
+      </button>
+
+      <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
+        <i class="fa-solid fa-chart-line text-lg"></i>
+        <span class="text-[10px]">Relatórios</span>
+      </button>
+    </div>
+  </nav>
+
 </div>
 
-  <!-- MODAL: CADASTRAR/EDITAR PRODUTO NO ESTOQUE -->
+  <!-- MODAL: ALTERAR SENHA -->
+  <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-amber-600"></i> Alterar Senha de Acesso
+        </h3>
+        <button onclick="fecharModalAlterarSenha()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nova Senha (mínimo 6 caracteres)</label>
+          <input type="password" id="input-nova-senha" minlength="6" placeholder="******" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
+        </div>
+        <button onclick="salvarNovaSenhaUsuario()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          💾 Salvar Nova Senha
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAIS RESTANTES -->
   <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -318,7 +337,6 @@
     </div>
   </div>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (OTIMIZADO v19.2) -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
@@ -329,11 +347,18 @@
       </div>
       
       <div id="scanner-status" class="text-center py-2 text-xs text-gray-600 font-bold bg-gray-100 rounded-lg">
-        Aproxime o código de barras
+        Iniciando câmera...
       </div>
 
-      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[260px] flex items-center justify-center relative"></div>
-      <p class="text-[10px] text-center text-gray-500 font-medium">💡 Dica: Mantenha o código centralizado na caixa de foco.</p>
+      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[250px] flex items-center justify-center relative"></div>
+      
+      <div id="scanner-controls-fallback" class="hidden text-center">
+        <button onclick="iniciarCameraHtml5Manual()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs">
+          📷 Habilitar Câmera Traseira
+        </button>
+      </div>
+
+      <p class="text-[10px] text-center text-gray-500 font-medium">💡 Posicione o código no centro da caixa de foco.</p>
       
       <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
         Cancelar / Fechar Câmera
@@ -341,7 +366,6 @@
     </div>
   </div>
 
-  <!-- MODAL: EDITAR CLIENTE E PRAZO -->
   <div id="modal-editar-cliente" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -376,7 +400,6 @@
     </div>
   </div>
 
-  <!-- MODAIS COMPLEMENTARES -->
   <div id="modal-ajuste-rapido-prod" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -401,7 +424,7 @@
         </div>
 
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Preço de Venda R$ (Ajuste / Desconto):</label>
+          <label class="block font-bold text-gray-700 mb-1">Preço de Venda R$:</label>
           <div class="flex gap-1.5 items-center">
             <input type="number" step="0.01" id="ajuste-prod-preco" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
             <div class="flex gap-1">
@@ -418,7 +441,7 @@
       </div>
 
       <button onclick="salvarAjusteRapidoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-        💾 Salvar Alterações Imediatas
+        💾 Salvar Alterações
       </button>
     </div>
   </div>
@@ -443,23 +466,6 @@
           Confirmar e Salvar no Caixa
         </button>
       </div>
-    </div>
-  </div>
-
-  <div id="modal-alerta-estoque-continua" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 border-4 border-red-600 text-center modal-alerta-emergencia">
-      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
-      <div>
-        <h3 id="alerta-modal-titulo" class="font-extrabold text-red-600 text-lg uppercase tracking-wide">🚨 ATENÇÃO: SISTEMA DE ALERTA!</h3>
-        <p id="alerta-estoque-mensagem" class="text-xs font-semibold text-gray-700 mt-2 leading-relaxed">
-          Notificação crítica pendente!
-        </p>
-      </div>
-      <button onclick="interromperAlertaEstoqueManual()" class="w-full bg-red-600 text-white font-extrabold py-3.5 rounded-xl hover:bg-red-700 transition text-xs shadow-lg uppercase tracking-wider">
-        <i class="fa-solid fa-bell-slash mr-1"></i> Entendido / Ciente
-      </button>
     </div>
   </div>
 
@@ -540,13 +546,12 @@
   <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar o Sistema</h3>
+        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema</h3>
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>🔒 Fechamento de Caixa:</b> Botão direto na tela principal do Caixa para o vendedor fazer a contagem da gaveta ao final do turno.</p>
-        <p><b>⏰ Fechamento Automático:</b> Às 23:59 todos os dias o sistema faz o fechamento do caixa do dia automaticamente e salva em relatórios.</p>
-        <p><b>⚡ Fiados e Prazos:</b> Clique no botão vermelho de Devedores para abrir ou ocultar a lista de quem está devendo.</p>
+        <p><b>📁 Relatórios & Contabilidade:</b> Acesse pastas intuitivas na aba de relatórios para emitir PDFs e enviar arquivos formatados ao seu contador.</p>
+        <p><b>🔑 Alterar Senha:</b> Altere sua senha com facilidade clicando no menu sanduíche superior.</p>
       </div>
     </div>
   </div>
@@ -576,8 +581,7 @@
     const produtosExemplo = [
       { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
       { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
-      { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true },
-      { id: 4, ean: "", nome: "Queijo Muçarela (kg)", precoCusto: 28.00, preco: 42.00, estoque: 5, estMin: 2, medida: "kg", dataEntrada: "2026-10-12", validade: "2026-11-01", atalho: true }
+      { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
     ];
 
     const ONTEM_MS = Date.now() - (24 * 60 * 60 * 1000);
@@ -592,21 +596,19 @@
     let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
     let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
     let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
-      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" },
-      { id: 102, nome: "Maria Oliveira", telefone: "(75) 98888-2222", debito: 50.00, prazoPagamento: "" }
+      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" }
     ];
     let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
     
     let carrinho = [];
+    let clienteAtualVenda = { nome: '', zap: '' };
     let abaAtual = 'vendas';
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
     let subAbaEstoque = 'none'; 
     let listaDevedoresAberta = false; 
+    let pastaRelatorioAberta = 'none'; // CONTROLE DE PASTAS NA ABA RELATÓRIOS (v21.0)
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
-    let timerSomAlerta = null;
-    let timerVibracaoAlerta = null;
-    let audioCtxAlerta = null;
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
@@ -614,12 +616,16 @@
 
     function mostrarInterfaceAutenticada(mostrar) {
       const header = document.getElementById('app-main-header');
+      const bottomNav = document.getElementById('app-bottom-nav');
+
       if (mostrar) {
         header.classList.remove('hidden');
         header.classList.add('flex');
+        bottomNav.classList.remove('hidden');
       } else {
         header.classList.add('hidden');
         header.classList.remove('flex');
+        bottomNav.classList.add('hidden');
         fecharDrawerNavegacao();
       }
     }
@@ -642,9 +648,6 @@
       } else {
         document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
         document.getElementById('badge-licenca').innerText = `⏳ ${diasRestantes} dia(s)`;
-        if (diasRestantes <= 5) {
-          document.getElementById('badge-licenca').className = "bg-red-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer animate-pulse";
-        }
         return true;
       }
     }
@@ -657,11 +660,6 @@
         licencaInfo.vitalicio = true;
         localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
         alert("🎉 Licença VITALÍCIA ativada com sucesso!");
-        verificarLicencaStatus();
-      } else if (senha === "TESTE30") {
-        licencaInfo.diasDegustacao += 30;
-        localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
-        alert("⏳ Mais +30 dias de teste liberados!");
         verificarLicencaStatus();
       } else {
         msgErro.innerText = "Senha / Serial inválido!";
@@ -678,55 +676,81 @@
       }
     }
 
-    // OTIMIZAÇÃO E CORREÇÃO DO LEITOR DE CÓDIGO DE BARRAS (v19.2)
+    function abrirModalAlterarSenha() {
+      document.getElementById('input-nova-senha').value = '';
+      document.getElementById('modal-alterar-senha').classList.remove('hidden');
+    }
+
+    function fecharModalAlterarSenha() {
+      document.getElementById('modal-alterar-senha').classList.add('hidden');
+    }
+
+    function salvarNovaSenhaUsuario() {
+      const novaSenha = document.getElementById('input-nova-senha').value.trim();
+      const user = auth.currentUser;
+
+      if (!novaSenha || novaSenha.length < 6) {
+        alert("A senha deve conter no mínimo 6 caracteres!");
+        return;
+      }
+
+      if (user) {
+        user.updatePassword(novaSenha).then(() => {
+          fecharModalAlterarSenha();
+          alert("✅ Senha alterada com sucesso!");
+        }).catch((err) => {
+          alert("Erro ao alterar senha. Se necessário, faça login novamente e tente de novo.\n\nDetalhes: " + err.message);
+        });
+      }
+    }
+
     async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
-      document.getElementById('scanner-status').innerText = "Iniciando câmera traseira...";
+      document.getElementById('scanner-status').innerText = "Solicitando permissão da câmera...";
+      document.getElementById('scanner-controls-fallback').classList.add('hidden');
 
       await fecharScannerSilent();
 
       setTimeout(() => {
         try {
-          // Configurações avançadas para foco rápido e leitura de códigos pequenos
-          const configScanner = {
-            fps: 30, // Captura fluida para códigos pequenos
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-              // Caixa retangular ideal para códigos de barras pequenos (EAN-13 / EAN-8)
-              let width = Math.floor(viewfinderWidth * 0.85);
-              let height = Math.floor(viewfinderHeight * 0.45);
-              return { width: width < 220 ? 220 : width, height: height < 120 ? 120 : height };
-            },
-            aspectRatio: 1.0,
-            showTorchButtonIfSupported: true, // Habilita botão de lanterna se suportado
-            videoConstraints: {
-              facingMode: { exact: "environment" }, // Força câmera traseira principal
-              width: { min: 640, ideal: 1280, max: 1920 },
-              height: { min: 480, ideal: 720, max: 1080 },
-              focusMode: "continuous"
-            }
-          };
+          const html5QrCode = new Html5Qrcode("reader");
+          html5QrcodeScanner = html5QrCode;
 
-          html5QrcodeScanner = new Html5QrcodeScanner("reader", configScanner, false);
-          html5QrcodeScanner.render(onScanSuccess, onScanError);
-          document.getElementById('scanner-status').innerText = "Aproxime o código de barras da caixa";
+          const config = { fps: 20, qrbox: { width: 250, height: 140 } };
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => { onScanSuccess(decodedText); },
+            (errorMessage) => {}
+          ).then(() => {
+            document.getElementById('scanner-status').innerText = "Aproxime o código de barras da câmera";
+          }).catch((err) => {
+            document.getElementById('scanner-status').innerText = "Clique abaixo para habilitar a câmera manualmente";
+            document.getElementById('scanner-controls-fallback').classList.remove('hidden');
+          });
         } catch(e) {
-          console.warn("Fallback para câmera traseira padrão", e);
-          try {
-            // Tenta inicialização genérica se a câmera exata falhar
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-              fps: 20,
-              qrbox: { width: 250, height: 140 },
-              showTorchButtonIfSupported: true
-            }, false);
-            html5QrcodeScanner.render(onScanSuccess, onScanError);
-            document.getElementById('scanner-status').innerText = "Aproxime o código da câmera";
-          } catch(errFinal) {
-            console.error("Erro fatal ao abrir câmera", errFinal);
-            document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique a permissão do navegador.";
-          }
+          document.getElementById('scanner-status').innerText = "Erro na câmera. Verifique a permissão do navegador.";
+          document.getElementById('scanner-controls-fallback').classList.remove('hidden');
         }
-      }, 350);
+      }, 300);
+    }
+
+    function iniciarCameraHtml5Manual() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.start(
+          { facingMode: "user" },
+          { fps: 15, qrbox: { width: 220, height: 120 } },
+          (decodedText) => { onScanSuccess(decodedText); },
+          (errorMessage) => {}
+        ).then(() => {
+          document.getElementById('scanner-status').innerText = "Câmera iniciada com sucesso!";
+          document.getElementById('scanner-controls-fallback').classList.add('hidden');
+        }).catch(err => {
+          alert("Não foi possível acessar a câmera. Certifique-se de autorizar o acesso no seu navegador.");
+        });
+      }
     }
 
     function onScanSuccess(decodedText) {
@@ -757,11 +781,10 @@
       }
     }
 
-    function onScanError(errorMessage) {}
-
     async function fecharScannerSilent() {
       if (html5QrcodeScanner) {
         try {
+          await html5QrcodeScanner.stop();
           await html5QrcodeScanner.clear();
         } catch(e) {}
         html5QrcodeScanner = null;
@@ -774,44 +797,6 @@
       document.getElementById('modal-scanner').classList.add('hidden');
     }
 
-    function monitorarFechamentoAutomaticoMeiaNoite() {
-      setInterval(() => {
-        const agora = new Date();
-        if (agora.getHours() === 23 && agora.getMinutes() === 59) {
-          let hojeStr = agora.toLocaleDateString('pt-BR');
-          let jaFechouHoje = historicoFechamentos.some(f => f.data === hojeStr && f.automatico);
-          if (!jaFechouHoje) executarFechamentoCaixaAutomatico(hojeStr);
-        }
-      }, 40000);
-    }
-
-    function executarFechamentoCaixaAutomatico(hojeStr) {
-      const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
-      const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
-
-      const totalVendas = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-      const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-
-      const registroFechamento = {
-        id: Date.now(),
-        data: hojeStr,
-        hora: "23:59",
-        automatico: true,
-        vendasQtd: vendasHoje.length,
-        totalVendas: totalVendas,
-        gavetaEsperada: totalDinheiro - totalSangrias + totalSuprimentos
-      };
-
-      historicoFechamentos.push(registroFechamento);
-      localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
-
-      const user = auth.currentUser;
-      if (user) db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
-    }
-
-    // CONTROLE RIGOROSO DE GESTOS HORIZONTAIS PASSO-A-PASSO
     let touchStartX = 0;
     let touchStartY = 0;
     let isSwiping = false;
@@ -849,11 +834,6 @@
     
     function fecharDrawerNavegacao() { 
       document.getElementById('drawer-menu').classList.add('hidden'); 
-    }
-
-    function selecionarAbaDrawer(aba) {
-      fecharDrawerNavegacao();
-      switchTab(aba);
     }
 
     function openModalPerfil() {
@@ -1073,10 +1053,13 @@
       document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
 
       ordemAbas.forEach(a => {
-        const btn = document.getElementById('drawer-btn-' + a);
-        if (btn) {
-          if (a === aba) btn.className = "w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm";
-          else btn.className = "w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold text-gray-600 hover:bg-gray-100";
+        const btnNav = document.getElementById('bottom-btn-' + a);
+        if (btnNav) {
+          if (a === aba) {
+            btnNav.className = "flex flex-col items-center justify-center space-y-1 text-teal-700 font-bold transition scale-105 border-t-2 border-teal-700";
+          } else {
+            btnNav.className = "flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600 border-t-2 border-transparent";
+          }
         }
       });
 
@@ -1130,6 +1113,45 @@
       fecharModalSangria();
       alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado com sucesso!`);
       renderAbaVendas();
+    }
+
+    function atualizarCacheCliente() {
+      const elNome = document.getElementById('venda-cliente-nome');
+      const elZap = document.getElementById('venda-cliente-zap');
+      if (elNome) clienteAtualVenda.nome = elNome.value;
+      if (elZap) clienteAtualVenda.zap = elZap.value;
+    }
+
+    function autoPreencherZapCliente() {
+      const elNome = document.getElementById('venda-cliente-nome');
+      if (!elNome) return;
+      clienteAtualVenda.nome = elNome.value;
+
+      let cli = clientes.find(c => c.nome.toLowerCase() === elNome.value.toLowerCase());
+      if (cli && cli.telefone) {
+        clienteAtualVenda.zap = cli.telefone;
+        const elZap = document.getElementById('venda-cliente-zap');
+        if (elZap) elZap.value = cli.telefone;
+      }
+    }
+
+    function calcularTrocoEmTempoReal() {
+      const totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+      const valorRecebido = parseFloat(document.getElementById('venda-dinheiro-recebido').value || 0);
+      const boxTroco = document.getElementById('venda-troco-display');
+
+      if (!boxTroco) return;
+
+      if (valorRecebido > 0) {
+        const troco = valorRecebido - totalCarrinho;
+        if (troco >= 0) {
+          boxTroco.innerHTML = `<span class="text-green-700 font-extrabold">Troco a Devolver: R$ ${troco.toFixed(2)}</span>`;
+        } else {
+          boxTroco.innerHTML = `<span class="text-red-600 font-bold">Faltam R$ ${Math.abs(troco).toFixed(2)}</span>`;
+        }
+      } else {
+        boxTroco.innerHTML = `<span class="text-gray-500 font-medium">Digite o valor pago pelo cliente</span>`;
+      }
     }
 
     function renderAbaVendas() {
@@ -1212,9 +1234,9 @@
               <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
             </h2>
             <div class="grid grid-cols-2 gap-2">
-              <input type="text" id="venda-cliente-nome" list="lista-clientes-sugestao" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-lg text-xs bg-white">
+              <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-lg text-xs bg-white font-bold">
               <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
-              <input type="text" id="venda-cliente-zap" placeholder="WhatsApp / Telefone" class="p-2 border rounded-lg text-xs bg-white">
+              <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp / Telefone" class="p-2 border rounded-lg text-xs bg-white font-bold">
             </div>
           </div>
 
@@ -1268,13 +1290,23 @@
               <div class="space-y-2">
                 <div>
                   <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Forma de Pagamento:</label>
-                  <select id="venda-pagto" onchange="toggleOpcoesFiadoPrazo(this.value)" class="w-full p-2.5 border rounded-lg text-xs bg-white font-medium">
-                    <option value="PIX">PIX</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
-                    <option value="Cartão de Débito">Cartão de Débito</option>
-                    <option value="Fiado">Fiado / A Prazo</option>
+                  <select id="venda-pagto" onchange="toggleOpcoesPagamento(this.value)" class="w-full p-2.5 border rounded-lg text-xs bg-white font-extrabold text-teal-900">
+                    <option value="Dinheiro" selected>💵 Dinheiro (Calcular Troco)</option>
+                    <option value="PIX">⚡ PIX</option>
+                    <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                    <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                    <option value="Fiado">📋 Fiado / A Prazo</option>
                   </select>
+                </div>
+
+                <div id="box-pagto-dinheiro" class="bg-teal-50 p-2.5 rounded-lg border border-teal-200 space-y-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido em Dinheiro R$:</label>
+                    <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
+                  </div>
+                  <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
+                    <span class="text-gray-500 font-medium">Digite o valor pago pelo cliente</span>
+                  </div>
                 </div>
 
                 <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-lg border border-amber-300 space-y-1">
@@ -1320,17 +1352,19 @@
       `;
     }
 
-    function toggleOpcoesFiadoPrazo(pagto) {
-      const box = document.getElementById('box-prazo-fiado');
-      if (pagto === 'Fiado') box.classList.remove('hidden');
-      else box.classList.add('hidden');
-    }
+    function toggleOpcoesPagamento(pagto) {
+      const boxDinheiro = document.getElementById('box-pagto-dinheiro');
+      const boxFiado = document.getElementById('box-prazo-fiado');
 
-    function autoPreencherZapCliente() {
-      const nomeInput = document.getElementById('venda-cliente-nome').value;
-      let cli = clientes.find(c => c.nome.toLowerCase() === nomeInput.toLowerCase());
-      if (cli && cli.telefone) {
-        document.getElementById('venda-cliente-zap').value = cli.telefone;
+      if (pagto === 'Dinheiro') {
+        boxDinheiro.classList.remove('hidden');
+        boxFiado.classList.add('hidden');
+      } else if (pagto === 'Fiado') {
+        boxDinheiro.classList.add('hidden');
+        boxFiado.classList.remove('hidden');
+      } else {
+        boxDinheiro.classList.add('hidden');
+        boxFiado.classList.add('hidden');
       }
     }
 
@@ -1395,6 +1429,21 @@
       renderAbaVendas();
     }
 
+    function adicionarManualAoCarrinho() {
+      const nomeInput = document.getElementById('venda-nome-manual').value.trim();
+      const valorInput = parseFloat(document.getElementById('venda-valor-manual').value);
+
+      if (!nomeInput || !valorInput || valorInput <= 0) {
+        alert("Digite o nome e o valor do item avulso!");
+        return;
+      }
+
+      carrinho.push({ nome: nomeInput, preco: valorInput, qtd: 1, medida: 'un' });
+      document.getElementById('venda-nome-manual').value = '';
+      document.getElementById('venda-valor-manual').value = '';
+      renderAbaVendas();
+    }
+
     function alterarQtdCarrinho(index, delta) {
       let item = carrinho[index];
       let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
@@ -1433,45 +1482,9 @@
       renderAbaVendas();
     }
 
-    function iniciarAlertaGeral(titulo, mensagemHTML) {
-      document.getElementById('alerta-modal-titulo').innerText = titulo;
-      document.getElementById('alerta-estoque-mensagem').innerHTML = mensagemHTML;
-      document.getElementById('modal-alerta-estoque-continua').classList.remove('hidden');
-
-      if (!timerSomAlerta) {
-        timerSomAlerta = setInterval(() => {
-          try {
-            if (!audioCtxAlerta) audioCtxAlerta = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtxAlerta.createOscillator();
-            let gain = audioCtxAlerta.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(880, audioCtxAlerta.currentTime);
-            gain.gain.setValueAtTime(0.3, audioCtxAlerta.currentTime);
-            osc.connect(gain);
-            gain.connect(audioCtxAlerta.destination);
-            osc.start();
-            osc.stop(audioCtxAlerta.currentTime + 0.3);
-          } catch(e) {}
-        }, 700);
-      }
-
-      if (!timerVibracaoAlerta && navigator.vibrate) {
-        timerVibracaoAlerta = setInterval(() => { navigator.vibrate([300, 200, 300]); }, 1000);
-      }
-    }
-
-    function interromperAlertaEstoqueManual() {
-      if (timerSomAlerta) { clearInterval(timerSomAlerta); timerSomAlerta = null; }
-      if (timerVibracaoAlerta) { clearInterval(timerVibracaoAlerta); timerVibracaoAlerta = null; }
-      document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
-    }
-
     function setSubAbaEstoque(sub) {
-      if (subAbaEstoque === sub) {
-        subAbaEstoque = 'none'; 
-      } else {
-        subAbaEstoque = sub;
-      }
+      if (subAbaEstoque === sub) subAbaEstoque = 'none'; 
+      else subAbaEstoque = sub;
       renderAbaEstoque();
     }
 
@@ -1513,17 +1526,10 @@
         let lucro = venda - custo;
         let pct = (lucro / venda) * 100;
         boxMargem.innerText = `Margem de Lucro: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
-        if (pct < 15) {
-          boxMargem.className = "text-[11px] font-bold text-red-600 mt-1";
-        } else {
-          boxMargem.className = "text-[11px] font-bold text-green-700 mt-1";
-        }
-      } else {
-        boxMargem.innerText = "";
-      }
+        boxMargem.className = pct < 15 ? "text-[11px] font-bold text-red-600 mt-1" : "text-[11px] font-bold text-green-700 mt-1";
+      } else boxMargem.innerText = "";
     }
 
-    // ABA ESTOQUE - NOMES DOS BOTÕES ATUALIZADOS NA v19.2
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -1549,7 +1555,6 @@
             </button>
           </div>
 
-          <!-- BOTÕES RENOMEADOS PARA MAIOR CLAREZA E INTUIÇÃO (v19.2) -->
           <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
             <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               Produtos Cadastrados (${produtos.length})
@@ -1603,14 +1608,10 @@
       document.getElementById('modal-cadastro-produto').classList.remove('hidden');
     }
 
-    function fecharModalCadastroProduto() {
-      document.getElementById('modal-cadastro-produto').classList.add('hidden');
-    }
+    function fecharModalCadastroProduto() { document.getElementById('modal-cadastro-produto').classList.add('hidden'); }
 
     function renderSubAbaTodosProdutos() {
-      if (produtos.length === 0) {
-        return `<p class="text-xs text-gray-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
-      }
+      if (produtos.length === 0) return `<p class="text-xs text-gray-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
 
       return `
         <div class="space-y-2 max-h-72 overflow-y-auto">
@@ -1686,9 +1687,7 @@
 
       return `
         <div class="space-y-2">
-          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">
-            ⚠️ Produtos com Estoque Crítico (${minimos.length}):
-          </p>
+          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Produtos com Estoque Crítico (${minimos.length}):</p>
           <div class="space-y-2 max-h-72 overflow-y-auto">
             ${minimos.map(p => {
               let idxReal = produtos.findIndex(prod => prod.id === p.id);
@@ -1733,9 +1732,7 @@
 
       return `
         <div class="space-y-2">
-          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">
-            📅 Validades Próximas ou Vencidas (${validadesCriticas.length}):
-          </p>
+          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">📅 Validades Próximas ou Vencidas (${validadesCriticas.length}):</p>
           <div class="space-y-2 max-h-72 overflow-y-auto">
             ${validadesCriticas.map(p => {
               let idxReal = produtos.findIndex(prod => prod.id === p.id);
@@ -1797,12 +1794,10 @@
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
       const user = auth.currentUser;
-      if (user) {
-        db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
-      }
+      if (user) db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
 
       fecharModalAjusteRapido();
-      alert(`✅ Produto "${p.nome}" atualizado com sucesso no estoque!`);
+      alert(`✅ Produto "${p.nome}" atualizado!`);
       renderAbaEstoque();
     }
 
@@ -1902,20 +1897,16 @@
           prodExistente.validade = validade || '';
           prodExistente.atalho = atalho;
           prodData = prodExistente;
-        } else {
-          produtos.push(prodData);
-        }
+        } else produtos.push(prodData);
       }
 
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
       const user = auth.currentUser;
-      if (user) {
-        db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
-      }
+      if (user) db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
 
       fecharModalCadastroProduto();
-      alert("✅ Produto salvo no estoque!");
+      alert("✅ Produto salvo!");
       renderAbaEstoque();
     }
 
@@ -1964,7 +1955,6 @@
 
     function filtrarApenasDevedores() {
       listaDevedoresAberta = !listaDevedoresAberta; 
-
       const box = document.getElementById('resultado-busca-clientes');
       
       if (!listaDevedoresAberta) {
@@ -1974,16 +1964,12 @@
       }
 
       let devedores = clientes.filter(c => c.debito > 0);
-      
       if (devedores.length === 0) {
         if (box) box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
         renderAbaClientes();
         return;
       }
 
-      const inputBusca = document.getElementById('busca-cliente-input');
-      if (inputBusca) inputBusca.value = "";
-      
       renderAbaClientes();
     }
 
@@ -1992,16 +1978,13 @@
       if (!box) return;
 
       if (!termo || termo.trim().length < 1) {
-        if (!listaDevedoresAberta) {
-          box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima ou clique no botão de Devedores para ver a lista.</p>`;
-        }
+        if (!listaDevedoresAberta) box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima para pesquisar.</p>`;
         return;
       }
 
       let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
-      
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-3">Nenhum cliente localizado com "${termo}".</p>`;
+        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-3">Nenhum cliente localizado.</p>`;
         return;
       }
 
@@ -2040,7 +2023,6 @@
               <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-lg hover:bg-green-700 text-xs shadow flex items-center justify-center gap-1">
                 <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Zap
               </button>
-              
               <button onclick="abrirModalEditarCliente(${idxReal})" class="bg-teal-50 text-teal-800 border border-teal-300 font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1">
                 <i class="fa-solid fa-pen-to-square"></i> Editar / Prazo
               </button>
@@ -2095,18 +2077,15 @@
 
     function enviarLembreteCobrancaZap(index) {
       let c = clientes[index];
-      if (!c.telefone) { alert("Este cliente não possui telefone/WhatsApp cadastrado!"); return; }
+      if (!c.telefone) { alert("Este cliente não possui WhatsApp cadastrado!"); return; }
 
       let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
-
-      let texto = `Olá *${c.nome}*, tudo bem?\n\n Passando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n`;
-      texto += `💰 Valor Atual: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
+      let texto = `Olá *${c.nome}*, tudo bem?\n\nPassando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n💰 Valor Atual: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
       if (c.prazoPagamento) texto += `📅 Prazo Combinado: *${dataFormatada}*\n\n`;
-      texto += `Agradecemos a parceria e preferência! Qualquer dúvida, estamos à disposição.`;
+      texto += `Agradecemos a parceria! Qualquer dúvida, estamos à disposição.`;
 
       let numLimpo = c.telefone.replace(/\D/g, '');
-      let linkZap = `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`;
-      window.open(linkZap, '_blank');
+      window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`, '_blank');
     }
 
     function abaterDebitoCliente(index) {
@@ -2123,7 +2102,7 @@
       const user = auth.currentUser;
       if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
 
-      alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado para ${cliente.nome}!`);
+      alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado!`);
       renderAba();
     }
 
@@ -2133,6 +2112,13 @@
         localStorage.setItem('crm_clientes', JSON.stringify(clientes));
         renderAba();
       }
+    }
+
+    // ABA RELATÓRIOS REESTRUTURADA E ORGANIZADA EM PASTAS (v21.0)
+    function toggleFolderRelatorios(pasta) {
+      if (pastaRelatorioAberta === pasta) pastaRelatorioAberta = 'none';
+      else pastaRelatorioAberta = pasta;
+      renderAbaRelatorios();
     }
 
     function renderAbaRelatorios() {
@@ -2146,11 +2132,11 @@
 
       let fechamentosInvertidos = [...historicoFechamentos].reverse();
       let historicoFechamentosHTML = fechamentosInvertidos.map(f => `
-        <div class="bg-white p-3 rounded-lg border text-xs space-y-1">
+        <div class="bg-white p-3 rounded-xl border border-gray-200 text-xs space-y-1 shadow-sm">
           <div class="flex justify-between items-center font-bold text-gray-800">
             <span>📅 ${f.data} (${f.hora || '23:59'})</span>
             <span class="${f.automatico ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-800'} text-[10px] px-2 py-0.5 rounded font-bold">
-              ${f.automatico ? '⚡ Automático' : '👤 Manual (Turno)'}
+              ${f.automatico ? '⚡ Automático' : '👤 Turno'}
             </span>
           </div>
           <div class="grid grid-cols-2 gap-1 text-[11px] text-gray-600 pt-1 border-t">
@@ -2165,16 +2151,17 @@
       document.getElementById('content-relatorios').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-chart-line text-teal-600"></i> Painel de Lucros & Relatórios Profissionais
+            <i class="fa-solid fa-chart-line text-teal-600"></i> Central de Relatórios & Finanças
           </h2>
 
+          <!-- RESUMO FINANCEIRO PRINCIPAL -->
           <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border space-y-2">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
               <span class="text-xs text-gray-300">Faturamento Bruto:</span>
               <span class="font-bold text-sm text-white">R$ ${totalVendasGeral.toFixed(2)}</span>
             </div>
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-              <span class="text-xs text-gray-300">Custo dos Produtos:</span>
+              <span class="text-xs text-gray-300">Custo de Estoque:</span>
               <span class="font-bold text-sm text-red-300">R$ ${totalCustoGeral.toFixed(2)}</span>
             </div>
             <div class="flex justify-between items-center pt-1">
@@ -2183,62 +2170,109 @@
             </div>
           </div>
 
-          <div class="bg-gray-50 p-3 rounded-xl border space-y-3">
-            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
-              <i class="fa-solid fa-filter text-teal-600"></i> Selecionar Período do Relatório
-            </h3>
+          <!-- PASTAS ORGANIZADAS E COMPACTAS (v21.0) -->
+          <div class="space-y-2.5">
 
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Tipo de Filtro:</label>
-              <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-                <option value="hoje">Apenas de Hoje</option>
-                <option value="periodo">Personalizado por Período (De / Até)</option>
-                <option value="todos">Todo o Histórico</option>
-              </select>
+            <!-- PASTA 1: GERAR PDF -->
+            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <button onclick="toggleFolderRelatorios('pdf')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-file-pdf text-red-600 text-lg"></i>
+                  <div>
+                    <p class="font-bold text-xs text-gray-800">Emissão de Relatório em PDF</p>
+                    <p class="text-[10px] text-gray-500">Filtrar período e gerar documento para impressão</p>
+                  </div>
+                </div>
+                <i class="fa-solid ${pastaRelatorioAberta === 'pdf' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
+              </button>
+
+              ${pastaRelatorioAberta === 'pdf' ? `
+                <div class="p-3.5 bg-gray-50 border-t space-y-3">
+                  <div>
+                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Período Selecionado:</label>
+                    <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+                      <option value="hoje">Apenas Hoje</option>
+                      <option value="periodo">Personalizado por Período</option>
+                      <option value="todos">Todo o Histórico</option>
+                    </select>
+                  </div>
+
+                  <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
+                      <input type="date" id="pdf-data-inicio" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
+                      <input type="date" id="pdf-data-fim" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Conteúdo do PDF:</label>
+                    <div class="space-y-1 text-xs text-gray-700">
+                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-vendas" checked class="rounded text-teal-600"> Incluir Vendas e Faturamento</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-lucro" checked class="rounded text-teal-600"> Incluir Lucro Líquido</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-estoque" checked class="rounded text-teal-600"> Incluir Produtos em Estoque</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-fiado" checked class="rounded text-teal-600"> Incluir Lista de Devedores</label>
+                    </div>
+                  </div>
+
+                  <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Baixar Relatório PDF
+                  </button>
+                </div>
+              ` : ''}
             </div>
 
-            <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
-              <div>
-                <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
-                <input type="date" id="pdf-data-inicio" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
-                <input type="date" id="pdf-data-fim" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
-              </div>
+            <!-- PASTA 2: DADOS CONTÁBEIS EXCEL/CSV -->
+            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <button onclick="toggleFolderRelatorios('excel')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-file-excel text-green-600 text-lg"></i>
+                  <div>
+                    <p class="font-bold text-xs text-gray-800">Exportação Contábil (.CSV / Excel)</p>
+                    <p class="text-[10px] text-gray-500">Gerar arquivo formatado para contabilidade e planilhas</p>
+                  </div>
+                </div>
+                <i class="fa-solid ${pastaRelatorioAberta === 'excel' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
+              </button>
+
+              ${pastaRelatorioAberta === 'excel' ? `
+                <div class="p-3.5 bg-gray-50 border-t space-y-3">
+                  <p class="text-xs text-gray-600 leading-relaxed">
+                    O arquivo gerado contém o detalhamento completo de vendas, custo e tributação simplificada pronto para envio ao escritório contábil.
+                  </p>
+
+                  <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-csv"></i> Gerar Planilha Contábil (.CSV)
+                  </button>
+                </div>
+              ` : ''}
             </div>
 
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-600 mb-1">Conteúdo Incluído no PDF:</label>
-              <div class="space-y-1 text-xs text-gray-700">
-                <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-vendas" checked class="rounded text-teal-600"> Incluir Vendas e Faturamento</label>
-                <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-lucro" checked class="rounded text-teal-600"> Incluir Cálculo de Lucro Líquido</label>
-                <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-estoque" checked class="rounded text-teal-600"> Incluir Produtos em Estoque</label>
-                <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-fiado" checked class="rounded text-teal-600"> Incluir Lista de Fiados Devedores</label>
-              </div>
+            <!-- PASTA 3: HISTÓRICO DE FECHAMENTOS -->
+            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <button onclick="toggleFolderRelatorios('historico')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-vault text-amber-600 text-lg"></i>
+                  <div>
+                    <p class="font-bold text-xs text-gray-800">Histórico de Fechamentos de Caixa</p>
+                    <p class="text-[10px] text-gray-500">${historicoFechamentos.length} fechamento(s) salvo(s)</p>
+                  </div>
+                </div>
+                <i class="fa-solid ${pastaRelatorioAberta === 'historico' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
+              </button>
+
+              ${pastaRelatorioAberta === 'historico' ? `
+                <div class="p-3.5 bg-gray-50 border-t space-y-2">
+                  <div class="space-y-2 max-h-48 overflow-y-auto">
+                    ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
+                  </div>
+                </div>
+              ` : ''}
             </div>
 
-            <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-3 rounded-xl hover:bg-red-700 transition text-xs shadow-md flex justify-center items-center gap-2">
-              <i class="fa-solid fa-file-pdf text-sm"></i> Baixar Relatório em PDF
-            </button>
-          </div>
-
-          <div class="border-t pt-3 space-y-2">
-            <h3 class="font-bold text-xs text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-vault text-amber-600"></i> Histórico de Caixas Fechados (${historicoFechamentos.length})
-            </h3>
-            <div class="space-y-2 max-h-48 overflow-y-auto">
-              ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="exportarBackupCSV()" class="bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs flex justify-center items-center gap-1.5 shadow">
-              <i class="fa-solid fa-file-excel"></i> Excel (.CSV)
-            </button>
-            <button onclick="executarLimpezaTotalManual()" class="bg-red-50 text-red-700 border border-red-200 font-bold py-2.5 rounded-lg hover:bg-red-100 transition text-xs flex justify-center items-center gap-1.5 shadow">
-              <i class="fa-solid fa-trash-can"></i> Limpar Dados
-            </button>
           </div>
         </div>
       `;
@@ -2301,7 +2335,6 @@
 
         if (checkVendas) {
           const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-
           doc.setFontSize(12);
           doc.setTextColor(0);
           doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas no periodo)`, 14, y);
@@ -2357,19 +2390,25 @@
 
         doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
       } catch(err) {
-        alert("Erro ao gerar o arquivo PDF. Tente exportar em Excel (.CSV).");
+        alert("Erro ao gerar PDF.");
       }
     }
 
     function executarLimpezaTotalManual() {
-      if (confirm("⚠️ Deseja apagar o histórico de vendas e fechamentos de caixa?\n\n(Produtos e clientes cadastrados NÃO serão apagados)")) {
+      if (confirm("⚠️ ATENÇÃO: Esta ação apaga permanentemente todo o histórico de vendas, clientes e estoque do aplicativo. Deseja prosseguir?")) {
         vendas = [];
         sangriasSuprimentos = [];
         historicoFechamentos = [];
-        localStorage.setItem('crm_vendas', JSON.stringify(vendas));
-        localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
-        localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
-        alert("✅ Histórico zerado com sucesso!");
+        produtos = [];
+        clientes = [];
+
+        localStorage.removeItem('crm_vendas');
+        localStorage.removeItem('crm_sangrias');
+        localStorage.removeItem('crm_fechamentos');
+        localStorage.removeItem('crm_produtos');
+        localStorage.removeItem('crm_clientes');
+
+        alert("✅ Todos os dados foram limpos do aplicativo com sucesso!");
         renderAba();
       }
     }
@@ -2446,12 +2485,12 @@
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       
       const pagto = document.getElementById('venda-pagto').value;
-      const clienteNome = document.getElementById('venda-cliente-nome') ? document.getElementById('venda-cliente-nome').value.trim() : '';
-      const clienteZap = document.getElementById('venda-cliente-zap') ? document.getElementById('venda-cliente-zap').value.trim() : '';
+      const clienteNome = clienteAtualVenda.nome.trim();
+      const clienteZap = clienteAtualVenda.zap.trim();
       const prazoFiado = document.getElementById('venda-fiado-prazo') ? document.getElementById('venda-fiado-prazo').value : '';
 
       if (pagto === 'Fiado' && !clienteNome) {
-        alert("Digite o nome do cliente para registrar o fiado!");
+        alert("Digite o nome do cliente para registrar a venda no fiado!");
         return;
       }
 
@@ -2460,16 +2499,10 @@
 
       let totalVenda = 0;
       let itensResumo = [];
-      let produtosComEstoqueCritico = [];
 
       carrinho.forEach(item => {
         let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
-        if (prod) {
-          prod.estoque = Math.max(0, prod.estoque - item.qtd);
-          if (prod.estoque <= (prod.estMin || 3)) {
-            produtosComEstoqueCritico.push(prod);
-          }
-        }
+        if (prod) prod.estoque = Math.max(0, prod.estoque - item.qtd);
 
         let valorItemTotal = item.preco * item.qtd;
         totalVenda += valorItemTotal;
@@ -2526,15 +2559,11 @@
       };
 
       carrinho = [];
+      clienteAtualVenda = { nome: '', zap: '' };
 
       if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
       else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
       else alert("✅ Venda finalizada!");
-
-      if (produtosComEstoqueCritico.length > 0) {
-        let msg = produtosComEstoqueCritico.map(p => `<span class="block"><b>${p.nome}</b>: Restam ${p.estoque} ${p.medida || 'un'}</span>`).join('');
-        iniciarAlertaGeral("🚨 ATENÇÃO: ESTOQUE CRÍTICO!", msg);
-      }
 
       renderAba();
     }
@@ -2568,14 +2597,24 @@
       janelaImp.document.close();
     }
 
+    // FORMATO DE EXPORTAÇÃO CONTÁBIL PADRÃO BRASIL (.CSV COM VÍRGULAS) (v21.0)
     function exportarBackupCSV() {
-      if (vendas.length === 0) { alert("Sem histórico de vendas."); return; }
-      let csvContent = "data:text/csv;charset=utf-8,ID,Item,Valor,FormaPagamento,Cliente,Data\n";
-      vendas.forEach(v => { csvContent += `${v.id},"${v.item}",${v.valor},"${v.formaPagto}","${v.cliente || ''}","${v.data}"\n`; });
+      if (vendas.length === 0) { alert("Sem histórico de vendas para exportação contábil."); return; }
+      
+      let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
+      
+      vendas.forEach(v => {
+        let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
+        let custoVal = prod && prod.precoCusto ? prod.precoCusto.toFixed(2).replace('.', ',') : "0,00";
+        let valorBruto = parseFloat(v.valor).toFixed(2).replace('.', ',');
+
+        csvContent += `${v.id};"${v.data}";"${v.item}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoVal}\n`;
+      });
+
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Vendas_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
+      link.setAttribute("download", `Relatorio_Contabil_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2591,7 +2630,6 @@
 
     auth.onAuthStateChanged((user) => {
       verificarLicencaStatus();
-      monitorarFechamentoAutomaticoMeiaNoite();
 
       if (user) {
         mostrarInterfaceAutenticada(true);
@@ -2608,7 +2646,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 19.2 com leitor de câmera otimizado!");
+    console.log("Caixa Rápido Móvel Pro - Versão 21.0 com pastas de relatórios e exportação contábil!");
   </script>
 </body>
 </html>

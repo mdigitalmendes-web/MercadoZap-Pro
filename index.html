@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro</title>
+  <title>Caixa Rápido Móvel Pro v19.1</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,7 @@
       will-change: transform;
     }
 
-    /* CORREÇÃO DO SCROLL: Espaço extra no rodapé (padding-bottom: 120px) para rolar até o final sem cortar nada */
+    /* Espaço extra no rodapé (padding-bottom: 120px) para rolar até o final sem cortar nada */
     .slide-page {
       width: 25%;
       height: 100%;
@@ -538,7 +538,7 @@
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
         <p><b>🔒 Fechamento de Caixa:</b> Botão direto na tela principal do Caixa para o vendedor fazer a contagem da gaveta ao final do turno.</p>
         <p><b>⏰ Fechamento Automático:</b> Às 23:59 todos os dias o sistema faz o fechamento do caixa do dia automaticamente e salva em relatórios.</p>
-        <p><b>⚡ Fiados e Prazos:</b> Clique no botão vermelho de Devedores para filtrar na hora quem está devendo.</p>
+        <p><b>⚡ Fiados e Prazos:</b> Clique no botão vermelho de Devedores para abrir ou ocultar a lista de quem está devendo.</p>
       </div>
     </div>
   </div>
@@ -592,7 +592,8 @@
     let carrinho = [];
     let abaAtual = 'vendas';
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
-    let subAbaEstoque = 'todos';
+    let subAbaEstoque = 'none'; // v19.1: Inicia sem nenhuma sub-aba aberta (Tela limpa)
+    let listaDevedoresAberta = false; // v19.1: Controle do botão de alternar devedores
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let timerSomAlerta = null;
@@ -802,7 +803,6 @@
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // Trava de Trajetória: Só troca de página se for nitidamente um movimento HORIZONTAL
       if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
         let idxAtual = ordemAbas.indexOf(abaAtual);
         if (diffX < 0 && idxAtual < ordemAbas.length - 1) {
@@ -1031,7 +1031,6 @@
       }
     }
 
-    // SLIDER DE MUDANÇA DE ABA
     function switchTab(aba) {
       if (!auth.currentUser) return;
       if (!verificarLicencaStatus()) return;
@@ -1438,8 +1437,13 @@
       document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
     }
 
+    // AJUSTE DA VERSÃO 19.1: ALTERNA SUB-ABAS DE ESTOQUE OU OCULTA CASO SEJA CLICADA NOVAMENTE
     function setSubAbaEstoque(sub) {
-      subAbaEstoque = sub;
+      if (subAbaEstoque === sub) {
+        subAbaEstoque = 'none'; // Se clicar na aba já aberta, oculta tudo e limpa a tela!
+      } else {
+        subAbaEstoque = sub;
+      }
       renderAbaEstoque();
     }
 
@@ -1491,7 +1495,7 @@
       }
     }
 
-    // ABA ESTOQUE - BASE RESTAURADA DA VERSÃO 19.0
+    // ABA ESTOQUE - ATUALIZADA NA v19.1 COM SUPORTE A TELA INICIAL LIMPA
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -1499,6 +1503,12 @@
 
       let qtdMinimosAlert = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
       let qtdValidadesAlert = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente).length;
+
+      let conteudoSubAba = '';
+      if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
+      else if (subAbaEstoque === 'minimos') conteudoSubAba = renderSubAbaMinimos();
+      else if (subAbaEstoque === 'validades') conteudoSubAba = renderSubAbaValidades();
+      else conteudoSubAba = `<p class="text-xs text-gray-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima ("Todos", "Mínimos" ou "Validades") para exibir a lista desejada.</p>`;
 
       document.getElementById('content-estoque').innerHTML = `
         <div class="space-y-4">
@@ -1540,7 +1550,7 @@
           </div>
 
           <div id="subaba-estoque-conteudo">
-            ${subAbaEstoque === 'todos' ? renderSubAbaTodosProdutos() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
+            ${conteudoSubAba}
           </div>
         </div>
       `;
@@ -1900,8 +1910,8 @@
               <p class="text-xl font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
             </div>
             
-            <button onclick="filtrarApenasDevedores()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl font-extrabold shadow flex items-center gap-1.5 active:scale-95 transition">
-              <i class="fa-solid fa-users"></i> ${devedoresQtd} Devedor(es)
+            <button onclick="filtrarApenasDevedores()" class="text-xs ${listaDevedoresAberta ? 'bg-gray-700 hover:bg-gray-800' : 'bg-red-600 hover:bg-red-700'} text-white px-3 py-2 rounded-xl font-extrabold shadow flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-users"></i> ${devedoresQtd} Devedor(es) ${listaDevedoresAberta ? '▲' : '▼'}
             </button>
           </div>
 
@@ -1916,19 +1926,38 @@
           </div>
         </div>
       `;
+
+      // v19.1: Mantém o estado atual da lista caso ela já estivesse visível
+      if (listaDevedoresAberta) {
+        let devedores = clientes.filter(c => c.debito > 0);
+        renderizarListaClientesCards(devedores);
+      }
     }
 
+    // AJUSTE DA VERSÃO 19.1: BOTÃO COM EFEITO TOGGLE PARA EXIBIR E OCULTAR
     function filtrarApenasDevedores() {
-      let devedores = clientes.filter(c => c.debito > 0);
+      listaDevedoresAberta = !listaDevedoresAberta; // Inverte o estado (Abre/Fecha)
+
       const box = document.getElementById('resultado-busca-clientes');
       
-      if (devedores.length === 0) {
-        box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
+      if (!listaDevedoresAberta) {
+        if (box) box.innerHTML = '';
+        renderAbaClientes();
         return;
       }
 
-      document.getElementById('busca-cliente-input').value = "";
-      renderizarListaClientesCards(devedores);
+      let devedores = clientes.filter(c => c.debito > 0);
+      
+      if (devedores.length === 0) {
+        if (box) box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
+        renderAbaClientes();
+        return;
+      }
+
+      const inputBusca = document.getElementById('busca-cliente-input');
+      if (inputBusca) inputBusca.value = "";
+      
+      renderAbaClientes();
     }
 
     function buscarEExibirClientes(termo) {
@@ -1936,7 +1965,9 @@
       if (!box) return;
 
       if (!termo || termo.trim().length < 1) {
-        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima ou clique no botão de Devedores para ver a lista.</p>`;
+        if (!listaDevedoresAberta) {
+          box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima ou clique no botão de Devedores para ver a lista.</p>`;
+        }
         return;
       }
 
@@ -1952,6 +1983,7 @@
 
     function renderizarListaClientesCards(lista) {
       const box = document.getElementById('resultado-busca-clientes');
+      if (!box) return;
       const hojeStr = new Date().toISOString().split('T')[0];
 
       box.innerHTML = lista.map(c => {
@@ -2549,7 +2581,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 19.0 com Rolagem de Tela Totalmente Ajustada!");
+    console.log("Caixa Rápido Móvel Pro - Versão 19.1 com alternância inteligente de botões!");
   </script>
 </body>
 </html>

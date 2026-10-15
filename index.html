@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v22.0</title>
+  <title>Caixa Rápido Móvel Pro v23.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -79,7 +79,7 @@
       border-radius: 12px;
     }
 
-    /* MENSAGEM FLUTUANTE DE BOAS-VINDAS (TOAST) */
+    /* NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS (TOAST) */
     #toast-boas-vindas {
       transition: all 0.4s ease-in-out;
       transform: translateY(-100%);
@@ -95,25 +95,25 @@
 
 <div id="app-container">
 
-  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS (v22.0) -->
+  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA (v23.0) -->
   <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
       👋
     </div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p id="toast-mensagem" class="text-[11px] text-gray-300 truncate">Login realizado. Caixa pronto para operar.</p>
+      <p class="text-[11px] text-gray-300 truncate">Login realizado. Caixa pronto para operar.</p>
     </div>
   </div>
 
-  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
+  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA (v23.0) -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
       <i class="fa-solid fa-lock"></i>
     </div>
     <h2 class="text-2xl font-extrabold text-red-500">Período de Teste Expirado!</h2>
     <p class="text-xs text-gray-300 mt-2 max-w-xs leading-relaxed">
-      Sua licença de teste de 20 dias terminou. Insira o Código de Desbloqueio / Serial para continuar.
+      Sua licença de teste de 20 dias terminou. Insira o Código de Desbloqueio ou Serial para renovar.
     </p>
 
     <div class="mt-6 w-full max-w-xs space-y-3">
@@ -139,18 +139,18 @@
     
     <div class="flex items-center gap-2">
       <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
-        ⏳ 19 dias
+        ⏳ Calculando...
       </span>
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU AUXILIAR & DADOS DO USUÁRIO v22.0) -->
+  <!-- DRAWER LATERAL (MENU AUXILIAR & DADOS DO USUÁRIO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         
-        <!-- CARD DO USUÁRIO LOGADO (v22.0) -->
+        <!-- CARD DO USUÁRIO LOGADO -->
         <div class="whatsapp-green p-4 text-white">
           <div class="flex justify-between items-start mb-3">
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
@@ -265,7 +265,62 @@
 
 </div>
 
-  <!-- MODAL: ALTERAR SENHA SEGURO (COM SENHA ANTERIOR v22.0) -->
+  <!-- MODAL DE RELATÓRIOS E EXPORTAÇÕES (NOVO v23.0) -->
+  <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-file-export text-teal-600"></i> Emissão e Exportação de Relatórios
+        </h3>
+        <button onclick="fecharModalOpcoesRelatorio()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- BLOCO PDF -->
+        <div class="border p-3 rounded-xl bg-red-50/50 space-y-2">
+          <h4 class="font-extrabold text-xs text-red-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-file-pdf text-red-600"></i> Relatório Impresso em PDF
+          </h4>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-600 mb-1">Filtrar Período:</label>
+            <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+              <option value="hoje">Apenas Hoje</option>
+              <option value="periodo">Personalizado por Período</option>
+              <option value="todos">Todo o Histórico</option>
+            </select>
+          </div>
+
+          <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
+              <input type="date" id="pdf-data-inicio" class="w-full p-1 border rounded text-xs">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
+              <input type="date" id="pdf-data-fim" class="w-full p-1 border rounded text-xs">
+            </div>
+          </div>
+
+          <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Baixar Relatório PDF
+          </button>
+        </div>
+
+        <!-- BLOCO EXCEL -->
+        <div class="border p-3 rounded-xl bg-green-50/50 space-y-2">
+          <h4 class="font-extrabold text-xs text-green-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-file-excel text-green-600"></i> Planilha Contábil (.CSV / Excel)
+          </h4>
+          <p class="text-[11px] text-gray-600">Exporta todo o histórico formatado para o seu contador.</p>
+          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+            <i class="fa-solid fa-file-csv"></i> Gerar Arquivo .CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ALTERAR SENHA SEGURO (COM SENHA ANTERIOR) -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -601,7 +656,7 @@
         <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
-        <p><b>📁 Relatórios & Contabilidade:</b> Acesse pastas intuitivas na aba de relatórios para emitir PDFs e enviar arquivos formatados ao seu contador.</p>
+        <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
         <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
       </div>
     </div>
@@ -635,9 +690,7 @@
       { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
     ];
 
-    const ONTEM_MS = Date.now() - (24 * 60 * 60 * 1000);
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
-      dataInstalacao: ONTEM_MS,
       diasDegustacao: 20,
       vitalicio: false
     };
@@ -657,23 +710,22 @@
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
     let subAbaEstoque = 'none'; 
     let listaDevedoresAberta = false; 
-    let pastaRelatorioAberta = 'none'; 
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
-    let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
+    
+    let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Usuário', funcaoUsuario: 'Proprietário / Gerente' };
 
-    function exibirBoasVindasToast(nome) {
+    function exibirBoasVindasToast(nomeCompleto) {
       const toast = document.getElementById('toast-boas-vindas');
       const elNome = document.getElementById('toast-nome-usuario');
       if (toast && elNome) {
-        elNome.innerText = `👋 Bem-vindo(a), ${nome || 'Usuário'}!`;
+        let primeiroNome = (nomeCompleto || 'Usuário').trim().split(' ')[0];
+        elNome.innerText = `👋 Bem-vindo(a), ${primeiroNome}!`;
         toast.classList.add('show');
-        setTimeout(() => {
-          toast.classList.remove('show');
-        }, 3500);
+        setTimeout(() => { toast.classList.remove('show'); }, 3500);
       }
     }
 
@@ -693,6 +745,7 @@
       }
     }
 
+    /* CORREÇÃO DO CRONÔMETRO DE TESTE PERSISTENTE (v23.0) */
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -701,7 +754,11 @@
         return true;
       }
 
-      const msPassados = Date.now() - licencaInfo.dataInstalacao;
+      const user = auth.currentUser;
+      if (!user) return true;
+
+      let dataCriacao = user.metadata.creationTime ? new Date(user.metadata.creationTime).getTime() : Date.now();
+      const msPassados = Date.now() - dataCriacao;
       const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
       const diasRestantes = licencaInfo.diasDegustacao - diasUsados;
 
@@ -724,6 +781,11 @@
         localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
         alert("🎉 Licença VITALÍCIA ativada com sucesso!");
         verificarLicencaStatus();
+      } else if (senha === "MAIS30DIAS") {
+        licencaInfo.diasDegustacao += 30;
+        localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
+        alert("🎉 Licença estendida em +30 dias com sucesso!");
+        verificarLicencaStatus();
       } else {
         msgErro.innerText = "Senha / Serial inválido!";
         msgErro.classList.remove('hidden');
@@ -733,10 +795,219 @@
     function openModalLicencaStatus() {
       if (licencaInfo.vitalicio) alert("Sua licença é VITALÍCIA e ilimitada!");
       else {
-        const msPassados = Date.now() - licencaInfo.dataInstalacao;
+        const user = auth.currentUser;
+        let dataCriacao = user && user.metadata.creationTime ? new Date(user.metadata.creationTime).getTime() : Date.now();
+        const msPassados = Date.now() - dataCriacao;
         const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
-        alert(`Licença de Demonstração:\nRestam ${licencaInfo.diasDegustacao - diasUsados} dia(s) de uso.`);
+        alert(`Licença de Demonstração:\nRestam ${Math.max(0, licencaInfo.diasDegustacao - diasUsados)} dia(s) de uso.`);
       }
+    }
+
+    /* TELA DE LOGIN INICIAL PADRÃO (v23.0) */
+    function showLoginForm() {
+      mostrarInterfaceAutenticada(false);
+
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Entrar no Aplicativo</h2>
+            <p class="text-xs text-gray-500">Acesse com e-mail e senha registrados</p>
+          </div>
+
+          <form onsubmit="handleLogin(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail registrado</label>
+              <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-semibold text-gray-600">Sua Senha</label>
+                <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
+              </div>
+              <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+            
+            <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              Entrar e Abrir Caixa
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <p class="text-xs text-gray-600">Primeiro acesso no sistema?</p>
+            <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Criar Nova Conta</button>
+          </div>
+        </div>
+      `;
+    }
+
+    /* CADASTRO ORGANIZADO EM ETAPAS (v23.0) */
+    function showStep1CadastroAcesso() {
+      mostrarInterfaceAutenticada(false);
+
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Criar Nova Conta</h2>
+            <p class="text-xs text-gray-500">Passo 1 de 3: Dados de Acesso</p>
+          </div>
+
+          <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail para Acesso *</label>
+              <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Crie uma Senha (mín. 6 dígitos) *</label>
+              <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              Avançar <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para o Login</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleStep1Cadastro(e) {
+      e.preventDefault();
+      cadastroTemp.email = document.getElementById('cad-email').value;
+      cadastroTemp.pass = document.getElementById('cad-pass').value;
+      showStep2CadastroUsuario();
+    }
+
+    function showStep2CadastroUsuario() {
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-id-card"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Seus Dados Pessoais</h2>
+            <p class="text-xs text-gray-500">Passo 2 de 3: Identificação do Usuário</p>
+          </div>
+
+          <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
+              <input type="text" id="cad-nome-usuario" required placeholder="Ex: João da Silva" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Função no Negócio *</label>
+              <select id="cad-funcao-usuario" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                <option value="Proprietário / Gerente">Proprietário / Gerente</option>
+                <option value="Caixa / Operador">Caixa / Operador</option>
+                <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+              </select>
+            </div>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              Avançar <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <button onclick="showStep1CadastroAcesso()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleStep2Cadastro(e) {
+      e.preventDefault();
+      cadastroTemp.nomeUsuario = document.getElementById('cad-nome-usuario').value;
+      cadastroTemp.funcaoUsuario = document.getElementById('cad-funcao-usuario').value;
+      showStep3CadastroNegocio();
+    }
+
+    function showStep3CadastroNegocio() {
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Perfil do Negócio</h2>
+            <p class="text-xs text-gray-500">Passo 3 de 3: Dados da Empresa</p>
+          </div>
+
+          <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja / Estabelecimento *</label>
+              <input type="text" id="cad-nome-loja" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Registro</label>
+                <select id="cad-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                  <option value="PF">Pessoa Física</option>
+                  <option value="MEI">MEI</option>
+                  <option value="ME">Microempresa</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Atuação</label>
+                <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                  <option value="Produtos">Produtos</option>
+                  <option value="Servicos">Serviços</option>
+                  <option value="Ambos">Ambos</option>
+                </select>
+              </div>
+            </div>
+
+            <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              🚀 Finalizar e Entrar
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <button onclick="showStep2CadastroUsuario()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleConcluirCadastro(e) {
+      e.preventDefault();
+      cadastroTemp.nomeLoja = document.getElementById('cad-nome-loja').value;
+      cadastroTemp.tipo = document.getElementById('cad-tipo-registro').value;
+      cadastroTemp.ramo = document.getElementById('cad-ramo').value;
+
+      const errBox = document.getElementById('auth-error');
+      errBox.classList.add('hidden');
+
+      auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
+        perfilNegocio = {
+          nomeLoja: cadastroTemp.nomeLoja,
+          nomeUsuario: cadastroTemp.nomeUsuario,
+          funcaoUsuario: cadastroTemp.funcaoUsuario,
+          tipo: cadastroTemp.tipo,
+          ramo: cadastroTemp.ramo
+        };
+        userCredential.user.updateProfile({ displayName: cadastroTemp.nomeUsuario });
+        localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+        db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
+      }).catch(err => {
+        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
+        errBox.classList.remove('hidden');
+      });
     }
 
     function abrirModalAlterarSenha() {
@@ -963,164 +1234,6 @@
       alert("Perfil atualizado!");
     }
 
-    function showOnboardingStep1() {
-      mostrarInterfaceAutenticada(false);
-
-      document.getElementById('slider-container').style.transform = `translateX(0%)`;
-      document.getElementById('content-vendas').innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-              <i class="fa-solid fa-store"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-800">Seja Bem-Vindo!</h2>
-            <p class="text-xs text-gray-500">Configure o perfil do seu negócio para iniciar</p>
-          </div>
-
-          <form onsubmit="handleOnboardingStep1(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja ou Negócio *</label>
-              <input type="text" id="step1-nome" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
-              <input type="text" id="step1-nome-usuario" required placeholder="Ex: João da Silva" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
-                <select id="step1-tipo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                  <option value="PF">Pessoa Física (Autônomo)</option>
-                  <option value="MEI">MEI (Microempreendedor)</option>
-                  <option value="ME">Microempresa (ME)</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Perfil / Função</label>
-                <select id="step1-funcao" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                  <option value="Proprietário / Gerente">Proprietário / Gerente</option>
-                  <option value="Caixa / Operador">Caixa / Operador</option>
-                  <option value="Atendente / Vendedor">Atendente / Vendedor</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
-              <select id="step1-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                <option value="Produtos">Venda de Produtos</option>
-                <option value="Servicos">Prestação de Serviços</option>
-                <option value="Ambos">Produtos e Serviços</option>
-              </select>
-            </div>
-
-            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              Avançar para Criar Conta <i class="fa-solid fa-arrow-right ml-1"></i>
-            </button>
-          </form>
-
-          <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Já possui uma conta registrada?</p>
-            <button onclick="showLoginForm()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Fazer Login Direto</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function handleOnboardingStep1(e) {
-      e.preventDefault();
-      perfilTemp = {
-        nomeLoja: document.getElementById('step1-nome').value,
-        nomeUsuario: document.getElementById('step1-nome-usuario').value,
-        tipo: document.getElementById('step1-tipo').value,
-        funcaoUsuario: document.getElementById('step1-funcao').value,
-        ramo: document.getElementById('step1-ramo').value
-      };
-      showRegisterForm();
-    }
-
-    function showRegisterForm() {
-      mostrarInterfaceAutenticada(false);
-
-      document.getElementById('content-vendas').innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-              <i class="fa-solid fa-user-plus"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-800">Criar Sua Conta</h2>
-            <p class="text-xs text-gray-500">Registrando: <b>${perfilTemp.nomeUsuario}</b> (${perfilTemp.funcaoUsuario})</p>
-          </div>
-
-          <form onsubmit="handleRegister(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail de acesso</label>
-              <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Senha (mínimo 6 dígitos)</label>
-              <input type="password" id="reg-password" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            
-            <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
-
-            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              Concluir e Abrir Caixa
-            </button>
-          </form>
-
-          <div class="border-t pt-3 text-center">
-            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-gray-500 hover:underline">← Voltar para perfil do negócio</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function showLoginForm() {
-      mostrarInterfaceAutenticada(false);
-
-      document.getElementById('content-vendas').innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-              <i class="fa-solid fa-user-check"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-800">Entrar no Aplicativo</h2>
-            <p class="text-xs text-gray-500">Acesse com e-mail e senha registrados</p>
-          </div>
-
-          <form onsubmit="handleLogin(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail registrado</label>
-              <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label class="block text-xs font-semibold text-gray-600">Sua Senha</label>
-                <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
-              </div>
-              <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            
-            <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
-
-            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              Entrar e Abrir Caixa
-            </button>
-          </form>
-
-          <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Primeiro acesso no sistema?</p>
-            <button onclick="showOnboardingStep1()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Configurar Novo Negócio</button>
-          </div>
-        </div>
-      `;
-    }
-
-    /* RECURSO: ESQUECEU A SENHA / RECUPERAÇÃO OFICIAL (v22.0) */
     function showEsqueceuSenhaForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -1185,29 +1298,11 @@
       });
     }
 
-    function handleRegister(e) {
-      e.preventDefault();
-      const email = document.getElementById('reg-email').value;
-      const pass = document.getElementById('reg-password').value;
-      const errBox = document.getElementById('auth-error');
-
-      errBox.classList.add('hidden');
-      auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
-        perfilNegocio = { ...perfilTemp };
-        userCredential.user.updateProfile({ displayName: perfilNegocio.nomeUsuario });
-        localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
-        db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
-      }).catch(err => {
-        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
-        errBox.classList.remove('hidden');
-      });
-    }
-
     function fazerLogoutSeguro() {
       if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
         auth.signOut().then(() => {
           mostrarInterfaceAutenticada(false);
-          showOnboardingStep1();
+          showLoginForm();
         });
       }
     }
@@ -1240,7 +1335,7 @@
 
     function renderAba() {
       if (!auth.currentUser) {
-        showOnboardingStep1();
+        showLoginForm();
         return;
       }
 
@@ -2286,12 +2381,7 @@
       }
     }
 
-    function toggleFolderRelatorios(pasta) {
-      if (pastaRelatorioAberta === pasta) pastaRelatorioAberta = 'none';
-      else pastaRelatorioAberta = pasta;
-      renderAbaRelatorios();
-    }
-
+    /* TELA DE RELATÓRIOS LIMPA E ENXUTA (v23.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2301,147 +2391,65 @@
       });
       const lucroLiquido = totalVendasGeral - totalCustoGeral;
 
-      let fechamentosInvertidos = [...historicoFechamentos].reverse();
-      let historicoFechamentosHTML = fechamentosInvertidos.map(f => `
-        <div class="bg-white p-3 rounded-xl border border-gray-200 text-xs space-y-1 shadow-sm">
-          <div class="flex justify-between items-center font-bold text-gray-800">
-            <span>📅 ${f.data} (${f.hora || '23:59'})</span>
-            <span class="${f.automatico ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-800'} text-[10px] px-2 py-0.5 rounded font-bold">
-              ${f.automatico ? '⚡ Automático' : '👤 Turno'}
-            </span>
-          </div>
-          <div class="grid grid-cols-2 gap-1 text-[11px] text-gray-600 pt-1 border-t">
-            <p>Vendas: <b>R$ ${parseFloat(f.totalVendas || 0).toFixed(2)}</b> (${f.vendasQtd || 0}x)</p>
-            <p>Gaveta: <b class="text-teal-700">R$ ${parseFloat(f.gavetaEsperada || 0).toFixed(2)}</b></p>
-          </div>
-        </div>
-      `).join('');
-
-      let hojeStr = new Date().toISOString().split('T')[0];
-
       document.getElementById('content-relatorios').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-chart-line text-teal-600"></i> Central de Relatórios & Finanças
+            <i class="fa-solid fa-chart-line text-teal-600"></i> Resumo Financeiro & Balanço
           </h2>
 
-          <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border space-y-2">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-              <span class="text-xs text-gray-300">Faturamento Bruto:</span>
-              <span class="font-bold text-sm text-white">R$ ${totalVendasGeral.toFixed(2)}</span>
+          <div class="grid grid-cols-1 gap-2.5">
+            <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border border-gray-700 flex justify-between items-center">
+              <div>
+                <p class="text-[10px] text-gray-300 font-semibold uppercase">Faturamento Bruto</p>
+                <p class="text-xl font-extrabold text-white mt-0.5">R$ ${totalVendasGeral.toFixed(2)}</p>
+              </div>
+              <div class="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center text-teal-400 text-lg">
+                <i class="fa-solid fa-arrow-up-right-dots"></i>
+              </div>
             </div>
-            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-              <span class="text-xs text-gray-300">Custo de Estoque:</span>
-              <span class="font-bold text-sm text-red-300">R$ ${totalCustoGeral.toFixed(2)}</span>
+
+            <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border border-gray-700 flex justify-between items-center">
+              <div>
+                <p class="text-[10px] text-gray-300 font-semibold uppercase">Custo de Estoque</p>
+                <p class="text-xl font-extrabold text-red-300 mt-0.5">R$ ${totalCustoGeral.toFixed(2)}</p>
+              </div>
+              <div class="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center text-red-400 text-lg">
+                <i class="fa-solid fa-boxes-packing"></i>
+              </div>
             </div>
-            <div class="flex justify-between items-center pt-1">
-              <span class="text-xs text-teal-300 font-bold">LUCRO LÍQUIDO REAL:</span>
-              <span class="font-extrabold text-base text-green-400">R$ ${lucroLiquido.toFixed(2)}</span>
+
+            <div class="bg-teal-900 text-white p-4 rounded-xl shadow border border-teal-700 flex justify-between items-center">
+              <div>
+                <p class="text-[10px] text-teal-200 font-bold uppercase">Lucro Líquido Real</p>
+                <p class="text-2xl font-extrabold text-green-400 mt-0.5">R$ ${lucroLiquido.toFixed(2)}</p>
+              </div>
+              <div class="w-12 h-12 bg-teal-800 rounded-2xl flex items-center justify-center text-green-400 text-2xl shadow-inner">
+                <i class="fa-solid fa-sack-dollar"></i>
+              </div>
             </div>
           </div>
 
-          <div class="space-y-2.5">
-
-            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
-              <button onclick="toggleFolderRelatorios('pdf')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-file-pdf text-red-600 text-lg"></i>
-                  <div>
-                    <p class="font-bold text-xs text-gray-800">Emissão de Relatório em PDF</p>
-                    <p class="text-[10px] text-gray-500">Filtrar período e gerar documento para impressão</p>
-                  </div>
-                </div>
-                <i class="fa-solid ${pastaRelatorioAberta === 'pdf' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
-              </button>
-
-              ${pastaRelatorioAberta === 'pdf' ? `
-                <div class="p-3.5 bg-gray-50 border-t space-y-3">
-                  <div>
-                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Período Selecionado:</label>
-                    <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-                      <option value="hoje">Apenas Hoje</option>
-                      <option value="periodo">Personalizado por Período</option>
-                      <option value="todos">Todo o Histórico</option>
-                    </select>
-                  </div>
-
-                  <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
-                      <input type="date" id="pdf-data-inicio" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
-                    </div>
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
-                      <input type="date" id="pdf-data-fim" value="${hojeStr}" class="w-full p-1.5 border rounded text-xs">
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Conteúdo do PDF:</label>
-                    <div class="space-y-1 text-xs text-gray-700">
-                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-vendas" checked class="rounded text-teal-600"> Incluir Vendas e Faturamento</label>
-                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-lucro" checked class="rounded text-teal-600"> Incluir Lucro Líquido</label>
-                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-estoque" checked class="rounded text-teal-600"> Incluir Produtos em Estoque</label>
-                      <label class="flex items-center gap-2"><input type="checkbox" id="pdf-check-fiado" checked class="rounded text-teal-600"> Incluir Lista de Devedores</label>
-                    </div>
-                  </div>
-
-                  <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-file-pdf"></i> Baixar Relatório PDF
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-
-            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
-              <button onclick="toggleFolderRelatorios('excel')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-file-excel text-green-600 text-lg"></i>
-                  <div>
-                    <p class="font-bold text-xs text-gray-800">Exportação Contábil (.CSV / Excel)</p>
-                    <p class="text-[10px] text-gray-500">Gerar arquivo formatado para contabilidade e planilhas</p>
-                  </div>
-                </div>
-                <i class="fa-solid ${pastaRelatorioAberta === 'excel' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
-              </button>
-
-              ${pastaRelatorioAberta === 'excel' ? `
-                <div class="p-3.5 bg-gray-50 border-t space-y-3">
-                  <p class="text-xs text-gray-600 leading-relaxed">
-                    O arquivo gerado contém o detalhamento completo de vendas, custo e tributação simplificada pronto para envio ao escritório contábil.
-                  </p>
-
-                  <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-file-csv"></i> Gerar Planilha Contábil (.CSV)
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-
-            <div class="border rounded-xl bg-white shadow-sm overflow-hidden">
-              <button onclick="toggleFolderRelatorios('historico')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-gray-50 transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-vault text-amber-600 text-lg"></i>
-                  <div>
-                    <p class="font-bold text-xs text-gray-800">Histórico de Fechamentos de Caixa</p>
-                    <p class="text-[10px] text-gray-500">${historicoFechamentos.length} fechamento(s) salvo(s)</p>
-                  </div>
-                </div>
-                <i class="fa-solid ${pastaRelatorioAberta === 'historico' ? 'fa-chevron-up text-teal-600' : 'fa-chevron-down text-gray-400'}"></i>
-              </button>
-
-              ${pastaRelatorioAberta === 'historico' ? `
-                <div class="p-3.5 bg-gray-50 border-t space-y-2">
-                  <div class="space-y-2 max-h-48 overflow-y-auto">
-                    ${historicoFechamentosHTML || '<p class="text-xs text-gray-400 italic text-center py-3 border border-dashed rounded-lg">Nenhum fechamento registrado.</p>'}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-
+          <div class="pt-2">
+            <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition active:scale-95">
+              <i class="fa-solid fa-file-export text-base"></i> ⚡ Gerar Relatório ou Exportar Dados
+            </button>
           </div>
         </div>
       `;
+    }
+
+    function abrirModalOpcoesRelatorio() {
+      const hojeStr = new Date().toISOString().split('T')[0];
+      const elInicio = document.getElementById('pdf-data-inicio');
+      const elFim = document.getElementById('pdf-data-fim');
+      if (elInicio) elInicio.value = hojeStr;
+      if (elFim) elFim.value = hojeStr;
+
+      document.getElementById('modal-opcoes-relatorio').classList.remove('hidden');
+    }
+
+    function fecharModalOpcoesRelatorio() {
+      document.getElementById('modal-opcoes-relatorio').classList.add('hidden');
     }
 
     function toggleInputsDatasRelatorio(tipo) {
@@ -2456,10 +2464,6 @@
         const doc = new jsPDF();
 
         const tipoFiltro = document.getElementById('pdf-periodo-tipo').value;
-        const checkVendas = document.getElementById('pdf-check-vendas').checked;
-        const checkLucro = document.getElementById('pdf-check-lucro').checked;
-        const checkEstoque = document.getElementById('pdf-check-estoque').checked;
-        const checkFiado = document.getElementById('pdf-check-fiado').checked;
 
         let listaVendasPDF = vendas;
         let dataInicioStr = "";
@@ -2499,61 +2503,53 @@
         doc.line(14, y, 196, y);
         y += 8;
 
-        if (checkVendas) {
-          const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-          doc.setFontSize(12);
-          doc.setTextColor(0);
-          doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas no periodo)`, 14, y);
-          y += 6;
-          doc.setFontSize(10);
-          doc.text(`Total Faturado no Periodo: R$ ${totalVendas.toFixed(2)}`, 14, y);
-          y += 8;
-        }
+        const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas no periodo)`, 14, y);
+        y += 6;
+        doc.setFontSize(10);
+        doc.text(`Total Faturado no Periodo: R$ ${totalVendas.toFixed(2)}`, 14, y);
+        y += 8;
 
-        if (checkLucro) {
-          let totalVendasGeral = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-          let totalCustoGeral = 0;
-          listaVendasPDF.forEach(v => {
-            let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-            if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
-          });
+        let totalCustoGeral = 0;
+        listaVendasPDF.forEach(v => {
+          let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
+          if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
+        });
 
-          doc.setFontSize(12);
-          doc.text(`2. Demonstrativo Financeiro de Lucro`, 14, y);
-          y += 6;
-          doc.setFontSize(10);
-          doc.text(`Custo Estimado dos Produtos Vendidos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+        doc.setFontSize(12);
+        doc.text(`2. Demonstrativo Financeiro de Lucro`, 14, y);
+        y += 6;
+        doc.setFontSize(10);
+        doc.text(`Custo Estimado dos Produtos Vendidos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+        y += 5;
+        doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
+        y += 8;
+
+        doc.setFontSize(12);
+        doc.text(`3. Posicao Atual do Estoque (${produtos.length} itens)`, 14, y);
+        y += 6;
+        doc.setFontSize(9);
+        produtos.forEach(p => {
+          if (y > 270) { doc.addPage(); y = 15; }
+          doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Preco: R$ ${p.preco.toFixed(2)}`, 14, y);
           y += 5;
-          doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendasGeral - totalCustoGeral).toFixed(2)}`, 14, y);
-          y += 8;
-        }
+        });
+        y += 4;
 
-        if (checkEstoque) {
-          doc.setFontSize(12);
-          doc.text(`3. Posicao Atual do Estoque (${produtos.length} itens)`, 14, y);
-          y += 6;
-          doc.setFontSize(9);
-          produtos.forEach(p => {
-            if (y > 270) { doc.addPage(); y = 15; }
-            doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Preco: R$ ${p.preco.toFixed(2)}`, 14, y);
-            y += 5;
-          });
-          y += 4;
-        }
+        let clientesComDebito = clientes.filter(c => c.debito > 0);
+        doc.setFontSize(12);
+        doc.text(`4. Contas Fiado Devedoras (${clientesComDebito.length} clientes)`, 14, y);
+        y += 6;
+        doc.setFontSize(9);
+        clientesComDebito.forEach(c => {
+          if (y > 270) { doc.addPage(); y = 15; }
+          doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Debito: R$ ${c.debito.toFixed(2)}`, 14, y);
+          y += 5;
+        });
 
-        if (checkFiado) {
-          let clientesComDebito = clientes.filter(c => c.debito > 0);
-          doc.setFontSize(12);
-          doc.text(`4. Contas Fiado Devedoras (${clientesComDebito.length} clientes)`, 14, y);
-          y += 6;
-          doc.setFontSize(9);
-          clientesComDebito.forEach(c => {
-            if (y > 270) { doc.addPage(); y = 15; }
-            doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Debito: R$ ${c.debito.toFixed(2)}`, 14, y);
-            y += 5;
-          });
-        }
-
+        fecharModalOpcoesRelatorio();
         doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
       } catch(err) {
         alert("Erro ao gerar PDF.");
@@ -2776,6 +2772,7 @@
         csvContent += `${v.id};"${v.data}";"${v.item}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoVal}\n`;
       });
 
+      fecharModalOpcoesRelatorio();
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -2794,10 +2791,10 @@
     }
 
     auth.onAuthStateChanged((user) => {
-      verificarLicencaStatus();
-
       if (user) {
         mostrarInterfaceAutenticada(true);
+        verificarLicencaStatus();
+
         db.collection("perfis").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             perfilNegocio = doc.data();
@@ -2811,11 +2808,11 @@
         });
       } else {
         mostrarInterfaceAutenticada(false);
-        showOnboardingStep1();
+        showLoginForm();
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 22.0 carregada com sucesso!");
+    console.log("Caixa Rápido Móvel Pro - Versão 23.0 carregada com sucesso!");
   </script>
 </body>
 </html>

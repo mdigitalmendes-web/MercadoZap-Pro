@@ -172,17 +172,103 @@
     </div>
   </main>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
+  <!-- MODAL: CADASTRAR/EDITAR PRODUTO NO ESTOQUE (ISOLADO E LIMPO) -->
+  <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 id="form-estoque-titulo" class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-box-open text-teal-600"></i> Cadastrar Novo Produto
+        </h3>
+        <button onclick="fecharModalCadastroProduto()" class="text-gray-500 text-2xl font-bold p-1 hover:text-red-600">&times;</button>
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow">
+          <i class="fa-solid fa-barcode"></i> Bipar Código EAN
+        </button>
+      </div>
+
+      <input type="hidden" id="cad-prod-ean">
+      <p id="cad-prod-ean-display" class="text-[10px] text-teal-800 font-bold bg-teal-50 p-1.5 rounded border border-teal-200 hidden"></p>
+
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Nome do Produto / Serviço *</label>
+        <input type="text" id="cad-prod-nome" placeholder="Ex: Arroz 5kg" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Custo R$</label>
+          <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Venda R$ *</label>
+          <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-teal-800">
+        </div>
+      </div>
+      <p id="margem-lucro-box" class="text-[11px] font-bold text-teal-700"></p>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Qtd em Estoque</label>
+          <input type="number" id="cad-prod-qtd" placeholder="Qtd" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Unid. Medida</label>
+          <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
+            <option value="un">Unidades (un)</option>
+            <option value="kg">Quilogramas (kg)</option>
+            <option value="cx">Caixas (cx)</option>
+            <option value="L">Litros (L)</option>
+            <option value="g">Gramas (g)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+        <label class="block text-[11px] font-bold text-amber-900 mb-0.5">
+          Limite Mínimo p/ Alerta:
+        </label>
+        <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Entrada</label>
+          <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Validade (Crítica)</label>
+          <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
+        <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos do Caixa</label>
+      </div>
+
+      <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md mt-2">
+        💾 Salvar Produto
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (CORRIGIDO PARA AMBIENTES WEB) -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3">
+    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
-          <i class="fa-solid fa-barcode text-teal-600"></i> Bipar Código de Barras
+          <i class="fa-solid fa-camera text-teal-600"></i> Bipar Código de Barras
         </h3>
         <button onclick="fecharScanner()" class="text-gray-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
       </div>
       
-      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[220px]"></div>
+      <div id="scanner-status" class="text-center py-2 text-xs text-gray-600 font-bold bg-gray-100 rounded-lg">
+        Iniciando câmera...
+      </div>
+
+      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[240px] flex items-center justify-center"></div>
       
       <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
         Cancelar / Fechar Câmera
@@ -395,7 +481,7 @@
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
         <p><b>🔒 Fechamento de Caixa:</b> Botão direto na tela principal do Caixa para o vendedor fazer a contagem da gaveta ao final do turno.</p>
         <p><b>⏰ Fechamento Automático:</b> Às 23:59 todos os dias o sistema faz o fechamento do caixa do dia automaticamente e salva em relatórios.</p>
-        <p><b>⚡ Fiados e Prazos:</b> A tela fica limpa. Digite o nome do cliente para abrir suas opções, abater dívida, editar prazo ou mandar WhatsApp com 1 clique.</p>
+        <p><b>⚡ Fiados e Prazos:</b> Clique no botão vermelho de Devedores para filtrar na hora quem está devendo.</p>
       </div>
     </div>
   </div>
@@ -449,7 +535,7 @@
     let carrinho = [];
     let abaAtual = 'vendas';
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
-    let subAbaEstoque = 'gerenciar';
+    let subAbaEstoque = 'todos';
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let timerSomAlerta = null;
@@ -528,23 +614,34 @@
       }
     }
 
-    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (CORRIGIDO)
     function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
+      document.getElementById('scanner-status').innerText = "Iniciando câmera e obtendo permissão...";
 
       fecharScannerSilent().then(() => {
-        try {
-          html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 150 }, rememberLastUsedCamera: true },
-            false
-          );
+        setTimeout(() => {
+          try {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+              "reader",
+              { 
+                fps: 15, 
+                qrbox: { width: 260, height: 160 },
+                aspectRatio: 1.0,
+                showTorchButtonIfSupported: true,
+                rememberLastUsedCamera: true
+              },
+              false
+            );
 
-          html5QrcodeScanner.render(onScanSuccess, onScanError);
-        } catch(e) {
-          console.error("Erro ao iniciar câmera", e);
-        }
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+            document.getElementById('scanner-status').innerText = "Aproxime o Código de Barras da Câmera";
+          } catch(e) {
+            console.error("Erro ao iniciar câmera", e);
+            document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique se deu permissão.";
+          }
+        }, 300);
       });
     }
 
@@ -565,8 +662,11 @@
         let eanInput = document.getElementById('cad-prod-ean');
         let eanDisp = document.getElementById('cad-prod-ean-display');
         if (eanInput) eanInput.value = decodedText;
-        if (eanDisp) eanDisp.innerText = `EAN LIDO: ${decodedText}`;
-        alert(`✅ Código de barras lido: ${decodedText}`);
+        if (eanDisp) {
+          eanDisp.innerText = `EAN LIDO: ${decodedText}`;
+          eanDisp.classList.remove('hidden');
+        }
+        alert(`✅ Código de barras bipado: ${decodedText}`);
       } else if (modoScannerDestino === 'busca_estoque') {
         document.getElementById('busca-estoque-input').value = decodedText;
         buscarEExibirProdutoEstoque(decodedText);
@@ -689,7 +789,7 @@
       alert("Perfil atualizado!");
     }
 
-    // TELA 1 DO PRIMEIRO ACESSO (PERFIL DO NEGÓCIO)
+    // ONBOARDING
     function showOnboardingStep1() {
       mostrarInterfaceAutenticada(false);
 
@@ -750,7 +850,6 @@
       showRegisterForm();
     }
 
-    // TELA 2 DO REGISTRO (CRIAÇÃO DE CONTA)
     function showRegisterForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -788,7 +887,6 @@
       `;
     }
 
-    // TELA DE LOGIN PARA QUEM JÁ TEM CONTA
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -1316,6 +1414,7 @@
       }
     }
 
+    // ABA ESTOQUE REFORMULADA (LEOUT CLEAN)
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -1331,120 +1430,131 @@
               <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
             </h2>
             <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
-              <i class="fa-solid fa-sliders text-teal-600"></i> Padrões Mínimos
+              <i class="fa-solid fa-sliders text-teal-600"></i> Mínimos
             </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-1 text-[11px] font-bold">
-            <button onclick="setSubAbaEstoque('gerenciar')" class="py-2 rounded-lg text-center ${subAbaEstoque === 'gerenciar' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              ➕ Cadastrar
+          <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
+            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 rounded-xl text-center transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              📦 Todos (${produtos.length})
             </button>
-            <button onclick="setSubAbaEstoque('minimos')" class="py-2 rounded-lg text-center relative ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 rounded-xl text-center relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               ⚠️ Mínimos
               ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdMinimosAlert}</span>` : ''}
             </button>
-            <button onclick="setSubAbaEstoque('validades')" class="py-2 rounded-lg text-center relative ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 rounded-xl text-center relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
               📅 Validades
               ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdValidadesAlert}</span>` : ''}
             </button>
           </div>
 
-          <div id="subaba-estoque-conteudo">
-            ${subAbaEstoque === 'gerenciar' ? renderSubAbaGerenciar() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
-          </div>
+          <!-- BOTÃO ÚNICO E LIMPO DE NOVO CADASTRO -->
+          <button onclick="abrirModalNovoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
+          </button>
 
-          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2 border-t pt-3">
+          <!-- BUSCA RÁPIDA -->
+          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
             <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
-              <span>🔍 Buscar Produto Cadastrado no Estoque</span>
-              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded font-bold">
+              <span>🔍 Buscar Produto Cadastrado</span>
+              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2.5 py-1 rounded-lg font-bold">
                 <i class="fa-solid fa-barcode"></i> Bipar
               </button>
             </label>
-            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white">
-            
-            <div id="resultado-busca-estoque" class="hidden space-y-2 pt-1">
-            </div>
+            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
+          </div>
+
+          <div id="subaba-estoque-conteudo">
+            ${subAbaEstoque === 'todos' ? renderSubAbaTodosProdutos() : (subAbaEstoque === 'minimos' ? renderSubAbaMinimos() : renderSubAbaValidades())}
           </div>
         </div>
       `;
-
-      if (subAbaEstoque === 'gerenciar') {
-        document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
-        preencherMinimoAutomaticoPorMedida();
-      }
     }
 
-    function renderSubAbaGerenciar() {
+    function abrirModalNovoProduto() {
+      prodEditandoIndex = null;
+      document.getElementById('form-estoque-titulo').innerText = "📦 Cadastrar Novo Produto";
+      document.getElementById('cad-prod-ean').value = '';
+      document.getElementById('cad-prod-ean-display').innerText = '';
+      document.getElementById('cad-prod-ean-display').classList.add('hidden');
+      document.getElementById('cad-prod-nome').value = '';
+      document.getElementById('cad-prod-preco-custo').value = '';
+      document.getElementById('cad-prod-preco').value = '';
+      document.getElementById('cad-prod-qtd').value = '';
+      document.getElementById('cad-prod-medida').value = 'un';
+      document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
+      document.getElementById('cad-prod-validade').value = '';
+      document.getElementById('cad-prod-atalho').checked = true;
+      preencherMinimoAutomaticoPorMedida();
+      document.getElementById('modal-cadastro-produto').classList.remove('hidden');
+    }
+
+    function fecharModalCadastroProduto() {
+      document.getElementById('modal-cadastro-produto').classList.add('hidden');
+    }
+
+    function renderSubAbaTodosProdutos() {
+      if (produtos.length === 0) {
+        return `<p class="text-xs text-gray-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
+      }
+
       return `
-        <div id="form-estoque-box" class="space-y-2 bg-gray-50 p-3 rounded-xl border">
-          <div class="flex justify-between items-center">
-            <h3 id="form-estoque-titulo" class="font-bold text-xs text-gray-700">Cadastrar Novo Produto</h3>
-            <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2.5 py-1 rounded flex items-center gap-1 shadow">
-              <i class="fa-solid fa-barcode"></i> Bipar Código
-            </button>
-          </div>
-          
-          <input type="hidden" id="cad-prod-ean">
-          <p id="cad-prod-ean-display" class="text-[10px] text-teal-800 font-bold bg-teal-50 p-1 rounded border border-teal-200"></p>
+        <div class="space-y-2 max-h-72 overflow-y-auto">
+          ${produtos.map((p, index) => {
+            let ehAtalho = p.atalho !== false;
+            return `
+              <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm space-y-2 text-xs">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
+                    <p class="text-gray-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+                  </div>
+                  <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
+                    ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
+                  </span>
+                </div>
 
-          <input type="text" id="cad-prod-nome" placeholder="Nome do Produto / Serviço" class="w-full p-2 border rounded-lg text-xs bg-white">
-          
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Custo R$</label>
-              <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Venda R$</label>
-              <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-            </div>
-          </div>
-          <p id="margem-lucro-box" class="text-[11px] font-bold text-teal-700"></p>
-
-          <div class="grid grid-cols-2 gap-2">
-            <input type="number" id="cad-prod-qtd" placeholder="Qtd em Estoque" class="p-2 border rounded-lg text-xs bg-white">
-            <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="p-2 border rounded-lg text-xs bg-white">
-              <option value="un">Unidades (un)</option>
-              <option value="kg">Quilogramas (kg)</option>
-              <option value="cx">Caixas (cx)</option>
-              <option value="L">Litros (L)</option>
-              <option value="g">Gramas (g)</option>
-            </select>
-          </div>
-
-          <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-            <label class="block text-[11px] font-bold text-amber-900 mb-0.5">
-              Limite Mínimo para Alerta de Estoque:
-            </label>
-            <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Entrada</label>
-              <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Validade (Crítica)</label>
-              <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
-            <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos Rápidos do Caixa</label>
-          </div>
-
-          <div class="flex gap-2 pt-1">
-            <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow-md">
-              + Salvar Produto
-            </button>
-            <button id="btn-cancelar-edit-prod" onclick="cancelarEdicaoProduto()" class="hidden bg-gray-300 text-gray-700 font-bold px-3 py-2.5 rounded-lg text-xs">
-              Cancelar
-            </button>
-          </div>
+                <div class="flex justify-between items-center border-t pt-2 gap-1">
+                  <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
+                    <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
+                  </button>
+                  <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
+                    <i class="fa-solid fa-pen"></i> Editar
+                  </button>
+                  <button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       `;
+    }
+
+    function editarProdutoCompleto(index) {
+      let p = produtos[index];
+      prodEditandoIndex = index;
+      document.getElementById('form-estoque-titulo').innerText = `✏️ Editar Produto: ${p.nome}`;
+      document.getElementById('cad-prod-ean').value = p.ean || '';
+      
+      let eanDisp = document.getElementById('cad-prod-ean-display');
+      if (p.ean) {
+        eanDisp.innerText = `EAN: ${p.ean}`;
+        eanDisp.classList.remove('hidden');
+      } else eanDisp.classList.add('hidden');
+
+      document.getElementById('cad-prod-nome').value = p.nome;
+      document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
+      document.getElementById('cad-prod-preco').value = p.preco;
+      document.getElementById('cad-prod-qtd').value = p.estoque;
+      document.getElementById('cad-prod-medida').value = p.medida || 'un';
+      document.getElementById('cad-prod-estmin').value = p.estMin || 3;
+      document.getElementById('cad-prod-entrada').value = p.dataEntrada || '';
+      document.getElementById('cad-prod-validade').value = p.validade || '';
+      document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
+
+      document.getElementById('modal-cadastro-produto').classList.remove('hidden');
     }
 
     function renderSubAbaMinimos() {
@@ -1475,12 +1585,12 @@
                   <div>
                     <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
                     <p class="text-red-700 font-bold mt-0.5">
-                      Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-gray-500 font-normal">(Mín: ${p.estMin || 3})</span>
+                      Estoque: <b>${p.estoque} ${p.medida || 'un'}</b> <span class="text-gray-500 font-normal">(Mín: ${p.estMin || 3})</span>
                     </p>
                     <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Sugestão de Reposição: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
                   </div>
                   <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs shadow hover:bg-red-700">
-                    ⚡ Repor Agora
+                    ⚡ Repor
                   </button>
                 </div>
               `;
@@ -1583,16 +1693,15 @@
     }
 
     function buscarEExibirProdutoEstoque(termo) {
-      const box = document.getElementById('resultado-busca-estoque');
+      const box = document.getElementById('subaba-estoque-conteudo');
       if (!termo || termo.trim().length < 1) {
-        box.classList.add('hidden');
+        renderAbaEstoque();
         return;
       }
 
       let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-2">Nenhum produto encontrado com "${termo}".</p>`;
-        box.classList.remove('hidden');
+        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum produto encontrado com "${termo}".</p>`;
         return;
       }
 
@@ -1601,7 +1710,7 @@
         let ehAtalho = p.atalho !== false;
 
         return `
-          <div class="bg-white p-3 rounded-lg border border-teal-300 shadow-sm space-y-2 text-xs">
+          <div class="bg-white p-3 rounded-xl border border-teal-300 shadow-sm space-y-2 text-xs">
             <div class="flex justify-between items-start">
               <div>
                 <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
@@ -1615,9 +1724,9 @@
 
             <div class="flex justify-between items-center border-t pt-2 gap-1">
               <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
-                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Nos Atalhos'}
+                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
               </button>
-              <button onclick="abrirModalAjusteRapido(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
+              <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
                 <i class="fa-solid fa-pen"></i> Editar
               </button>
               <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
@@ -1627,21 +1736,17 @@
           </div>
         `;
       }).join('');
-
-      box.classList.remove('hidden');
     }
 
     function toggleAtalhoEstoque(index) {
       produtos[index].atalho = !(produtos[index].atalho !== false);
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
-      const buscaInput = document.getElementById('busca-estoque-input');
-      if (buscaInput && buscaInput.value) buscarEExibirProdutoEstoque(buscaInput.value);
-      else renderAba();
+      renderAbaEstoque();
     }
 
     function cadastrarOuAtualizarProduto() {
       const ean = document.getElementById('cad-prod-ean').value;
-      const nome = document.getElementById('cad-prod-nome').value;
+      const nome = document.getElementById('cad-prod-nome').value.trim();
       const precoCusto = document.getElementById('cad-prod-preco-custo').value || 0;
       const preco = document.getElementById('cad-prod-preco').value;
       const qtd = document.getElementById('cad-prod-qtd').value || 1;
@@ -1695,19 +1800,20 @@
         db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
       }
 
-      alert("Produto salvo no estoque!");
-      renderAba();
+      fecharModalCadastroProduto();
+      alert("✅ Produto salvo no estoque!");
+      renderAbaEstoque();
     }
 
     function excluirProduto(index) {
       if (confirm("Remover este produto do estoque?")) {
         produtos.splice(index, 1);
         localStorage.setItem('crm_produtos', JSON.stringify(produtos));
-        renderAba();
+        renderAbaEstoque();
       }
     }
 
-    // ABA 3: FIADOS E PRAZOS
+    // ABA FIADOS E PRAZOS (BOTÃO DEVEDORES INTERATIVO)
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
@@ -1719,14 +1825,16 @@
               <p class="text-[10px] text-red-600 font-bold uppercase">Total Geral a Receber (Fiado)</p>
               <p class="text-xl font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
             </div>
-            <span class="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold">
-              ${devedoresQtd} Devedor(es)
-            </span>
+            
+            <!-- BOTÃO CLICÁVEL DE FILTRO DE DEVEDORES -->
+            <button onclick="filtrarApenasDevedores()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl font-extrabold shadow flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-users"></i> ${devedoresQtd} Devedor(es)
+            </button>
           </div>
 
           <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
             <label class="block text-xs font-bold text-teal-900">
-              🔍 Digite o Nome do Cliente para Consultar ou Cobrar:
+              🔍 Consultar ou Cobrar Cliente:
             </label>
             <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome..." class="w-full p-3 border rounded-xl text-xs bg-white shadow-sm font-bold focus:outline-none focus:border-teal-600">
             
@@ -1737,12 +1845,25 @@
       `;
     }
 
+    function filtrarApenasDevedores() {
+      let devedores = clientes.filter(c => c.debito > 0);
+      const box = document.getElementById('resultado-busca-clientes');
+      
+      if (devedores.length === 0) {
+        box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
+        return;
+      }
+
+      document.getElementById('busca-cliente-input').value = "";
+      renderizarListaClientesCards(devedores);
+    }
+
     function buscarEExibirClientes(termo) {
       const box = document.getElementById('resultado-busca-clientes');
       if (!box) return;
 
       if (!termo || termo.trim().length < 1) {
-        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima para abrir os dados e ações do cliente.</p>`;
+        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima ou clique no botão de Devedores para ver a lista.</p>`;
         return;
       }
 
@@ -1771,7 +1892,7 @@
               <div>
                 <p class="font-extrabold text-gray-800 text-sm flex items-center gap-1">
                   ${c.nome}
-                  ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ PRAZO VENCIDO</span>' : ''}
+                  ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ VENCIDO</span>' : ''}
                 </p>
                 <p class="text-gray-500 text-[11px] mt-0.5">WhatsApp: <b>${c.telefone || 'Não informado'}</b></p>
                 ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-gray-600'}">Prazo: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
@@ -1797,13 +1918,13 @@
               <div class="flex gap-1.5 pt-1 items-center bg-gray-50 p-2 rounded-lg border">
                 <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor a Abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
                 <button onclick="abaterDebitoCliente(${idxReal})" class="bg-teal-600 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-teal-700 text-xs shadow whitespace-nowrap">
-                  Confirmar Abatimento
+                  Abater
                 </button>
               </div>
             ` : ''}
 
             <div class="flex justify-end pt-1 text-[11px]">
-              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Excluir Cadastro</button>
+              <button onclick="excluirCliente(${idxReal})" class="text-red-600 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Excluir Registro</button>
             </div>
           </div>
         `;
@@ -1844,7 +1965,6 @@
       let c = clientes[index];
       if (!c.telefone) { alert("Este cliente não possui telefone/WhatsApp cadastrado!"); return; }
 
-      const hojeStr = new Date().toISOString().split('T')[0];
       let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
 
       let texto = `Olá *${c.nome}*, tudo bem?\n\n Passando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n`;
@@ -1883,7 +2003,7 @@
       }
     }
 
-    // ABA 4: RELATÓRIOS
+    // RELATÓRIOS
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2358,7 +2478,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro v18.0 - Onboarding restaurado, login limpo e cabeçalho sem três pontinhos!");
+    console.log("Caixa Rápido Móvel Pro v19.0 - Layout do Estoque Clean, Câmera Ajustada e Botão Devedores Interativo!");
   </script>
 </body>
 </html>

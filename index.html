@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v19.1</title>
+  <title>Caixa Rápido Móvel Pro v19.2</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,6 @@
       will-change: transform;
     }
 
-    /* Espaço extra no rodapé (padding-bottom: 120px) para rolar até o final sem cortar nada */
     .slide-page {
       width: 25%;
       height: 100%;
@@ -78,6 +77,14 @@
 
     .drawer-overlay { transition: opacity 0.3s ease; }
     .drawer-content { transition: transform 0.3s ease-in-out; }
+
+    /* Ajustes para renderização da câmera */
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
@@ -311,7 +318,7 @@
     </div>
   </div>
 
-  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA -->
+  <!-- MODAL: LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA (OTIMIZADO v19.2) -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
@@ -322,10 +329,11 @@
       </div>
       
       <div id="scanner-status" class="text-center py-2 text-xs text-gray-600 font-bold bg-gray-100 rounded-lg">
-        Iniciando câmera...
+        Aproxime o código de barras
       </div>
 
-      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[240px] flex items-center justify-center"></div>
+      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[260px] flex items-center justify-center relative"></div>
+      <p class="text-[10px] text-center text-gray-500 font-medium">💡 Dica: Mantenha o código centralizado na caixa de foco.</p>
       
       <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
         Cancelar / Fechar Câmera
@@ -592,8 +600,8 @@
     let carrinho = [];
     let abaAtual = 'vendas';
     const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
-    let subAbaEstoque = 'none'; // v19.1: Inicia sem nenhuma sub-aba aberta (Tela limpa)
-    let listaDevedoresAberta = false; // v19.1: Controle do botão de alternar devedores
+    let subAbaEstoque = 'none'; 
+    let listaDevedoresAberta = false; 
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     let timerSomAlerta = null;
@@ -670,34 +678,55 @@
       }
     }
 
-    function abrirScanner(destino) {
+    // OTIMIZAÇÃO E CORREÇÃO DO LEITOR DE CÓDIGO DE BARRAS (v19.2)
+    async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
-      document.getElementById('scanner-status').innerText = "Iniciando câmera e obtendo permissão...";
+      document.getElementById('scanner-status').innerText = "Iniciando câmera traseira...";
 
-      fecharScannerSilent().then(() => {
-        setTimeout(() => {
+      await fecharScannerSilent();
+
+      setTimeout(() => {
+        try {
+          // Configurações avançadas para foco rápido e leitura de códigos pequenos
+          const configScanner = {
+            fps: 30, // Captura fluida para códigos pequenos
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+              // Caixa retangular ideal para códigos de barras pequenos (EAN-13 / EAN-8)
+              let width = Math.floor(viewfinderWidth * 0.85);
+              let height = Math.floor(viewfinderHeight * 0.45);
+              return { width: width < 220 ? 220 : width, height: height < 120 ? 120 : height };
+            },
+            aspectRatio: 1.0,
+            showTorchButtonIfSupported: true, // Habilita botão de lanterna se suportado
+            videoConstraints: {
+              facingMode: { exact: "environment" }, // Força câmera traseira principal
+              width: { min: 640, ideal: 1280, max: 1920 },
+              height: { min: 480, ideal: 720, max: 1080 },
+              focusMode: "continuous"
+            }
+          };
+
+          html5QrcodeScanner = new Html5QrcodeScanner("reader", configScanner, false);
+          html5QrcodeScanner.render(onScanSuccess, onScanError);
+          document.getElementById('scanner-status').innerText = "Aproxime o código de barras da caixa";
+        } catch(e) {
+          console.warn("Fallback para câmera traseira padrão", e);
           try {
-            html5QrcodeScanner = new Html5QrcodeScanner(
-              "reader",
-              { 
-                fps: 15, 
-                qrbox: { width: 260, height: 160 },
-                aspectRatio: 1.0,
-                showTorchButtonIfSupported: true,
-                rememberLastUsedCamera: true
-              },
-              false
-            );
-
+            // Tenta inicialização genérica se a câmera exata falhar
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+              fps: 20,
+              qrbox: { width: 250, height: 140 },
+              showTorchButtonIfSupported: true
+            }, false);
             html5QrcodeScanner.render(onScanSuccess, onScanError);
-            document.getElementById('scanner-status').innerText = "Aproxime o Código de Barras da Câmera";
-          } catch(e) {
-            console.error("Erro ao iniciar câmera", e);
-            document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique se deu permissão.";
+            document.getElementById('scanner-status').innerText = "Aproxime o código da câmera";
+          } catch(errFinal) {
+            console.error("Erro fatal ao abrir câmera", errFinal);
+            document.getElementById('scanner-status').innerText = "Erro ao acessar câmera. Verifique a permissão do navegador.";
           }
-        }, 300);
-      });
+        }
+      }, 350);
     }
 
     function onScanSuccess(decodedText) {
@@ -782,7 +811,7 @@
       if (user) db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
     }
 
-    // CONTROLE RIGOROSO E PRECISO DE GESTOS HORIZONTAIS PASSO-A-PASSO
+    // CONTROLE RIGOROSO DE GESTOS HORIZONTAIS PASSO-A-PASSO
     let touchStartX = 0;
     let touchStartY = 0;
     let isSwiping = false;
@@ -1194,7 +1223,7 @@
               <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
               </h2>
-              <button onclick="abrirScanner('caixa')" class="bg-gray-800 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow">
+              <button onclick="abrirScanner('caixa')" class="bg-gray-800 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow hover:bg-gray-700">
                 <i class="fa-solid fa-camera"></i> Bipar
               </button>
             </div>
@@ -1437,10 +1466,9 @@
       document.getElementById('modal-alerta-estoque-continua').classList.add('hidden');
     }
 
-    // AJUSTE DA VERSÃO 19.1: ALTERNA SUB-ABAS DE ESTOQUE OU OCULTA CASO SEJA CLICADA NOVAMENTE
     function setSubAbaEstoque(sub) {
       if (subAbaEstoque === sub) {
-        subAbaEstoque = 'none'; // Se clicar na aba já aberta, oculta tudo e limpa a tela!
+        subAbaEstoque = 'none'; 
       } else {
         subAbaEstoque = sub;
       }
@@ -1495,7 +1523,7 @@
       }
     }
 
-    // ABA ESTOQUE - ATUALIZADA NA v19.1 COM SUPORTE A TELA INICIAL LIMPA
+    // ABA ESTOQUE - NOMES DOS BOTÕES ATUALIZADOS NA v19.2
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -1508,7 +1536,7 @@
       if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
       else if (subAbaEstoque === 'minimos') conteudoSubAba = renderSubAbaMinimos();
       else if (subAbaEstoque === 'validades') conteudoSubAba = renderSubAbaValidades();
-      else conteudoSubAba = `<p class="text-xs text-gray-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima ("Todos", "Mínimos" ou "Validades") para exibir a lista desejada.</p>`;
+      else conteudoSubAba = `<p class="text-xs text-gray-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima para exibir a lista desejada.</p>`;
 
       document.getElementById('content-estoque').innerHTML = `
         <div class="space-y-4">
@@ -1521,17 +1549,18 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-1.5 text-[11px] font-extrabold">
-            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Todos (${produtos.length})
+          <!-- BOTÕES RENOMEADOS PARA MAIOR CLAREZA E INTUIÇÃO (v19.2) -->
+          <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
+            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              Produtos Cadastrados (${produtos.length})
             </button>
-            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Mínimos
-              ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdMinimosAlert}</span>` : ''}
+            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              Estoque Acabando
+              ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdMinimosAlert}</span>` : ''}
             </button>
-            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Validades
-              ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdValidadesAlert}</span>` : ''}
+            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              Produtos Vencendo
+              ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdValidadesAlert}</span>` : ''}
             </button>
           </div>
 
@@ -1542,7 +1571,7 @@
           <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
             <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
               <span>🔍 Buscar Produto Cadastrado</span>
-              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2.5 py-1 rounded-lg font-bold">
+              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
                 <i class="fa-solid fa-barcode"></i> Bipar
               </button>
             </label>
@@ -1927,16 +1956,14 @@
         </div>
       `;
 
-      // v19.1: Mantém o estado atual da lista caso ela já estivesse visível
       if (listaDevedoresAberta) {
         let devedores = clientes.filter(c => c.debito > 0);
         renderizarListaClientesCards(devedores);
       }
     }
 
-    // AJUSTE DA VERSÃO 19.1: BOTÃO COM EFEITO TOGGLE PARA EXIBIR E OCULTAR
     function filtrarApenasDevedores() {
-      listaDevedoresAberta = !listaDevedoresAberta; // Inverte o estado (Abre/Fecha)
+      listaDevedoresAberta = !listaDevedoresAberta; 
 
       const box = document.getElementById('resultado-busca-clientes');
       
@@ -2581,7 +2608,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 19.1 com alternância inteligente de botões!");
+    console.log("Caixa Rápido Móvel Pro - Versão 19.2 com leitor de câmera otimizado!");
   </script>
 </body>
 </html>

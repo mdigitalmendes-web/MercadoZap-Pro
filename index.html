@@ -55,7 +55,7 @@
     <p class="text-[10px] text-gray-500 mt-8">Suporte & Licenciamento Comercial</p>
   </div>
 
-  <!-- BARRA SUPERIOR (HEADER) - OCULTA ANTES DO LOGIN POR SEGURANÇA -->
+  <!-- BARRA SUPERIOR (HEADER) - EXIBIDA APENAS APÓS O LOGIN -->
   <header id="app-main-header" class="hidden whatsapp-green text-white p-3.5 justify-between items-center shadow-md z-10">
     <div class="flex items-center space-x-3">
       <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-green-200">
@@ -68,27 +68,13 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
+      <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
         ⏳ 19 dias
       </span>
-
-      <!-- DROPDOWN TRÊS PONTINHOS COMPACTO -->
-      <div class="relative">
-        <button id="btn-menu" class="text-white p-2 text-xl focus:outline-none">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
-
-        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-200 z-50">
-          <button onclick="openModalPerfil()" class="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-2 text-xs font-semibold"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</button>
-          <button onclick="openModalAjuda()" class="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-2 text-xs font-semibold"><i class="fa-solid fa-circle-question text-purple-600"></i> Como Usar & Ajuda</button>
-          <hr class="my-1 border-gray-200">
-          <button id="menu-logout" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 flex items-center gap-2 text-xs font-bold"><i class="fa-solid fa-right-from-bracket"></i> Sair da Conta</button>
-        </div>
-      </div>
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (SANDUÍCHE REORGANIZADO E CENTRALIZADO) -->
+  <!-- DRAWER LATERAL (SANDUÍCHE) - MENU ÚNICO E CENTRALIZADO DO APLICATIVO -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -101,7 +87,7 @@
           <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
         </div>
 
-        <!-- MÓDULOS PRINCIPAIS DE NAVEGAÇÃO -->
+        <!-- MÓDULOS PRINCIPAIS DE TRABALHO -->
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Módulos de Trabalho</p>
           
@@ -126,7 +112,7 @@
           </button>
         </div>
 
-        <!-- FERRAMENTAS E AÇÕES DE EXPORTAÇÃO CENTRALIZADAS -->
+        <!-- FERRAMENTAS E EXPORTAÇÕES -->
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Dados</p>
 
@@ -146,9 +132,9 @@
           </button>
         </div>
 
-        <!-- CONFIGURAÇÕES E AJUDA -->
+        <!-- CONFIGURAÇÕES E PERFIL -->
         <div class="p-3 space-y-1">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações & Suporte</p>
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações & Conta</p>
 
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-store text-teal-600 w-5 text-center"></i>
@@ -167,7 +153,7 @@
         </div>
       </div>
 
-      <!-- BOTÃO DE SAIR NO MENU HAMBÚRGUER -->
+      <!-- BOTÃO DE LOGOUT -->
       <div class="p-3 bg-gray-50 border-t">
         <button onclick="fazerLogoutSeguro()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
           <i class="fa-solid fa-right-from-bracket"></i> Sair do Aplicativo
@@ -335,11 +321,11 @@
       <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento / Loja</label>
-          <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs">
+          <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
-          <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white">
+          <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
             <option value="PF">Pessoa Física (Autônomo)</option>
             <option value="MEI">MEI (Microempreendedor)</option>
             <option value="ME">Microempresa (ME)</option>
@@ -347,7 +333,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
-          <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white">
+          <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
             <option value="Produtos">Venda de Produtos</option>
             <option value="Servicos">Prestação de Serviços</option>
             <option value="Ambos">Produtos e Serviços</option>
@@ -474,7 +460,7 @@
     let perfilTemp = { nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos' };
 
-    // CONTROLADOR DE EXIBIÇÃO DA BARRA SUPERIOR E SEGURANÇA
+    // CONTROLADOR DE EXIBIÇÃO DA BARRA SUPERIOR
     function mostrarInterfaceAutenticada(mostrar) {
       const header = document.getElementById('app-main-header');
       if (mostrar) {
@@ -491,7 +477,7 @@
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
-        document.getElementById('badge-licenca').className = "bg-green-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer";
+        document.getElementById('badge-licenca').className = "bg-green-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer";
         document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
         return true;
       }
@@ -507,7 +493,7 @@
         document.getElementById('screen-licenca-bloqueada').classList.add('hidden');
         document.getElementById('badge-licenca').innerText = `⏳ ${diasRestantes} dia(s)`;
         if (diasRestantes <= 5) {
-          document.getElementById('badge-licenca').className = "bg-red-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow cursor-pointer animate-pulse";
+          document.getElementById('badge-licenca').className = "bg-red-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer animate-pulse";
         }
         return true;
       }
@@ -651,7 +637,7 @@
     swipeArea.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; tratarSwipeDedo(); }, false);
 
     function tratarSwipeDedo() {
-      if (!auth.currentUser) return; // Bloqueia swipe antes do login
+      if (!auth.currentUser) return;
       const diferenca = touchEndX - touchStartX;
       if (Math.abs(diferenca) > 80) {
         let idxAtual = ordemAbas.indexOf(abaAtual);
@@ -673,15 +659,6 @@
       fecharDrawerNavegacao();
       switchTab(aba);
     }
-
-    const btnMenu = document.getElementById('btn-menu');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-
-    btnMenu.addEventListener('click', (e) => { 
-      e.stopPropagation(); 
-      if (auth.currentUser) dropdownMenu.classList.toggle('hidden'); 
-    });
-    document.addEventListener('click', () => { dropdownMenu.classList.add('hidden'); });
 
     function openModalPerfil() {
       document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
@@ -712,8 +689,9 @@
       alert("Perfil atualizado!");
     }
 
+    // TELA 1 DO PRIMEIRO ACESSO (PERFIL DO NEGÓCIO)
     function showOnboardingStep1() {
-      mostrarInterfaceAutenticada(false); // Oculta barra superior e menus por segurança
+      mostrarInterfaceAutenticada(false);
 
       document.getElementById('main-content').innerHTML = `
         <div class="space-y-4">
@@ -755,8 +733,8 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Já possui uma conta ativa?</p>
-            <button onclick="showLoginForm()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Fazer Login Agora</button>
+            <p class="text-xs text-gray-600">Já possui uma conta criada?</p>
+            <button onclick="showLoginForm()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Fazer Login Direto</button>
           </div>
         </div>
       `;
@@ -772,6 +750,7 @@
       showRegisterForm();
     }
 
+    // TELA 2 DO REGISTRO (CRIAÇÃO DE CONTA)
     function showRegisterForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -782,7 +761,7 @@
               <i class="fa-solid fa-user-plus"></i>
             </div>
             <h2 class="text-xl font-bold text-gray-800">Criar Sua Conta</h2>
-            <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja}</b></p>
+            <p class="text-xs text-gray-500">Configuração para: <b>${perfilTemp.nomeLoja}</b> (${perfilTemp.tipo})</p>
           </div>
 
           <form onsubmit="handleRegister(event)" class="space-y-3">
@@ -803,12 +782,13 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-gray-500 hover:underline">← Voltar para perfil</button>
+            <button onclick="showOnboardingStep1()" class="text-xs font-bold text-gray-500 hover:underline">← Voltar para perfil do negócio</button>
           </div>
         </div>
       `;
     }
 
+    // TELA DE LOGIN PARA QUEM JÁ TEM CONTA
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -819,7 +799,7 @@
               <i class="fa-solid fa-user-check"></i>
             </div>
             <h2 class="text-xl font-bold text-gray-800">Entrar no Aplicativo</h2>
-            <p class="text-xs text-gray-500">Acesse com suas credenciais de segurança</p>
+            <p class="text-xs text-gray-500">Acesse com e-mail e senha registrados</p>
           </div>
 
           <form onsubmit="handleLogin(event)" class="space-y-3">
@@ -881,7 +861,7 @@
       if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
         auth.signOut().then(() => {
           mostrarInterfaceAutenticada(false);
-          showLoginForm();
+          showOnboardingStep1();
         });
       }
     }
@@ -907,7 +887,7 @@
 
     function renderAba() {
       if (!auth.currentUser) {
-        showLoginForm();
+        showOnboardingStep1();
         return;
       }
 
@@ -2358,7 +2338,7 @@
       } else alert("Você está desconectado. Faça login para sincronizar.");
     }
 
-    // LISTENER DE AUTENTICAÇÃO E INICIALIZAÇÃO
+    // MONITORA ESTADO DE AUTENTICAÇÃO
     auth.onAuthStateChanged((user) => {
       verificarLicencaStatus();
       monitorarFechamentoAutomaticoMeiaNoite();
@@ -2374,16 +2354,11 @@
         }).catch(() => renderAba());
       } else {
         mostrarInterfaceAutenticada(false);
-        showLoginForm();
+        showOnboardingStep1();
       }
     });
 
-    document.getElementById('menu-logout').addEventListener('click', (e) => {
-      e.preventDefault();
-      fazerLogoutSeguro();
-    });
-
-    console.log("Caixa Rápido Móvel Pro v17.0 - Layout limpo, menu centralizado e controle total de login!");
+    console.log("Caixa Rápido Móvel Pro v18.0 - Onboarding restaurado, login limpo e cabeçalho sem três pontinhos!");
   </script>
 </body>
 </html>

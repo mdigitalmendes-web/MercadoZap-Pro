@@ -17,11 +17,16 @@
     body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; touch-action: pan-y; overflow-x: hidden; }
     .whatsapp-green { background-color: #075e54; }
     
-    /* TRANSIÇÃO FLUIDA ESTILO WHATSAPP (SLIDER HORIZONTA 3D) */
+    /* ENQUADRAMENTO E TRANSIÇÃO 100% PERFEITA E PAGINADA */
+    #slider-wrapper {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
     #slider-container {
       display: flex;
       width: 400%;
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform;
     }
     .slide-page {
@@ -172,20 +177,22 @@
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL COM TRANSIÇÃO DESLIZANTE SLIDER 3D -->
+  <!-- CONTEÚDO PRINCIPAL COM TRANSIÇÃO RIGOROSAMENTE PAGINADA -->
   <main id="main-swipe-area" class="flex-1 overflow-y-auto max-w-md mx-auto w-full pb-6">
-    <div id="slider-container">
-      <div id="page-vendas" class="slide-page">
-        <div id="content-vendas" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
-      </div>
-      <div id="page-estoque" class="slide-page">
-        <div id="content-estoque" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
-      </div>
-      <div id="page-clientes" class="slide-page">
-        <div id="content-clientes" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
-      </div>
-      <div id="page-relatorios" class="slide-page">
-        <div id="content-relatorios" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
+    <div id="slider-wrapper">
+      <div id="slider-container">
+        <div id="page-vendas" class="slide-page">
+          <div id="content-vendas" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
+        </div>
+        <div id="page-estoque" class="slide-page">
+          <div id="content-estoque" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
+        </div>
+        <div id="page-clientes" class="slide-page">
+          <div id="content-clientes" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
+        </div>
+        <div id="page-relatorios" class="slide-page">
+          <div id="content-relatorios" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100"></div>
+        </div>
       </div>
     </div>
   </main>
@@ -509,7 +516,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA PRINCIPAL DO APLICATIVO v19.0 -->
+  <!-- LÓGICA PRINCIPAL DO APLICATIVO -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
@@ -742,23 +749,32 @@
       if (user) db.collection("fechamentos").add({ ...registroFechamento, userId: user.uid, createdAt: new Date() });
     }
 
-    // NAVEGAÇÃO DE DESLIZAMENTO SWIPE COM ANIMAÇÃO SLIDER (TIPO WHATSAPP STATUS)
+    // NAVEGAÇÃO RIGOROSAMENTE PAGINADA PASSO A PASSO (1 POR 1)
     let touchStartX = 0;
-    let touchEndX = 0;
+    let isSwiping = false;
     const swipeArea = document.getElementById('main-swipe-area');
 
-    swipeArea.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, false);
-    swipeArea.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; tratarSwipeDedo(); }, false);
+    swipeArea.addEventListener('touchstart', (e) => { 
+      touchStartX = e.changedTouches[0].screenX; 
+      isSwiping = true;
+    }, { passive: true });
 
-    function tratarSwipeDedo() {
-      if (!auth.currentUser) return;
+    swipeArea.addEventListener('touchend', (e) => { 
+      if (!isSwiping) return;
+      isSwiping = false;
+      const touchEndX = e.changedTouches[0].screenX; 
       const diferenca = touchEndX - touchStartX;
-      if (Math.abs(diferenca) > 70) {
+
+      // Limiar exato para mudar 1 única página
+      if (Math.abs(diferenca) > 50) {
         let idxAtual = ordemAbas.indexOf(abaAtual);
-        if (diferenca < 0 && idxAtual < ordemAbas.length - 1) switchTab(ordemAbas[idxAtual + 1]);
-        else if (diferenca > 0 && idxAtual > 0) switchTab(ordemAbas[idxAtual - 1]);
+        if (diferenca < 0 && idxAtual < ordemAbas.length - 1) {
+          switchTab(ordemAbas[idxAtual + 1]);
+        } else if (diferenca > 0 && idxAtual > 0) {
+          switchTab(ordemAbas[idxAtual - 1]);
+        }
       }
-    }
+    }, { passive: true });
 
     function abrirDrawerNavegacao() { 
       if (!auth.currentUser) return;
@@ -978,7 +994,7 @@
       }
     }
 
-    // ALTERAÇÃO DE ABA COM TRANSIÇÃO DESLIZANTE
+    // SLIDER DE MUDANÇA DE ABA
     function switchTab(aba) {
       if (!auth.currentUser) return;
       if (!verificarLicencaStatus()) return;
@@ -986,7 +1002,7 @@
       abaAtual = aba;
       const idx = ordemAbas.indexOf(aba);
       
-      // ANIMAÇÃO DE SLIDER HORIZONTAL EM 3D / WHATSAPP
+      // DESLOCAMENTO PERFEITO DE 25% POR ABA
       document.getElementById('slider-container').style.transform = `translateX(-${idx * 25}%)`;
 
       const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
@@ -1439,6 +1455,7 @@
       }
     }
 
+    // ABA ESTOQUE - ALTERADOS APENAS OS NOMES DOS BOTÕES
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -1458,16 +1475,17 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
-            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 rounded-xl text-center transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              📦 Todos (${produtos.length})
+          <!-- RÓTULOS ATUALIZADOS PARA CLAREZA -->
+          <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
+            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              📋 Lista Completa (${produtos.length})
             </button>
-            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 rounded-xl text-center relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              ⚠️ Mínimos
+            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              ⚠️ Mínimo em Estoque
               ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdMinimosAlert}</span>` : ''}
             </button>
-            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 rounded-xl text-center relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              📅 Validades
+            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              📅 Produtos Vencendo
               ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-1 font-bold">${qtdValidadesAlert}</span>` : ''}
             </button>
           </div>
@@ -2496,7 +2514,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro v19.0 - Com Transição Fluida Slider 3D Estilo WhatsApp Status!");
+    console.log("Caixa Rápido Móvel Pro v19.1 - Transição Paginada Ajustada & Nomes dos Botões do Estoque Melhorados!");
   </script>
 </body>
 </html>

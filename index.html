@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v25.0</title>
+  <title>Caixa Rápido Móvel Pro v26.0</title>
   
-  <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
+  <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Gerador de PDF (jsPDF) -->
@@ -21,17 +21,19 @@
       padding: 0;
       overflow: hidden;
       font-family: system-ui, -apple-system, sans-serif;
-      background-color: #f3f4f6;
+      background-color: #f8fafc;
       -webkit-tap-highlight-color: transparent;
       transition: background-color 0.3s, color 0.3s;
     }
 
     body.dark-mode {
-      background-color: #111827;
-      color: #f3f4f6;
+      background-color: #0f172a;
+      color: #f1f5f9;
     }
 
-    .whatsapp-green { background-color: #075e54; }
+    .brand-header-bg {
+      background: linear-gradient(135deg, #075e54 0%, #0d9488 100%);
+    }
 
     #app-container {
       display: flex;
@@ -70,7 +72,7 @@
 
     @keyframes pulse-red {
       0%, 100% { transform: scale(1); border-color: #ef4444; }
-      50% { transform: scale(1.02); border-color: #dc2626; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+      50% { transform: scale(1.02); border-color: #dc2626; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
     }
     .alerta-saltando { animation: pulse-red 1.5s infinite; }
 
@@ -84,10 +86,31 @@
       border-radius: 12px;
     }
 
-    /* TOAST DE BOAS-VINDAS E BANNER DE ALERTA */
+    /* ESTILIZAÇÃO PREMIUM DA BARRA NAVEGAÇÃO INFERIOR */
+    .nav-bottom-item {
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-bottom-item.active {
+      color: #0d9488;
+      font-weight: 800;
+      transform: translateY(-2px);
+    }
+    .nav-bottom-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 25%;
+      right: 25%;
+      height: 3px;
+      background: linear-gradient(90deg, #0d9488, #14b8a6);
+      border-radius: 0 0 4px 4px;
+    }
+
+    /* TOAST DE BOAS-VINDAS E BANNERS DE ALERTA INTELELIGENTES */
     #toast-boas-vindas, #banner-alerta-estoque {
       transition: all 0.4s ease-in-out;
-      transform: translateY(-120%);
+      transform: translateY(-130%);
       opacity: 0;
     }
     #toast-boas-vindas.show, #banner-alerta-estoque.show {
@@ -100,45 +123,50 @@
 
 <div id="app-container">
 
-  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA -->
-  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
-    <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS -->
+  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
+    <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
       👋
     </div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-gray-300 truncate">Login realizado. Caixa pronto para operar.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Caixa pronto para operar.</p>
     </div>
   </div>
 
-  <!-- BANNER INTERATIVO DE ALERTA DE ESTOQUE E VALIDADE -->
-  <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-red-900 text-white p-3.5 rounded-2xl shadow-2xl border border-red-500/50 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2.5 flex-1 cursor-pointer" onclick="irParaAbaEstoqueComAlerta()">
-      <div class="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce">
+  <!-- BANNER INTELELIGENTE DE ALERTA DIRECCIONADO (ESTOQUE / VALIDADE) -->
+  <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
+    <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
+      <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
         🚨
       </div>
       <div class="min-w-0">
-        <h4 class="font-extrabold text-xs text-red-200">Atenção ao Estoque!</h4>
-        <p id="banner-alerta-texto" class="text-[11px] text-gray-200 truncate">Existem itens acabando ou vencendo.</p>
+        <h4 id="banner-alerta-titulo" class="font-extrabold text-xs text-red-300">Atenção ao Estoque!</h4>
+        <p id="banner-alerta-texto" class="text-[11px] text-slate-200 truncate leading-tight">Existem itens acabando ou vencendo.</p>
       </div>
     </div>
-    <button onclick="silenciarAlerta()" title="Silenciar Alerta" class="text-xs bg-red-800 hover:bg-red-700 text-red-200 px-2.5 py-1.5 rounded-lg font-bold border border-red-700/50">
-      🔕 Silenciar
-    </button>
+    <div class="flex flex-col gap-1">
+      <button id="banner-alerta-btn-acao" class="text-[10px] bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-1 rounded-lg font-bold shadow">
+        Ver Detalhes
+      </button>
+      <button onclick="silenciarAlerta()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg font-bold">
+        🔕 Fechar
+      </button>
+    </div>
   </div>
 
   <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
-  <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
+  <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
       <i class="fa-solid fa-lock"></i>
     </div>
     <h2 class="text-2xl font-extrabold text-red-500">Período de Teste Expirado!</h2>
-    <p class="text-xs text-gray-300 mt-2 max-w-xs leading-relaxed">
-      Sua licença de teste de 20 dias terminou. Insira a Senha ou Serial para continuar utilizando.
+    <p class="text-xs text-slate-300 mt-2 max-w-xs leading-relaxed">
+      Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizando o sistema.
     </p>
 
     <div class="mt-6 w-full max-w-xs space-y-3">
-      <input type="password" id="input-senha-serial" placeholder="Digite a Senha / Serial" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700 text-white text-center font-extrabold tracking-widest text-sm focus:outline-none focus:border-teal-500">
+      <input type="password" id="input-senha-serial" placeholder="Digite a Senha / Serial" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-center font-extrabold tracking-widest text-sm focus:outline-none focus:border-teal-500">
       <button onclick="validarAtivacaoSerial()" class="w-full bg-teal-600 hover:bg-teal-500 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg">
         🔓 Desbloquear Aplicativo
       </button>
@@ -146,15 +174,15 @@
     </div>
   </div>
 
-  <!-- BARRA SUPERIOR (HEADER FIXO) -->
-  <header id="app-main-header" class="hidden whatsapp-green text-white p-3.5 justify-between items-center shadow-md z-10 flex-shrink-0">
+  <!-- BARRA SUPERIOR (HEADER FIXO EXECUTIVE) -->
+  <header id="app-main-header" class="hidden brand-header-bg text-white p-3.5 justify-between items-center shadow-md z-10 flex-shrink-0">
     <div class="flex items-center space-x-3">
-      <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-green-200">
+      <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-teal-200 active:scale-95 transition">
         <i class="fa-solid fa-bars"></i>
       </button>
       <div>
-        <h1 id="header-app-name" class="font-bold text-base leading-tight">Caixa Rápido Móvel Pro</h1>
-        <p id="header-aba-atual" class="text-[11px] text-green-200 font-semibold">Aba: Caixa</p>
+        <h1 id="header-app-name" class="font-extrabold text-base leading-tight tracking-wide">Caixa Rápido Móvel Pro</h1>
+        <p id="header-aba-atual" class="text-[11px] text-teal-100 font-medium">Aba: Caixa</p>
       </div>
     </div>
     
@@ -165,14 +193,14 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU LIMPO E ORGANIZADO - v25.0) -->
+  <!-- DRAWER LATERAL (MENU LIMPO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         
-        <!-- CARD DO USUÁRIO LOGADO -->
-        <div class="whatsapp-green p-4 text-white relative">
+        <!-- CARD DO USUÁRIO -->
+        <div class="brand-header-bg p-4 text-white relative">
           <div class="flex justify-between items-start mb-3">
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
               <i class="fa-solid fa-user-gear"></i>
@@ -187,7 +215,7 @@
             </button>
           </div>
           
-          <p id="drawer-user-email" class="text-[11px] text-green-200 truncate mb-2">email@exemplo.com</p>
+          <p id="drawer-user-email" class="text-[11px] text-teal-100 truncate mb-2">email@exemplo.com</p>
           
           <div class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
             <i class="fa-solid fa-id-badge"></i>
@@ -196,43 +224,43 @@
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
 
-          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
             <span>Alterar Nome & Estabelecimento</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
             <span>Alterar Senha de Acesso</span>
           </button>
 
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
             <span>Sincronizar Nuvem</span>
           </button>
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
 
-          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
             <span>Histórico de Fechamento de Caixa</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); abrirSuporteWhatsApp();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); abrirSuporteWhatsApp();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-brands fa-whatsapp text-green-600 w-5 text-center"></i>
             <span>Suporte Técnico</span>
           </button>
 
-          <button onclick="toggleModoEscuro()" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="toggleModoEscuro()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-moon text-indigo-600 w-5 text-center"></i>
             <span id="label-modo-escuro">Ativar Modo Escuro</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-circle-question text-teal-600 w-5 text-center"></i>
             <span>Guia de Uso</span>
           </button>
@@ -248,7 +276,7 @@
         </div>
       </div>
 
-      <div class="p-3 bg-gray-50 border-t">
+      <div class="p-3 bg-slate-50 border-t">
         <button onclick="fazerLogoutSeguro()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
           <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
         </button>
@@ -261,97 +289,102 @@
     <div id="slider-wrapper">
       <div id="slider-container">
         <div id="page-vendas" class="slide-page">
-          <div id="content-vendas" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6"></div>
+          <div id="content-vendas" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
         <div id="page-estoque" class="slide-page">
-          <div id="content-estoque" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6"></div>
+          <div id="content-estoque" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
         <div id="page-clientes" class="slide-page">
-          <div id="content-clientes" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6"></div>
+          <div id="content-clientes" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
         <div id="page-relatorios" class="slide-page">
-          <div id="content-relatorios" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6"></div>
+          <div id="content-relatorios" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR FIXA -->
-  <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 max-w-md mx-auto">
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v26.0) -->
+  <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-4 h-16">
-      <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="flex flex-col items-center justify-center space-y-1 text-teal-700 font-bold transition">
-        <i class="fa-solid fa-cart-shopping text-lg"></i>
-        <span class="text-[10px]">Caixa</span>
+      <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
+        <i class="fa-solid fa-cash-register text-xl"></i>
+        <span class="text-[10px] tracking-wide">Caixa</span>
       </button>
 
-      <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
-        <i class="fa-solid fa-boxes-stacked text-lg"></i>
-        <span class="text-[10px]">Estoque</span>
+      <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-boxes-stacked text-xl"></i>
+        <span class="text-[10px] tracking-wide">Estoque</span>
       </button>
 
-      <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
-        <i class="fa-solid fa-users text-lg"></i>
-        <span class="text-[10px]">Fiado</span>
+      <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-users-viewfinder text-xl"></i>
+        <span class="text-[10px] tracking-wide">Fiado</span>
       </button>
 
-      <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600">
-        <i class="fa-solid fa-chart-line text-lg"></i>
-        <span class="text-[10px]">Relatórios</span>
+      <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-chart-pie text-xl"></i>
+        <span class="text-[10px] tracking-wide">Relatórios</span>
       </button>
     </div>
   </nav>
 
 </div>
 
-  <!-- MODAL DE RELATÓRIOS E EXPORTAÇÕES -->
+  <!-- MODAL DE EMISSÃO DE RELATÓRIOS (AVANÇADO - v26.0) -->
   <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
-          <i class="fa-solid fa-file-export text-teal-600"></i> Emissão e Exportação de Relatórios
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-file-export text-teal-600"></i> Central de Relatórios Comerciais
         </h3>
-        <button onclick="fecharModalOpcoesRelatorio()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharModalOpcoesRelatorio()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
 
       <div class="space-y-3">
-        <!-- BLOCO PDF -->
-        <div class="border p-3 rounded-xl bg-red-50/50 space-y-2">
-          <h4 class="font-extrabold text-xs text-red-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-file-pdf text-red-600"></i> Relatório Impresso em PDF
-          </h4>
-          <div>
-            <label class="block text-[10px] font-bold text-gray-600 mb-1">Filtrar Período:</label>
-            <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-              <option value="hoje">Apenas Hoje</option>
-              <option value="periodo">Personalizado por Período</option>
-              <option value="todos">Todo o Histórico</option>
-            </select>
-          </div>
-
-          <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-white p-2 rounded-lg border">
-            <div>
-              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Inicial:</label>
-              <input type="date" id="pdf-data-inicio" class="w-full p-1 border rounded text-xs">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Data Final:</label>
-              <input type="date" id="pdf-data-fim" class="w-full p-1 border rounded text-xs">
-            </div>
-          </div>
-
-          <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-1.5">
-            <i class="fa-solid fa-download"></i> Baixar Relatório PDF
-          </button>
+        <!-- SELEÇÃO DE TIPO DE RELATÓRIO -->
+        <div>
+          <label class="block text-xs font-extrabold text-slate-700 mb-1">1. Escolha o Tipo de Relatório:</label>
+          <select id="relatorio-tipo-conteudo" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+            <option value="completo">📊 Faturamento Completo & DRE Executivo</option>
+            <option value="lucro">💰 DRE de Margem de Lucro Real</option>
+            <option value="fiado">📋 Contas a Receber (Fiado & Prazos)</option>
+            <option value="estoque">📦 Inventário de Estoque & Validades</option>
+            <option value="caixa">💸 Movimentações de Gaveta (Sangrias)</option>
+          </select>
         </div>
 
-        <!-- BLOCO EXCEL -->
-        <div class="border p-3 rounded-xl bg-green-50/50 space-y-2">
-          <h4 class="font-extrabold text-xs text-green-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-file-excel text-green-600"></i> Planilha Contábil (.CSV / Excel)
-          </h4>
-          <p class="text-[11px] text-gray-600">Exporta todo o histórico formatado para o seu contador.</p>
-          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-extrabold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
-            <i class="fa-solid fa-file-csv"></i> Gerar Arquivo .CSV
+        <!-- SELEÇÃO DE PERÍODO -->
+        <div>
+          <label class="block text-xs font-extrabold text-slate-700 mb-1">2. Selecione o Período Desejado:</label>
+          <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+            <option value="hoje">Apenas Hoje</option>
+            <option value="ultimos_7">Últimos 7 dias</option>
+            <option value="este_mes">Este Mês Atual</option>
+            <option value="periodo">Personalizado (Data Inicial até Data Final)</option>
+            <option value="todos">Todo o Histórico Gravado</option>
+          </select>
+        </div>
+
+        <div id="box-datas-periodo" class="hidden grid grid-cols-2 gap-2 bg-teal-50 p-2.5 rounded-xl border border-teal-200">
+          <div>
+            <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Data Inicial:</label>
+            <input type="date" id="pdf-data-inicio" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Data Final:</label>
+            <input type="date" id="pdf-data-fim" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
+          </div>
+        </div>
+
+        <!-- BOTOES DE EXPORTAÇÃO -->
+        <div class="pt-2 space-y-2">
+          <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-3 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-2">
+            <i class="fa-solid fa-file-pdf text-sm"></i> Baixar Documento em PDF
+          </button>
+
+          <button onclick="exportarBackupCSV()" class="w-full bg-green-600 text-white font-extrabold py-3 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-2">
+            <i class="fa-solid fa-file-csv text-sm"></i> Exportar Arquivo Contábil (.CSV)
           </button>
         </div>
       </div>
@@ -362,10 +395,10 @@
   <div id="modal-historico-fechamentos" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
-          <i class="fa-solid fa-clock-rotate-left text-purple-600"></i> Histórico de Fechamentos de Caixa
+        <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-purple-600"></i> Histórico de Fechamentos
         </h3>
-        <button onclick="fecharHistoricoFechamentos()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharHistoricoFechamentos()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
 
       <div id="lista-historico-fechamentos-box" class="space-y-2 text-xs">
@@ -373,27 +406,27 @@
     </div>
   </div>
 
-  <!-- MODAL: ALTERAR SENHA SEGURO -->
+  <!-- MODAL ALTERAR SENHA -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
           <i class="fa-solid fa-key text-amber-600"></i> Alterar Senha de Acesso
         </h3>
-        <button onclick="fecharModalAlterarSenha()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharModalAlterarSenha()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">1. Digite sua Senha Atual *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">1. Digite sua Senha Atual *</label>
           <input type="password" id="input-senha-atual" placeholder="Senha atual" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">2. Digite a Nova Senha (mín. 6 dígitos) *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">2. Digite a Nova Senha (mín. 6 dígitos) *</label>
           <input type="password" id="input-nova-senha" minlength="6" placeholder="Nova senha" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">3. Confirme a Nova Senha *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">3. Confirme a Nova Senha *</label>
           <input type="password" id="input-confirma-nova-senha" minlength="6" placeholder="Repita a nova senha" class="w-full p-2.5 border rounded-xl text-xs bg-white font-bold">
         </div>
 
@@ -406,20 +439,20 @@
     </div>
   </div>
 
-  <!-- MODAL DE PERFIL E EDIÇÃO DO NOME DO USUÁRIO -->
+  <!-- MODAL PERFIL -->
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Estabelecimento</h3>
-        <button onclick="closeModalPerfil()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Estabelecimento</h3>
+        <button onclick="closeModalPerfil()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
           <input type="text" id="perfil-nome-usuario" required placeholder="Ex: João Silva" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Função no App</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Sua Função no App</label>
           <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
             <option value="Proprietário / Gerente">Proprietário / Gerente</option>
             <option value="Caixa / Operador">Caixa / Operador</option>
@@ -430,12 +463,12 @@
         <hr class="my-2">
 
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento / Loja *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Estabelecimento / Loja *</label>
           <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Registro</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
             <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
               <option value="PF">Pessoa Física</option>
               <option value="MEI">MEI</option>
@@ -443,7 +476,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Atuação</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
             <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
               <option value="Produtos">Produtos</option>
               <option value="Servicos">Serviços</option>
@@ -459,18 +492,18 @@
     </div>
   </div>
 
-  <!-- MODAIS DIVERSOS -->
+  <!-- MODAL CADASTRO PRODUTO -->
   <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="form-estoque-titulo" class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+        <h3 id="form-estoque-titulo" class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
           <i class="fa-solid fa-box-open text-teal-600"></i> Cadastrar Novo Produto
         </h3>
-        <button onclick="fecharModalCadastroProduto()" class="text-gray-500 text-2xl font-bold p-1 hover:text-red-600">&times;</button>
+        <button onclick="fecharModalCadastroProduto()" class="text-slate-500 text-2xl font-bold p-1 hover:text-red-600">&times;</button>
       </div>
 
       <div class="flex justify-end">
-        <button onclick="abrirScanner('cadastro')" class="text-xs bg-gray-800 text-white font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow">
+        <button onclick="abrirScanner('cadastro')" class="text-xs bg-slate-800 text-white font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow">
           <i class="fa-solid fa-barcode"></i> Bipar Código EAN
         </button>
       </div>
@@ -479,17 +512,17 @@
       <p id="cad-prod-ean-display" class="text-[10px] text-teal-800 font-bold bg-teal-50 p-1.5 rounded border border-teal-200 hidden"></p>
 
       <div>
-        <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Nome do Produto / Serviço *</label>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nome do Produto / Serviço *</label>
         <input type="text" id="cad-prod-nome" placeholder="Ex: Arroz 5kg" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
       </div>
       
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Custo R$</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo R$</label>
           <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Preço Venda R$ *</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Venda R$ *</label>
           <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-teal-800">
         </div>
       </div>
@@ -497,11 +530,11 @@
 
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Qtd em Estoque</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Qtd em Estoque</label>
           <input type="number" id="cad-prod-qtd" placeholder="Qtd" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Unid. Medida</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Unid. Medida</label>
           <select id="cad-prod-medida" onchange="preencherMinimoAutomaticoPorMedida()" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
             <option value="un">Unidades (un)</option>
             <option value="kg">Quilogramas (kg)</option>
@@ -521,18 +554,18 @@
 
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Data de Entrada</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Data de Entrada</label>
           <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Validade (Crítica)</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Validade (Crítica)</label>
           <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
         </div>
       </div>
 
       <div class="flex items-center gap-2 pt-1">
         <input type="checkbox" id="cad-prod-atalho" checked class="rounded text-teal-600 w-4 h-4">
-        <label for="cad-prod-atalho" class="text-xs font-medium text-gray-700">Mostrar nos Atalhos do Caixa</label>
+        <label for="cad-prod-atalho" class="text-xs font-medium text-slate-700">Mostrar nos Atalhos do Caixa</label>
       </div>
 
       <button onclick="cadastrarOuAtualizarProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md mt-2">
@@ -544,13 +577,13 @@
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+        <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
           <i class="fa-solid fa-camera text-teal-600"></i> Bipar Código de Barras
         </h3>
-        <button onclick="fecharScanner()" class="text-gray-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
+        <button onclick="fecharScanner()" class="text-slate-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
       </div>
       
-      <div id="scanner-status" class="text-center py-2 text-xs text-gray-600 font-bold bg-gray-100 rounded-lg">
+      <div id="scanner-status" class="text-center py-2 text-xs text-slate-600 font-bold bg-slate-100 rounded-lg">
         Iniciando câmera...
       </div>
 
@@ -562,7 +595,7 @@
         </button>
       </div>
 
-      <p class="text-[10px] text-center text-gray-500 font-medium">💡 Posicione o código no centro da caixa de foco.</p>
+      <p class="text-[10px] text-center text-slate-500 font-medium">💡 Posicione o código no centro da caixa de foco.</p>
       
       <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
         Cancelar / Fechar Câmera
@@ -573,27 +606,27 @@
   <div id="modal-editar-cliente" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
           <i class="fa-solid fa-user-pen text-teal-600"></i> Editar Cliente / Prazo
         </h3>
-        <button onclick="fecharModalEditarCliente()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharModalEditarCliente()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
 
       <input type="hidden" id="edit-cli-index">
 
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Nome do Cliente:</label>
-          <input type="text" id="edit-cli-nome" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+          <label class="block font-bold text-slate-700 mb-1">Nome do Cliente:</label>
+          <input type="text" id="edit-cli-nome" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 bg-white">
         </div>
 
         <div>
-          <label class="block font-bold text-gray-700 mb-1">WhatsApp / Telefone:</label>
-          <input type="text" id="edit-cli-telefone" placeholder="(00) 00000-0000" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+          <label class="block font-bold text-slate-700 mb-1">WhatsApp / Telefone:</label>
+          <input type="text" id="edit-cli-telefone" placeholder="(00) 00000-0000" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 bg-white">
         </div>
 
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Prazo Combinado de Pagamento:</label>
+          <label class="block font-bold text-slate-700 mb-1">Prazo Combinado de Pagamento:</label>
           <input type="date" id="edit-cli-prazo" class="w-full p-2.5 border rounded-lg font-bold text-teal-800 bg-white">
         </div>
       </div>
@@ -607,17 +640,17 @@
   <div id="modal-ajuste-rapido-prod" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="ajuste-rapido-titulo" class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+        <h3 id="ajuste-rapido-titulo" class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
           <i class="fa-solid fa-pen-to-square text-teal-600"></i> Ajuste Rápido de Produto
         </h3>
-        <button onclick="fecharModalAjusteRapido()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <button onclick="fecharModalAjusteRapido()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
 
       <input type="hidden" id="ajuste-prod-index">
 
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Quantidade em Estoque:</label>
+          <label class="block font-bold text-slate-700 mb-1">Quantidade em Estoque:</label>
           <div class="flex gap-1.5 items-center">
             <input type="number" id="ajuste-prod-qtd" class="w-full p-2.5 border rounded-lg font-extrabold text-teal-800 text-sm bg-white">
             <div class="flex gap-1">
@@ -628,9 +661,9 @@
         </div>
 
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Preço de Venda R$:</label>
+          <label class="block font-bold text-slate-700 mb-1">Preço de Venda R$:</label>
           <div class="flex gap-1.5 items-center">
-            <input type="number" step="0.01" id="ajuste-prod-preco" class="w-full p-2.5 border rounded-lg font-bold text-gray-800 bg-white">
+            <input type="number" step="0.01" id="ajuste-prod-preco" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 bg-white">
             <div class="flex gap-1">
               <button onclick="aplicarDescontoPorcentagem(10)" class="bg-amber-50 border border-amber-200 text-amber-800 font-bold px-2 py-2 rounded-lg hover:bg-amber-100 text-[10px]">-10%</button>
               <button onclick="aplicarDescontoPorcentagem(20)" class="bg-amber-50 border border-amber-200 text-amber-800 font-bold px-2 py-2 rounded-lg hover:bg-amber-100 text-[10px]">-20%</button>
@@ -639,8 +672,8 @@
         </div>
 
         <div>
-          <label class="block font-bold text-gray-700 mb-1">Data de Validade:</label>
-          <input type="date" id="ajuste-prod-validade" class="w-full p-2 border rounded-lg font-medium text-gray-800 bg-white">
+          <label class="block font-bold text-slate-700 mb-1">Data de Validade:</label>
+          <input type="date" id="ajuste-prod-validade" class="w-full p-2 border rounded-lg font-medium text-slate-800 bg-white">
         </div>
       </div>
 
@@ -653,17 +686,17 @@
   <div id="modal-sangria-suprimento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="sangria-modal-titulo" class="font-bold text-gray-800 text-sm">Registrar Movimentação</h3>
-        <button onclick="fecharModalSangria()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 id="sangria-modal-titulo" class="font-bold text-slate-800 text-sm">Registrar Movimentação</h3>
+        <button onclick="fecharModalSangria()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3">
         <input type="hidden" id="sangria-tipo" value="sangria">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Valor R$:</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Valor R$:</label>
           <input type="number" step="0.01" id="sangria-valor" placeholder="0.00" class="w-full p-2.5 border rounded-lg text-sm font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo / Descrição:</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Motivo / Descrição:</label>
           <input type="text" id="sangria-motivo" placeholder="Ex: Pagar fornecedor / Troco inicial" class="w-full p-2.5 border rounded-lg text-xs bg-white">
         </div>
         <button onclick="confirmarSangriaSuprimento()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
@@ -676,14 +709,14 @@
   <div id="modal-minimos-padrao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Limites Mínimos Padrão</h3>
-        <button onclick="fecharModalMinimosPadrao()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Limites Mínimos Padrão</h3>
+        <button onclick="fecharModalMinimosPadrao()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-2 text-xs">
-        <div><label class="block font-semibold text-gray-700">Unidades (un):</label><input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg font-bold"></div>
-        <div><label class="block font-semibold text-gray-700">Quilogramas (kg):</label><input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg font-bold"></div>
-        <div><label class="block font-semibold text-gray-700">Caixas (cx):</label><input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg font-bold"></div>
-        <div><label class="block font-semibold text-gray-700">Litros (L):</label><input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-slate-700">Unidades (un):</label><input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-slate-700">Quilogramas (kg):</label><input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-slate-700">Caixas (cx):</label><input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg font-bold"></div>
+        <div><label class="block font-semibold text-slate-700">Litros (L):</label><input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg font-bold"></div>
       </div>
       <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">Salvar Padrões</button>
     </div>
@@ -692,11 +725,11 @@
   <div id="modal-fracionado" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="fracionado-titulo" class="font-bold text-gray-800 text-sm">Informe a Quantidade</h3>
-        <button onclick="closeModalFracionado()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 id="fracionado-titulo" class="font-bold text-slate-800 text-sm">Informe a Quantidade</h3>
+        <button onclick="closeModalFracionado()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3">
-        <p id="fracionado-sub" class="text-xs text-gray-500"></p>
+        <p id="fracionado-sub" class="text-xs text-slate-500"></p>
         <input type="number" step="0.001" id="fracionado-qtd" placeholder="Ex: 0.350 ou 1.5" class="w-full p-2.5 border rounded-lg text-sm font-bold text-center">
         <button onclick="confirmarItemFracionado()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">Adicionar ao Carrinho</button>
       </div>
@@ -706,8 +739,8 @@
   <div id="modal-fechamento" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Turno / Caixa</h3>
-        <button onclick="closeModalFechamento()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-vault text-amber-600"></i> Fechamento de Turno / Caixa</h3>
+        <button onclick="closeModalFechamento()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <div id="fechamento-conteudo" class="space-y-3 text-xs"></div>
     </div>
@@ -716,10 +749,10 @@
   <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema</h3>
-        <button onclick="closeModalAjuda()" class="text-gray-500 text-xl font-bold">&times;</button>
+        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema</h3>
+        <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
-      <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
+      <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
         <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
         <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
         <p><b>👤 Alterar Perfil/Nome:</b> Clique no menu (☰) para editar seu nome completo ou função a qualquer momento.</p>
@@ -727,7 +760,7 @@
     </div>
   </div>
 
-  <!-- BIBLIOTECAS DO FIREBASE -->
+  <!-- BIBLIOTECAS FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -798,14 +831,15 @@
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
+        osc.stop(audioCtx.currentTime + 0.35);
       } catch(e) {}
     }
 
+    /* SISTEMA DE ALERTAS DINÂMICOS INTELELIGENTE (v26.0) */
     function verificarAlertasEstoqueValidadeAutomatico() {
       if (alertaSilenciadoSessao) return;
 
@@ -817,31 +851,60 @@
       let validades = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
 
       const banner = document.getElementById('banner-alerta-estoque');
+      const bannerTitulo = document.getElementById('banner-alerta-titulo');
       const bannerTexto = document.getElementById('banner-alerta-texto');
+      const bannerIcone = document.getElementById('banner-alerta-icone');
+      const clickArea = document.getElementById('banner-alerta-click-area');
+      const btnAcao = document.getElementById('banner-alerta-btn-acao');
 
       if (minimos.length > 0 || validades.length > 0) {
-        let msgs = [];
-        if (minimos.length > 0) msgs.push(`${minimos.length} no mínimo`);
-        if (validades.length > 0) msgs.push(`${validades.length} vencendo/vencido(s)`);
+        if (minimos.length > 0 && validades.length === 0) {
+          bannerTitulo.innerText = "Aviso: Estoque Baixo!";
+          bannerTexto.innerText = `${minimos.length} produto(s) atingiram o limite mínimo.`;
+          bannerIcone.innerText = "⚠️";
+          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
+          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
+          
+          clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
+          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
 
-        if (bannerTexto) bannerTexto.innerText = msgs.join(' | ');
-        if (banner) banner.classList.add('show');
+        } else if (validades.length > 0 && minimos.length === 0) {
+          bannerTitulo.innerText = "Aviso: Validade Crítica!";
+          bannerTexto.innerText = `${validades.length} produto(s) prestes a vencer ou vencidos.`;
+          bannerIcone.innerText = "📅";
+          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-amber-600 text-white";
+          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-amber-500/80 show";
+          
+          clickArea.onclick = () => irParaSubabaEstoqueEspecifica('validades');
+          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('validades');
+
+        } else {
+          bannerTitulo.innerText = "Atenção: Estoque & Validades!";
+          bannerTexto.innerText = `${minimos.length} item(ns) baixo(s) e ${validades.length} vencendo.`;
+          bannerIcone.innerText = "🚨";
+          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
+          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
+          
+          clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
+          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
+        }
+
         emitirBeepEAlertaVibracao();
       } else {
         if (banner) banner.classList.remove('show');
       }
     }
 
+    function irParaSubabaEstoqueEspecifica(subaba) {
+      silenciarAlerta();
+      setSubAbaEstoque(subaba);
+      switchTab('estoque');
+    }
+
     function silenciarAlerta() {
       alertaSilenciadoSessao = true;
       const banner = document.getElementById('banner-alerta-estoque');
       if (banner) banner.classList.remove('show');
-    }
-
-    function irParaAbaEstoqueComAlerta() {
-      silenciarAlerta();
-      setSubAbaEstoque('minimos');
-      switchTab('estoque');
     }
 
     function exibirBoasVindasToast(nomeCompleto) {
@@ -947,17 +1010,17 @@
     function abrirHistoricoFechamentos() {
       const box = document.getElementById('lista-historico-fechamentos-box');
       if (historicoFechamentos.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Nenhum fechamento registrado até o momento.</p>`;
+        box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhum fechamento registrado até o momento.</p>`;
       } else {
         box.innerHTML = historicoFechamentos.slice().reverse().map(f => `
-          <div class="bg-gray-50 border p-3 rounded-xl space-y-1">
-            <div class="flex justify-between font-bold text-gray-800">
+          <div class="bg-slate-50 border p-3 rounded-xl space-y-1">
+            <div class="flex justify-between font-bold text-slate-800">
               <span>📅 ${f.data} às ${f.hora}</span>
               <span class="${f.diferenca === 0 ? 'text-green-700' : (f.diferenca > 0 ? 'text-blue-700' : 'text-red-600')}">
                 ${f.diferenca === 0 ? 'Exato' : (f.diferenca > 0 ? '+R$ ' + f.diferenca.toFixed(2) : '-R$ ' + Math.abs(f.diferenca).toFixed(2))}
               </span>
             </div>
-            <div class="flex justify-between text-[11px] text-gray-600">
+            <div class="flex justify-between text-[11px] text-slate-600">
               <span>Vendas: R$ ${parseFloat(f.totalVendas).toFixed(2)} (${f.vendasQtd} vendas)</span>
               <span>Gaveta: R$ ${parseFloat(f.gavetaContada).toFixed(2)}</span>
             </div>
@@ -981,21 +1044,21 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
               <i class="fa-solid fa-store"></i>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Entrar no Aplicativo</h2>
-            <p class="text-xs text-gray-500">Acesse com e-mail e senha registrados</p>
+            <h2 class="text-xl font-bold text-slate-800">Entrar no Aplicativo</h2>
+            <p class="text-xs text-slate-500">Acesse com e-mail e senha registrados</p>
           </div>
 
           <form onsubmit="handleLogin(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail registrado</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail registrado</label>
               <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="block text-xs font-semibold text-gray-600">Sua Senha</label>
+                <label class="block text-xs font-semibold text-slate-600">Sua Senha</label>
                 <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
               </div>
               <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
@@ -1009,7 +1072,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <p class="text-xs text-gray-600">Primeiro acesso no sistema?</p>
+            <p class="text-xs text-slate-600">Primeiro acesso no sistema?</p>
             <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Criar Nova Conta</button>
           </div>
         </div>
@@ -1022,20 +1085,20 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
               <i class="fa-solid fa-user-plus"></i>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Criar Nova Conta</h2>
-            <p class="text-xs text-gray-500">Passo 1 de 3: Dados de Acesso</p>
+            <h2 class="text-xl font-bold text-slate-800">Criar Nova Conta</h2>
+            <p class="text-xs text-slate-500">Passo 1 de 3: Dados de Acesso</p>
           </div>
 
           <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail para Acesso *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail para Acesso *</label>
               <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Crie uma Senha (mín. 6 dígitos) *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Crie uma Senha (mín. 6 dígitos) *</label>
               <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
@@ -1045,7 +1108,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para o Login</button>
+            <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
           </div>
         </div>
       `;
@@ -1062,21 +1125,21 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
               <i class="fa-solid fa-id-card"></i>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Seus Dados Pessoais</h2>
-            <p class="text-xs text-gray-500">Passo 2 de 3: Identificação do Usuário</p>
+            <h2 class="text-xl font-bold text-slate-800">Seus Dados Pessoais</h2>
+            <p class="text-xs text-slate-500">Passo 2 de 3: Identificação do Usuário</p>
           </div>
 
           <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
               <input type="text" id="cad-nome-usuario" required placeholder="Ex: João da Silva" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Função no Negócio *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Sua Função no Negócio *</label>
               <select id="cad-funcao-usuario" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
                 <option value="Proprietário / Gerente">Proprietário / Gerente</option>
                 <option value="Caixa / Operador">Caixa / Operador</option>
@@ -1090,7 +1153,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showStep1CadastroAcesso()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar</button>
+            <button onclick="showStep1CadastroAcesso()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar</button>
           </div>
         </div>
       `;
@@ -1107,22 +1170,22 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
               <i class="fa-solid fa-store"></i>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Perfil do Negócio</h2>
-            <p class="text-xs text-gray-500">Passo 3 de 3: Dados da Empresa</p>
+            <h2 class="text-xl font-bold text-slate-800">Perfil do Negócio</h2>
+            <p class="text-xs text-slate-500">Passo 3 de 3: Dados da Empresa</p>
           </div>
 
           <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da sua Loja / Estabelecimento *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da sua Loja / Estabelecimento *</label>
               <input type="text" id="cad-nome-loja" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Registro</label>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
                 <select id="cad-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
                   <option value="PF">Pessoa Física</option>
                   <option value="MEI">MEI</option>
@@ -1131,7 +1194,7 @@
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Atuação</label>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
                 <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
                   <option value="Produtos">Produtos</option>
                   <option value="Servicos">Serviços</option>
@@ -1148,7 +1211,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showStep2CadastroUsuario()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar</button>
+            <button onclick="showStep2CadastroUsuario()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar</button>
           </div>
         </div>
       `;
@@ -1186,16 +1249,16 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
-            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
               <i class="fa-solid fa-key"></i>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Recuperar Acesso</h2>
-            <p class="text-xs text-gray-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
+            <h2 class="text-xl font-bold text-slate-800">Recuperar Acesso</h2>
+            <p class="text-xs text-slate-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
           </div>
 
           <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Digite seu E-mail Cadastrado *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Digite seu E-mail Cadastrado *</label>
               <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
             
@@ -1207,7 +1270,7 @@
           </form>
 
           <div class="border-t pt-3 text-center">
-            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para Tela de Login</button>
+            <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para Tela de Login</button>
           </div>
         </div>
       `;
@@ -1224,13 +1287,13 @@
         msgBox.innerHTML = `
           ✅ <b>E-mail enviado com sucesso!</b><br>
           <span class="text-[11px] font-normal text-green-900 block mt-1">
-            Verifique sua caixa de entrada. <b>IMPORTANTE:</b> Verifique também sua pasta de <b>SPAM / Lixo Eletrônico</b>, pois o e-mail pode ter sido direcionado para lá pelo seu provedor.
+            Verifique sua caixa de entrada e também a pasta de <b>SPAM / Lixo Eletrônico</b>.
           </span>
         `;
         msgBox.className = "text-xs font-bold text-green-800 bg-green-50 border border-green-300 text-center p-3 rounded-xl shadow-sm";
         msgBox.classList.remove('hidden');
       }).catch((err) => {
-        msgBox.innerText = err.code === 'auth/user-not-found' ? "E-mail não localizado no sistema! Verifique se digitou corretamente." : ("Erro: " + err.message);
+        msgBox.innerText = err.code === 'auth/user-not-found' ? "E-mail não localizado no sistema!" : ("Erro: " + err.message);
         msgBox.className = "text-xs font-bold text-red-600 bg-red-50 border border-red-200 text-center p-3 rounded-xl";
         msgBox.classList.remove('hidden');
       });
@@ -1283,7 +1346,7 @@
         return user.updatePassword(novaSenha);
       }).then(() => {
         fecharModalAlterarSenha();
-        alert("🎉 Senha de acesso alterada com sucesso! Use a nova senha no seu próximo login.");
+        alert("🎉 Senha de acesso alterada com sucesso!");
       }).catch((err) => {
         msgErro.innerText = err.code === 'auth/wrong-password' ? "Senha atual incorreta!" : ("Erro: " + err.message);
         msgErro.classList.remove('hidden');
@@ -1334,7 +1397,7 @@
           document.getElementById('scanner-status').innerText = "Câmera iniciada com sucesso!";
           document.getElementById('scanner-controls-fallback').classList.add('hidden');
         }).catch(err => {
-          alert("Não foi possível acessar a câmera. Certifique-se de autorizar o acesso no seu navegador.");
+          alert("Não foi possível acessar a câmera.");
         });
       }
     }
@@ -1467,7 +1530,7 @@
       closeModalPerfil();
       renderAba();
       exibirBoasVindasToast(novoNome);
-      alert("✅ Seu perfil e nome foram atualizados com sucesso!");
+      alert("✅ Perfil atualizado!");
     }
 
     function handleLogin(e) {
@@ -1508,9 +1571,9 @@
         const btnNav = document.getElementById('bottom-btn-' + a);
         if (btnNav) {
           if (a === aba) {
-            btnNav.className = "flex flex-col items-center justify-center space-y-1 text-teal-700 font-bold transition scale-105 border-t-2 border-teal-700";
+            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
           } else {
-            btnNav.className = "flex flex-col items-center justify-center space-y-1 text-gray-500 font-medium transition hover:text-teal-600 border-t-2 border-transparent";
+            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
           }
         }
       });
@@ -1603,7 +1666,7 @@
           boxTroco.innerHTML = `<span class="text-red-600 font-bold">Faltam R$ ${Math.abs(troco).toFixed(2)}</span>`;
         }
       } else {
-        boxTroco.innerHTML = `<span class="text-gray-500 font-medium">Digite o valor pago pelo cliente</span>`;
+        boxTroco.innerHTML = `<span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>`;
       }
     }
 
@@ -1631,10 +1694,10 @@
 
         return `
           <button onclick="${ehEsgotado ? 'alert(\'Produto esgotado no estoque!\')' : `adicionarAoCarrinho(${idxReal})`}" 
-                  class="${ehEsgotado ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 active:scale-95'} border p-2.5 rounded-lg text-left flex flex-col justify-between h-20 transition shadow-sm">
-            <span class="font-bold text-gray-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
+                  class="${ehEsgotado ? 'bg-slate-200 border-slate-300 opacity-50 cursor-not-allowed' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 active:scale-95'} border p-2.5 rounded-xl text-left flex flex-col justify-between h-20 transition shadow-sm">
+            <span class="font-bold text-slate-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
-              <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-gray-500'}">
+              <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-slate-500'}">
                 ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto} ${p.medida || 'un'}</b>`}
               </span>
               <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
@@ -1645,19 +1708,19 @@
 
       let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
       let carrinhoHTML = carrinho.map((item, index) => `
-        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border text-xs">
+        <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border text-xs">
           <div>
-            <p class="font-bold text-gray-800">${item.nome}</p>
-            <p class="text-gray-500">R$ ${item.preco.toFixed(2)} / ${item.medida || 'un'}</p>
+            <p class="font-bold text-slate-800">${item.nome}</p>
+            <p class="text-slate-500">R$ ${item.preco.toFixed(2)} / ${item.medida || 'un'}</p>
           </div>
           <div class="flex items-center gap-2">
-            <div class="flex items-center border rounded bg-white overflow-hidden">
-              <button onclick="alterarQtdCarrinho(${index}, -1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-bold text-gray-700">-</button>
-              <span class="px-2 font-bold text-gray-800 text-xs">${item.qtd}</span>
-              <button onclick="alterarQtdCarrinho(${index}, 1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-bold text-gray-700">+</button>
+            <div class="flex items-center border rounded-lg bg-white overflow-hidden">
+              <button onclick="alterarQtdCarrinho(${index}, -1)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">-</button>
+              <span class="px-2 font-bold text-slate-800 text-xs">${item.qtd}</span>
+              <button onclick="alterarQtdCarrinho(${index}, 1)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">+</button>
             </div>
             <span class="font-bold text-teal-700 text-xs w-16 text-right">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
-            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1 py-1 hover:bg-red-100 rounded">&times;</button>
+            <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1.5 py-1 hover:bg-red-100 rounded-lg">&times;</button>
           </div>
         </div>
       `).join('');
@@ -1667,83 +1730,83 @@
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-2">
-            <div class="bg-teal-600 text-white p-3 rounded-lg shadow-sm">
+            <div class="bg-teal-600 text-white p-3 rounded-2xl shadow-sm">
               <p class="text-[10px] text-teal-100 uppercase font-bold">Vendido Hoje</p>
               <p class="text-lg font-extrabold mt-0.5">R$ ${totalVendasBruto.toFixed(2)}</p>
               <p class="text-[10px] text-teal-200 mt-0.5">${vendasHoje.length} venda(s)</p>
             </div>
             
-            <div class="bg-gray-800 text-white p-3 rounded-lg shadow-sm flex flex-col justify-between">
+            <div class="bg-slate-800 text-white p-3 rounded-2xl shadow-sm flex flex-col justify-between">
               <div>
-                <p class="text-[10px] text-gray-300">Gaveta (Dinheiro):</p>
+                <p class="text-[10px] text-slate-300">Gaveta (Dinheiro):</p>
                 <p class="text-base font-bold text-amber-400">R$ ${saldoGavetaDinheiro.toFixed(2)}</p>
               </div>
               <span class="text-[9px] text-teal-400 font-semibold">Considerando Sangrias</span>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-2.5 rounded-lg border space-y-2">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+          <div class="bg-slate-50 p-3 rounded-2xl border space-y-2">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
             </h2>
             <div class="grid grid-cols-2 gap-2">
-              <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-lg text-xs bg-white font-bold">
+              <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-xl text-xs bg-white font-bold">
               <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
-              <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp / Telefone" class="p-2 border rounded-lg text-xs bg-white font-bold">
+              <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp / Telefone" class="p-2 border rounded-xl text-xs bg-white font-bold">
             </div>
           </div>
 
           <div class="border-t pt-3 space-y-2">
             <div class="flex justify-between items-center">
-              <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
               </h2>
-              <button onclick="abrirScanner('caixa')" class="bg-gray-800 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow hover:bg-gray-700">
+              <button onclick="abrirScanner('caixa')" class="bg-slate-800 text-white px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 shadow hover:bg-slate-700">
                 <i class="fa-solid fa-camera"></i> Bipar
               </button>
             </div>
             <div class="grid grid-cols-2 gap-2">
-              ${atalhosProdutosHTML || '<p class="text-xs text-gray-400 italic col-span-2 text-center py-3 border border-dashed rounded-lg">Sem produtos nos atalhos.</p>'}
+              ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos nos atalhos.</p>'}
             </div>
           </div>
 
           <div class="border-t pt-3 space-y-2 relative">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto no Estoque ou Avulso
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto ou Avulso
             </h2>
             
             <div class="grid grid-cols-3 gap-2">
               <div class="col-span-2 relative">
-                <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome..." class="w-full p-2 border rounded-lg text-xs bg-white">
-                <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto divide-y">
+                <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome..." class="w-full p-2 border rounded-xl text-xs bg-white">
+                <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y">
                 </div>
               </div>
-              <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-lg text-xs bg-white">
+              <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-xl text-xs bg-white">
             </div>
-            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-gray-100 text-gray-700 font-semibold py-1.5 rounded-lg border hover:bg-gray-200 text-xs">
+            <button onclick="adicionarManualAoCarrinho()" class="w-full bg-slate-100 text-slate-700 font-semibold py-1.5 rounded-xl border hover:bg-slate-200 text-xs">
               + Adicionar Item ao Carrinho
             </button>
           </div>
 
           <div class="border-t pt-3 space-y-2">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
             </h2>
 
             <div class="space-y-1.5 max-h-40 overflow-y-auto">
-              ${carrinhoHTML || '<p class="text-xs text-gray-400 italic text-center py-2">Carrinho vazio.</p>'}
+              ${carrinhoHTML || '<p class="text-xs text-slate-400 italic text-center py-2">Carrinho vazio.</p>'}
             </div>
 
-            <div class="bg-gray-50 p-3 rounded-lg border space-y-2.5">
-              <div class="flex justify-between items-center font-bold text-xs text-gray-800">
+            <div class="bg-slate-50 p-3 rounded-2xl border space-y-2.5">
+              <div class="flex justify-between items-center font-bold text-xs text-slate-800">
                 <span>Total a Pagar:</span>
-                <span class="text-teal-700 text-lg">R$ ${totalCarrinho.toFixed(2)}</span>
+                <span class="text-teal-700 text-lg font-extrabold">R$ ${totalCarrinho.toFixed(2)}</span>
               </div>
 
               <div class="space-y-2">
                 <div>
-                  <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Forma de Pagamento:</label>
-                  <select id="venda-pagto" onchange="toggleOpcoesPagamento(this.value)" class="w-full p-2.5 border rounded-lg text-xs bg-white font-extrabold text-teal-900">
+                  <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Forma de Pagamento:</label>
+                  <select id="venda-pagto" onchange="toggleOpcoesPagamento(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-white font-extrabold text-teal-900">
                     <option value="Dinheiro" selected>💵 Dinheiro (Calcular Troco)</option>
                     <option value="PIX">⚡ PIX</option>
                     <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
@@ -1752,31 +1815,31 @@
                   </select>
                 </div>
 
-                <div id="box-pagto-dinheiro" class="bg-teal-50 p-2.5 rounded-lg border border-teal-200 space-y-2">
+                <div id="box-pagto-dinheiro" class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-2">
                   <div>
                     <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido em Dinheiro R$:</label>
                     <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
                   </div>
                   <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
-                    <span class="text-gray-500 font-medium">Digite o valor pago pelo cliente</span>
+                    <span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>
                   </div>
                 </div>
 
-                <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-lg border border-amber-300 space-y-1">
+                <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-xl border border-amber-300 space-y-1">
                   <label class="block text-[10px] font-bold text-amber-900">
                     📅 Data Limite para Pagamento (Opcional):
                   </label>
-                  <input type="date" id="venda-fiado-prazo" class="w-full p-2 border rounded-lg text-xs bg-white text-gray-800 font-medium">
+                  <input type="date" id="venda-fiado-prazo" class="w-full p-2 border rounded-lg text-xs bg-white text-slate-800 font-medium">
                 </div>
 
                 <div class="space-y-1.5 pt-1">
-                  <button onclick="processarFinalizarVenda('whatsapp')" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+                  <button onclick="processarFinalizarVenda('whatsapp')" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Finalizar & Enviar no WhatsApp
                   </button>
-                  <button onclick="processarFinalizarVenda('imprimir')" class="w-full bg-gray-800 text-white font-bold py-2.5 rounded-lg hover:bg-gray-900 transition text-xs shadow flex justify-center items-center gap-1.5">
+                  <button onclick="processarFinalizarVenda('imprimir')" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl hover:bg-slate-900 transition text-xs shadow flex justify-center items-center gap-1.5">
                     <i class="fa-solid fa-print text-sm"></i> Finalizar & Imprimir Recibo
                   </button>
-                  <button onclick="processarFinalizarVenda('sem_envio')" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow flex justify-center items-center gap-1.5">
+                  <button onclick="processarFinalizarVenda('sem_envio')" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-xl hover:bg-teal-700 transition text-xs shadow flex justify-center items-center gap-1.5">
                     <i class="fa-solid fa-check-circle text-sm"></i> Finalizar Direto (Sem Envio)
                   </button>
                 </div>
@@ -1785,14 +1848,14 @@
           </div>
 
           <div class="border-t pt-3 space-y-2">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-vault text-amber-600"></i> Gestão de Gaveta & Turno
             </h2>
             <div class="grid grid-cols-2 gap-2">
-              <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-lg hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
+              <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-xl hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-arrow-down text-red-600"></i> Sangria (Retirar)
               </button>
-              <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-lg hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
+              <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-xl hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-arrow-up text-green-600"></i> Suprimento (Entrar)
               </button>
             </div>
@@ -1839,8 +1902,8 @@
         return `
           <div onclick="selecionarProdutoDaBusca(${idxReal})" class="p-2 hover:bg-teal-50 cursor-pointer flex justify-between items-center text-xs">
             <div>
-              <p class="font-bold text-gray-800">${p.nome}</p>
-              <p class="text-[10px] text-gray-500">Estoque: ${p.estoque} ${p.medida || 'un'}</p>
+              <p class="font-bold text-slate-800">${p.nome}</p>
+              <p class="text-[10px] text-slate-500">Estoque: ${p.estoque} ${p.medida || 'un'}</p>
             </div>
             <span class="font-bold text-teal-700">R$ ${p.preco.toFixed(2)}</span>
           </div>
@@ -1978,7 +2041,7 @@
       if (venda > 0 && custo > 0) {
         let lucro = venda - custo;
         let pct = (lucro / venda) * 100;
-        boxMargem.innerText = `Margem de Lucro: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
+        boxMargem.innerText = `Margem de Lucro Real: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
         boxMargem.className = pct < 15 ? "text-[11px] font-bold text-red-600 mt-1" : "text-[11px] font-bold text-green-700 mt-1";
       } else boxMargem.innerText = "";
     }
@@ -1995,29 +2058,29 @@
       if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
       else if (subAbaEstoque === 'minimos') conteudoSubAba = renderSubAbaMinimos();
       else if (subAbaEstoque === 'validades') conteudoSubAba = renderSubAbaValidades();
-      else conteudoSubAba = `<p class="text-xs text-gray-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima para exibir a lista desejada.</p>`;
+      else conteudoSubAba = `<p class="text-xs text-slate-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima para exibir a lista desejada.</p>`;
 
       document.getElementById('content-estoque').innerHTML = `
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
             </h2>
-            <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
+            <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
               <i class="fa-solid fa-sliders text-teal-600"></i> Mínimos
             </button>
           </div>
 
           <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
-            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Produtos Cadastrados (${produtos.length})
+            <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+              Cadastrados (${produtos.length})
             </button>
-            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Estoque Acabando
+            <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+              Estoque Baixo
               ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdMinimosAlert}</span>` : ''}
             </button>
-            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-              Produtos Vencendo
+            <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+              Validades Próximas
               ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdValidadesAlert}</span>` : ''}
             </button>
           </div>
@@ -2029,7 +2092,7 @@
           <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
             <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
               <span>🔍 Buscar Produto Cadastrado</span>
-              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-gray-800 text-white px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
+              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-slate-800 text-white px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
                 <i class="fa-solid fa-barcode"></i> Bipar
               </button>
             </label>
@@ -2064,18 +2127,18 @@
     function fecharModalCadastroProduto() { document.getElementById('modal-cadastro-produto').classList.add('hidden'); }
 
     function renderSubAbaTodosProdutos() {
-      if (produtos.length === 0) return `<p class="text-xs text-gray-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
+      if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
 
       return `
         <div class="space-y-2 max-h-72 overflow-y-auto">
           ${produtos.map((p, index) => {
             let ehAtalho = p.atalho !== false;
             return `
-              <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm space-y-2 text-xs">
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
                 <div class="flex justify-between items-start">
                   <div>
-                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
-                    <p class="text-gray-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+                    <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
+                    <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
                   </div>
                   <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                     ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2083,8 +2146,8 @@
                 </div>
 
                 <div class="flex justify-between items-center border-t pt-2 gap-1">
-                  <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
-                    <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
+                  <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
+                    <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
                   </button>
                   <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
                     <i class="fa-solid fa-pen"></i> Editar
@@ -2130,7 +2193,7 @@
 
       if (minimos.length === 0) {
         return `
-          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+          <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
             <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
             <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
             <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
@@ -2147,15 +2210,15 @@
               let faltam = (p.estMin || 3) - p.estoque;
 
               return `
-                <div class="bg-red-50 border border-red-300 p-3 rounded-lg flex justify-between items-center text-xs alerta-saltando">
+                <div class="bg-red-50 border border-red-300 p-3 rounded-2xl flex justify-between items-center text-xs alerta-saltando">
                   <div>
-                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
+                    <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                     <p class="text-red-700 font-bold mt-0.5">
-                      Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-gray-500 font-normal">(Mín: ${p.estMin || 3})</span>
+                      Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500 font-normal">(Mín: ${p.estMin || 3})</span>
                     </p>
                     <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Sugestão de Reposição: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
                   </div>
-                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs shadow hover:bg-red-700">
+                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-red-700">
                     ⚡ Repor
                   </button>
                 </div>
@@ -2175,7 +2238,7 @@
 
       if (validadesCriticas.length === 0) {
         return `
-          <div class="bg-green-50 border border-green-200 p-6 rounded-xl text-center space-y-2">
+          <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
             <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
             <h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3>
             <p class="text-xs text-green-600">Nenhum produto em risco nos próximos 30 dias.</p>
@@ -2193,15 +2256,15 @@
               let ehVencido = dataVal < hoje;
 
               return `
-                <div class="p-3 rounded-lg border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
+                <div class="p-3 rounded-2xl border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
                   <div>
-                    <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
-                    <p class="text-gray-600 mt-0.5">
+                    <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
+                    <p class="text-slate-600 mt-0.5">
                       Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
                     </p>
-                    <p class="text-[10px] text-gray-500">Preço Atual: R$ ${parseFloat(p.preco).toFixed(2)}</p>
+                    <p class="text-[10px] text-slate-500">Preço Atual: R$ ${parseFloat(p.preco).toFixed(2)}</p>
                   </div>
-                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs shadow hover:bg-amber-700">
+                  <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-amber-700">
                     🏷️ Desconto / Ajustar
                   </button>
                 </div>
@@ -2263,7 +2326,7 @@
 
       let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum produto encontrado com "${termo}".</p>`;
+        box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum produto encontrado com "${termo}".</p>`;
         return;
       }
 
@@ -2275,9 +2338,9 @@
           <div class="bg-white p-3 rounded-xl border border-teal-300 shadow-sm space-y-2 text-xs">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-bold text-gray-800 text-sm">${p.nome}</p>
-                <p class="text-gray-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-                ${p.ean ? `<p class="text-[10px] text-gray-400 font-mono">EAN: ${p.ean}</p>` : ''}
+                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
+                <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+                ${p.ean ? `<p class="text-[10px] text-slate-400 font-mono">EAN: ${p.ean}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2285,8 +2348,8 @@
             </div>
 
             <div class="flex justify-between items-center border-t pt-2 gap-1">
-              <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'}">
-                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-gray-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
+              <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
+                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
               </button>
               <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
                 <i class="fa-solid fa-pen"></i> Editar
@@ -2377,18 +2440,18 @@
 
       document.getElementById('content-clientes').innerHTML = `
         <div class="space-y-4">
-          <div class="bg-red-50 border border-red-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm">
+          <div class="bg-red-50 border border-red-200 p-3.5 rounded-2xl flex justify-between items-center shadow-sm">
             <div>
               <p class="text-[10px] text-red-600 font-bold uppercase">Total Geral a Receber (Fiado)</p>
               <p class="text-xl font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
             </div>
             
-            <button onclick="filtrarApenasDevedores()" class="text-xs ${listaDevedoresAberta ? 'bg-gray-700 hover:bg-gray-800' : 'bg-red-600 hover:bg-red-700'} text-white px-3 py-2 rounded-xl font-extrabold shadow flex items-center gap-1.5 active:scale-95 transition">
+            <button onclick="filtrarApenasDevedores()" class="text-xs ${listaDevedoresAberta ? 'bg-slate-700 hover:bg-slate-800' : 'bg-red-600 hover:bg-red-700'} text-white px-3 py-2 rounded-xl font-extrabold shadow flex items-center gap-1.5 active:scale-95 transition">
               <i class="fa-solid fa-users"></i> ${devedoresQtd} Devedor(es) ${listaDevedoresAberta ? '▲' : '▼'}
             </button>
           </div>
 
-          <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-xl space-y-2.5">
+          <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-2xl space-y-2.5">
             <label class="block text-xs font-bold text-teal-900">
               🔍 Consultar ou Cobrar Cliente:
             </label>
@@ -2431,13 +2494,13 @@
       if (!box) return;
 
       if (!termo || termo.trim().length < 1) {
-        if (!listaDevedoresAberta) box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Digite o nome acima para pesquisar.</p>`;
+        if (!listaDevedoresAberta) box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Digite o nome acima para pesquisar.</p>`;
         return;
       }
 
       let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-gray-500 italic text-center py-3">Nenhum cliente localizado.</p>`;
+        box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-3">Nenhum cliente localizado.</p>`;
         return;
       }
 
@@ -2455,15 +2518,15 @@
         let ehAtrasado = temDebito && c.prazoPagamento && c.prazoPagamento <= hojeStr;
 
         return `
-          <div class="bg-white p-3.5 rounded-xl border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : (temDebito ? 'border-amber-300 bg-amber-50/20' : 'border-gray-200')} shadow space-y-3 text-xs">
+          <div class="bg-white p-3.5 rounded-2xl border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : (temDebito ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200')} shadow space-y-3 text-xs">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-extrabold text-gray-800 text-sm flex items-center gap-1">
+                <p class="font-extrabold text-slate-800 text-sm flex items-center gap-1">
                   ${c.nome}
                   ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.2 rounded uppercase">⚠️ VENCIDO</span>' : ''}
                 </p>
-                <p class="text-gray-500 text-[11px] mt-0.5">WhatsApp: <b>${c.telefone || 'Não informado'}</b></p>
-                ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-gray-600'}">Prazo: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
+                <p class="text-slate-500 text-[11px] mt-0.5">WhatsApp: <b>${c.telefone || 'Não informado'}</b></p>
+                ${c.prazoPagamento ? `<p class="text-[10px] ${ehAtrasado ? 'text-red-700 font-bold' : 'text-slate-600'}">Prazo: <b>${c.prazoPagamento.split('-').reverse().join('/')}</b></p>` : ''}
               </div>
               <div class="text-right">
                 <span class="font-extrabold text-xs px-2.5 py-1 rounded-lg border block ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100 border-green-300'}">
@@ -2472,17 +2535,17 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200">
-              <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-lg hover:bg-green-700 text-xs shadow flex items-center justify-center gap-1">
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
+              <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-xl hover:bg-green-700 text-xs shadow flex items-center justify-center gap-1">
                 <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Zap
               </button>
-              <button onclick="abrirModalEditarCliente(${idxReal})" class="bg-teal-50 text-teal-800 border border-teal-300 font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1">
+              <button onclick="abrirModalEditarCliente(${idxReal})" class="bg-teal-50 text-teal-800 border border-teal-300 font-bold py-2 px-2 rounded-xl text-xs flex items-center justify-center gap-1">
                 <i class="fa-solid fa-pen-to-square"></i> Editar / Prazo
               </button>
             </div>
 
             ${temDebito ? `
-              <div class="flex gap-1.5 pt-1 items-center bg-gray-50 p-2 rounded-lg border">
+              <div class="flex gap-1.5 pt-1 items-center bg-slate-50 p-2 rounded-xl border">
                 <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Valor a Abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
                 <button onclick="abaterDebitoCliente(${idxReal})" class="bg-teal-600 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-teal-700 text-xs shadow whitespace-nowrap">
                   Abater
@@ -2567,7 +2630,7 @@
       }
     }
 
-    /* REFORMULAÇÃO DA ABA DE RELATÓRIOS (CARD EXECUTIVO ÚNICO - v25.0) */
+    /* REFORMULAÇÃO DA ABA DE RELATÓRIOS (CARD EXECUTIVO & CÁLCULOS EXATOS - v26.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2591,22 +2654,22 @@
 
       let topItensHTML = topItens.length > 0 
         ? topItens.map((it, i) => `
-            <div class="flex justify-between items-center text-xs py-1 border-b border-gray-100 last:border-0">
-              <span class="font-bold text-gray-800">${i+1}. ${it.nome}</span>
+            <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
+              <span class="font-bold text-slate-800">${i+1}. ${it.nome}</span>
               <span class="bg-teal-50 text-teal-800 font-extrabold px-2 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} venda(s)</span>
             </div>
           `).join('')
-        : '<p class="text-xs text-gray-400 italic text-center py-2">Sem vendas no histórico.</p>';
+        : '<p class="text-xs text-slate-400 italic text-center py-2">Sem vendas no histórico.</p>';
 
       document.getElementById('content-relatorios').innerHTML = `
         <div class="space-y-4">
-          <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
+          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
             <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial Executivo
           </h2>
 
-          <!-- CARD ÚNICO DE BALANÇO FINANCEIRO INTEGRADO (v25.0) -->
-          <div class="bg-gray-900 text-white p-4 rounded-2xl shadow-xl border border-gray-800 space-y-3">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <!-- CARD ÚNICO DE BALANÇO FINANCEIRO INTEGRADO -->
+          <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
               <span class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-wallet"></i> Balanço Financeiro Acumulado
               </span>
@@ -2617,12 +2680,12 @@
 
             <div class="space-y-2 text-xs">
               <div class="flex justify-between items-center">
-                <span class="text-gray-300 font-medium">🟢 Faturamento Bruto:</span>
+                <span class="text-slate-300 font-medium">🟢 Faturamento Bruto:</span>
                 <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
               </div>
 
               <div class="flex justify-between items-center">
-                <span class="text-gray-300 font-medium">🔴 Custo Estimado Estoque:</span>
+                <span class="text-slate-300 font-medium">🔴 Custo Estimado Estoque:</span>
                 <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoGeral.toFixed(2)}</span>
               </div>
 
@@ -2631,7 +2694,7 @@
                 <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquido.toFixed(2)}</span>
               </div>
 
-              <div class="flex justify-between items-center pt-1 text-[11px] text-gray-400">
+              <div class="flex justify-between items-center pt-1 text-[11px] text-slate-400">
                 <span>📊 Ticket Médio por Venda:</span>
                 <span class="font-bold text-amber-300">R$ ${ticketMedio.toFixed(2)}</span>
               </div>
@@ -2639,8 +2702,8 @@
           </div>
 
           <!-- TOP 5 MAIS VENDIDOS -->
-          <div class="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-sm space-y-2">
-            <h3 class="font-extrabold text-xs text-gray-800 flex items-center gap-1.5 border-b pb-1.5">
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
               <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas (Top 5)
             </h3>
             <div class="space-y-1">
@@ -2651,7 +2714,7 @@
           <!-- AÇÃO E EMISSÃO DE DOCUMENTOS -->
           <div class="pt-1">
             <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition active:scale-95">
-              <i class="fa-solid fa-file-export text-base"></i> Gerar Relatório PDF / Exportar .CSV
+              <i class="fa-solid fa-file-export text-base"></i> Abrir Central de Relatórios
             </button>
           </div>
         </div>
@@ -2684,14 +2747,35 @@
         const doc = new jsPDF();
 
         const tipoFiltro = document.getElementById('pdf-periodo-tipo').value;
+        const tipoConteudo = document.getElementById('relatorio-tipo-conteudo').value;
 
         let listaVendasPDF = vendas;
         let dataInicioStr = "";
         let dataFimStr = "";
 
+        let hojeObj = new Date();
+        let hojeStrFormatada = hojeObj.toLocaleDateString('pt-BR');
+
         if (tipoFiltro === 'hoje') {
-          const hojeStr = new Date().toLocaleDateString('pt-BR');
-          listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStr));
+          listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStrFormatada));
+        } else if (tipoFiltro === 'ultimos_7') {
+          let seteDiasAtras = new Date();
+          seteDiasAtras.setDate(hojeObj.getDate() - 7);
+          listaVendasPDF = vendas.filter(v => {
+            if (!v.data) return false;
+            let partes = v.data.split(' ')[0].split('/');
+            if (partes.length < 3) return false;
+            let dV = new Date(partes[2], partes[1] - 1, partes[0]);
+            return dV >= seteDiasAtras;
+          });
+        } else if (tipoFiltro === 'este_mes') {
+          let mesAtual = hojeObj.getMonth() + 1;
+          let anoAtual = hojeObj.getFullYear();
+          listaVendasPDF = vendas.filter(v => {
+            if (!v.data) return false;
+            let partes = v.data.split(' ')[0].split('/');
+            return parseInt(partes[1]) === mesAtual && parseInt(partes[2]) === anoAtual;
+          });
         } else if (tipoFiltro === 'periodo') {
           dataInicioStr = document.getElementById('pdf-data-inicio').value;
           dataFimStr = document.getElementById('pdf-data-fim').value;
@@ -2701,7 +2785,7 @@
               if (!v.data) return false;
               let partes = v.data.split(' ')[0].split('/');
               if (partes.length < 3) return false;
-              let dataVendaFormato = `${partes[2]}-${partes[1]}-${partes[0]}`;
+              let dataVendaFormato = `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
               return dataVendaFormato >= dataInicioStr && dataVendaFormato <= dataFimStr;
             });
           }
@@ -2710,69 +2794,85 @@
         let y = 15;
         doc.setFontSize(16);
         doc.setTextColor(7, 94, 84);
-        doc.text(`Relatorio Comercial - ${perfilNegocio.nomeLoja || 'Caixa Rapido Movel Pro'}`, 14, y);
+        doc.text(`Relatorio - ${perfilNegocio.nomeLoja || 'Caixa Rapido Movel Pro'}`, 14, y);
         
-        y += 8;
+        y += 7;
         doc.setFontSize(10);
         doc.setTextColor(100);
-        let textoPeriodoHeader = tipoFiltro === 'hoje' ? 'Apenas Hoje' : (tipoFiltro === 'periodo' ? `De ${dataInicioStr} ate ${dataFimStr}` : 'Historico Total');
-        doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Periodo: ${textoPeriodoHeader}`, 14, y);
+        let textoPeriodoHeader = tipoFiltro === 'hoje' ? 'Apenas Hoje' : (tipoFiltro === 'periodo' ? `De ${dataInicioStr} ate ${dataFimStr}` : 'Historico Filtrado');
+        doc.text(`Emissao: ${new Date().toLocaleString('pt-BR')} | Periodo: ${textoPeriodoHeader}`, 14, y);
 
-        y += 8;
+        y += 6;
         doc.setLineWidth(0.5);
         doc.line(14, y, 196, y);
         y += 8;
 
-        const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-        doc.text(`1. Resumo de Vendas (${listaVendasPDF.length} vendas no periodo)`, 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`Total Faturado no Periodo: R$ ${totalVendas.toFixed(2)}`, 14, y);
-        y += 8;
+        if (tipoConteudo === 'completo' || tipoConteudo === 'lucro') {
+          const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+          let totalCustoGeral = 0;
+          listaVendasPDF.forEach(v => {
+            let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
+            if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
+          });
 
-        let totalCustoGeral = 0;
-        listaVendasPDF.forEach(v => {
-          let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-          if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
-        });
-
-        doc.setFontSize(12);
-        doc.text(`2. Demonstrativo Financeiro de Lucro`, 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`Custo Estimado dos Produtos Vendidos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
-        y += 5;
-        doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
-        y += 8;
-
-        doc.setFontSize(12);
-        doc.text(`3. Posicao Atual do Estoque (${produtos.length} itens)`, 14, y);
-        y += 6;
-        doc.setFontSize(9);
-        produtos.forEach(p => {
-          if (y > 270) { doc.addPage(); y = 15; }
-          doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Preco: R$ ${p.preco.toFixed(2)}`, 14, y);
+          doc.setFontSize(12);
+          doc.setTextColor(0);
+          doc.text(`1. Resumo Comercial & Financeiro (${listaVendasPDF.length} vendas)`, 14, y);
+          y += 6;
+          doc.setFontSize(10);
+          doc.text(`Faturamento Bruto Total: R$ ${totalVendas.toFixed(2)}`, 14, y);
           y += 5;
-        });
-        y += 4;
-
-        let clientesComDebito = clientes.filter(c => c.debito > 0);
-        doc.setFontSize(12);
-        doc.text(`4. Contas Fiado Devedoras (${clientesComDebito.length} clientes)`, 14, y);
-        y += 6;
-        doc.setFontSize(9);
-        clientesComDebito.forEach(c => {
-          if (y > 270) { doc.addPage(); y = 15; }
-          doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Debito: R$ ${c.debito.toFixed(2)}`, 14, y);
+          doc.text(`Custo Total do Estoque Vendido: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
           y += 5;
-        });
+          doc.setFont(undefined, 'bold');
+          doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
+          doc.setFont(undefined, 'normal');
+          y += 10;
+        }
+
+        if (tipoConteudo === 'completo') {
+          doc.setFontSize(12);
+          doc.text(`2. Detalhamento de Vendas do Periodo`, 14, y);
+          y += 6;
+          doc.setFontSize(9);
+          listaVendasPDF.forEach(v => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            doc.text(`* ${v.data} - ${v.item} - Pagto: ${v.formaPagto} - Valor: R$ ${parseFloat(v.valor).toFixed(2)}`, 14, y);
+            y += 5;
+          });
+          y += 6;
+        }
+
+        if (tipoConteudo === 'estoque' || tipoConteudo === 'completo') {
+          doc.setFontSize(12);
+          doc.text(`3. Posicao do Inventario de Estoque (${produtos.length} itens)`, 14, y);
+          y += 6;
+          doc.setFontSize(9);
+          produtos.forEach(p => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Custo: R$ ${parseFloat(p.precoCusto||0).toFixed(2)} - Venda: R$ ${parseFloat(p.preco).toFixed(2)}`, 14, y);
+            y += 5;
+          });
+          y += 6;
+        }
+
+        if (tipoConteudo === 'fiado' || tipoConteudo === 'completo') {
+          let clientesComDebito = clientes.filter(c => c.debito > 0);
+          doc.setFontSize(12);
+          doc.text(`4. Relatorio de Contas Fiado Pendentes (${clientesComDebito.length} clientes)`, 14, y);
+          y += 6;
+          doc.setFontSize(9);
+          clientesComDebito.forEach(c => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Saldo Devedor: R$ ${parseFloat(c.debito).toFixed(2)}`, 14, y);
+            y += 5;
+          });
+        }
 
         fecharModalOpcoesRelatorio();
         doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
       } catch(err) {
-        alert("Erro ao gerar PDF.");
+        alert("Erro ao gerar arquivo PDF.");
       }
     }
 
@@ -2790,7 +2890,7 @@
         localStorage.removeItem('crm_produtos');
         localStorage.removeItem('crm_clientes');
 
-        alert("✅ Todos os dados foram limpos do aplicativo com sucesso!");
+        alert("✅ Todos os dados foram limpos com sucesso!");
         renderAba();
       }
     }
@@ -2808,8 +2908,8 @@
       const saldoEsperadoGaveta = totalDinheiroVendas - totalSangrias + totalSuprimentos;
 
       document.getElementById('fechamento-conteudo').innerHTML = `
-        <div class="bg-gray-50 p-3 rounded-lg border space-y-1.5">
-          <p class="font-bold text-gray-800 text-xs">Resumo do Turno Atual (${hojeStr}):</p>
+        <div class="bg-slate-50 p-3 rounded-xl border space-y-1.5">
+          <p class="font-bold text-slate-800 text-xs">Resumo do Turno Atual (${hojeStr}):</p>
           <div class="flex justify-between"><span>Vendas Realizadas:</span> <b>${vendasHoje.length}</b></div>
           <div class="flex justify-between text-teal-700 font-bold"><span>Total Vendas:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
           <hr>
@@ -2820,7 +2920,7 @@
         </div>
 
         <div class="space-y-2 pt-2">
-          <label class="block font-semibold text-gray-700">Contagem Física na Gaveta (R$):</label>
+          <label class="block font-semibold text-slate-700">Contagem Física na Gaveta (R$):</label>
           <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
           <button onclick="conferirEGravarFechamentoCaixaManual(${saldoEsperadoGaveta}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
             Conferir e Salvar Fechamento
@@ -2945,7 +3045,7 @@
 
       if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
       else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
-      else alert("✅ Venda finalizada!");
+      else alert("✅ Venda finalizada com sucesso!");
 
       renderAba();
       verificarAlertasEstoqueValidadeAutomatico();
@@ -2981,7 +3081,7 @@
     }
 
     function exportarBackupCSV() {
-      if (vendas.length === 0) { alert("Sem histórico de vendas para exportação contábil."); return; }
+      if (vendas.length === 0) { alert("Sem histórico de vendas para exportação."); return; }
       
       let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
       
@@ -3035,7 +3135,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 25.0 carregada com sucesso!");
+    console.log("Caixa Rápido Móvel Pro - Versão 26.0 carregada com sucesso!");
   </script>
 </body>
 </html>

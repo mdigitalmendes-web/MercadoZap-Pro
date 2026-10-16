@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v26.0</title>
+  <title>Caixa Rápido Móvel Pro v27.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -134,7 +134,7 @@
     </div>
   </div>
 
-  <!-- BANNER INTELELIGENTE DE ALERTA DIRECCIONADO (ESTOQUE / VALIDADE) -->
+  <!-- BANNER INTELIGENTE DE ALERTA DIRECCIONADO (ESTOQUE / VALIDADE) -->
   <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
     <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
       <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
@@ -304,7 +304,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v26.0) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v27.0) -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-4 h-16">
       <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -331,7 +331,7 @@
 
 </div>
 
-  <!-- MODAL DE EMISSÃO DE RELATÓRIOS (AVANÇADO - v26.0) -->
+  <!-- MODAL DE EMISSÃO DE RELATÓRIOS -->
   <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -574,20 +574,29 @@
     </div>
   </div>
 
+  <!-- LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL (MODO CONTÍNUO v27.0) -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
+    <div class="bg-white rounded-2xl p-4 max-w-sm w-full space-y-3 shadow-2xl border border-slate-700">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-          <i class="fa-solid fa-camera text-teal-600"></i> Bipar Código de Barras
-        </h3>
+        <div>
+          <h3 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-camera text-teal-600"></i> Leitor Contínuo de Caixa
+          </h3>
+          <p class="text-[10px] text-slate-500">Passe quantos itens quiser em sequência</p>
+        </div>
         <button onclick="fecharScanner()" class="text-slate-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
       </div>
       
-      <div id="scanner-status" class="text-center py-2 text-xs text-slate-600 font-bold bg-slate-100 rounded-lg">
+      <!-- CONFIRMAÇÃO VISUAL DE BIPADO -->
+      <div id="scanner-feedback-box" class="hidden bg-green-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce">
+        ✅ Produto Adicionado com Sucesso!
+      </div>
+
+      <div id="scanner-status" class="text-center py-1.5 text-xs text-slate-600 font-bold bg-slate-100 rounded-lg">
         Iniciando câmera...
       </div>
 
-      <div id="reader" class="w-full bg-black rounded-lg overflow-hidden min-h-[250px] flex items-center justify-center relative"></div>
+      <div id="reader" class="w-full bg-black rounded-xl overflow-hidden min-h-[240px] flex items-center justify-center relative shadow-inner"></div>
       
       <div id="scanner-controls-fallback" class="hidden text-center">
         <button onclick="iniciarCameraHtml5Manual()" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs">
@@ -595,10 +604,10 @@
         </button>
       </div>
 
-      <p class="text-[10px] text-center text-slate-500 font-medium">💡 Posicione o código no centro da caixa de foco.</p>
+      <p class="text-[10px] text-center text-slate-500 font-medium">💡 Posicione o código no centro do visor da câmera.</p>
       
-      <button onclick="fecharScanner()" class="w-full bg-red-600 text-white font-extrabold py-2.5 rounded-lg text-xs shadow">
-        Cancelar / Fechar Câmera
+      <button onclick="fecharScanner()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3 rounded-xl text-xs shadow transition">
+        ✅ Concluir Leitura e Voltar ao Caixa
       </button>
     </div>
   </div>
@@ -753,9 +762,9 @@
         <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+        <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua! Mantenha a câmera aberta e passe todas as embalagens. O app emitirá um bip de confirmação para cada item reconhecido.</p>
         <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
         <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
-        <p><b>👤 Alterar Perfil/Nome:</b> Clique no menu (☰) para editar seu nome completo ou função a qualquer momento.</p>
       </div>
     </div>
   </div>
@@ -815,12 +824,33 @@
     let listaDevedoresAberta = false; 
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
+    
+    /* VARIÁVEIS DO LEITOR DE CÓDIGO DE BARRAS */
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
     let alertaSilenciadoSessao = false;
+    let ultimoEanLido = '';
+    let ultimoTempoLeitura = 0;
     
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
+
+    /* BIP DE CONFIRMAÇÃO DE LEITURA DO SCANNER (v27.0) */
+    function tocarBeepConfirmacaoBip() {
+      try {
+        if ("vibrate" in navigator) navigator.vibrate(80);
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1800, audioCtx.currentTime); // Tom agudo tipo PDV
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch(e) {}
+    }
 
     function emitirBeepEAlertaVibracao() {
       if (alertaSilenciadoSessao) return;
@@ -839,7 +869,7 @@
       } catch(e) {}
     }
 
-    /* SISTEMA DE ALERTAS DINÂMICOS INTELELIGENTE (v26.0) */
+    /* SISTEMA DE ALERTAS DINÂMICOS INTELIGENTE */
     function verificarAlertasEstoqueValidadeAutomatico() {
       if (alertaSilenciadoSessao) return;
 
@@ -1353,11 +1383,16 @@
       });
     }
 
+    /* LEITOR DE CÓDIGO DE BARRAS REFORMULADO (LEITURA CONTÍNUA E BIPS v27.0) */
     async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
       document.getElementById('scanner-status').innerText = "Solicitando permissão da câmera...";
       document.getElementById('scanner-controls-fallback').classList.add('hidden');
+      document.getElementById('scanner-feedback-box').classList.add('hidden');
+
+      ultimoEanLido = '';
+      ultimoTempoLeitura = 0;
 
       await fecharScannerSilent();
 
@@ -1374,7 +1409,9 @@
             (decodedText) => { onScanSuccess(decodedText); },
             (errorMessage) => {}
           ).then(() => {
-            document.getElementById('scanner-status').innerText = "Aproxime o código de barras da câmera";
+            document.getElementById('scanner-status').innerText = modoScannerDestino === 'caixa' 
+              ? "Modo Contínuo Ativo: Aproxime as embalagens..." 
+              : "Aproxime o código EAN da câmera...";
           }).catch((err) => {
             document.getElementById('scanner-status').innerText = "Clique abaixo para habilitar a câmera manualmente";
             document.getElementById('scanner-controls-fallback').classList.remove('hidden');
@@ -1403,19 +1440,48 @@
     }
 
     function onScanSuccess(decodedText) {
-      fecharScanner();
+      let agora = Date.now();
       
+      // Filtro anti-duplicação acidental (evita ler o mesmo produto várias vezes no mesmo segundo)
+      if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) {
+        return;
+      }
+
+      ultimoEanLido = decodedText;
+      ultimoTempoLeitura = agora;
+
       if (modoScannerDestino === 'caixa') {
         let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
         if (prod) {
           let idxReal = produtos.findIndex(p => p.id === prod.id);
-          adicionarAoCarrinho(idxReal);
-          alert(`✅ Código lido: ${prod.nome} adicionado!`);
+          
+          // Toca o BIP de confirmação instantâneo
+          tocarBeepConfirmacaoBip();
+          
+          // Adiciona diretamente ao carrinho
+          adicionarAoCarrinhoSilent(idxReal);
+          
+          // Feedback visual rápido no visor do scanner sem fechar a câmera
+          const feedback = document.getElementById('scanner-feedback-box');
+          feedback.innerText = `✅ +1 ${prod.nome} (R$ ${prod.preco.toFixed(2)})`;
+          feedback.classList.remove('hidden');
+          
+          setTimeout(() => { feedback.classList.add('hidden'); }, 1500);
         } else {
-          alert(`🔍 Código ${decodedText} lido, mas não está cadastrado.`);
-          document.getElementById('venda-nome-manual').value = `Item ${decodedText}`;
+          tocarBeepConfirmacaoBip();
+          const feedback = document.getElementById('scanner-feedback-box');
+          feedback.innerText = `⚠️ Código ${decodedText} não cadastrado!`;
+          feedback.className = "bg-amber-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
+          feedback.classList.remove('hidden');
+          
+          setTimeout(() => { 
+            feedback.classList.add('hidden'); 
+            feedback.className = "hidden bg-green-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
+          }, 2000);
         }
       } else if (modoScannerDestino === 'cadastro') {
+        tocarBeepConfirmacaoBip();
+        fecharScanner();
         let eanInput = document.getElementById('cad-prod-ean');
         let eanDisp = document.getElementById('cad-prod-ean-display');
         if (eanInput) eanInput.value = decodedText;
@@ -1423,11 +1489,24 @@
           eanDisp.innerText = `EAN LIDO: ${decodedText}`;
           eanDisp.classList.remove('hidden');
         }
-        alert(`✅ Código de barras bipado: ${decodedText}`);
-      } else if (modoScannerDestino === 'busca_estoque') {
-        document.getElementById('busca-estoque-input').value = decodedText;
-        buscarEExibirProdutoEstoque(decodedText);
+        alert(`✅ Código EAN lido com sucesso: ${decodedText}`);
       }
+    }
+
+    function adicionarAoCarrinhoSilent(index) {
+      let prod = produtos[index];
+
+      let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
+      let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
+      let estoqueRestante = prod.estoque - qtdNoCarrinho;
+
+      if (estoqueRestante <= 0) return;
+
+      if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
+      else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un' }); }
+      
+      // Atualiza a tela de caixa no fundo
+      renderAbaVendas();
     }
 
     async function fecharScannerSilent() {
@@ -1444,6 +1523,7 @@
     function fecharScanner() {
       fecharScannerSilent();
       document.getElementById('modal-scanner').classList.add('hidden');
+      renderAbaVendas();
     }
 
     let touchStartX = 0;
@@ -1761,8 +1841,8 @@
               <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
               </h2>
-              <button onclick="abrirScanner('caixa')" class="bg-slate-800 text-white px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 shadow hover:bg-slate-700">
-                <i class="fa-solid fa-camera"></i> Bipar
+              <button onclick="abrirScanner('caixa')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow active:scale-95 transition">
+                <i class="fa-solid fa-barcode text-sm"></i> Bipar Vários Itens
               </button>
             </div>
             <div class="grid grid-cols-2 gap-2">
@@ -2046,6 +2126,7 @@
       } else boxMargem.innerText = "";
     }
 
+    /* ABA DE ESTOQUE LIMPA (SEM O BOTAO DE BIPAR DESNECESSÁRIO) */
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -2089,14 +2170,11 @@
             <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
           </button>
 
-          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-2">
-            <label class="block text-xs font-bold text-teal-900 flex items-center justify-between">
-              <span>🔍 Buscar Produto Cadastrado</span>
-              <button onclick="abrirScanner('busca_estoque')" class="text-[10px] bg-slate-800 text-white px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
-                <i class="fa-solid fa-barcode"></i> Bipar
-              </button>
+          <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-1.5">
+            <label class="block text-xs font-bold text-teal-900">
+              🔍 Consultar Produto por Nome ou Código:
             </label>
-            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou bipe o código..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
+            <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou código EAN..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
           </div>
 
           <div id="subaba-estoque-conteudo">
@@ -2630,7 +2708,7 @@
       }
     }
 
-    /* REFORMULAÇÃO DA ABA DE RELATÓRIOS (CARD EXECUTIVO & CÁLCULOS EXATOS - v26.0) */
+    /* ABA DE RELATÓRIOS */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2667,7 +2745,6 @@
             <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial Executivo
           </h2>
 
-          <!-- CARD ÚNICO DE BALANÇO FINANCEIRO INTEGRADO -->
           <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
               <span class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -2701,7 +2778,6 @@
             </div>
           </div>
 
-          <!-- TOP 5 MAIS VENDIDOS -->
           <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
               <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas (Top 5)
@@ -2711,7 +2787,6 @@
             </div>
           </div>
 
-          <!-- AÇÃO E EMISSÃO DE DOCUMENTOS -->
           <div class="pt-1">
             <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition active:scale-95">
               <i class="fa-solid fa-file-export text-base"></i> Abrir Central de Relatórios
@@ -3135,7 +3210,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 26.0 carregada com sucesso!");
+    console.log("Caixa Rápido Móvel Pro - Versão 27.0 (Scanner Contínuo) carregada!");
   </script>
 </body>
 </html>

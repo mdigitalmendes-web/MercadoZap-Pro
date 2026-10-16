@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v28.0</title>
+  <title>Caixa Rápido Móvel Pro v29.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -86,7 +86,7 @@
       border-radius: 12px;
     }
 
-    /* ESTILIZAÇÃO PREMIUM DA BARRA NAVEGAÇÃO INFERIOR */
+    /* BARRA NAVEGAÇÃO INFERIOR */
     .nav-bottom-item {
       position: relative;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -107,7 +107,7 @@
       border-radius: 0 0 4px 4px;
     }
 
-    /* TOAST DE BOAS-VINDAS E BANNERS DE ALERTA INTELELIGENTES */
+    /* TOAST DE BOAS-VINDAS E BANNERS */
     #toast-boas-vindas, #banner-alerta-estoque {
       transition: all 0.4s ease-in-out;
       transform: translateY(-130%);
@@ -118,18 +118,23 @@
       opacity: 1;
     }
 
-    /* MASCARA E BALÃO DO TOUR GUIADO INTERATIVO (ONBOARDING) */
+    /* TOUR GUIADO INTERATIVO */
     #tour-overlay {
       backdrop-filter: blur(4px);
       transition: opacity 0.3s ease;
     }
-    .tour-arrow-up {
-      width: 0; 
-      height: 0; 
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-bottom: 12px solid white;
-      margin: 0 auto;
+
+    /* ANIMAÇÃO DO TOAST FLUTUANTE DE FIADO CADASTRADO */
+    @keyframes popScaleFade {
+      0% { transform: scale(0.3); opacity: 0; }
+      20% { transform: scale(1.05); opacity: 1; }
+      30% { transform: scale(1); opacity: 1; }
+      80% { opacity: 1; transform: scale(1); }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+
+    .toast-fiado-animado {
+      animation: popScaleFade 3.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
   </style>
 </head>
@@ -137,11 +142,28 @@
 
 <div id="app-container">
 
-  <!-- TOUR GUIADO INTERATIVO PARA INICIANTES (ONBOARDING v28.0) -->
+  <!-- TOAST FLUTUANTE AUTOMÁTICO DE FIADO REGISTRADO (NOVA FUNCIONALIDADE) -->
+  <div id="toast-fiado-sucesso" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+    <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-2xl border-2 border-amber-400 text-center max-w-xs w-full space-y-2 toast-fiado-animado pointer-events-auto">
+      <div class="w-14 h-14 bg-amber-500 text-slate-950 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-lg">
+        <i class="fa-solid fa-users-viewfinder"></i>
+      </div>
+      <h3 class="font-extrabold text-base text-amber-300 leading-tight">Fiado Registrado com Sucesso!</h3>
+      <p id="toast-fiado-msg-texto" class="text-xs text-slate-200 leading-relaxed">
+        O cliente foi cadastrado e o débito já está integrado na aba Fiado & Prazos.
+      </p>
+      <div class="pt-1">
+        <span class="inline-flex items-center gap-1 text-[10px] bg-amber-400/20 text-amber-300 font-bold px-2.5 py-1 rounded-full border border-amber-400/30">
+          ⚡ Sistema 100% Integrado
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOUR GUIADO INTERATIVO PARA INICIANTES (ONBOARDING) -->
   <div id="tour-overlay" class="hidden fixed inset-0 bg-black/70 z-50 flex flex-col justify-center items-center p-4">
-    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 relative border-2 border-teal-500 animate-bounce-short">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 relative border-2 border-teal-500">
       
-      <!-- CHECKLIST PARA DESABILITAR -->
       <div class="flex justify-between items-center border-b pb-2">
         <span id="tour-passo-badge" class="bg-teal-100 text-teal-800 font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
           Passo 1 de 4
@@ -190,7 +212,7 @@
     </div>
   </div>
 
-  <!-- BANNER INTELIGENTE DE ALERTA DIRECCIONADO (ESTOQUE / VALIDADE) -->
+  <!-- BANNER INTELIGENTE DE ALERTA -->
   <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
     <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
       <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
@@ -211,7 +233,7 @@
     </div>
   </div>
 
-  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
+  <!-- TELA DE BLOQUEIO SERIAL -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
       <i class="fa-solid fa-lock"></i>
@@ -230,7 +252,7 @@
     </div>
   </div>
 
-  <!-- BARRA SUPERIOR (HEADER FIXO EXECUTIVE) -->
+  <!-- BARRA SUPERIOR -->
   <header id="app-main-header" class="hidden brand-header-bg text-white p-3.5 justify-between items-center shadow-md z-10 flex-shrink-0">
     <div class="flex items-center space-x-3">
       <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-teal-200 active:scale-95 transition">
@@ -249,13 +271,12 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU LIMPO) -->
+  <!-- DRAWER LATERAL -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         
-        <!-- CARD DO USUÁRIO -->
         <div class="brand-header-bg p-4 text-white relative">
           <div class="flex justify-between items-start mb-3">
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
@@ -266,7 +287,7 @@
           
           <div class="flex items-center justify-between">
             <p id="drawer-user-nome" class="font-extrabold text-sm leading-tight truncate">Usuário do Sistema</p>
-            <button onclick="fecharDrawerNavegacao(); openModalPerfil();" title="Editar Meu Nome e Perfil" class="text-xs text-amber-300 hover:text-white bg-white/10 p-1.5 rounded-lg border border-white/20">
+            <button onclick="fecharDrawerNavegacao(); openModalPerfil();" title="Editar Perfil" class="text-xs text-amber-300 hover:text-white bg-white/10 p-1.5 rounded-lg border border-white/20">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </div>
@@ -284,7 +305,7 @@
 
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
-            <span>Alterar Nome & Estabelecimento</span>
+            <span>Alterar Nome & Loja</span>
           </button>
 
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
@@ -308,7 +329,7 @@
 
           <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
-            <span>Histórico de Fechamento de Caixa</span>
+            <span>Histórico de Fechamentos</span>
           </button>
 
           <button onclick="fecharDrawerNavegacao(); abrirSuporteWhatsApp();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
@@ -322,7 +343,6 @@
           </button>
         </div>
 
-        <!-- ZONA DE PERIGO -->
         <div class="p-3 space-y-1">
           <p class="text-[10px] font-extrabold text-red-500 uppercase tracking-wider px-2 mb-1">Zona de Perigo</p>
           <button onclick="executarLimpezaTotalManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600">
@@ -340,7 +360,7 @@
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL (SLIDER DE ABAS) -->
+  <!-- CONTEÚDO PRINCIPAL -->
   <main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
     <div id="slider-wrapper">
       <div id="slider-container">
@@ -360,7 +380,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-4 h-16">
       <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -387,7 +407,7 @@
 
 </div>
 
-  <!-- MODAL DE EMISSÃO DE RELATÓRIOS -->
+  <!-- MODAIS DO SISTEMA -->
   <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -444,7 +464,6 @@
     </div>
   </div>
 
-  <!-- MODAL HISTÓRICO DE FECHAMENTOS -->
   <div id="modal-historico-fechamentos" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -459,7 +478,6 @@
     </div>
   </div>
 
-  <!-- MODAL ALTERAR SENHA -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -492,7 +510,6 @@
     </div>
   </div>
 
-  <!-- MODAL PERFIL -->
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -539,13 +556,12 @@
         </div>
 
         <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-          💾 Salvar Alterações de Perfil
+          💾 Salvar Alterações
         </button>
       </form>
     </div>
   </div>
 
-  <!-- MODAL CADASTRO PRODUTO COM MARGEM E LUCRO REAL EM TEMPO REAL -->
   <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -580,7 +596,6 @@
         </div>
       </div>
       
-      <!-- CÁLCULO DE LUCRO E MARGEM EM TEMPO REAL -->
       <div id="margem-lucro-box" class="hidden p-2.5 rounded-xl border text-xs leading-tight"></div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -629,7 +644,6 @@
     </div>
   </div>
 
-  <!-- LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-4 max-w-sm w-full space-y-3 shadow-2xl border border-slate-700">
       <div class="flex justify-between items-center border-b pb-2">
@@ -763,7 +777,7 @@
           <input type="text" id="sangria-motivo" placeholder="Ex: Pagar fornecedor / Troco inicial" class="w-full p-2.5 border rounded-lg text-xs bg-white">
         </div>
         <button onclick="confirmarSangriaSuprimento()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-          Confirmar e Salvar no Caixa
+          Confirmar e Salvar
         </button>
       </div>
     </div>
@@ -809,12 +823,12 @@
     </div>
   </div>
 
-  <!-- BIBLIOTECAS FIREBASE -->
+  <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- LÓGICA PRINCIPAL DO APLICATIVO -->
+  <!-- LÓGICA DO APLICATIVO -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDlmmLaKNqlaze-Rreqw2cOWBhXoebeG7g",
@@ -837,7 +851,6 @@
       { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
     ];
 
-    /* LICENÇA COM CONTAGEM REGRESSIVA CORRIGIDA EM TEMPO REAL */
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
       diasDegustacao: 20,
       vitalicio: false,
@@ -866,14 +879,12 @@
     let prodFracionadoTemp = null;
     let prodEditandoIndex = null;
     
-    /* VARIÁVEIS DO LEITOR DE CÓDIGO DE BARRAS */
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
     let alertaSilenciadoSessao = false;
     let ultimoEanLido = '';
     let ultimoTempoLeitura = 0;
 
-    /* VARIÁVEIS DO TOUR GUIADO INTERATIVO (ONBOARDING v28.0) */
     let tourDesativado = localStorage.getItem('crm_tour_desativado') === 'true';
     let passoTourAtual = 0;
     let tourPrimeiraInteracaoOcorrida = false;
@@ -912,7 +923,49 @@
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
 
-    /* BIP DE CONFIRMAÇÃO DE LEITURA DO SCANNER */
+    /* SOM E AVISO FLUTUANTE DE INTEGRADO AO FIADO */
+    function tocarBeepFiadoSucesso() {
+      try {
+        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12); 
+        
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch(e) {}
+    }
+
+    function exibirToastFiadoIntegrado(nomeCliente, valorTotal) {
+      const toast = document.getElementById('toast-fiado-sucesso');
+      const txt = document.getElementById('toast-fiado-msg-texto');
+      
+      if (toast && txt) {
+        txt.innerHTML = `O cliente <b>${nomeCliente}</b> teve o valor de <b>R$ ${valorTotal.toFixed(2)}</b> lançado e sincronizado automaticamente na aba <b>Fiado & Prazos</b>!`;
+        
+        tocarBeepFiadoSucesso();
+        
+        toast.classList.remove('hidden');
+        const box = toast.firstElementChild;
+        box.classList.remove('toast-fiado-animado');
+        void box.offsetWidth; 
+        box.classList.add('toast-fiado-animado');
+        
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 3500);
+      }
+    }
+
     function tocarBeepConfirmacaoBip() {
       try {
         if ("vibrate" in navigator) navigator.vibrate(80);
@@ -946,7 +999,6 @@
       } catch(e) {}
     }
 
-    /* SISTEMA DE ONBOARDING / TOUR INTERATIVO (v28.0) */
     function prepararApresentacaoTourInicial() {
       if (tourDesativado) return;
 
@@ -1005,7 +1057,6 @@
       iniciarTourGuiado(0);
     }
 
-    /* SISTEMA DE ALERTAS DINÂMICOS INTELIGENTE */
     function verificarAlertasEstoqueValidadeAutomatico() {
       if (alertaSilenciadoSessao) return;
 
@@ -1103,7 +1154,6 @@
       }
     }
 
-    /* SISTEMA DE LICENÇA E CONTAGEM REGRESSIVA PRECISA DOS DIAS (CORRIGIDO v28.0) */
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -1522,7 +1572,6 @@
       });
     }
 
-    /* LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL */
     async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
@@ -2244,7 +2293,6 @@
       if (minimosPadrao[medida]) campoMin.value = minimosPadrao[medida];
     }
 
-    /* EXIBIÇÃO DE MARGEM E LUCRO REAL POR UNIDADE EM TEMPO REAL NO CADASTRO (v28.0) */
     function calcularEExibirMargemLucro() {
       const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
       const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
@@ -2275,7 +2323,6 @@
       }
     }
 
-    /* ABA DE ESTOQUE */
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -2863,18 +2910,15 @@
       }
     }
 
-    /* ABA DE RELATÓRIOS INTEGRADA COM CUSTO REAL DO ESTOQUE PARADO/CADASTRADO (v28.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
 
-      // Custo real acumulado dos produtos vendidos nas transações
       let totalCustoItensVendidos = 0;
       vendas.forEach(v => {
         let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
         if (prod && prod.precoCusto) totalCustoItensVendidos += (prod.precoCusto * (v.qtd || 1));
       });
 
-      // INVESTIMENTO TOTAL NO ESTOQUE ATUAL CADASTRADO (Integração Direta em Tempo Real)
       const investimentoEstoqueParado = produtos.reduce((acc, p) => acc + (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)), 0);
 
       const lucroLiquidoReal = totalVendasGeral - totalCustoItensVendidos;
@@ -2922,7 +2966,6 @@
                 <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
               </div>
 
-              <!-- DADO ATUALIZADO EM TEMPO REAL COM O ESTOQUE -->
               <div class="flex justify-between items-center">
                 <span class="text-amber-300 font-medium">📦 Investimento Atual em Estoque:</span>
                 <span class="font-extrabold text-amber-300 text-sm">R$ ${investimentoEstoqueParado.toFixed(2)}</span>
@@ -3205,6 +3248,7 @@
       renderAba();
     }
 
+    /* FINALIZAÇÃO DA VENDA COM INTEGRADOR DE FIADO E AVISO ANIMADO */
     function processarFinalizarVenda(modoEnvio) {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       
@@ -3286,9 +3330,14 @@
       carrinho = [];
       clienteAtualVenda = { nome: '', zap: '' };
 
+      // DISPARA MENSAGEM FLUTUANTE ANIMADA AO VENDER EM FIADO
+      if (pagto === 'Fiado') {
+        exibirToastFiadoIntegrado(clienteNome, totalVenda);
+      }
+
       if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
       else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
-      else alert("✅ Venda finalizada com sucesso!");
+      else if (pagto !== 'Fiado') alert("✅ Venda finalizada com sucesso!");
 
       renderAba();
       verificarAlertasEstoqueValidadeAutomatico();
@@ -3380,7 +3429,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 28.0 (Tour Interativo + Custo Inteligente) carregada!");
+    console.log("Caixa Rápido Móvel Pro - Versão 29.0 Carregada com Sucesso!");
   </script>
 </body>
 </html>

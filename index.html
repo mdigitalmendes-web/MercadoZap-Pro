@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v24.0</title>
+  <title>Caixa Rápido Móvel Pro v25.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -23,11 +23,16 @@
       font-family: system-ui, -apple-system, sans-serif;
       background-color: #f3f4f6;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: #111827;
+      color: #f3f4f6;
     }
 
     .whatsapp-green { background-color: #075e54; }
 
-    /* ESTRUTURA FIXA DA TELA E NAVEGAÇÃO */
     #app-container {
       display: flex;
       flex-direction: column;
@@ -79,13 +84,13 @@
       border-radius: 12px;
     }
 
-    /* NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS (TOAST) */
-    #toast-boas-vindas {
+    /* TOAST DE BOAS-VINDAS E BANNER DE ALERTA */
+    #toast-boas-vindas, #banner-alerta-estoque {
       transition: all 0.4s ease-in-out;
-      transform: translateY(-100%);
+      transform: translateY(-120%);
       opacity: 0;
     }
-    #toast-boas-vindas.show {
+    #toast-boas-vindas.show, #banner-alerta-estoque.show {
       transform: translateY(0);
       opacity: 1;
     }
@@ -95,8 +100,8 @@
 
 <div id="app-container">
 
-  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA COM O NOME (v24.0) -->
-  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3">
+  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA -->
+  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
       👋
     </div>
@@ -106,6 +111,22 @@
     </div>
   </div>
 
+  <!-- BANNER INTERATIVO DE ALERTA DE ESTOQUE E VALIDADE -->
+  <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-red-900 text-white p-3.5 rounded-2xl shadow-2xl border border-red-500/50 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2.5 flex-1 cursor-pointer" onclick="irParaAbaEstoqueComAlerta()">
+      <div class="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce">
+        🚨
+      </div>
+      <div class="min-w-0">
+        <h4 class="font-extrabold text-xs text-red-200">Atenção ao Estoque!</h4>
+        <p id="banner-alerta-texto" class="text-[11px] text-gray-200 truncate">Existem itens acabando ou vencendo.</p>
+      </div>
+    </div>
+    <button onclick="silenciarAlerta()" title="Silenciar Alerta" class="text-xs bg-red-800 hover:bg-red-700 text-red-200 px-2.5 py-1.5 rounded-lg font-bold border border-red-700/50">
+      🔕 Silenciar
+    </button>
+  </div>
+
   <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
@@ -113,7 +134,7 @@
     </div>
     <h2 class="text-2xl font-extrabold text-red-500">Período de Teste Expirado!</h2>
     <p class="text-xs text-gray-300 mt-2 max-w-xs leading-relaxed">
-      Sua licença de teste de 20 dias terminou. Insira o Código de Desbloqueio ou Serial para renovar.
+      Sua licença de teste de 20 dias terminou. Insira a Senha ou Serial para continuar utilizando.
     </p>
 
     <div class="mt-6 w-full max-w-xs space-y-3">
@@ -144,13 +165,13 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU AUXILIAR COM RENOMEAR PERFIL - v24.0) -->
+  <!-- DRAWER LATERAL (MENU LIMPO E ORGANIZADO - v25.0) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         
-        <!-- CARD DO USUÁRIO LOGADO COM BOTÃO DE RENOMEAR (v24.0) -->
+        <!-- CARD DO USUÁRIO LOGADO -->
         <div class="whatsapp-green p-4 text-white relative">
           <div class="flex justify-between items-start mb-3">
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
@@ -175,11 +196,11 @@
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Segurança & Conta</p>
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
 
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
-            <span>Alterar Meu Nome / Perfil</span>
+            <span>Alterar Nome & Estabelecimento</span>
           </button>
 
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
@@ -194,20 +215,25 @@
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Configurações do Negócio</p>
+          <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
 
-          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-store text-teal-600 w-5 text-center"></i>
-            <span>Perfil do Estabelecimento</span>
+          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
+            <span>Histórico de Fechamento de Caixa</span>
           </button>
 
-          <button onclick="fecharDrawerNavegacao(); abrirModalMinimosPadrao();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-sliders text-amber-600 w-5 text-center"></i>
-            <span>Padrões do Estoque</span>
+          <button onclick="fecharDrawerNavegacao(); abrirSuporteWhatsApp();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-brands fa-whatsapp text-green-600 w-5 text-center"></i>
+            <span>Suporte Técnico</span>
+          </button>
+
+          <button onclick="toggleModoEscuro()" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-moon text-indigo-600 w-5 text-center"></i>
+            <span id="label-modo-escuro">Ativar Modo Escuro</span>
           </button>
 
           <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-circle-question text-purple-600 w-5 text-center"></i>
+            <i class="fa-solid fa-circle-question text-teal-600 w-5 text-center"></i>
             <span>Guia de Uso</span>
           </button>
         </div>
@@ -332,6 +358,21 @@
     </div>
   </div>
 
+  <!-- MODAL HISTÓRICO DE FECHAMENTOS -->
+  <div id="modal-historico-fechamentos" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-purple-600"></i> Histórico de Fechamentos de Caixa
+        </h3>
+        <button onclick="fecharHistoricoFechamentos()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+
+      <div id="lista-historico-fechamentos-box" class="space-y-2 text-xs">
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ALTERAR SENHA SEGURO -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
@@ -365,7 +406,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE PERFIL E EDIÇÃO DO NOME DO USUÁRIO (v24.0) -->
+  <!-- MODAL DE PERFIL E EDIÇÃO DO NOME DO USUÁRIO -->
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -716,8 +757,13 @@
 
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
       diasDegustacao: 20,
-      vitalicio: false
+      vitalicio: false,
+      dataInicioLocal: Date.now()
     };
+    if (!licencaInfo.dataInicioLocal) {
+      licencaInfo.dataInicioLocal = Date.now();
+      localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
+    }
 
     let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
@@ -738,9 +784,65 @@
     let prodEditandoIndex = null;
     let html5QrcodeScanner = null;
     let modoScannerDestino = 'caixa';
+    let alertaSilenciadoSessao = false;
     
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
+
+    function emitirBeepEAlertaVibracao() {
+      if (alertaSilenciadoSessao) return;
+      try {
+        if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch(e) {}
+    }
+
+    function verificarAlertasEstoqueValidadeAutomatico() {
+      if (alertaSilenciadoSessao) return;
+
+      let hoje = new Date();
+      let trintaDiasFrente = new Date();
+      trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+      let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+      let validades = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+
+      const banner = document.getElementById('banner-alerta-estoque');
+      const bannerTexto = document.getElementById('banner-alerta-texto');
+
+      if (minimos.length > 0 || validades.length > 0) {
+        let msgs = [];
+        if (minimos.length > 0) msgs.push(`${minimos.length} no mínimo`);
+        if (validades.length > 0) msgs.push(`${validades.length} vencendo/vencido(s)`);
+
+        if (bannerTexto) bannerTexto.innerText = msgs.join(' | ');
+        if (banner) banner.classList.add('show');
+        emitirBeepEAlertaVibracao();
+      } else {
+        if (banner) banner.classList.remove('show');
+      }
+    }
+
+    function silenciarAlerta() {
+      alertaSilenciadoSessao = true;
+      const banner = document.getElementById('banner-alerta-estoque');
+      if (banner) banner.classList.remove('show');
+    }
+
+    function irParaAbaEstoqueComAlerta() {
+      silenciarAlerta();
+      setSubAbaEstoque('minimos');
+      switchTab('estoque');
+    }
 
     function exibirBoasVindasToast(nomeCompleto) {
       const toast = document.getElementById('toast-boas-vindas');
@@ -781,10 +883,13 @@
       }
 
       const user = auth.currentUser;
-      if (!user) return true;
+      let inicio = licencaInfo.dataInicioLocal || Date.now();
+      if (user && user.metadata && user.metadata.creationTime) {
+        let dataCriacaoFirebase = new Date(user.metadata.creationTime).getTime();
+        if (dataCriacaoFirebase < inicio) inicio = dataCriacaoFirebase;
+      }
 
-      let dataCriacao = user.metadata.creationTime ? new Date(user.metadata.creationTime).getTime() : Date.now();
-      const msPassados = Date.now() - dataCriacao;
+      const msPassados = Date.now() - inicio;
       const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
       const diasRestantes = licencaInfo.diasDegustacao - diasUsados;
 
@@ -821,12 +926,53 @@
     function openModalLicencaStatus() {
       if (licencaInfo.vitalicio) alert("Sua licença é VITALÍCIA e ilimitada!");
       else {
-        const user = auth.currentUser;
-        let dataCriacao = user && user.metadata.creationTime ? new Date(user.metadata.creationTime).getTime() : Date.now();
-        const msPassados = Date.now() - dataCriacao;
+        let inicio = licencaInfo.dataInicioLocal || Date.now();
+        const msPassados = Date.now() - inicio;
         const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
         alert(`Licença de Demonstração:\nRestam ${Math.max(0, licencaInfo.diasDegustacao - diasUsados)} dia(s) de uso.`);
       }
+    }
+
+    function toggleModoEscuro() {
+      document.body.classList.toggle('dark-mode');
+      const ehDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('crm_theme_dark', ehDark ? 'true' : 'false');
+      document.getElementById('label-modo-escuro').innerText = ehDark ? "Desativar Modo Escuro" : "Ativar Modo Escuro";
+    }
+
+    if (localStorage.getItem('crm_theme_dark') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+
+    function abrirHistoricoFechamentos() {
+      const box = document.getElementById('lista-historico-fechamentos-box');
+      if (historicoFechamentos.length === 0) {
+        box.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Nenhum fechamento registrado até o momento.</p>`;
+      } else {
+        box.innerHTML = historicoFechamentos.slice().reverse().map(f => `
+          <div class="bg-gray-50 border p-3 rounded-xl space-y-1">
+            <div class="flex justify-between font-bold text-gray-800">
+              <span>📅 ${f.data} às ${f.hora}</span>
+              <span class="${f.diferenca === 0 ? 'text-green-700' : (f.diferenca > 0 ? 'text-blue-700' : 'text-red-600')}">
+                ${f.diferenca === 0 ? 'Exato' : (f.diferenca > 0 ? '+R$ ' + f.diferenca.toFixed(2) : '-R$ ' + Math.abs(f.diferenca).toFixed(2))}
+              </span>
+            </div>
+            <div class="flex justify-between text-[11px] text-gray-600">
+              <span>Vendas: R$ ${parseFloat(f.totalVendas).toFixed(2)} (${f.vendasQtd} vendas)</span>
+              <span>Gaveta: R$ ${parseFloat(f.gavetaContada).toFixed(2)}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('modal-historico-fechamentos').classList.remove('hidden');
+    }
+
+    function fecharHistoricoFechamentos() {
+      document.getElementById('modal-historico-fechamentos').classList.add('hidden');
+    }
+
+    function abrirSuporteWhatsApp() {
+      window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
     }
 
     function showLoginForm() {
@@ -1034,7 +1180,6 @@
       });
     }
 
-    /* REDEFINIÇÃO DE SENHA COM AVISO DE SPAM (v24.0) */
     function showEsqueceuSenhaForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -1283,7 +1428,6 @@
       document.getElementById('drawer-menu').classList.add('hidden'); 
     }
 
-    /* MODAL DE EDIÇÃO DO NOME E PERFIL (v24.0) */
     function openModalPerfil() {
       const user = auth.currentUser;
       document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
@@ -1296,7 +1440,7 @@
 
     function closeModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); }
     function openModalAjuda() { document.getElementById('modal-ajuda').classList.remove('hidden'); }
-    function closeModalAjuda() { document.getElementById('modal-ajuda').classList.remove('hidden'); }
+    function closeModalAjuda() { document.getElementById('modal-ajuda').classList.add('hidden'); }
 
     function salvarPerfilNegocio(e) {
       e.preventDefault();
@@ -1372,6 +1516,7 @@
       });
 
       renderAba();
+      verificarAlertasEstoqueValidadeAutomatico();
     }
 
     function renderAba() {
@@ -2422,6 +2567,7 @@
       }
     }
 
+    /* REFORMULAÇÃO DA ABA DE RELATÓRIOS (CARD EXECUTIVO ÚNICO - v25.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2430,48 +2576,82 @@
         if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
       });
       const lucroLiquido = totalVendasGeral - totalCustoGeral;
+      const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
+
+      let contagemItens = {};
+      vendas.forEach(v => {
+        let nomeItem = v.item || 'Item Avulso';
+        contagemItens[nomeItem] = (contagemItens[nomeItem] || 0) + 1;
+      });
+
+      let topItens = Object.keys(contagemItens)
+        .map(key => ({ nome: key, qtd: contagemItens[key] }))
+        .sort((a,b) => b.qtd - a.qtd)
+        .slice(0, 5);
+
+      let topItensHTML = topItens.length > 0 
+        ? topItens.map((it, i) => `
+            <div class="flex justify-between items-center text-xs py-1 border-b border-gray-100 last:border-0">
+              <span class="font-bold text-gray-800">${i+1}. ${it.nome}</span>
+              <span class="bg-teal-50 text-teal-800 font-extrabold px-2 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} venda(s)</span>
+            </div>
+          `).join('')
+        : '<p class="text-xs text-gray-400 italic text-center py-2">Sem vendas no histórico.</p>';
 
       document.getElementById('content-relatorios').innerHTML = `
         <div class="space-y-4">
           <h2 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-            <i class="fa-solid fa-chart-line text-teal-600"></i> Resumo Financeiro & Balanço
+            <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial Executivo
           </h2>
 
-          <div class="grid grid-cols-1 gap-2.5">
-            <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border border-gray-700 flex justify-between items-center">
-              <div>
-                <p class="text-[10px] text-gray-300 font-semibold uppercase">Faturamento Bruto</p>
-                <p class="text-xl font-extrabold text-white mt-0.5">R$ ${totalVendasGeral.toFixed(2)}</p>
-              </div>
-              <div class="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center text-teal-400 text-lg">
-                <i class="fa-solid fa-arrow-up-right-dots"></i>
-              </div>
+          <!-- CARD ÚNICO DE BALANÇO FINANCEIRO INTEGRADO (v25.0) -->
+          <div class="bg-gray-900 text-white p-4 rounded-2xl shadow-xl border border-gray-800 space-y-3">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+              <span class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet"></i> Balanço Financeiro Acumulado
+              </span>
+              <span class="text-[10px] bg-teal-900/60 text-teal-300 font-bold px-2 py-0.5 rounded-full border border-teal-700/50">
+                ${vendas.length} Vendas
+              </span>
             </div>
 
-            <div class="bg-gray-800 text-white p-3.5 rounded-xl shadow border border-gray-700 flex justify-between items-center">
-              <div>
-                <p class="text-[10px] text-gray-300 font-semibold uppercase">Custo de Estoque</p>
-                <p class="text-xl font-extrabold text-red-300 mt-0.5">R$ ${totalCustoGeral.toFixed(2)}</p>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300 font-medium">🟢 Faturamento Bruto:</span>
+                <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
               </div>
-              <div class="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center text-red-400 text-lg">
-                <i class="fa-solid fa-boxes-packing"></i>
-              </div>
-            </div>
 
-            <div class="bg-teal-900 text-white p-4 rounded-xl shadow border border-teal-700 flex justify-between items-center">
-              <div>
-                <p class="text-[10px] text-teal-200 font-bold uppercase">Lucro Líquido Real</p>
-                <p class="text-2xl font-extrabold text-green-400 mt-0.5">R$ ${lucroLiquido.toFixed(2)}</p>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300 font-medium">🔴 Custo Estimado Estoque:</span>
+                <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoGeral.toFixed(2)}</span>
               </div>
-              <div class="w-12 h-12 bg-teal-800 rounded-2xl flex items-center justify-center text-green-400 text-2xl shadow-inner">
-                <i class="fa-solid fa-sack-dollar"></i>
+
+              <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
+                <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span>
+                <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquido.toFixed(2)}</span>
+              </div>
+
+              <div class="flex justify-between items-center pt-1 text-[11px] text-gray-400">
+                <span>📊 Ticket Médio por Venda:</span>
+                <span class="font-bold text-amber-300">R$ ${ticketMedio.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
-          <div class="pt-2">
+          <!-- TOP 5 MAIS VENDIDOS -->
+          <div class="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-sm space-y-2">
+            <h3 class="font-extrabold text-xs text-gray-800 flex items-center gap-1.5 border-b pb-1.5">
+              <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas (Top 5)
+            </h3>
+            <div class="space-y-1">
+              ${topItensHTML}
+            </div>
+          </div>
+
+          <!-- AÇÃO E EMISSÃO DE DOCUMENTOS -->
+          <div class="pt-1">
             <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition active:scale-95">
-              <i class="fa-solid fa-file-export text-base"></i> ⚡ Gerar Relatório ou Exportar Dados
+              <i class="fa-solid fa-file-export text-base"></i> Gerar Relatório PDF / Exportar .CSV
             </button>
           </div>
         </div>
@@ -2768,6 +2948,7 @@
       else alert("✅ Venda finalizada!");
 
       renderAba();
+      verificarAlertasEstoqueValidadeAutomatico();
     }
 
     function enviarComprovanteDiretoWhatsApp(vendaObj) {
@@ -2842,9 +3023,11 @@
           }
           switchTab('vendas');
           exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
+          verificarAlertasEstoqueValidadeAutomatico();
         }).catch(() => {
           switchTab('vendas');
           exibirBoasVindasToast(user.displayName || 'Operador');
+          verificarAlertasEstoqueValidadeAutomatico();
         });
       } else {
         mostrarInterfaceAutenticada(false);
@@ -2852,7 +3035,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 24.0 carregada com sucesso!");
+    console.log("Caixa Rápido Móvel Pro - Versão 25.0 carregada com sucesso!");
   </script>
 </body>
 </html>

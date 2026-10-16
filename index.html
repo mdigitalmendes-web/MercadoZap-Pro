@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v27.0</title>
+  <title>Caixa Rápido Móvel Pro v28.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -117,14 +117,70 @@
       transform: translateY(0);
       opacity: 1;
     }
+
+    /* MASCARA E BALÃO DO TOUR GUIADO INTERATIVO (ONBOARDING) */
+    #tour-overlay {
+      backdrop-filter: blur(4px);
+      transition: opacity 0.3s ease;
+    }
+    .tour-arrow-up {
+      width: 0; 
+      height: 0; 
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 12px solid white;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
 
 <div id="app-container">
 
+  <!-- TOUR GUIADO INTERATIVO PARA INICIANTES (ONBOARDING v28.0) -->
+  <div id="tour-overlay" class="hidden fixed inset-0 bg-black/70 z-50 flex flex-col justify-center items-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 relative border-2 border-teal-500 animate-bounce-short">
+      
+      <!-- CHECKLIST PARA DESABILITAR -->
+      <div class="flex justify-between items-center border-b pb-2">
+        <span id="tour-passo-badge" class="bg-teal-100 text-teal-800 font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
+          Passo 1 de 4
+        </span>
+        <label class="flex items-center gap-1.5 cursor-pointer">
+          <input type="checkbox" id="chk-desativar-tour" onchange="toggleStatusTourGeral(this.checked)" class="rounded text-teal-600 w-3.5 h-3.5">
+          <span class="text-[10px] font-bold text-slate-500">Não mostrar mais</span>
+        </label>
+      </div>
+
+      <div class="flex items-start gap-3">
+        <div id="tour-icone-box" class="w-12 h-12 bg-teal-600 text-white rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-md">
+          <i class="fa-solid fa-store"></i>
+        </div>
+        <div>
+          <h3 id="tour-titulo" class="font-extrabold text-sm text-slate-800 leading-tight">Bem-vindo ao Caixa!</h3>
+          <p id="tour-descricao" class="text-xs text-slate-600 mt-1 leading-relaxed">
+            Aqui você registra vendas rápidas, consulta clientes e bipar produtos usando a câmera do celular.
+          </p>
+        </div>
+      </div>
+
+      <div id="tour-dica-extra" class="bg-teal-50 border border-teal-200 p-2.5 rounded-xl text-[11px] text-teal-900 font-semibold leading-snug">
+        💡 Use a busca para encontrar itens ou adicione valores avulsos.
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="pularTourInterativo()" class="text-xs font-bold text-slate-400 hover:text-slate-600">
+          Pular Dicas
+        </button>
+        <button onclick="proximoPassoTour()" class="bg-teal-600 hover:bg-teal-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow transition flex items-center gap-1.5">
+          Próximo Passo <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS -->
-  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
+  <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
       👋
     </div>
@@ -135,7 +191,7 @@
   </div>
 
   <!-- BANNER INTELIGENTE DE ALERTA DIRECCIONADO (ESTOQUE / VALIDADE) -->
-  <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
+  <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
     <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
       <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
         🚨
@@ -245,6 +301,11 @@
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
 
+          <button onclick="fecharDrawerNavegacao(); reativarTourInterativoManual();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+            <i class="fa-solid fa-wand-magic-sparkles text-teal-600 w-5 text-center"></i>
+            <span>Reativar Tutorial Passo a Passo</span>
+          </button>
+
           <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
             <span>Histórico de Fechamento de Caixa</span>
@@ -258,11 +319,6 @@
           <button onclick="toggleModoEscuro()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-moon text-indigo-600 w-5 text-center"></i>
             <span id="label-modo-escuro">Ativar Modo Escuro</span>
-          </button>
-
-          <button onclick="fecharDrawerNavegacao(); openModalAjuda();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
-            <i class="fa-solid fa-circle-question text-teal-600 w-5 text-center"></i>
-            <span>Guia de Uso</span>
           </button>
         </div>
 
@@ -304,7 +360,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v27.0) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-4 h-16">
       <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -342,7 +398,6 @@
       </div>
 
       <div class="space-y-3">
-        <!-- SELEÇÃO DE TIPO DE RELATÓRIO -->
         <div>
           <label class="block text-xs font-extrabold text-slate-700 mb-1">1. Escolha o Tipo de Relatório:</label>
           <select id="relatorio-tipo-conteudo" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
@@ -354,7 +409,6 @@
           </select>
         </div>
 
-        <!-- SELEÇÃO DE PERÍODO -->
         <div>
           <label class="block text-xs font-extrabold text-slate-700 mb-1">2. Selecione o Período Desejado:</label>
           <select id="pdf-periodo-tipo" onchange="toggleInputsDatasRelatorio(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
@@ -377,7 +431,6 @@
           </div>
         </div>
 
-        <!-- BOTOES DE EXPORTAÇÃO -->
         <div class="pt-2 space-y-2">
           <button onclick="gerarPDFProfissional()" class="w-full bg-red-600 text-white font-extrabold py-3 rounded-xl hover:bg-red-700 transition text-xs shadow flex justify-center items-center gap-2">
             <i class="fa-solid fa-file-pdf text-sm"></i> Baixar Documento em PDF
@@ -492,7 +545,7 @@
     </div>
   </div>
 
-  <!-- MODAL CADASTRO PRODUTO -->
+  <!-- MODAL CADASTRO PRODUTO COM MARGEM E LUCRO REAL EM TEMPO REAL -->
   <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -518,15 +571,17 @@
       
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo R$</label>
-          <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo R$ *</label>
+          <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-slate-700">
         </div>
         <div>
           <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Venda R$ *</label>
           <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-teal-800">
         </div>
       </div>
-      <p id="margem-lucro-box" class="text-[11px] font-bold text-teal-700"></p>
+      
+      <!-- CÁLCULO DE LUCRO E MARGEM EM TEMPO REAL -->
+      <div id="margem-lucro-box" class="hidden p-2.5 rounded-xl border text-xs leading-tight"></div>
 
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -574,7 +629,7 @@
     </div>
   </div>
 
-  <!-- LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL (MODO CONTÍNUO v27.0) -->
+  <!-- LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL -->
   <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-4 max-w-sm w-full space-y-3 shadow-2xl border border-slate-700">
       <div class="flex justify-between items-center border-b pb-2">
@@ -587,7 +642,6 @@
         <button onclick="fecharScanner()" class="text-slate-500 text-2xl font-bold hover:text-red-600 p-1">&times;</button>
       </div>
       
-      <!-- CONFIRMAÇÃO VISUAL DE BIPADO -->
       <div id="scanner-feedback-box" class="hidden bg-green-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce">
         ✅ Produto Adicionado com Sucesso!
       </div>
@@ -755,20 +809,6 @@
     </div>
   </div>
 
-  <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema</h3>
-        <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
-      </div>
-      <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-        <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua! Mantenha a câmera aberta e passe todas as embalagens. O app emitirá um bip de confirmação para cada item reconhecido.</p>
-        <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
-        <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
-      </div>
-    </div>
-  </div>
-
   <!-- BIBLIOTECAS FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -797,6 +837,7 @@
       { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
     ];
 
+    /* LICENÇA COM CONTAGEM REGRESSIVA CORRIGIDA EM TEMPO REAL */
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
       diasDegustacao: 20,
       vitalicio: false,
@@ -831,11 +872,47 @@
     let alertaSilenciadoSessao = false;
     let ultimoEanLido = '';
     let ultimoTempoLeitura = 0;
-    
+
+    /* VARIÁVEIS DO TOUR GUIADO INTERATIVO (ONBOARDING v28.0) */
+    let tourDesativado = localStorage.getItem('crm_tour_desativado') === 'true';
+    let passoTourAtual = 0;
+    let tourPrimeiraInteracaoOcorrida = false;
+
+    const passosTour = [
+      {
+        aba: 'vendas',
+        icone: 'fa-solid fa-cash-register',
+        titulo: '1. Aba Caixa (Ponto de Venda)',
+        descricao: 'Aqui você registra suas vendas! Preencha o nome do cliente e WhatsApp para enviar o recibo direto pelo app.',
+        dica: '💡 Clique em "Bipar Vários Itens" para ligar a câmera e passar várias mercadorias seguidas.'
+      },
+      {
+        aba: 'estoque',
+        icone: 'fa-solid fa-boxes-stacked',
+        titulo: '2. Aba Estoque (Controle Inteligente)',
+        descricao: 'Cadastre e edite seus produtos com preço de custo e venda. O app avisa automaticamente quando o estoque estiver baixo ou prestes a vencer!',
+        dica: '💡 O sistema calcula o lucro exato e a margem percentual em tempo real no cadastro.'
+      },
+      {
+        aba: 'clientes',
+        icone: 'fa-solid fa-users-viewfinder',
+        titulo: '3. Aba Fiado & Prazos (Contas a Receber)',
+        descricao: 'Gerencie clientes devedores, registre prazos de pagamento e envie lembretes de cobrança no WhatsApp com apenas 1 clique!',
+        dica: '💡 Você pode abater pagamentos parciais do saldo devedor do cliente a qualquer momento.'
+      },
+      {
+        aba: 'relatorios',
+        icone: 'fa-solid fa-chart-pie',
+        titulo: '4. Aba Relatórios & DRE Executivo',
+        descricao: 'Acompanhe seu faturamento bruto, o custo real do estoque parado e seu LUCRO LÍQUIDO acumulado com precisão absoluta!',
+        dica: '💡 Baixe relatórios profissionais em PDF ou exporte arquivos contábeis em .CSV.'
+      }
+    ];
+
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
     let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
 
-    /* BIP DE CONFIRMAÇÃO DE LEITURA DO SCANNER (v27.0) */
+    /* BIP DE CONFIRMAÇÃO DE LEITURA DO SCANNER */
     function tocarBeepConfirmacaoBip() {
       try {
         if ("vibrate" in navigator) navigator.vibrate(80);
@@ -843,7 +920,7 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(1800, audioCtx.currentTime); // Tom agudo tipo PDV
+        osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -867,6 +944,65 @@
         osc.start();
         osc.stop(audioCtx.currentTime + 0.35);
       } catch(e) {}
+    }
+
+    /* SISTEMA DE ONBOARDING / TOUR INTERATIVO (v28.0) */
+    function prepararApresentacaoTourInicial() {
+      if (tourDesativado) return;
+
+      const handlerPrimeiroToque = () => {
+        if (!tourPrimeiraInteracaoOcorrida && !tourDesativado && auth.currentUser) {
+          tourPrimeiraInteracaoOcorrida = true;
+          iniciarTourGuiado(0);
+        }
+        window.removeEventListener('click', handlerPrimeiroToque);
+        window.removeEventListener('touchstart', handlerPrimeiroToque);
+      };
+
+      window.addEventListener('click', handlerPrimeiroToque);
+      window.addEventListener('touchstart', handlerPrimeiroToque);
+    }
+
+    function iniciarTourGuiado(passo = 0) {
+      passoTourAtual = passo;
+      const step = passosTour[passoTourAtual];
+      if (!step) return;
+
+      switchTab(step.aba);
+
+      document.getElementById('tour-passo-badge').innerText = `Passo ${passoTourAtual + 1} de ${passosTour.length}`;
+      document.getElementById('tour-icone-box').innerHTML = `<i class="${step.icone}"></i>`;
+      document.getElementById('tour-titulo').innerText = step.titulo;
+      document.getElementById('tour-descricao').innerText = step.descricao;
+      document.getElementById('tour-dica-extra').innerText = step.dica;
+      document.getElementById('chk-desativar-tour').checked = tourDesativado;
+
+      document.getElementById('tour-overlay').classList.remove('hidden');
+    }
+
+    function proximoPassoTour() {
+      if (passoTourAtual < passosTour.length - 1) {
+        iniciarTourGuiado(passoTourAtual + 1);
+      } else {
+        pularTourInterativo();
+        alert("🎉 Parabéns! Você concluiu o guia do Caixa Rápido Móvel Pro!");
+      }
+    }
+
+    function pularTourInterativo() {
+      document.getElementById('tour-overlay').classList.add('hidden');
+      switchTab('vendas');
+    }
+
+    function toggleStatusTourGeral(desativado) {
+      tourDesativado = desativado;
+      localStorage.setItem('crm_tour_desativado', desativado ? 'true' : 'false');
+    }
+
+    function reativarTourInterativoManual() {
+      tourDesativado = false;
+      localStorage.setItem('crm_tour_desativado', 'false');
+      iniciarTourGuiado(0);
     }
 
     /* SISTEMA DE ALERTAS DINÂMICOS INTELIGENTE */
@@ -893,7 +1029,7 @@
           bannerTexto.innerText = `${minimos.length} produto(s) atingiram o limite mínimo.`;
           bannerIcone.innerText = "⚠️";
           bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
-          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
+          banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
           
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
           if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
@@ -903,7 +1039,7 @@
           bannerTexto.innerText = `${validades.length} produto(s) prestes a vencer ou vencidos.`;
           bannerIcone.innerText = "📅";
           bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-amber-600 text-white";
-          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-amber-500/80 show";
+          banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-amber-500/80 show";
           
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('validades');
           if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('validades');
@@ -913,7 +1049,7 @@
           bannerTexto.innerText = `${minimos.length} item(ns) baixo(s) e ${validades.length} vencendo.`;
           bannerIcone.innerText = "🚨";
           bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
-          banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
+          banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
           
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
           if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
@@ -967,6 +1103,7 @@
       }
     }
 
+    /* SISTEMA DE LICENÇA E CONTAGEM REGRESSIVA PRECISA DOS DIAS (CORRIGIDO v28.0) */
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -977,6 +1114,7 @@
 
       const user = auth.currentUser;
       let inicio = licencaInfo.dataInicioLocal || Date.now();
+      
       if (user && user.metadata && user.metadata.creationTime) {
         let dataCriacaoFirebase = new Date(user.metadata.creationTime).getTime();
         if (dataCriacaoFirebase < inicio) inicio = dataCriacaoFirebase;
@@ -1022,7 +1160,8 @@
         let inicio = licencaInfo.dataInicioLocal || Date.now();
         const msPassados = Date.now() - inicio;
         const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
-        alert(`Licença de Demonstração:\nRestam ${Math.max(0, licencaInfo.diasDegustacao - diasUsados)} dia(s) de uso.`);
+        const restam = Math.max(0, licencaInfo.diasDegustacao - diasUsados);
+        alert(`Licença de Demonstração:\nRestam exatamente ${restam} dia(s) de uso de um total de ${licencaInfo.diasDegustacao} dias.`);
       }
     }
 
@@ -1383,7 +1522,7 @@
       });
     }
 
-    /* LEITOR DE CÓDIGO DE BARRAS REFORMULADO (LEITURA CONTÍNUA E BIPS v27.0) */
+    /* LEITOR DE CÓDIGO DE BARRAS PROFISSIONAL */
     async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
@@ -1442,7 +1581,6 @@
     function onScanSuccess(decodedText) {
       let agora = Date.now();
       
-      // Filtro anti-duplicação acidental (evita ler o mesmo produto várias vezes no mesmo segundo)
       if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) {
         return;
       }
@@ -1455,13 +1593,9 @@
         if (prod) {
           let idxReal = produtos.findIndex(p => p.id === prod.id);
           
-          // Toca o BIP de confirmação instantâneo
           tocarBeepConfirmacaoBip();
-          
-          // Adiciona diretamente ao carrinho
           adicionarAoCarrinhoSilent(idxReal);
           
-          // Feedback visual rápido no visor do scanner sem fechar a câmera
           const feedback = document.getElementById('scanner-feedback-box');
           feedback.innerText = `✅ +1 ${prod.nome} (R$ ${prod.preco.toFixed(2)})`;
           feedback.classList.remove('hidden');
@@ -1505,7 +1639,6 @@
       if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
       else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un' }); }
       
-      // Atualiza a tela de caixa no fundo
       renderAbaVendas();
     }
 
@@ -1582,8 +1715,6 @@
     }
 
     function closeModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); }
-    function openModalAjuda() { document.getElementById('modal-ajuda').classList.remove('hidden'); }
-    function closeModalAjuda() { document.getElementById('modal-ajuda').classList.add('hidden'); }
 
     function salvarPerfilNegocio(e) {
       e.preventDefault();
@@ -2113,6 +2244,7 @@
       if (minimosPadrao[medida]) campoMin.value = minimosPadrao[medida];
     }
 
+    /* EXIBIÇÃO DE MARGEM E LUCRO REAL POR UNIDADE EM TEMPO REAL NO CADASTRO (v28.0) */
     function calcularEExibirMargemLucro() {
       const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
       const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
@@ -2121,12 +2253,29 @@
       if (venda > 0 && custo > 0) {
         let lucro = venda - custo;
         let pct = (lucro / venda) * 100;
-        boxMargem.innerText = `Margem de Lucro Real: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
-        boxMargem.className = pct < 15 ? "text-[11px] font-bold text-red-600 mt-1" : "text-[11px] font-bold text-green-700 mt-1";
-      } else boxMargem.innerText = "";
+        
+        boxMargem.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span>💰 <b>Lucro Unitário:</b> R$ ${lucro.toFixed(2)}</span>
+            <span>📊 <b>Margem:</b> ${pct.toFixed(1)}%</span>
+          </div>
+        `;
+
+        if (pct < 15) {
+          boxMargem.className = "p-2 rounded-xl bg-red-50 border border-red-300 text-red-800 text-[11px] font-extrabold mt-1";
+        } else if (pct < 30) {
+          boxMargem.className = "p-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-extrabold mt-1";
+        } else {
+          boxMargem.className = "p-2 rounded-xl bg-green-50 border border-green-300 text-green-800 text-[11px] font-extrabold mt-1";
+        }
+
+        boxMargem.classList.remove('hidden');
+      } else {
+        boxMargem.classList.add('hidden');
+      }
     }
 
-    /* ABA DE ESTOQUE LIMPA (SEM O BOTAO DE BIPAR DESNECESSÁRIO) */
+    /* ABA DE ESTOQUE */
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -2198,6 +2347,7 @@
       document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
       document.getElementById('cad-prod-validade').value = '';
       document.getElementById('cad-prod-atalho').checked = true;
+      document.getElementById('margem-lucro-box').classList.add('hidden');
       preencherMinimoAutomaticoPorMedida();
       document.getElementById('modal-cadastro-produto').classList.remove('hidden');
     }
@@ -2262,6 +2412,8 @@
       document.getElementById('cad-prod-entrada').value = p.dataEntrada || '';
       document.getElementById('cad-prod-validade').value = p.validade || '';
       document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
+
+      calcularEExibirMargemLucro();
 
       document.getElementById('modal-cadastro-produto').classList.remove('hidden');
     }
@@ -2393,6 +2545,7 @@
       fecharModalAjusteRapido();
       alert(`✅ Produto "${p.nome}" atualizado!`);
       renderAbaEstoque();
+      renderAbaRelatorios();
     }
 
     function buscarEExibirProdutoEstoque(termo) {
@@ -2502,6 +2655,7 @@
       fecharModalCadastroProduto();
       alert("✅ Produto salvo!");
       renderAbaEstoque();
+      renderAbaRelatorios();
     }
 
     function excluirProduto(index) {
@@ -2509,6 +2663,7 @@
         produtos.splice(index, 1);
         localStorage.setItem('crm_produtos', JSON.stringify(produtos));
         renderAbaEstoque();
+        renderAbaRelatorios();
       }
     }
 
@@ -2708,15 +2863,21 @@
       }
     }
 
-    /* ABA DE RELATÓRIOS */
+    /* ABA DE RELATÓRIOS INTEGRADA COM CUSTO REAL DO ESTOQUE PARADO/CADASTRADO (v28.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-      let totalCustoGeral = 0;
+
+      // Custo real acumulado dos produtos vendidos nas transações
+      let totalCustoItensVendidos = 0;
       vendas.forEach(v => {
         let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-        if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
+        if (prod && prod.precoCusto) totalCustoItensVendidos += (prod.precoCusto * (v.qtd || 1));
       });
-      const lucroLiquido = totalVendasGeral - totalCustoGeral;
+
+      // INVESTIMENTO TOTAL NO ESTOQUE ATUAL CADASTRADO (Integração Direta em Tempo Real)
+      const investimentoEstoqueParado = produtos.reduce((acc, p) => acc + (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)), 0);
+
+      const lucroLiquidoReal = totalVendasGeral - totalCustoItensVendidos;
       const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
 
       let contagemItens = {};
@@ -2748,7 +2909,7 @@
           <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
               <span class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-wallet"></i> Balanço Financeiro Acumulado
+                <i class="fa-solid fa-wallet"></i> Balanço Financeiro Inteligente
               </span>
               <span class="text-[10px] bg-teal-900/60 text-teal-300 font-bold px-2 py-0.5 rounded-full border border-teal-700/50">
                 ${vendas.length} Vendas
@@ -2761,14 +2922,20 @@
                 <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
               </div>
 
+              <!-- DADO ATUALIZADO EM TEMPO REAL COM O ESTOQUE -->
               <div class="flex justify-between items-center">
-                <span class="text-slate-300 font-medium">🔴 Custo Estimado Estoque:</span>
-                <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoGeral.toFixed(2)}</span>
+                <span class="text-amber-300 font-medium">📦 Investimento Atual em Estoque:</span>
+                <span class="font-extrabold text-amber-300 text-sm">R$ ${investimentoEstoqueParado.toFixed(2)}</span>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <span class="text-slate-300 font-medium">🔴 Custo dos Itens Vendidos:</span>
+                <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoItensVendidos.toFixed(2)}</span>
               </div>
 
               <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
                 <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span>
-                <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquido.toFixed(2)}</span>
+                <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
               </div>
 
               <div class="flex justify-between items-center pt-1 text-[11px] text-slate-400">
@@ -3067,6 +3234,7 @@
         const novaVenda = {
           id: Date.now() + Math.random(),
           item: `${item.qtd}x ${item.nome}`,
+          qtd: item.qtd,
           valor: valorItemTotal,
           formaPagto: pagto,
           cliente: clienteNome,
@@ -3199,10 +3367,12 @@
           switchTab('vendas');
           exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
           verificarAlertasEstoqueValidadeAutomatico();
+          prepararApresentacaoTourInicial();
         }).catch(() => {
           switchTab('vendas');
           exibirBoasVindasToast(user.displayName || 'Operador');
           verificarAlertasEstoqueValidadeAutomatico();
+          prepararApresentacaoTourInicial();
         });
       } else {
         mostrarInterfaceAutenticada(false);
@@ -3210,7 +3380,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 27.0 (Scanner Contínuo) carregada!");
+    console.log("Caixa Rápido Móvel Pro - Versão 28.0 (Tour Interativo + Custo Inteligente) carregada!");
   </script>
 </body>
 </html>

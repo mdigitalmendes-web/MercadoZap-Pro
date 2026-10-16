@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v23.0</title>
+  <title>Caixa Rápido Móvel Pro v24.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -95,7 +95,7 @@
 
 <div id="app-container">
 
-  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA (v23.0) -->
+  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS PERSONALIZADA COM O NOME (v24.0) -->
   <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
       👋
@@ -106,7 +106,7 @@
     </div>
   </div>
 
-  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA (v23.0) -->
+  <!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
   <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-gray-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
     <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
       <i class="fa-solid fa-lock"></i>
@@ -144,21 +144,28 @@
     </div>
   </header>
 
-  <!-- DRAWER LATERAL (MENU AUXILIAR & DADOS DO USUÁRIO) -->
+  <!-- DRAWER LATERAL (MENU AUXILIAR COM RENOMEAR PERFIL - v24.0) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         
-        <!-- CARD DO USUÁRIO LOGADO -->
-        <div class="whatsapp-green p-4 text-white">
+        <!-- CARD DO USUÁRIO LOGADO COM BOTÃO DE RENOMEAR (v24.0) -->
+        <div class="whatsapp-green p-4 text-white relative">
           <div class="flex justify-between items-start mb-3">
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-inner">
               <i class="fa-solid fa-user-gear"></i>
             </div>
             <button onclick="fecharDrawerNavegacao()" class="text-white text-xl font-bold">&times;</button>
           </div>
-          <p id="drawer-user-nome" class="font-extrabold text-sm leading-tight truncate">Usuário do Sistema</p>
+          
+          <div class="flex items-center justify-between">
+            <p id="drawer-user-nome" class="font-extrabold text-sm leading-tight truncate">Usuário do Sistema</p>
+            <button onclick="fecharDrawerNavegacao(); openModalPerfil();" title="Editar Meu Nome e Perfil" class="text-xs text-amber-300 hover:text-white bg-white/10 p-1.5 rounded-lg border border-white/20">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+          </div>
+          
           <p id="drawer-user-email" class="text-[11px] text-green-200 truncate mb-2">email@exemplo.com</p>
           
           <div class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
@@ -169,6 +176,11 @@
 
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider px-2 mb-1">Segurança & Conta</p>
+
+          <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
+            <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
+            <span>Alterar Meu Nome / Perfil</span>
+          </button>
 
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-gray-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
@@ -265,7 +277,7 @@
 
 </div>
 
-  <!-- MODAL DE RELATÓRIOS E EXPORTAÇÕES (NOVO v23.0) -->
+  <!-- MODAL DE RELATÓRIOS E EXPORTAÇÕES -->
   <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -320,7 +332,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ALTERAR SENHA SEGURO (COM SENHA ANTERIOR) -->
+  <!-- MODAL: ALTERAR SENHA SEGURO -->
   <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
       <div class="flex justify-between items-center border-b pb-2">
@@ -350,6 +362,59 @@
           💾 Confirmar e Salvar Nova Senha
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERFIL E EDIÇÃO DO NOME DO USUÁRIO (v24.0) -->
+  <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Estabelecimento</h3>
+        <button onclick="closeModalPerfil()" class="text-gray-500 text-xl font-bold">&times;</button>
+      </div>
+      <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Nome Completo *</label>
+          <input type="text" id="perfil-nome-usuario" required placeholder="Ex: João Silva" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Sua Função no App</label>
+          <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
+            <option value="Proprietário / Gerente">Proprietário / Gerente</option>
+            <option value="Caixa / Operador">Caixa / Operador</option>
+            <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+          </select>
+        </div>
+
+        <hr class="my-2">
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento / Loja *</label>
+          <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Registro</label>
+            <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
+              <option value="PF">Pessoa Física</option>
+              <option value="MEI">MEI</option>
+              <option value="ME">Microempresa</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Atuação</label>
+            <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
+              <option value="Produtos">Produtos</option>
+              <option value="Servicos">Serviços</option>
+              <option value="Ambos">Ambos</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
+          💾 Salvar Alterações de Perfil
+        </button>
+      </form>
     </div>
   </div>
 
@@ -567,48 +632,6 @@
     </div>
   </div>
 
-  <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-store text-teal-600"></i> Perfil do Negócio</h3>
-        <button onclick="closeModalPerfil()" class="text-gray-500 text-xl font-bold">&times;</button>
-      </div>
-      <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Estabelecimento / Loja</label>
-          <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Natureza do Negócio</label>
-          <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-            <option value="PF">Pessoa Física (Autônomo)</option>
-            <option value="MEI">MEI (Microempreendedor)</option>
-            <option value="ME">Microempresa (ME)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Ramo de Atuação</label>
-          <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-            <option value="Produtos">Venda de Produtos</option>
-            <option value="Servicos">Prestação de Serviços</option>
-            <option value="Ambos">Produtos e Serviços</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Seu Perfil / Função no App</label>
-          <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-            <option value="Proprietário / Gerente">Proprietário / Gerente</option>
-            <option value="Caixa / Operador">Caixa / Operador</option>
-            <option value="Atendente / Vendedor">Atendente / Vendedor</option>
-          </select>
-        </div>
-        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
-          Salvar Alterações
-        </button>
-      </form>
-    </div>
-  </div>
-
   <div id="modal-minimos-padrao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -658,6 +681,7 @@
       <div class="space-y-3 text-xs text-gray-600 leading-relaxed">
         <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
         <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
+        <p><b>👤 Alterar Perfil/Nome:</b> Clique no menu (☰) para editar seu nome completo ou função a qualquer momento.</p>
       </div>
     </div>
   </div>
@@ -716,16 +740,19 @@
     let modoScannerDestino = 'caixa';
     
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
-    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Usuário', funcaoUsuario: 'Proprietário / Gerente' };
+    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
 
     function exibirBoasVindasToast(nomeCompleto) {
       const toast = document.getElementById('toast-boas-vindas');
       const elNome = document.getElementById('toast-nome-usuario');
       if (toast && elNome) {
-        let primeiroNome = (nomeCompleto || 'Usuário').trim().split(' ')[0];
+        let nomeExibicao = (nomeCompleto || '').trim();
+        if (!nomeExibicao || nomeExibicao === 'Usuário') nomeExibicao = 'Operador';
+        let primeiroNome = nomeExibicao.split(' ')[0];
+        
         elNome.innerText = `👋 Bem-vindo(a), ${primeiroNome}!`;
         toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        setTimeout(() => { toast.classList.remove('show'); }, 3800);
       }
     }
 
@@ -745,7 +772,6 @@
       }
     }
 
-    /* CORREÇÃO DO CRONÔMETRO DE TESTE PERSISTENTE (v23.0) */
     function verificarLicencaStatus() {
       if (licencaInfo.vitalicio) {
         document.getElementById('badge-licenca').innerText = "⭐ VITALÍCIO";
@@ -803,7 +829,6 @@
       }
     }
 
-    /* TELA DE LOGIN INICIAL PADRÃO (v23.0) */
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
 
@@ -845,7 +870,6 @@
       `;
     }
 
-    /* CADASTRO ORGANIZADO EM ETAPAS (v23.0) */
     function showStep1CadastroAcesso() {
       mostrarInterfaceAutenticada(false);
 
@@ -1007,6 +1031,63 @@
       }).catch(err => {
         errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
         errBox.classList.remove('hidden');
+      });
+    }
+
+    /* REDEFINIÇÃO DE SENHA COM AVISO DE SPAM (v24.0) */
+    function showEsqueceuSenhaForm() {
+      mostrarInterfaceAutenticada(false);
+
+      document.getElementById('content-vendas').innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Recuperar Acesso</h2>
+            <p class="text-xs text-gray-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
+          </div>
+
+          <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Digite seu E-mail Cadastrado *</label>
+              <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+            </div>
+            
+            <p id="recupera-msg" class="text-xs font-bold hidden text-center p-3 rounded-xl leading-relaxed"></p>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+              📩 Enviar E-mail de Redefinição
+            </button>
+          </form>
+
+          <div class="border-t pt-3 text-center">
+            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para Tela de Login</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleEsqueceuSenha(e) {
+      e.preventDefault();
+      const email = document.getElementById('recupera-email').value.trim();
+      const msgBox = document.getElementById('recupera-msg');
+
+      msgBox.classList.add('hidden');
+
+      auth.sendPasswordResetEmail(email).then(() => {
+        msgBox.innerHTML = `
+          ✅ <b>E-mail enviado com sucesso!</b><br>
+          <span class="text-[11px] font-normal text-green-900 block mt-1">
+            Verifique sua caixa de entrada. <b>IMPORTANTE:</b> Verifique também sua pasta de <b>SPAM / Lixo Eletrônico</b>, pois o e-mail pode ter sido direcionado para lá pelo seu provedor.
+          </span>
+        `;
+        msgBox.className = "text-xs font-bold text-green-800 bg-green-50 border border-green-300 text-center p-3 rounded-xl shadow-sm";
+        msgBox.classList.remove('hidden');
+      }).catch((err) => {
+        msgBox.innerText = err.code === 'auth/user-not-found' ? "E-mail não localizado no sistema! Verifique se digitou corretamente." : ("Erro: " + err.message);
+        msgBox.className = "text-xs font-bold text-red-600 bg-red-50 border border-red-200 text-center p-3 rounded-xl";
+        msgBox.classList.remove('hidden');
       });
     }
 
@@ -1202,7 +1283,10 @@
       document.getElementById('drawer-menu').classList.add('hidden'); 
     }
 
+    /* MODAL DE EDIÇÃO DO NOME E PERFIL (v24.0) */
     function openModalPerfil() {
+      const user = auth.currentUser;
+      document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
       document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
       document.getElementById('perfil-tipo-registro').value = perfilNegocio.tipo || 'PF';
       document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Produtos';
@@ -1212,12 +1296,15 @@
 
     function closeModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); }
     function openModalAjuda() { document.getElementById('modal-ajuda').classList.remove('hidden'); }
-    function closeModalAjuda() { document.getElementById('modal-ajuda').classList.add('hidden'); }
+    function closeModalAjuda() { document.getElementById('modal-ajuda').classList.remove('hidden'); }
 
     function salvarPerfilNegocio(e) {
       e.preventDefault();
+      const novoNome = document.getElementById('perfil-nome-usuario').value.trim();
+
       perfilNegocio = {
         ...perfilNegocio,
+        nomeUsuario: novoNome,
         nomeLoja: document.getElementById('perfil-nome-loja').value,
         tipo: document.getElementById('perfil-tipo-registro').value,
         ramo: document.getElementById('perfil-ramo').value,
@@ -1228,61 +1315,15 @@
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja;
 
       const user = auth.currentUser;
-      if (user) db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+      if (user) {
+        user.updateProfile({ displayName: novoNome });
+        db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+      }
+
       closeModalPerfil();
       renderAba();
-      alert("Perfil atualizado!");
-    }
-
-    function showEsqueceuSenhaForm() {
-      mostrarInterfaceAutenticada(false);
-
-      document.getElementById('content-vendas').innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-              <i class="fa-solid fa-key"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-800">Recuperar Acesso</h2>
-            <p class="text-xs text-gray-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
-          </div>
-
-          <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Digite seu E-mail Cadastrado *</label>
-              <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            
-            <p id="recupera-msg" class="text-xs font-bold hidden text-center p-2 rounded-lg"></p>
-
-            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              📩 Enviar E-mail de Redefinição
-            </button>
-          </form>
-
-          <div class="border-t pt-3 text-center">
-            <button onclick="showLoginForm()" class="text-xs font-bold text-gray-600 hover:underline">← Voltar para Tela de Login</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function handleEsqueceuSenha(e) {
-      e.preventDefault();
-      const email = document.getElementById('recupera-email').value.trim();
-      const msgBox = document.getElementById('recupera-msg');
-
-      msgBox.classList.add('hidden');
-
-      auth.sendPasswordResetEmail(email).then(() => {
-        msgBox.innerText = "✅ E-mail enviado com sucesso! Verifique sua caixa de entrada ou spam para redefinir sua senha.";
-        msgBox.className = "text-xs font-bold text-green-700 bg-green-50 border border-green-200 text-center p-2.5 rounded-lg";
-        msgBox.classList.remove('hidden');
-      }).catch((err) => {
-        msgBox.innerText = err.code === 'auth/user-not-found' ? "E-mail não localizado no sistema!" : ("Erro: " + err.message);
-        msgBox.className = "text-xs font-bold text-red-600 bg-red-50 border border-red-200 text-center p-2.5 rounded-lg";
-        msgBox.classList.remove('hidden');
-      });
+      exibirBoasVindasToast(novoNome);
+      alert("✅ Seu perfil e nome foram atualizados com sucesso!");
     }
 
     function handleLogin(e) {
@@ -2381,7 +2422,6 @@
       }
     }
 
-    /* TELA DE RELATÓRIOS LIMPA E ENXUTA (v23.0) */
     function renderAbaRelatorios() {
       const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
       let totalCustoGeral = 0;
@@ -2812,7 +2852,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 23.0 carregada com sucesso!");
+    console.log("Caixa Rápido Móvel Pro - Versão 24.0 carregada com sucesso!");
   </script>
 </body>
 </html>

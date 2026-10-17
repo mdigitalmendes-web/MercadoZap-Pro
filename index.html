@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v29.0</title>
+  <title>Caixa Rápido Móvel Pro v30.1</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -53,14 +53,14 @@
 
     #slider-container {
       display: flex;
-      width: 400%;
+      width: 500%;
       height: 100%;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform;
     }
 
     .slide-page {
-      width: 25%;
+      width: 20%;
       height: 100%;
       overflow-y: auto;
       overscroll-behavior-y: contain;
@@ -100,8 +100,8 @@
       content: '';
       position: absolute;
       top: 0;
-      left: 25%;
-      right: 25%;
+      left: 20%;
+      right: 20%;
       height: 3px;
       background: linear-gradient(90deg, #0d9488, #14b8a6);
       border-radius: 0 0 4px 4px;
@@ -118,13 +118,11 @@
       opacity: 1;
     }
 
-    /* TOUR GUIADO INTERATIVO */
     #tour-overlay {
       backdrop-filter: blur(4px);
       transition: opacity 0.3s ease;
     }
 
-    /* ANIMAÇÃO DO TOAST FLUTUANTE DE FIADO CADASTRADO */
     @keyframes popScaleFade {
       0% { transform: scale(0.3); opacity: 0; }
       20% { transform: scale(1.05); opacity: 1; }
@@ -142,7 +140,7 @@
 
 <div id="app-container">
 
-  <!-- TOAST FLUTUANTE AUTOMÁTICO DE FIADO REGISTRADO (NOVA FUNCIONALIDADE) -->
+  <!-- TOAST FLUTUANTE AUTOMÁTICO DE FIADO REGISTRADO -->
   <div id="toast-fiado-sucesso" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
     <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-2xl border-2 border-amber-400 text-center max-w-xs w-full space-y-2 toast-fiado-animado pointer-events-auto">
       <div class="w-14 h-14 bg-amber-500 text-slate-950 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-lg">
@@ -160,7 +158,7 @@
     </div>
   </div>
 
-  <!-- TOUR GUIADO INTERATIVO PARA INICIANTES (ONBOARDING) -->
+  <!-- TOUR GUIADO INTERATIVO -->
   <div id="tour-overlay" class="hidden fixed inset-0 bg-black/70 z-50 flex flex-col justify-center items-center p-4">
     <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 relative border-2 border-teal-500">
       
@@ -208,7 +206,7 @@
     </div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-slate-300 truncate">Login realizado. Caixa pronto para operar.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Dados sincronizados na nuvem.</p>
     </div>
   </div>
 
@@ -265,6 +263,9 @@
     </div>
     
     <div class="flex items-center gap-2">
+      <span id="badge-modo-operacao" class="bg-teal-900/80 text-teal-200 font-extrabold text-[9px] px-2.5 py-1 rounded-full border border-teal-500/50 uppercase shadow">
+        Modo: Híbrido
+      </span>
       <span id="badge-licenca" class="bg-amber-400 text-amber-950 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow cursor-pointer" onclick="openModalLicencaStatus()">
         ⏳ Calculando...
       </span>
@@ -304,8 +305,8 @@
           <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
 
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
-            <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
-            <span>Alterar Nome & Loja</span>
+            <i class="fa-solid fa-sliders text-teal-600 w-5 text-center"></i>
+            <span>Modo do App (Produtos / Serviços)</span>
           </button>
 
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
@@ -313,9 +314,9 @@
             <span>Alterar Senha de Acesso</span>
           </button>
 
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
-            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
-            <span>Sincronizar Nuvem</span>
+          <button onclick="carregarDadosDaNuvemFirebase(); fecharDrawerNavegacao();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+            <i class="fa-solid fa-cloud-arrow-down text-blue-600 w-5 text-center"></i>
+            <span>Restaurar / Baixar da Nuvem</span>
           </button>
         </div>
 
@@ -364,48 +365,114 @@
   <main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
     <div id="slider-wrapper">
       <div id="slider-container">
+        
         <div id="page-vendas" class="slide-page">
           <div id="content-vendas" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
+
+        <div id="page-agenda" class="slide-page">
+          <div id="content-agenda" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
+        </div>
+
         <div id="page-estoque" class="slide-page">
           <div id="content-estoque" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
+
         <div id="page-clientes" class="slide-page">
           <div id="content-clientes" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
+
         <div id="page-relatorios" class="slide-page">
           <div id="content-relatorios" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
         </div>
+
       </div>
     </div>
   </main>
 
   <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
-    <div class="grid grid-cols-4 h-16">
+    <div id="bottom-nav-grid" class="grid grid-cols-5 h-16">
+      
       <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
         <i class="fa-solid fa-cash-register text-xl"></i>
-        <span class="text-[10px] tracking-wide">Caixa</span>
+        <span class="text-[9px] tracking-wide">Caixa</span>
+      </button>
+
+      <button onclick="switchTab('agenda')" id="bottom-btn-agenda" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-calendar-check text-xl"></i>
+        <span class="text-[9px] tracking-wide">Agenda</span>
       </button>
 
       <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
         <i class="fa-solid fa-boxes-stacked text-xl"></i>
-        <span class="text-[10px] tracking-wide">Estoque</span>
+        <span id="label-nav-estoque" class="text-[9px] tracking-wide">Estoque</span>
       </button>
 
       <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
         <i class="fa-solid fa-users-viewfinder text-xl"></i>
-        <span class="text-[10px] tracking-wide">Fiado</span>
+        <span class="text-[9px] tracking-wide">Fiado</span>
       </button>
 
       <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
         <i class="fa-solid fa-chart-pie text-xl"></i>
-        <span class="text-[10px] tracking-wide">Relatórios</span>
+        <span class="text-[9px] tracking-wide">Relatórios</span>
       </button>
+
     </div>
   </nav>
 
 </div>
+
+  <!-- MODAL DE NOVO AGENDAMENTO DE SERVIÇO -->
+  <div id="modal-novo-agendamento" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-plus text-teal-600"></i> Novo Agendamento
+        </h3>
+        <button onclick="fecharModalAgendamento()" class="text-slate-500 text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nome da Cliente / Cliente *</label>
+          <input type="text" id="agenda-cliente-nome" placeholder="Ex: Maria Silva" class="w-full p-2.5 border rounded-xl font-bold bg-white">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">WhatsApp para Confirmação *</label>
+          <input type="text" id="agenda-cliente-zap" placeholder="(00) 00000-0000" class="w-full p-2.5 border rounded-xl font-bold bg-white">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Data *</label>
+            <input type="date" id="agenda-data" class="w-full p-2 border rounded-xl font-bold bg-white">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Horário *</label>
+            <input type="time" id="agenda-hora" class="w-full p-2 border rounded-xl font-bold bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Serviço a Ser Realizado *</label>
+          <select id="agenda-servico-select" class="w-full p-2.5 border rounded-xl font-bold bg-white text-slate-800">
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ficha de Anamnese / Obs VIP (Opcional):</label>
+          <textarea id="agenda-obs" placeholder="Ex: Alergia a cera quente, prefere atendimento rápido..." class="w-full p-2 border rounded-xl bg-white text-xs" rows="2"></textarea>
+        </div>
+
+        <button onclick="salvarNovoAgendamento()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md mt-2">
+          📅 Confirmar e Salvar na Agenda
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAIS DO SISTEMA -->
   <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
@@ -511,9 +578,9 @@
   </div>
 
   <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
+    <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Estabelecimento</h3>
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Modo de Uso</h3>
         <button onclick="closeModalPerfil()" class="text-slate-500 text-xl font-bold">&times;</button>
       </div>
       <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
@@ -533,26 +600,18 @@
         <hr class="my-2">
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Estabelecimento / Loja *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Estabelecimento / Espaço *</label>
           <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
-            <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-              <option value="PF">Pessoa Física</option>
-              <option value="MEI">MEI</option>
-              <option value="ME">Microempresa</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
-            <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-              <option value="Produtos">Produtos</option>
-              <option value="Servicos">Serviços</option>
-              <option value="Ambos">Ambos</option>
-            </select>
-          </div>
+
+        <div class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-2">
+          <label class="block text-xs font-extrabold text-teal-900">Selecione o Modo de Operação:</label>
+          <select id="perfil-ramo" onchange="atualizarPreviewModo(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-white font-extrabold text-slate-800">
+            <option value="Produtos">📦 Apenas Produtos (Comércio / Loja)</option>
+            <option value="Servicos">💇‍♀️ Apenas Serviços (Estética / Salão / Epilação)</option>
+            <option value="Ambos">✨ Híbrido (Prestação de Serviços + Venda de Produtos)</option>
+          </select>
+          <p id="preview-modo-desc" class="text-[10px] text-teal-800 leading-tight italic"></p>
         </div>
 
         <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
@@ -582,12 +641,12 @@
 
       <div>
         <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nome do Produto / Serviço *</label>
-        <input type="text" id="cad-prod-nome" placeholder="Ex: Arroz 5kg" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+        <input type="text" id="cad-prod-nome" placeholder="Ex: Arroz 5kg ou Epilação Íntima" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
       </div>
       
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo R$ *</label>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo / Insumo R$ *</label>
           <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-slate-700">
         </div>
         <div>
@@ -823,7 +882,7 @@
     </div>
   </div>
 
-  <!-- FIREBASE -->
+  <!-- FIREBASE SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -845,35 +904,31 @@
 
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
-    const produtosExemplo = [
-      { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
-      { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
-      { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
-    ];
-
     let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
       diasDegustacao: 20,
       vitalicio: false,
       dataInicioLocal: Date.now()
     };
-    if (!licencaInfo.dataInicioLocal) {
-      licencaInfo.dataInicioLocal = Date.now();
-      localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
-    }
 
-    let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
+    let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
     let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
     let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
     let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
-    let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
-      { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" }
-    ];
+    let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [];
+    let agendamentos = JSON.parse(localStorage.getItem('crm_agendamentos')) || [];
     let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
     
+    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { 
+      nomeLoja: 'Caixa Rápido Móvel Pro', 
+      ramo: 'Ambos', // 'Produtos', 'Servicos' ou 'Ambos'
+      nomeUsuario: 'Operador',
+      funcaoUsuario: 'Proprietário / Gerente'
+    };
+
     let carrinho = [];
     let clienteAtualVenda = { nome: '', zap: '' };
     let abaAtual = 'vendas';
-    const ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
+    let ordemAbas = ['vendas', 'agenda', 'estoque', 'clientes', 'relatorios'];
     let subAbaEstoque = 'none'; 
     let listaDevedoresAberta = false; 
     let prodFracionadoTemp = null;
@@ -900,44 +955,94 @@
       {
         aba: 'estoque',
         icone: 'fa-solid fa-boxes-stacked',
-        titulo: '2. Aba Estoque (Controle Inteligente)',
-        descricao: 'Cadastre e edite seus produtos com preço de custo e venda. O app avisa automaticamente quando o estoque estiver baixo ou prestes a vencer!',
-        dica: '💡 O sistema calcula o lucro exato e a margem percentual em tempo real no cadastro.'
+        titulo: '2. Aba Estoque / Insumos',
+        descricao: 'Cadastre seus produtos ou insumos com preço de custo e venda. O app avisa automaticamente quando o estoque estiver baixo!',
+        dica: '💡 O sistema calcula o lucro exato e a margem percentual em tempo real.'
       },
       {
         aba: 'clientes',
         icone: 'fa-solid fa-users-viewfinder',
         titulo: '3. Aba Fiado & Prazos (Contas a Receber)',
         descricao: 'Gerencie clientes devedores, registre prazos de pagamento e envie lembretes de cobrança no WhatsApp com apenas 1 clique!',
-        dica: '💡 Você pode abater pagamentos parciais do saldo devedor do cliente a qualquer momento.'
+        dica: '💡 Você pode abater pagamentos parciais a qualquer momento.'
       },
       {
         aba: 'relatorios',
         icone: 'fa-solid fa-chart-pie',
         titulo: '4. Aba Relatórios & DRE Executivo',
-        descricao: 'Acompanhe seu faturamento bruto, o custo real do estoque parado e seu LUCRO LÍQUIDO acumulado com precisão absoluta!',
-        dica: '💡 Baixe relatórios profissionais em PDF ou exporte arquivos contábeis em .CSV.'
+        descricao: 'Acompanhe seu faturamento bruto, o custo real do estoque parado e seu LUCRO LÍQUIDO acumulado com precisão!',
+        dica: '💡 Baixe relatórios profissionais em PDF ou exporte em .CSV.'
       }
     ];
 
     let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
-    let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente' };
 
-    /* SOM E AVISO FLUTUANTE DE INTEGRADO AO FIADO */
+    /* CARREGAMENTO NUVEM FIRESTORE */
+    async function carregarDadosDaNuvemFirebase() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        const prodSnap = await db.collection("produtos").where("userId", "==", user.uid).get();
+        if (!prodSnap.empty) { produtos = prodSnap.docs.map(doc => doc.data()); localStorage.setItem('crm_produtos', JSON.stringify(produtos)); }
+
+        const vendSnap = await db.collection("vendas").where("userId", "==", user.uid).get();
+        if (!vendSnap.empty) { vendas = vendSnap.docs.map(doc => doc.data()); localStorage.setItem('crm_vendas', JSON.stringify(vendas)); }
+
+        const cliSnap = await db.collection("clientes").where("userId", "==", user.uid).get();
+        if (!cliSnap.empty) { clientes = cliSnap.docs.map(doc => doc.data()); localStorage.setItem('crm_clientes', JSON.stringify(clientes)); }
+
+        const agSnap = await db.collection("agendamentos").where("userId", "==", user.uid).get();
+        if (!agSnap.empty) { agendamentos = agSnap.docs.map(doc => doc.data()); localStorage.setItem('crm_agendamentos', JSON.stringify(agendamentos)); }
+
+        const fechSnap = await db.collection("fechamentos").where("userId", "==", user.uid).get();
+        if (!fechSnap.empty) { historicoFechamentos = fechSnap.docs.map(doc => doc.data()); localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos)); }
+
+        renderAba();
+      } catch(e) { console.log("Erro nuvem:", e); }
+    }
+
+    /* RECONFIGURAÇÃO DINÂMICA DA INTERFACE DE ACORDO COM O RAMO */
+    function reconfigurarInterfacePorRamo() {
+      const ramo = perfilNegocio.ramo || 'Ambos';
+      const btnAgenda = document.getElementById('bottom-btn-agenda');
+      const badgeModo = document.getElementById('badge-modo-operacao');
+      const labelEstoque = document.getElementById('label-nav-estoque');
+      const gridNav = document.getElementById('bottom-nav-grid');
+
+      if (ramo === 'Servicos') {
+        if (badgeModo) badgeModo.innerText = "Modo: Serviços";
+        if (btnAgenda) btnAgenda.classList.remove('hidden');
+        if (labelEstoque) labelEstoque.innerText = "Insumos";
+        if (gridNav) gridNav.className = "grid grid-cols-5 h-16";
+        ordemAbas = ['vendas', 'agenda', 'estoque', 'clientes', 'relatorios'];
+      } else if (ramo === 'Produtos') {
+        if (badgeModo) badgeModo.innerText = "Modo: Produtos";
+        if (btnAgenda) btnAgenda.classList.add('hidden');
+        if (labelEstoque) labelEstoque.innerText = "Estoque";
+        if (gridNav) gridNav.className = "grid grid-cols-4 h-16";
+        ordemAbas = ['vendas', 'estoque', 'clientes', 'relatorios'];
+      } else {
+        if (badgeModo) badgeModo.innerText = "Modo: Híbrido";
+        if (btnAgenda) btnAgenda.classList.remove('hidden');
+        if (labelEstoque) labelEstoque.innerText = "Estoque/Insumos";
+        if (gridNav) gridNav.className = "grid grid-cols-5 h-16";
+        ordemAbas = ['vendas', 'agenda', 'estoque', 'clientes', 'relatorios'];
+      }
+    }
+
+    /* SONS DE NOTIFICAÇÃO E BEEP */
     function tocarBeepFiadoSucesso() {
       try {
         if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
         osc.type = 'sine';
         osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
         osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12); 
-        
         gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-        
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
@@ -948,21 +1053,15 @@
     function exibirToastFiadoIntegrado(nomeCliente, valorTotal) {
       const toast = document.getElementById('toast-fiado-sucesso');
       const txt = document.getElementById('toast-fiado-msg-texto');
-      
       if (toast && txt) {
         txt.innerHTML = `O cliente <b>${nomeCliente}</b> teve o valor de <b>R$ ${valorTotal.toFixed(2)}</b> lançado e sincronizado automaticamente na aba <b>Fiado & Prazos</b>!`;
-        
         tocarBeepFiadoSucesso();
-        
         toast.classList.remove('hidden');
         const box = toast.firstElementChild;
         box.classList.remove('toast-fiado-animado');
         void box.offsetWidth; 
         box.classList.add('toast-fiado-animado');
-        
-        setTimeout(() => {
-          toast.classList.add('hidden');
-        }, 3500);
+        setTimeout(() => { toast.classList.add('hidden'); }, 3500);
       }
     }
 
@@ -999,9 +1098,9 @@
       } catch(e) {}
     }
 
+    /* TOUR GUIADO INTERATIVO */
     function prepararApresentacaoTourInicial() {
       if (tourDesativado) return;
-
       const handlerPrimeiroToque = () => {
         if (!tourPrimeiraInteracaoOcorrida && !tourDesativado && auth.currentUser) {
           tourPrimeiraInteracaoOcorrida = true;
@@ -1010,7 +1109,6 @@
         window.removeEventListener('click', handlerPrimeiroToque);
         window.removeEventListener('touchstart', handlerPrimeiroToque);
       };
-
       window.addEventListener('click', handlerPrimeiroToque);
       window.addEventListener('touchstart', handlerPrimeiroToque);
     }
@@ -1021,14 +1119,12 @@
       if (!step) return;
 
       switchTab(step.aba);
-
       document.getElementById('tour-passo-badge').innerText = `Passo ${passoTourAtual + 1} de ${passosTour.length}`;
       document.getElementById('tour-icone-box').innerHTML = `<i class="${step.icone}"></i>`;
       document.getElementById('tour-titulo').innerText = step.titulo;
       document.getElementById('tour-descricao').innerText = step.descricao;
       document.getElementById('tour-dica-extra').innerText = step.dica;
       document.getElementById('chk-desativar-tour').checked = tourDesativado;
-
       document.getElementById('tour-overlay').classList.remove('hidden');
     }
 
@@ -1057,6 +1153,7 @@
       iniciarTourGuiado(0);
     }
 
+    /* ALERTAS DE ESTOQUE E VALIDADE */
     function verificarAlertasEstoqueValidadeAutomatico() {
       if (alertaSilenciadoSessao) return;
 
@@ -1072,40 +1169,27 @@
       const bannerTexto = document.getElementById('banner-alerta-texto');
       const bannerIcone = document.getElementById('banner-alerta-icone');
       const clickArea = document.getElementById('banner-alerta-click-area');
-      const btnAcao = document.getElementById('banner-alerta-btn-acao');
 
       if (minimos.length > 0 || validades.length > 0) {
         if (minimos.length > 0 && validades.length === 0) {
           bannerTitulo.innerText = "Aviso: Estoque Baixo!";
           bannerTexto.innerText = `${minimos.length} produto(s) atingiram o limite mínimo.`;
           bannerIcone.innerText = "⚠️";
-          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
           banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
-          
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
-          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
-
         } else if (validades.length > 0 && minimos.length === 0) {
           bannerTitulo.innerText = "Aviso: Validade Crítica!";
           bannerTexto.innerText = `${validades.length} produto(s) prestes a vencer ou vencidos.`;
           bannerIcone.innerText = "📅";
-          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-amber-600 text-white";
           banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-amber-500/80 show";
-          
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('validades');
-          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('validades');
-
         } else {
           bannerTitulo.innerText = "Atenção: Estoque & Validades!";
           bannerTexto.innerText = `${minimos.length} item(ns) baixo(s) e ${validades.length} vencendo.`;
           bannerIcone.innerText = "🚨";
-          bannerIcone.className = "w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md bg-red-600 text-white";
           banner.className = "fixed top-3 left-4 right-4 z-40 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-red-500/80 show";
-          
           clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
-          if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
         }
-
         emitirBeepEAlertaVibracao();
       } else {
         if (banner) banner.classList.remove('show');
@@ -1128,10 +1212,7 @@
       const toast = document.getElementById('toast-boas-vindas');
       const elNome = document.getElementById('toast-nome-usuario');
       if (toast && elNome) {
-        let nomeExibicao = (nomeCompleto || '').trim();
-        if (!nomeExibicao || nomeExibicao === 'Usuário') nomeExibicao = 'Operador';
-        let primeiroNome = nomeExibicao.split(' ')[0];
-        
+        let primeiroNome = (nomeCompleto || 'Operador').split(' ')[0];
         elNome.innerText = `👋 Bem-vindo(a), ${primeiroNome}!`;
         toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); }, 3800);
@@ -1141,7 +1222,6 @@
     function mostrarInterfaceAutenticada(mostrar) {
       const header = document.getElementById('app-main-header');
       const bottomNav = document.getElementById('app-bottom-nav');
-
       if (mostrar) {
         header.classList.remove('hidden');
         header.classList.add('flex');
@@ -1164,7 +1244,6 @@
 
       const user = auth.currentUser;
       let inicio = licencaInfo.dataInicioLocal || Date.now();
-      
       if (user && user.metadata && user.metadata.creationTime) {
         let dataCriacaoFirebase = new Date(user.metadata.creationTime).getTime();
         if (dataCriacaoFirebase < inicio) inicio = dataCriacaoFirebase;
@@ -1257,9 +1336,9 @@
       window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
     }
 
+    /* MÓDULO DE AUTENTICAÇÃO */
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
-
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
@@ -1300,7 +1379,6 @@
 
     function showStep1CadastroAcesso() {
       mostrarInterfaceAutenticada(false);
-
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
@@ -1398,28 +1476,17 @@
 
           <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da sua Loja / Estabelecimento *</label>
-              <input type="text" id="cad-nome-loja" required placeholder="Ex: Mercado do Povo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da sua Loja / Espaço *</label>
+              <input type="text" id="cad-nome-loja" required placeholder="Ex: Mercado do Povo ou Espaço Lucielma" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
-                <select id="cad-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                  <option value="PF">Pessoa Física</option>
-                  <option value="MEI">MEI</option>
-                  <option value="ME">Microempresa</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
-                <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-                  <option value="Produtos">Produtos</option>
-                  <option value="Servicos">Serviços</option>
-                  <option value="Ambos">Ambos</option>
-                </select>
-              </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação *</label>
+              <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                <option value="Produtos">📦 Apenas Produtos (Comércio / Loja)</option>
+                <option value="Servicos">💇‍♀️ Apenas Serviços (Estética / Salão / Epilação)</option>
+                <option value="Ambos" selected>✨ Híbrido (Prestação de Serviços + Venda de Produtos)</option>
+              </select>
             </div>
 
             <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
@@ -1439,7 +1506,6 @@
     function handleConcluirCadastro(e) {
       e.preventDefault();
       cadastroTemp.nomeLoja = document.getElementById('cad-nome-loja').value;
-      cadastroTemp.tipo = document.getElementById('cad-tipo-registro').value;
       cadastroTemp.ramo = document.getElementById('cad-ramo').value;
 
       const errBox = document.getElementById('auth-error');
@@ -1450,7 +1516,6 @@
           nomeLoja: cadastroTemp.nomeLoja,
           nomeUsuario: cadastroTemp.nomeUsuario,
           funcaoUsuario: cadastroTemp.funcaoUsuario,
-          tipo: cadastroTemp.tipo,
           ramo: cadastroTemp.ramo
         };
         userCredential.user.updateProfile({ displayName: cadastroTemp.nomeUsuario });
@@ -1464,7 +1529,6 @@
 
     function showEsqueceuSenhaForm() {
       mostrarInterfaceAutenticada(false);
-
       document.getElementById('content-vendas').innerHTML = `
         <div class="space-y-4">
           <div class="text-center">
@@ -1501,7 +1565,6 @@
       const msgBox = document.getElementById('recupera-msg');
 
       msgBox.classList.add('hidden');
-
       auth.sendPasswordResetEmail(email).then(() => {
         msgBox.innerHTML = `
           ✅ <b>E-mail enviado com sucesso!</b><br>
@@ -1538,20 +1601,8 @@
 
       msgErro.classList.add('hidden');
 
-      if (!senhaAtual) {
-        msgErro.innerText = "Digite sua senha atual por segurança!";
-        msgErro.classList.remove('hidden');
-        return;
-      }
-
-      if (!novaSenha || novaSenha.length < 6) {
-        msgErro.innerText = "A nova senha deve ter no mínimo 6 caracteres!";
-        msgErro.classList.remove('hidden');
-        return;
-      }
-
-      if (novaSenha !== confirmaNovaSenha) {
-        msgErro.innerText = "A nova senha e a confirmação não coincidem!";
+      if (!senhaAtual || !novaSenha || novaSenha.length < 6 || novaSenha !== confirmaNovaSenha) {
+        msgErro.innerText = "Verifique os dados informados!";
         msgErro.classList.remove('hidden');
         return;
       }
@@ -1572,6 +1623,7 @@
       });
     }
 
+    /* BARCODE LEITOR DE CÂMERA */
     async function abrirScanner(destino) {
       modoScannerDestino = destino;
       document.getElementById('modal-scanner').classList.remove('hidden');
@@ -1629,10 +1681,7 @@
 
     function onScanSuccess(decodedText) {
       let agora = Date.now();
-      
-      if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) {
-        return;
-      }
+      if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) return;
 
       ultimoEanLido = decodedText;
       ultimoTempoLeitura = agora;
@@ -1641,14 +1690,11 @@
         let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
         if (prod) {
           let idxReal = produtos.findIndex(p => p.id === prod.id);
-          
           tocarBeepConfirmacaoBip();
           adicionarAoCarrinhoSilent(idxReal);
-          
           const feedback = document.getElementById('scanner-feedback-box');
           feedback.innerText = `✅ +1 ${prod.nome} (R$ ${prod.preco.toFixed(2)})`;
           feedback.classList.remove('hidden');
-          
           setTimeout(() => { feedback.classList.add('hidden'); }, 1500);
         } else {
           tocarBeepConfirmacaoBip();
@@ -1656,7 +1702,6 @@
           feedback.innerText = `⚠️ Código ${decodedText} não cadastrado!`;
           feedback.className = "bg-amber-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
           feedback.classList.remove('hidden');
-          
           setTimeout(() => { 
             feedback.classList.add('hidden'); 
             feedback.className = "hidden bg-green-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
@@ -1678,7 +1723,6 @@
 
     function adicionarAoCarrinhoSilent(index) {
       let prod = produtos[index];
-
       let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
       let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
       let estoqueRestante = prod.estoque - qtdNoCarrinho;
@@ -1686,7 +1730,7 @@
       if (estoqueRestante <= 0) return;
 
       if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
-      else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un' }); }
+      else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un', custo: parseFloat(prod.precoCusto || 0) }); }
       
       renderAbaVendas();
     }
@@ -1708,6 +1752,7 @@
       renderAbaVendas();
     }
 
+    /* GESTÃO DE SWIPE */
     let touchStartX = 0;
     let touchStartY = 0;
     let isSwiping = false;
@@ -1740,12 +1785,10 @@
 
     function abrirDrawerNavegacao() { 
       if (!auth.currentUser) return;
-      
       const user = auth.currentUser;
-      document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Usuário Operador';
+      document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Operador';
       document.getElementById('drawer-user-email').innerText = user.email || '';
       document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
-
       document.getElementById('drawer-menu').classList.remove('hidden'); 
     }
     
@@ -1757,8 +1800,7 @@
       const user = auth.currentUser;
       document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
       document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
-      document.getElementById('perfil-tipo-registro').value = perfilNegocio.tipo || 'PF';
-      document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Produtos';
+      document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Ambos';
       document.getElementById('perfil-user-funcao-modal').value = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
       document.getElementById('modal-perfil').classList.remove('hidden');
     }
@@ -1773,7 +1815,6 @@
         ...perfilNegocio,
         nomeUsuario: novoNome,
         nomeLoja: document.getElementById('perfil-nome-loja').value,
-        tipo: document.getElementById('perfil-tipo-registro').value,
         ramo: document.getElementById('perfil-ramo').value,
         funcaoUsuario: document.getElementById('perfil-user-funcao-modal').value
       };
@@ -1790,7 +1831,7 @@
       closeModalPerfil();
       renderAba();
       exibirBoasVindasToast(novoNome);
-      alert("✅ Perfil atualizado!");
+      alert("✅ Perfil e modo de uso atualizados!");
     }
 
     function handleLogin(e) {
@@ -1808,6 +1849,8 @@
 
     function fazerLogoutSeguro() {
       if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
+        fecharDrawerNavegacao();
+        carrinho = [];
         auth.signOut().then(() => {
           mostrarInterfaceAutenticada(false);
           showLoginForm();
@@ -1821,20 +1864,17 @@
 
       abaAtual = aba;
       const idx = ordemAbas.indexOf(aba);
-      
-      document.getElementById('slider-container').style.transform = `translateX(-${idx * 25}%)`;
+      document.getElementById('slider-container').style.transform = `translateX(-${idx * (100 / ordemAbas.length)}%)`;
 
-      const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
+      const nomes = { vendas: 'Caixa', agenda: 'Agenda', estoque: 'Estoque/Insumos', clientes: 'Fiado', relatorios: 'Relatórios' };
       document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Caixa'}`;
 
       ordemAbas.forEach(a => {
         const btnNav = document.getElementById('bottom-btn-' + a);
         if (btnNav) {
-          if (a === aba) {
-            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
-          } else {
-            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
-          }
+          btnNav.className = a === aba 
+            ? "nav-bottom-item flex flex-col items-center justify-center space-y-1 active"
+            : "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
         }
       });
 
@@ -1849,17 +1889,134 @@
       }
 
       mostrarInterfaceAutenticada(true);
-
       if (!verificarLicencaStatus()) return;
 
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
+      reconfigurarInterfacePorRamo();
 
       renderAbaVendas();
+      renderAbaAgenda();
       renderAbaEstoque();
       renderAbaClientes();
       renderAbaRelatorios();
     }
 
+    /* MÓDULO DE AGENDA DE ATENDIMENTOS (MODO SERVIÇOS) */
+    function renderAbaAgenda() {
+      const hojeStr = new Date().toISOString().split('T')[0];
+      const agendamentosHoje = agendamentos.filter(a => a.data === hojeStr).sort((a,b) => a.hora.localeCompare(b.hora));
+
+      let listaHTML = agendamentosHoje.map((a, index) => {
+        return `
+          <div class="bg-white p-3.5 rounded-2xl border border-teal-200 shadow-sm space-y-2 text-xs">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="font-extrabold text-teal-800 text-sm bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-200">
+                  ⏰ ${a.hora}
+                </span>
+                <h4 class="font-bold text-slate-800 text-sm mt-1.5">${a.cliente}</h4>
+                <p class="text-slate-500">Serviço: <b class="text-slate-700">${a.servico}</b></p>
+              </div>
+              <span class="text-[10px] font-extrabold ${a.status === 'Concluído' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'} px-2 py-1 rounded-full">
+                ${a.status || 'Agendado'}
+              </span>
+            </div>
+
+            ${a.obs ? `<p class="text-[10px] bg-slate-50 p-2 rounded-lg text-slate-600 border">💡 <b>Anamnese / Obs VIP:</b> ${a.obs}</p>` : ''}
+
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+              <button onclick="enviarConfirmacaoCortesZap('${a.cliente}', '${a.zap}', '${a.hora}', '${a.servico}')" class="bg-green-600 text-white font-extrabold py-2 px-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow hover:bg-green-700">
+                <i class="fa-brands fa-whatsapp text-sm"></i> Confirmar Zap
+              </button>
+              <button onclick="iniciarAtendimentoDaAgenda(${index})" class="bg-teal-600 text-white font-extrabold py-2 px-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow hover:bg-teal-700">
+                <i class="fa-solid fa-play"></i> Iniciar e Atender
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('content-agenda').innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-check text-teal-600"></i> Agenda de Atendimentos
+            </h2>
+            <span class="text-[10px] font-bold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full">
+              ${agendamentosHoje.length} para hoje
+            </span>
+          </div>
+
+          <button onclick="abrirModalAgendamento()" class="w-full bg-teal-600 text-white font-extrabold py-3.5 rounded-2xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus-circle text-base"></i> Agendar Nova Cliente
+          </button>
+
+          <div class="space-y-2">
+            ${listaHTML || '<p class="text-xs text-slate-400 italic text-center py-8 border border-dashed rounded-2xl">Nenhum agendamento para a data de hoje.</p>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirModalAgendamento() {
+      const hojeStr = new Date().toISOString().split('T')[0];
+      document.getElementById('agenda-data').value = hojeStr;
+
+      const selectServ = document.getElementById('agenda-servico-select');
+      selectServ.innerHTML = produtos.map(p => `<option value="${p.nome}">${p.nome} - R$ ${p.preco.toFixed(2)}</option>`).join('');
+
+      document.getElementById('modal-novo-agendamento').classList.remove('hidden');
+    }
+
+    function fecharModalAgendamento() { document.getElementById('modal-novo-agendamento').classList.add('hidden'); }
+
+    function salvarNovoAgendamento() {
+      const nome = document.getElementById('agenda-cliente-nome').value.trim();
+      const zap = document.getElementById('agenda-cliente-zap').value.trim();
+      const data = document.getElementById('agenda-data').value;
+      const hora = document.getElementById('agenda-hora').value;
+      const servico = document.getElementById('agenda-servico-select').value;
+      const obs = document.getElementById('agenda-obs').value.trim();
+
+      if (!nome || !hora || !servico) { alert("Preencha o nome, horário e serviço!"); return; }
+
+      const novoAg = { id: Date.now(), cliente: nome, zap: zap, data: data, hora: hora, servico: servico, obs: obs, status: 'Agendado' };
+      agendamentos.push(novoAg);
+      localStorage.setItem('crm_agendamentos', JSON.stringify(agendamentos));
+
+      const user = auth.currentUser;
+      if (user) db.collection("agendamentos").add({ ...novoAg, userId: user.uid });
+
+      fecharModalAgendamento();
+      enviarConfirmacaoCortesZap(nome, zap, hora, servico);
+      renderAba();
+    }
+
+    function enviarConfirmacaoCortesZap(nome, zap, hora, servico) {
+      if (!zap) { alert("Informe o WhatsApp da cliente!"); return; }
+
+      let texto = `Olá *${nome}*, tudo bem? ✨\n\nPassando para confirmar seu atendimento no *${perfilNegocio.nomeLoja}*!\n\n📅 Horário: *${hora}*\n💆‍♀️ Serviço: *${servico}*\n\nAceitamos PIX, Cartões e Dinheiro. Caso precise reagendar, por favor nos avise. Esperamos por você com todo o carinho! 💖`;
+      let numLimpo = zap.replace(/\D/g, '');
+      window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`, '_blank');
+    }
+
+    function iniciarAtendimentoDaAgenda(index) {
+      const ag = agendamentos[index];
+      const prod = produtos.find(p => p.nome.toLowerCase() === ag.servico.toLowerCase());
+
+      clienteAtualVenda.nome = ag.cliente;
+      clienteAtualVenda.zap = ag.zap;
+
+      if (prod) {
+        carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: 'un', custo: parseFloat(prod.precoCusto || 0) });
+      } else {
+        carrinho.push({ nome: ag.servico, preco: 50.00, qtd: 1, medida: 'un', custo: 10.00 });
+      }
+
+      switchTab('vendas');
+    }
+
+    /* MÓDULO CAIXA / PDV */
     function abrirModalSangriaSuprimento(tipo) {
       document.getElementById('sangria-tipo').value = tipo;
       document.getElementById('sangria-modal-titulo').innerText = tipo === 'sangria' ? '💸 Registrar Sangria (Retirada)' : '💰 Registrar Suprimento (Entrada)';
@@ -1953,7 +2110,7 @@
         let ehEsgotado = estoqueDisponivelNoAto <= 0;
 
         return `
-          <button onclick="${ehEsgotado ? 'alert(\'Produto esgotado no estoque!\')' : `adicionarAoCarrinho(${idxReal})`}" 
+          <button onclick="${ehEsgotado ? 'alert(\'Produto/Insumo esgotado!\')' : `adicionarAoCarrinho(${idxReal})`}" 
                   class="${ehEsgotado ? 'bg-slate-200 border-slate-300 opacity-50 cursor-not-allowed' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 active:scale-95'} border p-2.5 rounded-xl text-left flex flex-col justify-between h-20 transition shadow-sm">
             <span class="font-bold text-slate-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
             <div class="flex justify-between items-center w-full mt-1">
@@ -1993,7 +2150,7 @@
             <div class="bg-teal-600 text-white p-3 rounded-2xl shadow-sm">
               <p class="text-[10px] text-teal-100 uppercase font-bold">Vendido Hoje</p>
               <p class="text-lg font-extrabold mt-0.5">R$ ${totalVendasBruto.toFixed(2)}</p>
-              <p class="text-[10px] text-teal-200 mt-0.5">${vendasHoje.length} venda(s)</p>
+              <p class="text-[10px] text-teal-200 mt-0.5">${vendasHoje.length} atendimento(s)</p>
             </div>
             
             <div class="bg-slate-800 text-white p-3 rounded-2xl shadow-sm flex flex-col justify-between">
@@ -2007,10 +2164,10 @@
 
           <div class="bg-slate-50 p-3 rounded-2xl border space-y-2">
             <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
+              <i class="fa-solid fa-user-check text-teal-600"></i> Dados da Cliente (Recibo & Fiado)
             </h2>
             <div class="grid grid-cols-2 gap-2">
-              <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-xl text-xs bg-white font-bold">
+              <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome da Cliente" class="p-2 border rounded-xl text-xs bg-white font-bold">
               <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
               <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp / Telefone" class="p-2 border rounded-xl text-xs bg-white font-bold">
             </div>
@@ -2019,20 +2176,20 @@
           <div class="border-t pt-3 space-y-2">
             <div class="flex justify-between items-center">
               <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
+                <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos Rápidos
               </h2>
               <button onclick="abrirScanner('caixa')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow active:scale-95 transition">
-                <i class="fa-solid fa-barcode text-sm"></i> Bipar Vários Itens
+                <i class="fa-solid fa-barcode text-sm"></i> Bipar Vários
               </button>
             </div>
             <div class="grid grid-cols-2 gap-2">
-              ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos nos atalhos.</p>'}
+              ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem itens nos atalhos.</p>'}
             </div>
           </div>
 
           <div class="border-t pt-3 space-y-2 relative">
             <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto ou Avulso
+              <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Item ou Serviço
             </h2>
             
             <div class="grid grid-cols-3 gap-2">
@@ -2081,7 +2238,7 @@
                     <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
                   </div>
                   <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
-                    <span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>
+                    <span class="text-slate-500 font-medium">Digite o valor pago pela cliente</span>
                   </div>
                 </div>
 
@@ -2187,7 +2344,7 @@
       let estoqueRestante = prod.estoque - qtdNoCarrinho;
 
       if (estoqueRestante <= 0) {
-        alert(`O produto "${prod.nome}" está totalmente esgotado!`);
+        alert(`O item "${prod.nome}" está esgotado!`);
         return;
       }
 
@@ -2201,7 +2358,7 @@
       }
 
       if (itemNoCarrinho) { itemNoCarrinho.qtd += 1; }
-      else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un' }); }
+      else { carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), qtd: 1, medida: prod.medida || 'un', custo: parseFloat(prod.precoCusto || 0) }); }
       renderAbaVendas();
     }
 
@@ -2210,11 +2367,14 @@
       const valorInput = parseFloat(document.getElementById('venda-valor-manual').value);
 
       if (!nomeInput || !valorInput || valorInput <= 0) {
-        alert("Digite o nome e o valor do item avulso!");
+        alert("Digite o nome e o valor!");
         return;
       }
 
-      carrinho.push({ nome: nomeInput, preco: valorInput, qtd: 1, medida: 'un' });
+      let prodExistente = produtos.find(p => p.nome.toLowerCase() === nomeInput.toLowerCase());
+      let custoItem = prodExistente ? (prodExistente.precoCusto || 0) : 0;
+
+      carrinho.push({ nome: nomeInput, preco: valorInput, qtd: 1, medida: 'un', custo: custoItem });
       document.getElementById('venda-nome-manual').value = '';
       document.getElementById('venda-valor-manual').value = '';
       renderAbaVendas();
@@ -2251,7 +2411,8 @@
         nome: prodFracionadoTemp.nome,
         preco: parseFloat(prodFracionadoTemp.preco),
         qtd: qtdInput,
-        medida: prodFracionadoTemp.medida
+        medida: prodFracionadoTemp.medida,
+        custo: parseFloat(prodFracionadoTemp.precoCusto || 0)
       });
 
       closeModalFracionado();
@@ -2323,6 +2484,7 @@
       }
     }
 
+    /* ESTOQUE E INSUMOS */
     function renderAbaEstoque() {
       let hoje = new Date();
       let trintaDiasFrente = new Date();
@@ -2341,7 +2503,7 @@
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-2">
             <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
+              <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque & Insumos
             </h2>
             <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
               <i class="fa-solid fa-sliders text-teal-600"></i> Mínimos
@@ -2363,12 +2525,12 @@
           </div>
 
           <button onclick="abrirModalNovoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
-            <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
+            <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto / Serviço
           </button>
 
           <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-1.5">
             <label class="block text-xs font-bold text-teal-900">
-              🔍 Consultar Produto por Nome ou Código:
+              🔍 Consultar Item por Nome ou Código:
             </label>
             <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou código EAN..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
           </div>
@@ -2382,7 +2544,7 @@
 
     function abrirModalNovoProduto() {
       prodEditandoIndex = null;
-      document.getElementById('form-estoque-titulo').innerText = "📦 Cadastrar Novo Produto";
+      document.getElementById('form-estoque-titulo').innerText = "📦 Cadastrar Produto / Insumo";
       document.getElementById('cad-prod-ean').value = '';
       document.getElementById('cad-prod-ean-display').innerText = '';
       document.getElementById('cad-prod-ean-display').classList.add('hidden');
@@ -2402,7 +2564,7 @@
     function fecharModalCadastroProduto() { document.getElementById('modal-cadastro-produto').classList.add('hidden'); }
 
     function renderSubAbaTodosProdutos() {
-      if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado até o momento.</p>`;
+      if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum item cadastrado.</p>`;
 
       return `
         <div class="space-y-2 max-h-72 overflow-y-auto">
@@ -2441,7 +2603,7 @@
     function editarProdutoCompleto(index) {
       let p = produtos[index];
       prodEditandoIndex = index;
-      document.getElementById('form-estoque-titulo').innerText = `✏️ Editar Produto: ${p.nome}`;
+      document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
       document.getElementById('cad-prod-ean').value = p.ean || '';
       
       let eanDisp = document.getElementById('cad-prod-ean-display');
@@ -2461,26 +2623,24 @@
       document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
 
       calcularEExibirMargemLucro();
-
       document.getElementById('modal-cadastro-produto').classList.remove('hidden');
     }
 
     function renderSubAbaMinimos() {
       let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-
       if (minimos.length === 0) {
         return `
           <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
             <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
             <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
-            <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
+            <p class="text-xs text-green-600">Nenhum item está abaixo do limite mínimo.</p>
           </div>
         `;
       }
 
       return `
         <div class="space-y-2">
-          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Produtos com Estoque Crítico (${minimos.length}):</p>
+          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Itens com Estoque Crítico (${minimos.length}):</p>
           <div class="space-y-2 max-h-72 overflow-y-auto">
             ${minimos.map(p => {
               let idxReal = produtos.findIndex(prod => prod.id === p.id);
@@ -2493,7 +2653,6 @@
                     <p class="text-red-700 font-bold mt-0.5">
                       Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500 font-normal">(Mín: ${p.estMin || 3})</span>
                     </p>
-                    <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Sugestão de Reposição: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
                   </div>
                   <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-red-700">
                     ⚡ Repor
@@ -2537,12 +2696,11 @@
                   <div>
                     <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                     <p class="text-slate-600 mt-0.5">
-                      Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
+                      Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>
                     </p>
-                    <p class="text-[10px] text-slate-500">Preço Atual: R$ ${parseFloat(p.preco).toFixed(2)}</p>
                   </div>
                   <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-amber-700">
-                    🏷️ Desconto / Ajustar
+                    🏷️ Ajustar
                   </button>
                 </div>
               `;
@@ -2587,10 +2745,10 @@
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
       const user = auth.currentUser;
-      if (user) db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
+      if (user) db.collection("produtos").doc(user.uid + "_" + p.id).set({ ...p, userId: user.uid }, { merge: true });
 
       fecharModalAjusteRapido();
-      alert(`✅ Produto "${p.nome}" atualizado!`);
+      alert(`✅ Item "${p.nome}" atualizado!`);
       renderAbaEstoque();
       renderAbaRelatorios();
     }
@@ -2604,7 +2762,7 @@
 
       let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
       if (filtro.length === 0) {
-        box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum produto encontrado com "${termo}".</p>`;
+        box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum item localizado com "${termo}".</p>`;
         return;
       }
 
@@ -2618,7 +2776,6 @@
               <div>
                 <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                 <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-                ${p.ean ? `<p class="text-[10px] text-slate-400 font-mono">EAN: ${p.ean}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2697,23 +2854,29 @@
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
       const user = auth.currentUser;
-      if (user) db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
+      if (user) db.collection("produtos").doc(user.uid + "_" + prodData.id).set({ ...prodData, userId: user.uid }, { merge: true });
 
       fecharModalCadastroProduto();
-      alert("✅ Produto salvo!");
+      alert("✅ Item salvo e sincronizado com sucesso!");
       renderAbaEstoque();
       renderAbaRelatorios();
     }
 
     function excluirProduto(index) {
-      if (confirm("Remover este produto do estoque?")) {
+      if (confirm("Remover este item?")) {
+        let prodId = produtos[index].id;
         produtos.splice(index, 1);
         localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+
+        const user = auth.currentUser;
+        if (user) db.collection("produtos").doc(user.uid + "_" + prodId).delete();
+
         renderAbaEstoque();
         renderAbaRelatorios();
       }
     }
 
+    /* MÓDULO FIADO / CLIENTES */
     function renderAbaClientes() {
       const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
       const devedoresQtd = clientes.filter(c => c.debito > 0).length;
@@ -2867,7 +3030,7 @@
       if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
 
       fecharModalEditarCliente();
-      alert("✅ Dados do cliente atualizados com sucesso!");
+      alert("✅ Dados do cliente atualizados!");
       renderAba();
     }
 
@@ -2904,30 +3067,46 @@
 
     function excluirCliente(index) {
       if (confirm("Deseja excluir este registro de cliente?")) {
+        let cliId = clientes[index].id;
         clientes.splice(index, 1);
         localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+
+        const user = auth.currentUser;
+        if (user) db.collection("clientes").doc(user.uid + "_" + cliId).delete();
+
         renderAba();
       }
     }
 
+    /* MÓDULO DE RELATÓRIOS & DRE */
     function renderAbaRelatorios() {
-      const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valor || 0), 0);
 
       let totalCustoItensVendidos = 0;
+
       vendas.forEach(v => {
-        let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-        if (prod && prod.precoCusto) totalCustoItensVendidos += (prod.precoCusto * (v.qtd || 1));
+        if (v.custoTotalItem && v.custoTotalItem > 0) {
+          totalCustoItensVendidos += parseFloat(v.custoTotalItem);
+        } else {
+          let textoItem = v.item || '';
+          let nomeLimpo = textoItem.replace(/^\d+x\s*/, '').trim(); 
+          let qtdVendida = v.qtd || 1;
+
+          let prod = produtos.find(p => p.nome.toLowerCase() === nomeLimpo.toLowerCase());
+          if (prod && prod.precoCusto) {
+            totalCustoItensVendidos += (parseFloat(prod.precoCusto) * parseFloat(qtdVendida));
+          }
+        }
       });
 
       const investimentoEstoqueParado = produtos.reduce((acc, p) => acc + (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)), 0);
-
       const lucroLiquidoReal = totalVendasGeral - totalCustoItensVendidos;
       const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
 
       let contagemItens = {};
       vendas.forEach(v => {
-        let nomeItem = v.item || 'Item Avulso';
-        contagemItens[nomeItem] = (contagemItens[nomeItem] || 0) + 1;
+        let nomeItem = v.item ? v.item.replace(/^\d+x\s*/, '').trim() : 'Item Avulso';
+        contagemItens[nomeItem] = (contagemItens[nomeItem] || 0) + (v.qtd || 1);
       });
 
       let topItens = Object.keys(contagemItens)
@@ -2939,7 +3118,7 @@
         ? topItens.map((it, i) => `
             <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
               <span class="font-bold text-slate-800">${i+1}. ${it.nome}</span>
-              <span class="bg-teal-50 text-teal-800 font-extrabold px-2 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} venda(s)</span>
+              <span class="bg-teal-50 text-teal-800 font-extrabold px-2 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} unid.</span>
             </div>
           `).join('')
         : '<p class="text-xs text-slate-400 italic text-center py-2">Sem vendas no histórico.</p>';
@@ -2967,12 +3146,12 @@
               </div>
 
               <div class="flex justify-between items-center">
-                <span class="text-amber-300 font-medium">📦 Investimento Atual em Estoque:</span>
+                <span class="text-amber-300 font-medium">📦 Investimento Atual em Estoque/Insumos:</span>
                 <span class="font-extrabold text-amber-300 text-sm">R$ ${investimentoEstoqueParado.toFixed(2)}</span>
               </div>
 
               <div class="flex justify-between items-center">
-                <span class="text-slate-300 font-medium">🔴 Custo dos Itens Vendidos:</span>
+                <span class="text-slate-300 font-medium">🔴 Custo dos Itens/Insumos Vendidos:</span>
                 <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoItensVendidos.toFixed(2)}</span>
               </div>
 
@@ -3095,22 +3274,27 @@
         if (tipoConteudo === 'completo' || tipoConteudo === 'lucro') {
           const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valor), 0);
           let totalCustoGeral = 0;
+          
           listaVendasPDF.forEach(v => {
-            let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-            if (prod && prod.precoCusto) totalCustoGeral += prod.precoCusto;
+            if (v.custoTotalItem) totalCustoGeral += v.custoTotalItem;
+            else {
+              let nomeLimpo = (v.item || '').replace(/^\d+x\s*/, '').trim();
+              let prod = produtos.find(p => p.nome.toLowerCase() === nomeLimpo.toLowerCase());
+              if (prod && prod.precoCusto) totalCustoGeral += (prod.precoCusto * (v.qtd || 1));
+            }
           });
 
           doc.setFontSize(12);
           doc.setTextColor(0);
-          doc.text(`1. Resumo Comercial & Financeiro (${listaVendasPDF.length} vendas)`, 14, y);
+          doc.text(`1. Resumo Comercial & Financeiro (${listaVendasPDF.length} registros)`, 14, y);
           y += 6;
           doc.setFontSize(10);
           doc.text(`Faturamento Bruto Total: R$ ${totalVendas.toFixed(2)}`, 14, y);
           y += 5;
-          doc.text(`Custo Total do Estoque Vendido: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+          doc.text(`Custo Total do Estoque/Insumos: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
           y += 5;
           doc.setFont(undefined, 'bold');
-          doc.text(`LUCRO LIQUIDO ESTIMADO: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
+          doc.text(`LUCRO LIQUIDO REAL: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
           doc.setFont(undefined, 'normal');
           y += 10;
         }
@@ -3130,7 +3314,7 @@
 
         if (tipoConteudo === 'estoque' || tipoConteudo === 'completo') {
           doc.setFontSize(12);
-          doc.text(`3. Posicao do Inventario de Estoque (${produtos.length} itens)`, 14, y);
+          doc.text(`3. Posicao do Inventario (${produtos.length} itens)`, 14, y);
           y += 6;
           doc.setFontSize(9);
           produtos.forEach(p => {
@@ -3157,23 +3341,34 @@
         fecharModalOpcoesRelatorio();
         doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
       } catch(err) {
-        alert("Erro ao gerar arquivo PDF.");
+        alert("Erro ao gerar PDF.");
       }
     }
 
     function executarLimpezaTotalManual() {
-      if (confirm("⚠️ ATENÇÃO: Esta ação apaga permanentemente todo o histórico de vendas, clientes e estoque do aplicativo. Deseja prosseguir?")) {
+      if (confirm("⚠️ ATENÇÃO: Esta ação apaga permanentemente todo o histórico do aplicativo (LOCAL E NUVEM). Deseja prosseguir?")) {
+        const user = auth.currentUser;
+        if (user) {
+          db.collection("vendas").where("userId", "==", user.uid).get().then(s => s.forEach(d => d.ref.delete()));
+          db.collection("produtos").where("userId", "==", user.uid).get().then(s => s.forEach(d => d.ref.delete()));
+          db.collection("clientes").where("userId", "==", user.uid).get().then(s => s.forEach(d => d.ref.delete()));
+          db.collection("fechamentos").where("userId", "==", user.uid).get().then(s => s.forEach(d => d.ref.delete()));
+          db.collection("agendamentos").where("userId", "==", user.uid).get().then(s => s.forEach(d => d.ref.delete()));
+        }
+
         vendas = [];
         sangriasSuprimentos = [];
         historicoFechamentos = [];
         produtos = [];
         clientes = [];
+        agendamentos = [];
 
         localStorage.removeItem('crm_vendas');
         localStorage.removeItem('crm_sangrias');
         localStorage.removeItem('crm_fechamentos');
         localStorage.removeItem('crm_produtos');
         localStorage.removeItem('crm_clientes');
+        localStorage.removeItem('crm_agendamentos');
 
         alert("✅ Todos os dados foram limpos com sucesso!");
         renderAba();
@@ -3195,7 +3390,7 @@
       document.getElementById('fechamento-conteudo').innerHTML = `
         <div class="bg-slate-50 p-3 rounded-xl border space-y-1.5">
           <p class="font-bold text-slate-800 text-xs">Resumo do Turno Atual (${hojeStr}):</p>
-          <div class="flex justify-between"><span>Vendas Realizadas:</span> <b>${vendasHoje.length}</b></div>
+          <div class="flex justify-between"><span>Atendimentos:</span> <b>${vendasHoje.length}</b></div>
           <div class="flex justify-between text-teal-700 font-bold"><span>Total Vendas:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
           <hr>
           <div class="flex justify-between"><span>Dinheiro Vendas:</span> <span>R$ ${totalDinheiroVendas.toFixed(2)}</span></div>
@@ -3239,6 +3434,9 @@
       historicoFechamentos.push(registro);
       localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
 
+      const user = auth.currentUser;
+      if (user) db.collection("fechamentos").doc(user.uid + "_" + registro.id).set({ ...registro, userId: user.uid }, { merge: true });
+
       closeModalFechamento();
 
       if (diferenca === 0) alert("✅ Fechamento Registrado! Gaveta exata.");
@@ -3248,7 +3446,7 @@
       renderAba();
     }
 
-    /* FINALIZAÇÃO DA VENDA COM INTEGRADOR DE FIADO E AVISO ANIMADO */
+    /* PROCESSAR FINALIZAÇÃO DE VENDA */
     function processarFinalizarVenda(modoEnvio) {
       if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
       
@@ -3258,7 +3456,7 @@
       const prazoFiado = document.getElementById('venda-fiado-prazo') ? document.getElementById('venda-fiado-prazo').value : '';
 
       if (pagto === 'Fiado' && !clienteNome) {
-        alert("Digite o nome do cliente para registrar a venda no fiado!");
+        alert("Digite o nome da cliente para registrar a venda no fiado!");
         return;
       }
 
@@ -3270,9 +3468,15 @@
 
       carrinho.forEach(item => {
         let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
-        if (prod) prod.estoque = Math.max(0, prod.estoque - item.qtd);
+        let custoItemUnitario = item.custo || (prod ? (prod.precoCusto || 0) : 0);
+        
+        if (prod) {
+          prod.estoque = Math.max(0, prod.estoque - item.qtd);
+          if (user) db.collection("produtos").doc(user.uid + "_" + prod.id).set({ ...prod, userId: user.uid }, { merge: true });
+        }
 
         let valorItemTotal = item.preco * item.qtd;
+        let custoTotalItem = custoItemUnitario * item.qtd;
         totalVenda += valorItemTotal;
 
         const novaVenda = {
@@ -3280,6 +3484,7 @@
           item: `${item.qtd}x ${item.nome}`,
           qtd: item.qtd,
           valor: valorItemTotal,
+          custoTotalItem: custoTotalItem,
           formaPagto: pagto,
           cliente: clienteNome,
           data: dataAtual
@@ -3330,23 +3535,22 @@
       carrinho = [];
       clienteAtualVenda = { nome: '', zap: '' };
 
-      // DISPARA MENSAGEM FLUTUANTE ANIMADA AO VENDER EM FIADO
       if (pagto === 'Fiado') {
         exibirToastFiadoIntegrado(clienteNome, totalVenda);
       }
 
       if (modoEnvio === 'whatsapp') enviarComprovanteDiretoWhatsApp(dadosVenda);
       else if (modoEnvio === 'imprimir') imprimirReciboDireto(dadosVenda);
-      else if (pagto !== 'Fiado') alert("✅ Venda finalizada com sucesso!");
+      else if (pagto !== 'Fiado') alert("✅ Venda/Atendimento finalizado com sucesso!");
 
       renderAba();
       verificarAlertasEstoqueValidadeAutomatico();
     }
 
     function enviarComprovanteDiretoWhatsApp(vendaObj) {
-      let texto = `*COMPROVANTE DE COMPRA - ${vendaObj.loja.toUpperCase()}*\nData: ${vendaObj.data}\n\n*Itens:*\n${vendaObj.itens.join('\n')}\n\n*TOTAL: R$ ${vendaObj.total.toFixed(2)}*\nForma de Pagamento: ${vendaObj.pagto}\n`;
+      let texto = `*COMPROVANTE DE ATENDIMENTO - ${vendaObj.loja.toUpperCase()}*\nData: ${vendaObj.data}\n\n*Itens:*\n${vendaObj.itens.join('\n')}\n\n*TOTAL: R$ ${vendaObj.total.toFixed(2)}*\nForma de Pagamento: ${vendaObj.pagto}\n`;
       if (vendaObj.cliente) texto += `Cliente: ${vendaObj.cliente}\n`;
-      texto += `\nAgradecemos a preferência!`;
+      texto += `\nAgradecemos a preferência! 💖`;
 
       let linkZap = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
       if (vendaObj.telefone) {
@@ -3373,36 +3577,27 @@
     }
 
     function exportarBackupCSV() {
-      if (vendas.length === 0) { alert("Sem histórico de vendas para exportação."); return; }
+      if (vendas.length === 0) { alert("Sem histórico para exportação."); return; }
       
       let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
       
       vendas.forEach(v => {
-        let prod = produtos.find(p => p.nome.toLowerCase() === v.item.toLowerCase());
-        let custoVal = prod && prod.precoCusto ? prod.precoCusto.toFixed(2).replace('.', ',') : "0,00";
+        let custoVal = v.custoTotalItem ? v.custoTotalItem.toFixed(2).replace('.', ',') : "0,00";
         let valorBruto = parseFloat(v.valor).toFixed(2).replace('.', ',');
-
-        csvContent += `${v.id};"${v.data}";"${v.item}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoVal}\n`;
+        csvContent += `${v.id};"${v.data}";"${v.item}";"${v.formaPagto}";"${v.cliente || 'Cliente Avulso'}";${valorBruto};${custoVal}\n`;
       });
 
       fecharModalOpcoesRelatorio();
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Relatorio_Contabil_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
+      link.setAttribute("download", `Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    function sincronizarNuvemManual() {
-      const user = auth.currentUser;
-      if (user) {
-        db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
-        alert("✅ Sincronização concluída com sucesso!");
-      } else alert("Você está desconectado. Faça login para sincronizar.");
-    }
-
+    /* INICIALIZAÇÃO DE SESSÃO */
     auth.onAuthStateChanged((user) => {
       if (user) {
         mostrarInterfaceAutenticada(true);
@@ -3413,11 +3608,13 @@
             perfilNegocio = doc.data();
             localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
           }
+          carregarDadosDaNuvemFirebase();
           switchTab('vendas');
           exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
           verificarAlertasEstoqueValidadeAutomatico();
           prepararApresentacaoTourInicial();
         }).catch(() => {
+          carregarDadosDaNuvemFirebase();
           switchTab('vendas');
           exibirBoasVindasToast(user.displayName || 'Operador');
           verificarAlertasEstoqueValidadeAutomatico();
@@ -3429,7 +3626,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro - Versão 29.0 Carregada com Sucesso!");
+    console.log("Caixa Rápido Móvel Pro v30.1 - Carregado com Sucesso!");
   </script>
 </body>
 </html>

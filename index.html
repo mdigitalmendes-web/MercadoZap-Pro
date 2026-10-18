@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v49.1 (Vínculo Dinâmico Inteligente)</title>
+  <title>Caixa Rápido Móvel Pro v50.0 (Enterprise Security & Recibo Padrão)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -852,7 +852,7 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>🏢 Vínculo Dinâmico:</b> Caso mude de patrão, basta acessar o menu lateral e clicar em "Vincular a Novo Patrão", inserindo o código fornecido. O acesso é migrado na hora.</p>
+      <p><b>🏢 Vínculo Dinâmico & Segurança:</b> Caso mude de patrão, basta acessar o menu lateral e clicar em "Vincular a Novo Patrão". Se o patrão revogar seu acesso, o app bloqueia as operações instantaneamente.</p>
     </div>
   </div>
 </div>
@@ -928,6 +928,32 @@
 
   function eAdmin() {
     return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
+  }
+
+  // GUARDA DE VÍNCULO EM TEMPO REAL (ANTI-FRAUDE DE DESLIGAMENTO)
+  async function verificarIntegridadeVinculoAtivo() {
+    if (eAdmin()) return true; // Admins nunca são desligados por slots
+    const user = auth.currentUser;
+    if (!user || !perfilNegocio.empresaId) return true;
+
+    try {
+      let docPatrao = await db.collection("perfis").doc(perfilNegocio.empresaId).get();
+      if (!docPatrao.exists) {
+        alert("⚠️ Acesso revogado: A empresa vinculada não foi localizada.");
+        fazerLogoutSeguro();
+        return false;
+      }
+      let dadosPatrao = docPatrao.data();
+      if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
+        let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.nome && s.nome.toLowerCase() === (perfilNegocio.nomeUsuario || '').toLowerCase() && s.ativo);
+        if (!meuSlot) {
+          alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi revogado pelo administrador!");
+          fazerLogoutSeguro();
+          return false;
+        }
+      }
+    } catch(e) {}
+    return true;
   }
 
   function persistirDadosCompletos() {
@@ -1571,7 +1597,7 @@
     window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
   }
 
-  // TELA DE LOGIN (v49.1)
+  // TELA DE LOGIN (v50.0)
   function showLoginForm() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
@@ -2317,9 +2343,13 @@
     }
   }
 
-  function switchTab(aba) {
+  async function switchTab(aba) {
     if (!auth.currentUser) return;
     if (!verificarLicencaStatus()) return;
+
+    // Validação de segurança em tempo real antes de mudar de aba ou realizar ações
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
 
     if (aba === 'relatorios' && !eAdmin()) {
       alert("⚠️ Acesso Restrito: Apenas Proprietários / Gerentes podem acessar os Relatórios.");
@@ -2455,7 +2485,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v49.1</b> está conectado com migração dinâmica de vínculo e autenticação segura.
+            O <b>Caixa Rápido Móvel Pro v50.0</b> está conectado com segurança enterprise e verificação ativa de vínculo.
           </p>
 
           <div class="pt-1">
@@ -2518,6 +2548,14 @@
       const elZap = document.getElementById('venda-cliente-zap');
       if (elZap) elZap.value = cli.telefone;
     }
+  }
+
+  function somarValorRecebidoRapido(valorAdicionar) {
+    const inputRecebido = document.getElementById('venda-dinheiro-recebido');
+    if (!inputRecebido) return;
+    let atual = parseFloat(inputRecebido.value || 0);
+    inputRecebido.value = (atual + valorAdicionar).toFixed(2);
+    calcularTrocoEmTempoReal();
   }
 
   function calcularTrocoEmTempoReal() {
@@ -2686,6 +2724,14 @@
                 <div>
                   <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido em Dinheiro R$:</label>
                   <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
+                </div>
+                <div class="flex gap-1">
+                  <button onclick="somarValorRecebidoRapido(2)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 2</button>
+                  <button onclick="somarValorRecebidoRapido(5)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 5</button>
+                  <button onclick="somarValorRecebidoRapido(10)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 10</button>
+                  <button onclick="somarValorRecebidoRapido(20)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 20</button>
+                  <button onclick="somarValorRecebidoRapido(50)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 50</button>
+                  <button onclick="somarValorRecebidoRapido(100)" class="flex-1 bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+R$ 100</button>
                 </div>
                 <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
                   <span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>
@@ -2859,8 +2905,12 @@
     renderAbaVendas();
   }
 
-  function processarFinalizarVenda(tipoEnvio) {
+  async function processarFinalizarVenda(tipoEnvio) {
     if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
+
+    // Verificação ativa de vínculo antes de concluir a venda
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
 
     const formaPagto = document.getElementById('venda-pagto').value;
     const nomeClienteInput = document.getElementById('venda-cliente-nome').value.trim() || 'Consumidor Final';
@@ -2924,24 +2974,30 @@
       db.collection("empresas").doc(empresaIdDest).collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
     }
 
-    let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
-    let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
-      `👤 *Cliente:* ${nomeClienteInput}\n` +
-      `🧑‍💼 *Operador:* ${nomeOperadorAtual}\n` +
-      `📅 *Data/Hora:* ${hojeStr}\n` +
-      `💳 *Forma de Pagamento:* ${formaPagto}\n\n` +
-      `*Itens Adquiridos:*\n${itensFormatadosZap}\n\n` +
+    let itensFormatadosCupom = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} - R$ ${(i.preco * i.qtd).toFixed(2)}`).join('\n');
+    
+    let resumoTexto = `===================================\n` +
+      `        ${perfilNegocio.nomeLoja.toUpperCase()}\n` +
+      `===================================\n` +
+      `DATA: ${hojeStr}\n` +
+      `CLIENTE: ${nomeClienteInput}\n` +
+      `OPERADOR: ${nomeOperadorAtual}\n` +
+      `PAGAMENTO: ${formaPagto}\n` +
       `-----------------------------------\n` +
-      `💰 *VALOR TOTAL: R$ ${totalCarrinho.toFixed(2)}*\n` +
+      `ITENS ADQUIRIDOS:\n` +
+      `${itensFormatadosCupom}\n` +
       `-----------------------------------\n` +
-      `Obrigado pela preferência! Volte sempre.`;
+      `VALOR TOTAL: R$ ${totalCarrinho.toFixed(2)}\n` +
+      `===================================\n` +
+      `    OBRIGADO PELA PREFERÊNCIA!\n` +
+      `===================================`;
 
     if (tipoEnvio === 'whatsapp' && zapClienteInput) {
       let numLimpo = zapClienteInput.replace(/\D/g, '');
       window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`, '_blank');
     } else if (tipoEnvio === 'imprimir') {
       let janelaImpressao = window.open('', '_blank');
-      janelaImpressao.document.write(`<html><head><title>Recibo</title></head><body style="font-family:monospace; padding:10px;"><h3>${perfilNegocio.nomeLoja}</h3><pre>${resumoTexto}</pre></body></html>`);
+      janelaImpressao.document.write(`<html><head><title>Cupom Não Fiscal</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
       janelaImpressao.document.close();
       janelaImpressao.print();
     }
@@ -3090,7 +3146,7 @@
     document.getElementById('modal-cadastro-produto').classList.remove('hidden');
   }
 
-  function fecharModalCadastroProduto() { document.getElementById('modal-cadastro-produto').classList.add('hidden'); }
+  function fecharModalCadastroproduto() { document.getElementById('modal-cadastro-produto').classList.add('hidden'); }
 
   function renderSubAbaTodosProdutos() {
     if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado.</p>`;
@@ -3239,7 +3295,10 @@
   function adicionarQtdDireta(qtd) { let campo = document.getElementById('ajuste-prod-qtd'); campo.value = parseFloat(campo.value || 0) + qtd; }
   function aplicarDescontoPorcentagem(pct) { let campo = document.getElementById('ajuste-prod-preco'); let valAtual = parseFloat(campo.value || 0); campo.value = (valAtual * (1 - pct / 100)).toFixed(2); }
 
-  function salvarAjusteRapidoProduto() {
+  async function salvarAjusteRapidoProduto() {
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
+
     let idx = document.getElementById('ajuste-prod-index').value;
     if (idx === "") return;
     let p = produtos[idx];
@@ -3292,7 +3351,10 @@
     renderAbaEstoque();
   }
 
-  function cadastrarOuAtualizarProduto() {
+  async function cadastrarOuAtualizarProduto() {
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
+
     const ean = document.getElementById('cad-prod-ean').value;
     const nome = document.getElementById('cad-prod-nome').value.trim();
     const preco = document.getElementById('cad-prod-preco').value;
@@ -3350,14 +3412,14 @@
     let empresaIdDest = perfilNegocio.empresaId || user.uid;
     if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
 
-    fecharModalCadastroProduto();
+    fecharModalCadastroproduto();
     alert("✅ Produto salvo!");
     renderAbaEstoque();
   }
 
   function excluirProduto(index) {
-    if (!eAdmin()) { alert("Apenas administrador."); return; }
-    if (confirm("Remover este produto?")) {
+    if (!eAdmin()) { alert("Acesso Restrito: Apenas administradores podem excluir produtos do estoque."); return; }
+    if (confirm("Remover este produto permanentemente?")) {
       let p = produtos[index];
       produtos.splice(index, 1);
       persistirDadosCompletos();
@@ -3463,7 +3525,10 @@
 
   function fecharModalEditarCliente() { document.getElementById('modal-editar-cliente').classList.add('hidden'); }
 
-  function salvarEdicaoCliente() {
+  async function salvarEdicaoCliente() {
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
+
     let idx = document.getElementById('edit-cli-index').value;
     if (idx === "") return;
     let c = clientes[idx];
@@ -3489,7 +3554,10 @@
     window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`, '_blank');
   }
 
-  function abaterDebitoCliente(index) {
+  async function abaterDebitoCliente(index) {
+    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+    if (!vinculadoAtivo) return;
+
     const valInput = document.getElementById(`abatimento-val-${index}`);
     const valorAbater = parseFloat(valInput.value);
     if (!valorAbater || valorAbater <= 0) { alert("Valor inválido!"); return; }
@@ -3696,8 +3764,11 @@
     } else alert("Faça login.");
   }
 
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
+      let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+      if (!vinculadoAtivo) return;
+
       db.collection("perfis").doc(user.uid).get().then(doc => {
         if (doc.exists) {
           perfilNegocio = doc.data();
@@ -3733,7 +3804,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 49.1 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 50.0 carregada com sucesso!");
 </script>
 </body>
 </html>

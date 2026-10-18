@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v30.0</title>
+  <title>Caixa Rápido Móvel Pro v31.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -118,12 +118,12 @@
       border-radius: 0 0 4px 4px;
     }
 
-    #toast-boas-vindas, #banner-alerta-estoque {
+    #toast-boas-vindas, #banner-alerta-estoque, #toast-integracao-fiado {
       transition: all 0.4s ease-in-out;
       transform: translateY(-130%);
       opacity: 0;
     }
-    #toast-boas-vindas.show, #banner-alerta-estoque.show {
+    #toast-boas-vindas.show, #banner-alerta-estoque.show, #toast-integracao-fiado.show {
       transform: translateY(0);
       opacity: 1;
     }
@@ -141,6 +141,17 @@
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
       <p class="text-[11px] text-slate-300 truncate">Login realizado. Caixa pronto para operar.</p>
+    </div>
+  </div>
+
+  <!-- TOAST DE INTEGRAÇÃO FIADO (SURPRESA INTELIGENTE) -->
+  <div id="toast-integracao-fiado" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-amber-950 text-white p-3.5 rounded-2xl shadow-2xl border border-amber-500/60 flex items-center gap-3 pointer-events-none">
+    <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
+      📋
+    </div>
+    <div class="flex-1 min-w-0">
+      <h4 class="font-extrabold text-xs text-amber-300">Integração Fiado Automática!</h4>
+      <p id="toast-fiado-texto" class="text-[11px] text-amber-100 truncate">Débito registrado na aba de Fiados.</p>
     </div>
   </div>
 
@@ -184,20 +195,7 @@
     </div>
   </div>
 
-  <!-- BARRA SUPERIOR (OCULTA NA TELA DE INÍCIO CONFORME SOLICITADO) -->
-  <header id="app-main-header" class="hidden brand-header-bg text-white p-3.5 justify-between items-center shadow-md z-10 flex-shrink-0">
-    <div class="flex items-center space-x-3">
-      <button onclick="abrirDrawerNavegacao()" class="text-white p-1 text-2xl focus:outline-none hover:text-teal-200 active:scale-95 transition">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div>
-        <h1 id="header-app-name" class="font-extrabold text-base leading-tight tracking-wide">Caixa Rápido Móvel Pro</h1>
-        <p id="header-aba-atual" class="text-[11px] text-teal-100 font-medium">Caixa</p>
-      </div>
-    </div>
-  </header>
-
-  <!-- DRAWER LATERAL -->
+  <!-- DRAWER LATERAL (MENU SANDUÍCHE CONCENTRADO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -299,7 +297,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR (FLUTUANTE NAS ABAS OPERACIONAIS) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE (VISÍVEL APENAS NAS ABAS OPERACIONAIS) -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-5 h-16">
       <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -340,9 +338,7 @@
       </h3>
       <button onclick="fecharModalNotificacoes()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
-    <div id="lista-notificacoes-box" class="space-y-2 text-xs">
-      <!-- Preenchido via JS -->
-    </div>
+    <div id="lista-notificacoes-box" class="space-y-2 text-xs"></div>
   </div>
 </div>
 
@@ -829,7 +825,7 @@
   let modoScannerDestino = 'caixa';
   let alertaSilenciadoSessao = false;
   let ultimoEanLido = '';
-  let ultimoTempoLeitura = false;
+  let ultimoTempoLeitura = 0;
   
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente' };
@@ -1007,24 +1003,26 @@
     }
   }
 
+  function exibirToastIntegracaoFiado(nomeCliente, valor) {
+    const toast = document.getElementById('toast-integracao-fiado');
+    const elTexto = document.getElementById('toast-fiado-texto');
+    if (toast && elTexto) {
+      elTexto.innerText = `Débito de R$ ${valor.toFixed(2)} registrado para ${nomeCliente} na aba Fiado.`;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 4200);
+    }
+  }
+
   function mostrarInterfaceAutenticada(mostrar) {
-    const header = document.getElementById('app-main-header');
     const bottomNav = document.getElementById('app-bottom-nav');
 
     if (mostrar) {
-      // Se estivermos na aba início, ocultamos o cabeçalho superior e a barra inferior fixa conforme solicitado pelo usuário
       if (abaAtual === 'inicio') {
-        header.classList.add('hidden');
-        header.classList.remove('flex');
         bottomNav.classList.add('hidden');
       } else {
-        header.classList.remove('hidden');
-        header.classList.add('flex');
         bottomNav.classList.remove('hidden');
       }
     } else {
-      header.classList.add('hidden');
-      header.classList.remove('flex');
       bottomNav.classList.add('hidden');
       fecharDrawerNavegacao();
     }
@@ -1675,7 +1673,6 @@
     };
 
     localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
-    document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja;
 
     const user = auth.currentUser;
     if (user) {
@@ -1719,22 +1716,13 @@
     
     document.getElementById('slider-container').style.transform = `translateX(-${idx * 20}%)`; 
 
-    // Ocultar cabeçalho superior e barra inferior na aba 'Início' conforme exigido, exibindo nas demais
-    const header = document.getElementById('app-main-header');
     const bottomNav = document.getElementById('app-bottom-nav');
 
     if (aba === 'inicio') {
-      header.classList.add('hidden');
-      header.classList.remove('flex');
       bottomNav.classList.add('hidden');
     } else {
-      header.classList.remove('hidden');
-      header.classList.add('flex');
       bottomNav.classList.remove('hidden');
     }
-
-    const nomes = { vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
-    document.getElementById('header-aba-atual').innerText = nomes[aba] || '';
 
     ordemAbas.forEach(a => {
       const btnNav = document.getElementById('bottom-btn-' + a);
@@ -1761,8 +1749,6 @@
 
     if (!verificarLicencaStatus()) return;
 
-    document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
-
     renderAbaInicio(); 
     renderAbaVendas();
     renderAbaEstoque(); 
@@ -1777,7 +1763,7 @@
 
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
-    const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+    const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     
     let inicio = licencaInfo.dataInicioLocal || Date.now();
     if (user && user.metadata && user.metadata.creationTime) {
@@ -1790,11 +1776,16 @@
 
     document.getElementById('content-inicio').innerHTML = `
       <div class="space-y-4 p-2">
-        <!-- Saudação com Sininho Vibrando -->
+        <!-- Saudação com Botão Sanduíche Concentrado e Sininho -->
         <div class="bg-gradient-to-r from-teal-600 to-teal-800 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden flex justify-between items-center">
-          <div>
-            <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-            <p class="text-[11px] text-teal-100">Visão geral e atalhos rápidos do app.</p>
+          <div class="flex items-center gap-3">
+            <button onclick="abrirDrawerNavegacao()" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center text-xl text-white border border-white/20 transition active:scale-95 shadow-inner">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+              <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
+              <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'}</p>
+            </div>
           </div>
           <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/10 p-2.5 rounded-xl border border-white/20 hover:bg-white/20 transition">
             <i id="sininho-icone-principal" class="fa-solid fa-bell text-xl text-amber-300"></i>
@@ -1946,11 +1937,11 @@
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
     const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
 
-    const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+    const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
     const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
 
-    const saldoGavetaDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valor), 0) - totalSangrias + totalSuprimentos;
+    const saldoGavetaDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0) - totalSangrias + totalSuprimentos;
 
     let atalhosProdutos = produtos.filter(p => p.atalho !== false);
     let atalhosProdutosHTML = atalhosProdutos.map((p) => {
@@ -2301,7 +2292,7 @@
     });
     localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
-    // Se for fiado, atualiza o débito do cliente
+    // Se for fiado, atualiza o débito do cliente e dispara a mensagem de integração inteligente
     if (formaPagto === 'Fiado') {
       let prazoFiado = document.getElementById('venda-fiado-prazo').value;
       let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeClienteInput.toLowerCase());
@@ -2323,9 +2314,11 @@
         let user = auth.currentUser;
         if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
       });
+
+      exibirToastIntegracaoFiado(nomeClienteInput, totalCarrinho);
     }
 
-    // Registra a venda armazenando detalhadamente os itens para preencher o ranking e os relatórios com perfeição
+    // Registra a venda
     let vendaReg = {
       id: Date.now(),
       itens: carrinho.map(i => ({ nome: i.nome, qtd: i.qtd, precoUnit: i.preco, precoCustoUnit: i.precoCusto, medida: i.medida || 'un' })),
@@ -2340,7 +2333,7 @@
     let user = auth.currentUser;
     if (user) db.collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
 
-    // Mensagem formatada detalhada para o WhatsApp com valor unitário, quantidade, valor total, forma de pagamento e descontos
+    // Mensagem detalhada para o WhatsApp
     let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
     let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
       `👤 *Cliente:* ${nomeClienteInput}\n` +
@@ -3000,7 +2993,6 @@
   function renderAbaRelatorios() {
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     
-    // Cálculo rigoroso do custo total dos produtos efetivamente vendidos a partir do array de itens ou legado
     let totalCustoGeral = 0;
     vendas.forEach(v => {
       if (v.itens && Array.isArray(v.itens)) {
@@ -3008,7 +3000,6 @@
           totalCustoGeral += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1));
         });
       } else if (v.item) {
-        // Compatibilidade com vendas antigas legadas
         let prod = produtos.find(p => v.item.toLowerCase().includes(p.nome.toLowerCase()));
         if (prod && prod.precoCusto) {
           totalCustoGeral += parseFloat(prod.precoCusto);
@@ -3019,7 +3010,6 @@
     const lucroLiquido = totalVendasGeral - totalCustoGeral;
     const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
 
-    // Cálculo correto e robusto dos Campeões de Vendas (Top 5)
     let contagemItens = {};
     vendas.forEach(v => {
       if (v.itens && Array.isArray(v.itens)) {
@@ -3410,7 +3400,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 30.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 31.0 carregada com sucesso!");
 </script>
 </body>
 </html>

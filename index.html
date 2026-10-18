@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v35.0 (ERP & Multi-Perfil)</title>
+  <title>Caixa Rápido Móvel Pro v36.0 (ERP & Multi-Perfil)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -135,9 +135,7 @@
 
   <!-- TOAST DE BOAS-VINDAS -->
   <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
-    <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
-      👋
-    </div>
+    <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">👋</div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
       <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema pronto.</p>
@@ -147,9 +145,7 @@
   <!-- TOAST DE ALERTA DINÂMICO NO PDV (ESTOQUE BAIXO) -->
   <div id="toast-alerta-pdv" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-red-950 text-white p-3.5 rounded-2xl shadow-2xl border border-red-500 flex items-center justify-between gap-3">
     <div class="flex items-center gap-2.5 min-w-0">
-      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow">
-        ⚠️
-      </div>
+      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow">⚠️</div>
       <div class="min-w-0">
         <h4 class="font-extrabold text-xs text-red-300">Atenção: Estoque Crítico!</h4>
         <p id="texto-alerta-pdv" class="text-[11px] text-red-100 truncate">Este item atingiu o limite mínimo.</p>
@@ -160,9 +156,7 @@
 
   <!-- TOAST DE INTEGRAÇÃO FIADO -->
   <div id="toast-integracao-fiado" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-amber-950 text-white p-3.5 rounded-2xl shadow-2xl border border-amber-500/60 flex items-center gap-3 pointer-events-none">
-    <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
-      📋
-    </div>
+    <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">📋</div>
     <div class="flex-1 min-w-0">
       <h4 class="font-extrabold text-xs text-amber-300">Integração Fiado Automática!</h4>
       <p id="toast-fiado-texto" class="text-[11px] text-amber-100 truncate">Débito registrado na aba de Fiados.</p>
@@ -172,21 +166,15 @@
   <!-- BANNER INTELIGENTE DE ALERTA GERAL -->
   <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
     <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
-      <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
-        🚨
-      </div>
+      <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">🚨</div>
       <div class="min-w-0">
         <h4 id="banner-alerta-titulo" class="font-extrabold text-xs text-red-300">Atenção ao Estoque!</h4>
         <p id="banner-alerta-texto" class="text-[11px] text-slate-200 truncate leading-tight">Existem itens acabando ou vencendo.</p>
       </div>
     </div>
     <div class="flex flex-col gap-1">
-      <button id="banner-alerta-btn-acao" class="text-[10px] bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-1 rounded-lg font-bold shadow">
-        Ver Detalhes
-      </button>
-      <button onclick="silenciarAlerta()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg font-bold">
-        🔕 Fechar
-      </button>
+      <button id="banner-alerta-btn-acao" class="text-[10px] bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-1 rounded-lg font-bold shadow">Ver Detalhes</button>
+      <button onclick="silenciarAlerta()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg font-bold">🔕 Fechar</button>
     </div>
   </div>
 
@@ -229,9 +217,14 @@
             </button>
           </div>
           <p id="drawer-user-email" class="text-[11px] text-teal-100 truncate mb-2">email@exemplo.com</p>
-          <div class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
-            <i class="fa-solid fa-id-badge"></i>
-            <span id="drawer-user-funcao">Proprietário / Gerente</span>
+          <div class="flex items-center justify-between mt-2">
+            <div class="inline-flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
+              <i class="fa-solid fa-id-badge"></i>
+              <span id="drawer-user-funcao">Proprietário / Gerente</span>
+            </div>
+            <button onclick="copiarCodigoConvitePatrao()" id="btn-copiar-convite" class="hidden text-[10px] bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold px-2 py-1 rounded-lg shadow">
+              📋 Copiar Código Empresa
+            </button>
           </div>
         </div>
 
@@ -598,7 +591,7 @@
     </div>
 
     <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-      <label class="block text-[11px] font-bold text-amber-900 mb-0.5">Limite Mínimo p/ Alerta:</label>
+      <label class="block text-[11px] font-bold text-amber-900 mb-0.5">Limite Mínimo p/ Alerta Estoque:</label>
       <input type="number" id="cad-prod-estmin" placeholder="Ex: 5" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
     </div>
 
@@ -608,9 +601,14 @@
         <input type="date" id="cad-prod-entrada" class="w-full p-1.5 border rounded-lg text-xs bg-white">
       </div>
       <div>
-        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Validade (Crítica)</label>
+        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Data de Validade</label>
         <input type="date" id="cad-prod-validade" class="w-full p-1.5 border rounded-lg text-xs bg-white">
       </div>
+    </div>
+
+    <div class="bg-purple-50 p-2 rounded-lg border border-purple-200">
+      <label class="block text-[11px] font-bold text-purple-900 mb-0.5">Alerta de Validade Personalizado (Dias):</label>
+      <input type="number" id="cad-prod-alerta-dias" placeholder="Vazio = Usa Padrão Geral (30d)" class="w-full p-1.5 border rounded-lg text-xs bg-white font-bold">
     </div>
 
     <div class="flex items-center gap-2 pt-1">
@@ -764,16 +762,23 @@
 <div id="modal-minimos-padrao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4">
     <div class="flex justify-between items-center border-b pb-2">
-      <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Limites Mínimos Padrão</h3>
+      <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-sliders text-teal-600"></i> Configurações & Limites Gerais</h3>
       <button onclick="fecharModalMinimosPadrao()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-2 text-xs">
-      <div><label class="block font-semibold text-slate-700">Unidades (un):</label><input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg font-bold"></div>
-      <div><label class="block font-semibold text-slate-700">Quilogramas (kg):</label><input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg font-bold"></div>
-      <div><label class="block font-semibold text-slate-700">Caixas (cx):</label><input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg font-bold"></div>
-      <div><label class="block font-semibold text-slate-700">Litros (L):</label><input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg font-bold"></div>
+      <p class="font-bold text-slate-700 border-b pb-1">Mínimos de Estoque Padrão:</p>
+      <div><label class="block font-semibold text-slate-600">Unidades (un):</label><input type="number" id="min-padrao-un" class="w-full p-2 border rounded-lg font-bold"></div>
+      <div><label class="block font-semibold text-slate-600">Quilogramas (kg):</label><input type="number" step="0.1" id="min-padrao-kg" class="w-full p-2 border rounded-lg font-bold"></div>
+      <div><label class="block font-semibold text-slate-600">Caixas (cx):</label><input type="number" id="min-padrao-cx" class="w-full p-2 border rounded-lg font-bold"></div>
+      <div><label class="block font-semibold text-slate-600">Litros (L):</label><input type="number" step="0.1" id="min-padrao-L" class="w-full p-2 border rounded-lg font-bold"></div>
+      
+      <div class="pt-2">
+        <p class="font-bold text-slate-700 border-b pb-1">Validade Geral da Loja:</p>
+        <label class="block font-semibold text-slate-600 mt-1">Avisar produtos vencendo em quantos dias (Padrão: 30):</label>
+        <input type="number" id="config-dias-validade-geral" class="w-full p-2 border rounded-lg font-bold text-amber-800">
+      </div>
     </div>
-    <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow">Salvar Padrões</button>
+    <button onclick="salvarMinimosPadrao()" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg text-xs shadow mt-2">Salvar Configurações</button>
   </div>
 </div>
 
@@ -808,9 +813,9 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+      <p><b>🏢 Vínculo de Funcionários:</b> O proprietário pode copiar o código da empresa no menu lateral e passar para o funcionário inserir no ato do cadastro.</p>
+      <p><b>📅 Alertas de Validade:</b> Defina prazos gerais nas configurações ou prazos específicos diretamente ao cadastrar/editar cada produto no estoque.</p>
       <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua para agilizar o atendimento.</p>
-      <p><b>📁 Relatórios & Contabilidade:</b> Emita PDFs e acompanhe o DRE com o abatimento das despesas fixas.</p>
-      <p><b>👥 Perfis Diferenciados:</b> Funcionários cadastram produtos e gerenciam fiados sem visualizar custos ou lucros.</p>
     </div>
   </div>
 </div>
@@ -838,9 +843,9 @@
   db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
   const produtosExemplo = [
-    { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", atalho: true },
-    { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", atalho: true },
-    { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", atalho: true }
+    { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", alertaDias: 30, atalho: true },
+    { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", alertaDias: 30, atalho: true },
+    { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", alertaDias: 15, atalho: true }
   ];
 
   let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
@@ -864,7 +869,7 @@
   let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
     { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" }
   ];
-  let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5 };
+  let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5, validadeGeralDias: 30 };
   
   let carrinho = [];
   let clienteAtualVenda = { nome: '', zap: '' };
@@ -881,10 +886,10 @@
   let modoScannerDestino = 'caixa';
   let alertaSilenciadoSessao = false;
   let ultimoEanLido = '';
-  let ultimoTempoLeitura = 0;
+  let ultimoTempoLeitura =  0;
   
-  let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
-  let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente' };
+  let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', codigoConvite: '' };
+  let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente', empresaId: '' };
 
   function eAdmin() {
     return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
@@ -950,11 +955,19 @@
 
   function verificarAlertasEstoqueValidadeAutomatico() {
     let hoje = new Date();
-    let trintaDiasFrente = new Date();
-    trintaDiasFrente.setDate(hoje.getDate() + 30);
+    let diasGeral = minimosPadrao.validadeGeralDias || 30;
 
     let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-    let validades = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+    
+    let validades = produtos.filter(p => {
+      if (!p.validade) return false;
+      let dVal = new Date(p.validade);
+      let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
+      let limiteAlerta = new Date();
+      limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
+      return dVal <= limiteAlerta;
+    });
+
     let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
 
     const banner = document.getElementById('banner-alerta-estoque');
@@ -975,7 +988,7 @@
         clickArea.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
         if (btnAcao) btnAcao.onclick = () => irParaSubabaEstoqueEspecifica('minimos');
       } else if (validades.length > 0 && minimos.length === 0) {
-        bannerTitulo.innerText = "Aviso: Validade Crítica!";
+        bannerTitulo.innerText = "Aviso: Validade Próxima!";
         bannerTexto.innerText = `${validades.length} produto(s) prestes a vencer ou vencidos.`;
         bannerIcone.innerText = "📅";
         banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-amber-500/80 show";
@@ -1022,11 +1035,17 @@
 
   function abrirModalNotificacoes() {
     let hoje = new Date();
-    let trintaDiasFrente = new Date();
-    trintaDiasFrente.setDate(hoje.getDate() + 30);
+    let diasGeral = minimosPadrao.validadeGeralDias || 30;
 
     let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-    let validades = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+    let validades = produtos.filter(p => {
+      if (!p.validade) return false;
+      let dVal = new Date(p.validade);
+      let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
+      let limiteAlerta = new Date();
+      limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
+      return dVal <= limiteAlerta;
+    });
     let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
 
     const box = document.getElementById('lista-notificacoes-box');
@@ -1337,6 +1356,10 @@
               <label class="block text-xs font-semibold text-slate-600 mb-1">Crie uma Senha (mín. 6 dígitos) *</label>
               <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
             </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Código de Convite da Empresa (Opcional p/ Funcionário)</label>
+              <input type="text" id="cad-convite" placeholder="Cole aqui o código recebido do patrão" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 font-bold text-amber-900 border-amber-300">
+            </div>
 
             <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
               Avançar <i class="fa-solid fa-arrow-right ml-1"></i>
@@ -1355,6 +1378,7 @@
     e.preventDefault();
     cadastroTemp.email = document.getElementById('cad-email').value;
     cadastroTemp.pass = document.getElementById('cad-pass').value;
+    cadastroTemp.codigoConvite = document.getElementById('cad-convite').value.trim();
     showStep2CadastroUsuario();
   }
 
@@ -1468,19 +1492,34 @@
     errBox.classList.add('hidden');
 
     auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
+      let uidGerado = userCredential.user.uid;
+      let empresaIdVinculo = cadastroTemp.codigoConvite ? cadastroTemp.codigoConvite.trim() : uidGerado;
+
       perfilNegocio = {
         nomeLoja: cadastroTemp.nomeLoja,
         nomeUsuario: cadastroTemp.nomeUsuario,
         funcaoUsuario: cadastroTemp.funcaoUsuario,
         tipo: cadastroTemp.tipo,
-        ramo: cadastroTemp.ramo
+        ramo: cadastroTemp.ramo,
+        empresaId: empresaIdVinculo
       };
       userCredential.user.updateProfile({ displayName: cadastroTemp.nomeUsuario });
       persistirDadosCompletos();
-      db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
+      db.collection("perfis").doc(uidGerado).set(perfilNegocio);
     }).catch(err => {
       errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
       errBox.classList.remove('hidden');
+    });
+  }
+
+  function copiarCodigoConvitePatrao() {
+    let user = auth.currentUser;
+    if (!user) return;
+    let codigoLoja = perfilNegocio.empresaId || user.uid;
+    navigator.clipboard.writeText(codigoLoja).then(() => {
+      alert(`📋 Código de Convite da Empresa copiado com sucesso!\n\nEnvie este código para o seu funcionário colar no ato do cadastro:\n${codigoLoja}`);
+    }).catch(() => {
+      prompt("Copie o código abaixo:", codigoLoja);
     });
   }
 
@@ -1784,6 +1823,12 @@
     document.getElementById('drawer-user-email').innerText = user.email || '';
     document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
 
+    const btnCopiar = document.getElementById('btn-copiar-convite');
+    if (btnCopiar) {
+      if (eAdmin()) btnCopiar.classList.remove('hidden');
+      else btnCopiar.classList.add('hidden');
+    }
+
     document.getElementById('drawer-menu').classList.remove('hidden'); 
   }
   
@@ -2000,7 +2045,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v35.0</b> oferece agilidade completa para o seu comércio com múltiplos perfis sincronizados na nuvem.
+            O <b>Caixa Rápido Móvel Pro v36.0</b> oferece agilidade completa para o seu comércio com múltiplos perfis sincronizados na nuvem.
           </p>
 
           <div class="pt-1">
@@ -2524,6 +2569,7 @@
     document.getElementById('min-padrao-kg').value = minimosPadrao.kg || 2;
     document.getElementById('min-padrao-cx').value = minimosPadrao.cx || 3;
     document.getElementById('min-padrao-L').value = minimosPadrao.L || 5;
+    document.getElementById('config-dias-validade-geral').value = minimosPadrao.validadeGeralDias || 30;
     document.getElementById('modal-minimos-padrao').classList.remove('hidden');
   }
 
@@ -2534,11 +2580,12 @@
       un: parseFloat(document.getElementById('min-padrao-un').value || 5),
       kg: parseFloat(document.getElementById('min-padrao-kg').value || 2),
       cx: parseFloat(document.getElementById('min-padrao-cx').value || 3),
-      L: parseFloat(document.getElementById('min-padrao-L').value || 5)
+      L: parseFloat(document.getElementById('min-padrao-L').value || 5),
+      validadeGeralDias: parseInt(document.getElementById('config-dias-validade-geral').value || 30)
     };
     localStorage.setItem('crm_minimos_padrao', JSON.stringify(minimosPadrao));
     fecharModalMinimosPadrao();
-    alert("Limites mínimos padrão salvos!");
+    alert("✅ Configurações e limites salvos com sucesso!");
     renderAbaEstoque();
   }
 
@@ -2564,11 +2611,17 @@
 
   function renderAbaEstoque() {
     let hoje = new Date();
-    let trintaDiasFrente = new Date();
-    trintaDiasFrente.setDate(hoje.getDate() + 30);
+    let diasGeral = minimosPadrao.validadeGeralDias || 30;
 
     let qtdMinimosAlert = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
-    let qtdValidadesAlert = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente).length;
+    let qtdValidadesAlert = produtos.filter(p => {
+      if (!p.validade) return false;
+      let dVal = new Date(p.validade);
+      let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
+      let limiteAlerta = new Date();
+      limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
+      return dVal <= limiteAlerta;
+    }).length;
 
     let conteudoSubAba = '';
     if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
@@ -2583,7 +2636,7 @@
             <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
           </h2>
           <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
-            <i class="fa-solid fa-sliders text-teal-600"></i> Mínimos
+            <i class="fa-solid fa-sliders text-teal-600"></i> Configurações
           </button>
         </div>
 
@@ -2632,6 +2685,7 @@
     document.getElementById('cad-prod-medida').value = 'un';
     document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
     document.getElementById('cad-prod-validade').value = '';
+    document.getElementById('cad-prod-alerta-dias').value = '';
     document.getElementById('cad-prod-atalho').checked = true;
 
     const boxCustoAdmin = document.getElementById('box-custo-admin');
@@ -2660,6 +2714,7 @@
                 <div>
                   <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                   <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+                  ${p.validade ? `<p class="text-[10px] text-slate-400 mt-0.5">Val: ${p.validade.split('-').reverse().join('/')} ${p.alertaDias ? `(Alerta: ${p.alertaDias}d)` : ''}</p>` : ''}
                 </div>
                 <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                   ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2714,6 +2769,7 @@
     document.getElementById('cad-prod-estmin').value = p.estMin || 3;
     document.getElementById('cad-prod-entrada').value = p.dataEntrada || '';
     document.getElementById('cad-prod-validade').value = p.validade || '';
+    document.getElementById('cad-prod-alerta-dias').value = p.alertaDias || '';
     document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
 
     document.getElementById('modal-cadastro-produto').classList.remove('hidden');
@@ -2762,17 +2818,23 @@
 
   function renderSubAbaValidades() {
     let hoje = new Date();
-    let trintaDiasFrente = new Date();
-    trintaDiasFrente.setDate(hoje.getDate() + 30);
+    let diasGeral = minimosPadrao.validadeGeralDias || 30;
 
-    let validadesCriticas = produtos.filter(p => p.validade && new Date(p.validade) <= trintaDiasFrente);
+    let validadesCriticas = produtos.filter(p => {
+      if (!p.validade) return false;
+      let dVal = new Date(p.validade);
+      let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
+      let limiteAlerta = new Date();
+      limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
+      return dVal <= limiteAlerta;
+    });
 
     if (validadesCriticas.length === 0) {
       return `
         <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
           <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
           <h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3>
-          <p class="text-xs text-green-600">Nenhum produto em risco nos próximos 30 dias.</p>
+          <p class="text-xs text-green-600">Nenhum produto em risco dentro dos prazos configurados.</p>
         </div>
       `;
     }
@@ -2785,6 +2847,7 @@
             let idxReal = produtos.findIndex(prod => prod.id === p.id);
             let dataVal = new Date(p.validade);
             let ehVencido = dataVal < hoje;
+            let diasConfigProd = p.alertaDias ? p.alertaDias : diasGeral;
 
             return `
               <div class="p-3 rounded-2xl border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
@@ -2793,7 +2856,7 @@
                   <p class="text-slate-600 mt-0.5">
                     Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
                   </p>
-                  <p class="text-[10px] text-slate-500">Preço Atual: R$ ${parseFloat(p.preco).toFixed(2)}</p>
+                  <p class="text-[10px] text-slate-500">Regra de Alerta: ${diasConfigProd} dias antes</p>
                 </div>
                 <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-amber-700">
                   🏷️ Desconto / Ajustar
@@ -2911,6 +2974,7 @@
     const medida = document.getElementById('cad-prod-medida').value;
     const dataEntrada = document.getElementById('cad-prod-entrada').value;
     const validade = document.getElementById('cad-prod-validade').value;
+    const alertaDiasInput = document.getElementById('cad-prod-alerta-dias').value;
     const atalho = document.getElementById('cad-prod-atalho').checked;
 
     let precoCustoInput = 0;
@@ -2933,6 +2997,7 @@
       medida: medida,
       dataEntrada: dataEntrada,
       validade: validade || '',
+      alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
       atalho: atalho
     };
 
@@ -2950,6 +3015,7 @@
         prodExistente.medida = medida;
         prodExistente.dataEntrada = dataEntrada;
         prodExistente.validade = validade || '';
+        prodExistente.alertaDias = alertaDiasInput ? parseInt(alertaDiasInput) : prodExistente.alertaDias;
         prodExistente.atalho = atalho;
         prodData = prodExistente;
       } else produtos.push(prodData);
@@ -3587,7 +3653,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 35.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 36.0 carregada com sucesso!");
 </script>
 </body>
 </html>

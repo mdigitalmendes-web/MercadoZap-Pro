@@ -53,14 +53,14 @@
 
     #slider-container {
       display: flex;
-      width: 400%;
+      width: 500%; /* Modificado para 5 abas (Início, Vendas, Estoque, Clientes, Relatorios) */
       height: 100%;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform;
     }
 
     .slide-page {
-      width: 25%;
+      width: 20%; /* Modificado para 5 abas */
       height: 100%;
       overflow-y: auto;
       overscroll-behavior-y: contain;
@@ -182,7 +182,7 @@
       </button>
       <div>
         <h1 id="header-app-name" class="font-extrabold text-base leading-tight tracking-wide">Caixa Rápido Móvel Pro</h1>
-        <p id="header-aba-atual" class="text-[11px] text-teal-100 font-medium">Aba: Caixa</p>
+        <p id="header-aba-atual" class="text-[11px] text-teal-100 font-medium">Aba: Início</p>
       </div>
     </div>
     
@@ -285,55 +285,59 @@
   </div>
 
   <!-- CONTEÚDO PRINCIPAL (SLIDER DE ABAS) -->
-  <!-- CONTEÚDO PRINCIPAL (SLIDER DE ABAS) -->
-<main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
-<div id="slider-wrapper">
-  <div id="slider-container">
-    <!-- NOVA TELA INICIAL (DASHBOARD) -->
-    <div id="page-home" class="slide-page">
-      <div id="content-home" class="bg-transparent mb-6"></div>
+  <main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
+    <div id="slider-wrapper">
+      <div id="slider-container">
+        <!-- NOVA ABA INÍCIO -->
+        <div id="page-inicio" class="slide-page">
+          <div id="content-inicio" class="bg-transparent p-1 mb-6"></div>
+        </div>
+        <div id="page-vendas" class="slide-page">
+          <div id="content-vendas" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
+        </div>
+        <div id="page-estoque" class="slide-page">
+          <div id="content-estoque" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
+        </div>
+        <div id="page-clientes" class="slide-page">
+          <div id="content-clientes" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
+        </div>
+        <div id="page-relatorios" class="slide-page">
+          <div id="content-relatorios" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
+        </div>
+      </div>
     </div>
-    <div id="page-vendas" class="slide-page">
-      <div id="content-vendas" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
-    </div>
-    <div id="page-estoque" class="slide-page">
-      <div id="content-estoque" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
-    </div>
-    <div id="page-clientes" class="slide-page">
-      <div id="content-clientes" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
-    </div>
-    <div id="page-relatorios" class="slide-page">
-      <div id="content-relatorios" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6"></div>
-    </div>
-  </div>
-</div>
-</main>
+  </main>
 
-<!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v27.0) -->
-<nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
-<div class="grid grid-cols-5 h-16">
-  <button onclick="switchTab('home')" id="bottom-btn-home" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
-    <i class="fa-solid fa-house text-xl"></i>
-    <span class="text-[10px] tracking-wide">Início</span>
-  </button>
-  <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
-    <i class="fa-solid fa-cash-register text-xl"></i>
-    <span class="text-[10px] tracking-wide">Caixa</span>
-  </button>
-  <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
-    <i class="fa-solid fa-boxes-stacked text-xl"></i>
-    <span class="text-[10px] tracking-wide">Estoque</span>
-  </button>
-  <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
-    <i class="fa-solid fa-users-viewfinder text-xl"></i>
-    <span class="text-[10px] tracking-wide">Fiado</span>
-  </button>
-  <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
-    <i class="fa-solid fa-chart-pie text-xl"></i>
-    <span class="text-[10px] tracking-wide">Relatórios</span>
-  </button>
-</div>
-</nav>
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR ELEGANTE & DESTACADA (v27.0) -->
+  <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
+    <div class="grid grid-cols-5 h-16">
+      <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
+        <i class="fa-solid fa-house text-xl"></i>
+        <span class="text-[10px] tracking-wide">Início</span>
+      </button>
+
+      <button onclick="switchTab('vendas')" id="bottom-btn-vendas" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-cash-register text-xl"></i>
+        <span class="text-[10px] tracking-wide">Caixa</span>
+      </button>
+
+      <button onclick="switchTab('estoque')" id="bottom-btn-estoque" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-boxes-stacked text-xl"></i>
+        <span class="text-[10px] tracking-wide">Estoque</span>
+      </button>
+
+      <button onclick="switchTab('clientes')" id="bottom-btn-clientes" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-users-viewfinder text-xl"></i>
+        <span class="text-[10px] tracking-wide">Fiado</span>
+      </button>
+
+      <button onclick="switchTab('relatorios')" id="bottom-btn-relatorios" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold">
+        <i class="fa-solid fa-chart-pie text-xl"></i>
+        <span class="text-[10px] tracking-wide">Relatórios</span>
+      </button>
+    </div>
+  </nav>
+
 </div>
 
   <!-- MODAL DE EMISSÃO DE RELATÓRIOS -->
@@ -823,8 +827,11 @@
     
     let carrinho = [];
     let clienteAtualVenda = { nome: '', zap: '' };
-    let abaAtual = 'home';
-const ordemAbas = ['home', 'vendas', 'estoque', 'clientes', 'relatorios'];
+    
+    /* MODIFICADO PARA NOVA TELA INÍCIO SER O PADRÃO */
+    let abaAtual = 'inicio';
+    const ordemAbas = ['inicio', 'vendas', 'estoque', 'clientes', 'relatorios'];
+    
     let subAbaEstoque = 'none'; 
     let listaDevedoresAberta = false; 
     let prodFracionadoTemp = null;
@@ -1631,100 +1638,48 @@ const ordemAbas = ['home', 'vendas', 'estoque', 'clientes', 'relatorios'];
       });
     }
 
+    /* CORREÇÃO DO LOGOUT (Força o recarregamento total da página) */
     function fazerLogoutSeguro() {
-  if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
-    auth.signOut().then(() => {
-      document.getElementById('slider-container').style.transform = 'translateX(0%)';
-      mostrarInterfaceAutenticada(false);
-      showLoginForm();
-    });
-  }
-}
-
-   function switchTab(aba) {
-  if (!auth.currentUser) return;
-  if (!verificarLicencaStatus()) return;
-
-  abaAtual = aba;
-  const idx = ordemAbas.indexOf(aba);
-  
-  document.getElementById('slider-container').style.transform = `translateX(-${idx * 20}%)`;
-
-  const nomes = { home: 'Início', vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
-  document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Início'}`;
-
-  ordemAbas.forEach(a => {
-    const btnNav = document.getElementById('bottom-btn-' + a);
-    if (btnNav) {
-      if (a === aba) {
-        btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
-      } else {
-        btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
+      if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
+        auth.signOut().then(() => {
+          // Limpa qualquer cache de estado visual
+          window.location.reload(); 
+        });
       }
     }
-  });
 
-  renderAba();
-  verificarAlertasEstoqueValidadeAutomatico();
-}
+    function switchTab(aba) {
+      if (!auth.currentUser) return;
+      if (!verificarLicencaStatus()) return;
 
-function renderAbaHome() {
-  const target = document.getElementById('content-home');
-  if (!target) return;
-
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
-  const faturamentoHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
-  
-  target.innerHTML = `
-    <div class="space-y-4">
-      <div class="brand-header-bg p-5 rounded-3xl text-white shadow-xl space-y-2 relative overflow-hidden">
-        <div class="absolute top-0 right-0 opacity-10 text-8xl -mt-4 -mr-4"><i class="fa-solid fa-store"></i></div>
-        <p class="text-xs text-teal-100 font-medium">Resumo da sua empresa</p>
-        <h2 class="text-xl font-extrabold leading-tight">${perfilNegocio.nomeLoja}</h2>
-        <p class="text-sm font-semibold pt-2 border-t border-teal-600">Olá, ${perfilNegocio.nomeUsuario || 'Operador'}!</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
-          <p class="text-[10px] text-slate-500 font-bold uppercase">Vendas Hoje</p>
-          <p class="text-lg font-extrabold text-teal-600">R$ ${faturamentoHoje.toFixed(2)}</p>
-        </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
-          <p class="text-[10px] text-slate-500 font-bold uppercase">Produtos (Estoque)</p>
-          <p class="text-lg font-extrabold text-slate-700">${produtos.length} Cadastrados</p>
-        </div>
-      </div>
-
-      <h3 class="font-extrabold text-xs text-slate-800 uppercase mt-4 mb-2">Acesso Rápido</h3>
+      abaAtual = aba;
+      const idx = ordemAbas.indexOf(aba);
       
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="switchTab('vendas')" class="bg-teal-600 text-white p-4 rounded-2xl shadow-md text-left font-bold text-sm transition active:scale-95 flex flex-col items-start gap-2">
-          <i class="fa-solid fa-cash-register text-2xl"></i> Ir para o Caixa
-        </button>
-        <button onclick="switchTab('estoque')" class="bg-slate-800 text-white p-4 rounded-2xl shadow-md text-left font-bold text-sm transition active:scale-95 flex flex-col items-start gap-2">
-          <i class="fa-solid fa-boxes-stacked text-2xl"></i> Ver Estoque
-        </button>
-      </div>
-    </div>
-  `;
-}
+      document.getElementById('slider-container').style.transform = `translateX(-${idx * 20}%)`; // Ajustado para 20%
 
-function renderAba() {
-  if (!auth.currentUser) {
-    showLoginForm();
-    return;
-  }
-  mostrarInterfaceAutenticada(true);
-  if (!verificarLicencaStatus()) return;
-  document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
+      const nomes = { inicio: 'Visão Geral', vendas: 'Caixa', estoque: 'Estoque', clientes: 'Fiado & Prazos', relatorios: 'Relatórios' };
+      document.getElementById('header-aba-atual').innerText = `Aba: ${nomes[aba] || 'Início'}`;
 
-  renderAbaHome();
-  renderAbaVendas();
-  renderAbaEstoque();
-  renderAbaClientes();
-  renderAbaRelatorios();
-}
+      ordemAbas.forEach(a => {
+        const btnNav = document.getElementById('bottom-btn-' + a);
+        if (btnNav) {
+          if (a === aba) {
+            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
+          } else {
+            btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
+          }
+        }
+      });
+
+      renderAba();
+      verificarAlertasEstoqueValidadeAutomatico();
+    }
+
+    function renderAba() {
+      if (!auth.currentUser) {
+        showLoginForm();
+        return;
+      }
 
       mostrarInterfaceAutenticada(true);
 
@@ -1732,10 +1687,94 @@ function renderAba() {
 
       document.getElementById('header-app-name').innerText = perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro';
 
+      renderAbaInicio(); // NOVA FUNÇÃO DE RENDERIZAÇÃO
       renderAbaVendas();
       renderAbaEstoque();
       renderAbaClientes();
       renderAbaRelatorios();
+    }
+
+    /* NOVA FUNÇÃO: TELA INÍCIO / DASHBOARD */
+    function renderAbaInicio() {
+      const user = auth.currentUser;
+      const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
+      const primeiroNome = nomeUser.split(' ')[0];
+
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+      const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valor), 0);
+      
+      const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
+      const devedoresQtd = clientes.filter(c => c.debito > 0).length;
+
+      let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
+
+      document.getElementById('content-inicio').innerHTML = `
+        <div class="space-y-5 p-4">
+          <!-- Saudação -->
+          <div class="bg-gradient-to-r from-teal-600 to-teal-800 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+            <div class="relative z-10">
+              <h2 class="text-xl font-extrabold mb-1">Olá, ${primeiroNome}! 👋</h2>
+              <p class="text-xs text-teal-100">Aqui está o resumo do seu negócio hoje.</p>
+            </div>
+            <i class="fa-solid fa-chart-pie absolute -right-4 -bottom-4 text-7xl text-white opacity-10"></i>
+          </div>
+
+          <!-- Cards de Resumo -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col justify-between" onclick="switchTab('vendas')">
+              <div class="flex items-center gap-2 text-teal-600 mb-2">
+                <i class="fa-solid fa-cash-register bg-teal-50 p-1.5 rounded-lg"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Vendido Hoje</span>
+              </div>
+              <p class="text-lg font-extrabold text-slate-800">R$ ${totalVendasBruto.toFixed(2)}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">${vendasHoje.length} venda(s)</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col justify-between" onclick="switchTab('clientes')">
+              <div class="flex items-center gap-2 text-amber-600 mb-2">
+                <i class="fa-solid fa-users bg-amber-50 p-1.5 rounded-lg"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">A Receber</span>
+              </div>
+              <p class="text-lg font-extrabold text-slate-800">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
+              <p class="text-[10px] text-red-500 font-semibold mt-0.5">${devedoresQtd} pendentes</p>
+            </div>
+          </div>
+
+          <!-- Alertas e Ações Rápidas -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-amber-500"></i> Ações Rápidas
+            </h3>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="switchTab('vendas')" class="bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-700 p-3 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm transition">
+                <i class="fa-solid fa-cart-shopping text-xl text-teal-600"></i>
+                <span class="text-[10px] font-bold">Abrir Caixa</span>
+              </button>
+              <button onclick="switchTab('estoque'); abrirModalNovoProduto();" class="bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-700 p-3 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm transition">
+                <i class="fa-solid fa-box-open text-xl text-blue-600"></i>
+                <span class="text-[10px] font-bold">Novo Produto</span>
+              </button>
+            </div>
+          </div>
+          
+          ${minimos > 0 ? `
+          <div class="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-center justify-between shadow-sm cursor-pointer hover:bg-red-100 transition" onclick="irParaSubabaEstoqueEspecifica('minimos');">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-lg">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-red-800">Atenção ao Estoque</p>
+                <p class="text-[10px] text-red-600">${minimos} item(ns) na reserva mínima.</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-red-400"></i>
+          </div>
+          ` : ''}
+        </div>
+      `;
     }
 
     function abrirModalSangriaSuprimento(tipo) {
@@ -3245,30 +3284,30 @@ function renderAba() {
     }
 
     auth.onAuthStateChanged((user) => {
-  if (user) {
-    mostrarInterfaceAutenticada(true);
-    verificarLicencaStatus();
-    db.collection("perfis").doc(user.uid).get().then(doc => {
-      if (doc.exists) {
-        perfilNegocio = doc.data();
-        localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
-      }
-      switchTab('home');
-      exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
-      verificarAlertasEstoqueValidadeAutomatico();
-    }).catch(() => {
-      switchTab('home');
-      exibirBoasVindasToast(user.displayName || 'Operador');
-      verificarAlertasEstoqueValidadeAutomatico();
-    });
-  } else {
-    mostrarInterfaceAutenticada(false);
-    document.getElementById('slider-container').style.transform = 'translateX(0%)';
-    showLoginForm();
-  }
-});
+      if (user) {
+        mostrarInterfaceAutenticada(true);
+        verificarLicencaStatus();
 
-console.log("Caixa Rápido Móvel Pro - Versão 28.0 (Dashboard & Anti-Travamento) carregada!");
+        db.collection("perfis").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            perfilNegocio = doc.data();
+            localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+          }
+          switchTab('inicio'); /* Modificado para a primeira aba sempre ser Início */
+          exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Operador');
+          verificarAlertasEstoqueValidadeAutomatico();
+        }).catch(() => {
+          switchTab('inicio');
+          exibirBoasVindasToast(user.displayName || 'Operador');
+          verificarAlertasEstoqueValidadeAutomatico();
+        });
+      } else {
+        mostrarInterfaceAutenticada(false);
+        showLoginForm();
+      }
+    });
+
+    console.log("Caixa Rápido Móvel Pro - Versão 28.0 (Dashboard Início + Logout Seguro) carregada!");
   </script>
 </body>
 </html>

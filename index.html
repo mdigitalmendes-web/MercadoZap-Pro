@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v49.0 (Vínculo Comercial Blindado)</title>
+  <title>Caixa Rápido Móvel Pro v50.0 (Sincronização & Auditoria Total)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -138,7 +138,7 @@
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">👋</div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema sincronizado.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sincronizado com a empresa.</p>
     </div>
   </div>
 
@@ -823,7 +823,7 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>🏢 Vínculo Comercial:</b> Se o funcionário mudou de patrão, basta digitar o novo código de convite no login. O sistema atualizará o acesso na mesma hora.</p>
+      <p><b>🏢 Vínculo Comercial:</b> Ao colar o código de convite do patrão, o funcionário herda instantaneamente todo o estoque, produtos e clientes cadastrados. Qualquer alteração reflete em tempo real para todos.</p>
     </div>
   </div>
 </div>
@@ -928,6 +928,7 @@
     if (unsubscribeVendas) unsubscribeVendas();
     if (unsubscribeClientes) unsubscribeClientes();
 
+    // Sincronização em tempo real de produtos da empresa do patrão
     unsubscribeProdutos = db.collection("empresas").doc(empresaId).collection("produtos")
       .onSnapshot((snapshot) => {
         let prodsRemotos = [];
@@ -938,6 +939,7 @@
         verificarAlertasEstoqueValidadeAutomatico();
       }, (err) => {});
 
+    // Sincronização em tempo real de vendas da empresa do patrão
     unsubscribeVendas = db.collection("empresas").doc(empresaId).collection("vendas")
       .onSnapshot((snapshot) => {
         let vendasRemotas = [];
@@ -947,6 +949,7 @@
         renderAba();
       }, (err) => {});
 
+    // Sincronização em tempo real de clientes/fiados da empresa do patrão
     unsubscribeClientes = db.collection("empresas").doc(empresaId).collection("clientes")
       .onSnapshot((snapshot) => {
         let clientesRemotos = [];
@@ -1491,7 +1494,7 @@
     window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
   }
 
-  // TELA DE LOGIN ROBUSTA COM AUTENTICAÇÃO BLINDADA (v49.0)
+  // TELA DE LOGIN ROBUSTA COM HERANÇA INSTANTÂNEA DE DADOS (v50.0)
   function showLoginForm() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
@@ -1641,7 +1644,6 @@
     }
 
     try {
-      // 1. Se for funcionário, valida o código ANTES no Firestore
       if (window.modoLoginFuncionario) {
         await verificarCodigoVinculoEmTempoReal(codigoVinculo);
         if (!window.tempPatraoVinculado) {
@@ -1651,12 +1653,10 @@
         }
       }
 
-      // 2. Executa o login no Firebase Auth
       let userCredential;
       try {
         userCredential = await auth.signInWithEmailAndPassword(email, pass);
       } catch (authErr) {
-        // Se falhar por e-mail ou senha incorretos, dá uma mensagem amigável e clara
         if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/user-not-found') {
           throw new Error("E-mail ou senha incorretos. Se você alterou de patrão mas usa a mesma conta, certifique-se de digitar sua senha correta ou use 'Esqueceu a senha'.");
         }
@@ -1665,7 +1665,6 @@
 
       let user = userCredential.user;
 
-      // 3. Se for funcionário, grava imediatamente o novo vínculo no Firestore do usuário
       if (window.modoLoginFuncionario && window.tempPatraoVinculado) {
         perfilNegocio = {
           nomeLoja: window.tempPatraoVinculado.nomeLoja,
@@ -1676,21 +1675,45 @@
           empresaId: window.tempPatraoVinculado.empresaId
         };
         
-        produtos = [];
-        vendas = [];
-        clientes = [];
-        sangriasSuprimentos = [];
-        historicoFechamentos = [];
-        despesasFixas = [];
-
         persistirDadosCompletos();
         await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+        
+        // PUXA IMEDIATAMENTE OS DADOS DA EMPRESA DO PATRÃO (ESTOQUE E CLIENTES)
+        await puxarDadosIniciaisDaEmpresa(window.tempPatraoVinculado.empresaId);
         iniciarListenersTempoReal(window.tempPatraoVinculado.empresaId);
       }
     } catch (err) {
       errBox.innerText = err.message || "Erro ao entrar. Verifique os dados informados.";
       errBox.classList.remove('hidden');
     }
+  }
+
+  // Função para puxar instantaneamente estoque e clientes do patrão ao entrar
+  async function puxarDadosIniciaisDaEmpresa(empresaId) {
+    try {
+      let snapProds = await db.collection("empresas").doc(empresaId).collection("produtos").get();
+      let prodsCarregados = [];
+      snapProds.forEach(doc => prodsCarregados.push(doc.data()));
+      if (prodsCarregados.length > 0) {
+        produtos = prodsCarregados;
+      }
+
+      let snapClientes = await db.collection("empresas").doc(empresaId).collection("clientes").get();
+      let clientesCarregados = [];
+      snapClientes.forEach(doc => clientesCarregados.push(doc.data()));
+      if (clientesCarregados.length > 0) {
+        clientes = clientesCarregados;
+      }
+
+      let snapVendas = await db.collection("empresas").doc(empresaId).collection("vendas").get();
+      let vendasCarregadas = [];
+      snapVendas.forEach(doc => vendasCarregadas.push(doc.data()));
+      if (vendasCarregadas.length > 0) {
+        vendas = vendasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
+      }
+
+      persistirDadosCompletos();
+    } catch(e) {}
   }
 
   function showStep1CadastroAcesso() {
@@ -1938,13 +1961,6 @@
     const errBox = document.getElementById('auth-error');
     if (errBox) errBox.classList.add('hidden');
 
-    produtos = [];
-    vendas = [];
-    sangriasSuprimentos = [];
-    historicoFechamentos = [];
-    clientes = [];
-    despesasFixas = [];
-
     auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
       concluirVinculoUsuarioAutenticado(userCredential.user);
     }).catch(err => {
@@ -1987,6 +2003,10 @@
     user.updateProfile({ displayName: cadastroTemp.nomeUsuario }).catch(()=>{});
     persistirDadosCompletos();
     await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
+    
+    if (cadastroTemp.codigoConvite) {
+      await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
+    }
     iniciarListenersTempoReal(empresaIdVinculo);
   }
 
@@ -2567,7 +2587,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v49.0</b> está conectado em tempo real com segurança blindada.
+            O <b>Caixa Rápido Móvel Pro v50.0</b> está conectado em tempo real com herança automática de estoque e auditoria de operadores.
           </p>
 
           <div class="pt-1">
@@ -3009,6 +3029,7 @@
 
     const user = auth.currentUser;
     let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+    let nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
 
     carrinho.forEach(itemCarrinho => {
       let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
@@ -3053,6 +3074,7 @@
       valorTotal: totalCarrinho,
       formaPagto: formaPagto,
       cliente: nomeClienteInput,
+      operador: nomeOperadorAtual,
       data: hojeStr
     };
     vendas.push(vendaReg);
@@ -3065,6 +3087,7 @@
     let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
     let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
       `👤 *Cliente:* ${nomeClienteInput}\n` +
+      `🧑‍💼 *Operador:* ${nomeOperadorAtual}\n` +
       `📅 *Data/Hora:* ${hojeStr}\n` +
       `💳 *Forma de Pagamento:* ${formaPagto}\n\n` +
       `*Itens Adquiridos:*\n${itensFormatadosZap}\n\n` +
@@ -3841,6 +3864,22 @@
         `).join('')
       : '<p class="text-xs text-slate-400 italic text-center py-3">Nenhum histórico de vendas registrado ainda.</p>';
 
+    // AUDITORIA DE VENDAS POR OPERADOR
+    let vendasPorOperador = {};
+    vendas.forEach(v => {
+      let op = v.operador || 'Desconhecido';
+      vendasPorOperador[op] = (vendasPorOperador[op] || 0) + 1;
+    });
+
+    let auditoriaOperadoresHTML = Object.keys(vendasPorOperador).length > 0
+      ? Object.keys(vendasPorOperador).map(op => `
+          <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
+            <span class="font-bold text-slate-700">🧑‍💼 ${op}</span>
+            <span class="bg-indigo-50 text-indigo-800 font-bold px-2 py-0.5 rounded text-[10px]">${vendasPorOperador[op]} venda(s)</span>
+          </div>
+        `).join('')
+      : '<p class="text-xs text-slate-400 italic text-center py-2">Sem registros por operador.</p>';
+
     document.getElementById('content-relatorios').innerHTML = `
       <div class="space-y-4">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
@@ -3885,12 +3924,23 @@
           </div>
         </div>
 
-        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-          <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
-            <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas (Top 5)
-          </h3>
-          <div class="space-y-1">
-            ${topItensHTML}
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
+              <i class="fa-solid fa-trophy text-amber-500"></i> Top 5 Produtos
+            </h3>
+            <div class="space-y-1">
+              ${topItensHTML}
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
+              <i class="fa-solid fa-users-gear text-indigo-600"></i> Vendas por Operador
+            </h3>
+            <div class="space-y-1">
+              ${auditoriaOperadoresHTML}
+            </div>
           </div>
         </div>
 
@@ -4022,13 +4072,14 @@
 
       if (tipoConteudo === 'completo') {
         doc.setFontSize(12);
-        doc.text(`2. Detalhamento de Vendas do Periodo`, 14, y);
+        doc.text(`2. Detalhamento de Vendas do Periodo (Com Operadores)`, 14, y);
         y += 6;
         doc.setFontSize(9);
         listaVendasPDF.forEach(v => {
           if (y > 270) { doc.addPage(); y = 15; }
           let descVenda = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ') : v.item;
-          doc.text(`* ${v.data} - ${descVenda} - Pagto: ${v.formaPagto} - Total: R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
+          let operadorNome = v.operador || 'Operador';
+          doc.text(`* ${v.data} | Op: ${operadorNome} | ${descVenda} | Pagto: ${v.formaPagto} | Total: R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
           y += 5;
         });
         y += 6;
@@ -4157,18 +4208,19 @@
     if (!eAdmin()) return;
     if (vendas.length === 0) { alert("Sem histórico de vendas para exportação."); return; }
     
-    let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
+    let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Operador;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
     
     vendas.forEach(v => {
       let descStr = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(' | ') : v.item;
       let valorBruto = parseFloat(v.valorTotal || v.valor || 0).toFixed(2).replace('.', ',');
+      let operadorNome = v.operador || 'Operador';
       let custoTotalVenda = 0;
       if (v.itens) {
         v.itens.forEach(i => { custoTotalVenda += (i.precoCustoUnit || 0) * i.qtd; });
       }
       let custoStr = custoTotalVenda.toFixed(2).replace('.', ',');
 
-      csvContent += `${v.id};"${v.data}";"${descStr}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoStr}\n`;
+      csvContent += `${v.id};"${v.data}";"${operadorNome}";"${descStr}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoStr}\n`;
     });
 
     fecharModalOpcoesRelatorio();
@@ -4210,11 +4262,12 @@
         verificarLicencaStatus();
 
         let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-        iniciarListenersTempoReal(empresaIdAtivo);
-
-        switchTab('inicio'); 
-        exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
-        verificarAlertasEstoqueValidadeAutomatico();
+        puxarDadosIniciaisDaEmpresa(empresaIdAtivo).then(() => {
+          iniciarListenersTempoReal(empresaIdAtivo);
+          switchTab('inicio'); 
+          exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
+          verificarAlertasEstoqueValidadeAutomatico();
+        });
       }).catch(() => {
         mostrarInterfaceAutenticada(true);
         verificarLicencaStatus();
@@ -4235,7 +4288,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 49.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 50.0 carregada com sucesso!");
 </script>
 </body>
 </html>

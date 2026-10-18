@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v32.0</title>
+  <title>Caixa Rápido Móvel Pro v33.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -838,7 +838,6 @@
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente' };
 
-  // Salvamento Automático Permanente (Garantia contra perda de dados)
   function persistirDadosCompletos() {
     localStorage.setItem('crm_produtos', JSON.stringify(produtos));
     localStorage.setItem('crm_vendas', JSON.stringify(vendas));
@@ -3028,10 +3027,10 @@
   function renderAbaRelatorios() {
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     
-    // Cálculo do Custo Total dos Produtos Comprados (Valor investido em todo o estoque atual)
-    let totalCustoCompradoEstoque = 0;
+    // Capital imobilizado no estoque ATUAL (Qtd Atual x Preço de Custo)
+    let capitalImobilizadoEstoque = 0;
     produtos.forEach(p => {
-      totalCustoCompradoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
+      capitalImobilizadoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
     });
 
     let totalCustoVendido = 0;
@@ -3094,8 +3093,8 @@
             </div>
 
             <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">📦 Custo Total dos Produtos Comprados (Estoque):</span>
-              <span class="font-extrabold text-amber-300 text-sm">R$ ${totalCustoCompradoEstoque.toFixed(2)}</span>
+              <span class="text-slate-300 font-medium">📦 Capital Imobilizado em Estoque Atual:</span>
+              <span class="font-extrabold text-amber-300 text-sm">R$ ${capitalImobilizadoEstoque.toFixed(2)}</span>
             </div>
 
             <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
@@ -3427,7 +3426,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 32.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 33.0 carregada com sucesso!");
 </script>
 </body>
 </html>

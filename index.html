@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v31.0</title>
+  <title>Caixa Rápido Móvel Pro v32.0</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -118,12 +118,12 @@
       border-radius: 0 0 4px 4px;
     }
 
-    #toast-boas-vindas, #banner-alerta-estoque, #toast-integracao-fiado {
+    #toast-boas-vindas, #banner-alerta-estoque, #toast-integracao-fiado, #toast-alerta-pdv {
       transition: all 0.4s ease-in-out;
       transform: translateY(-130%);
       opacity: 0;
     }
-    #toast-boas-vindas.show, #banner-alerta-estoque.show, #toast-integracao-fiado.show {
+    #toast-boas-vindas.show, #banner-alerta-estoque.show, #toast-integracao-fiado.show, #toast-alerta-pdv.show {
       transform: translateY(0);
       opacity: 1;
     }
@@ -133,7 +133,7 @@
 
 <div id="app-container">
 
-  <!-- NOTIFICAÇÃO FLUTUANTE DE BOAS-VINDAS -->
+  <!-- TOAST DE BOAS-VINDAS -->
   <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center gap-3 pointer-events-none">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
       👋
@@ -144,7 +144,21 @@
     </div>
   </div>
 
-  <!-- TOAST DE INTEGRAÇÃO FIADO (SURPRESA INTELIGENTE) -->
+  <!-- TOAST DE ALERTA DINÂMICO NO PDV (ESTOQUE BAIXO) -->
+  <div id="toast-alerta-pdv" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-red-950 text-white p-3.5 rounded-2xl shadow-2xl border border-red-500 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow">
+        ⚠️
+      </div>
+      <div class="min-w-0">
+        <h4 class="font-extrabold text-xs text-red-300">Atenção: Estoque Crítico!</h4>
+        <p id="texto-alerta-pdv" class="text-[11px] text-red-100 truncate">Este item atingiu o limite mínimo.</p>
+      </div>
+    </div>
+    <button onclick="fecharAlertaPDV()" class="bg-red-900 hover:bg-red-800 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">OK</button>
+  </div>
+
+  <!-- TOAST DE INTEGRAÇÃO FIADO -->
   <div id="toast-integracao-fiado" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-amber-950 text-white p-3.5 rounded-2xl shadow-2xl border border-amber-500/60 flex items-center gap-3 pointer-events-none">
     <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
       📋
@@ -155,7 +169,7 @@
     </div>
   </div>
 
-  <!-- BANNER INTELIGENTE DE ALERTA -->
+  <!-- BANNER INTELIGENTE DE ALERTA GERAL -->
   <div id="banner-alerta-estoque" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-2">
     <div id="banner-alerta-click-area" class="flex items-center gap-2.5 flex-1 cursor-pointer">
       <div id="banner-alerta-icone" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow-md">
@@ -195,7 +209,7 @@
     </div>
   </div>
 
-  <!-- DRAWER LATERAL (MENU SANDUÍCHE CONCENTRADO) -->
+  <!-- DRAWER LATERAL (MENU SANDUÍCHE CONCENTRADO NO INÍCIO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
     <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -297,7 +311,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE (VISÍVEL APENAS NAS ABAS OPERACIONAIS) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-5 h-16">
       <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -329,7 +343,7 @@
 
 </div>
 
-<!-- MODAL DE NOTIFICAÇÕES (SININHO) -->
+<!-- MODAIS DE SUPORTE -->
 <div id="modal-notificacoes" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -342,7 +356,6 @@
   </div>
 </div>
 
-<!-- MODAL DE EMISSÃO DE RELATÓRIOS -->
 <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -398,7 +411,6 @@
   </div>
 </div>
 
-<!-- MODAL HISTÓRICO DE FECHAMENTOS -->
 <div id="modal-historico-fechamentos" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -411,7 +423,6 @@
   </div>
 </div>
 
-<!-- MODAL ALTERAR SENHA -->
 <div id="modal-alterar-senha" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border">
     <div class="flex justify-between items-center border-b pb-2">
@@ -441,7 +452,6 @@
   </div>
 </div>
 
-<!-- MODAL PERFIL -->
 <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
     <div class="flex justify-between items-center border-b pb-2">
@@ -491,7 +501,6 @@
   </div>
 </div>
 
-<!-- MODAL CADASTRO PRODUTO -->
 <div id="modal-cadastro-produto" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[90vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -571,7 +580,6 @@
   </div>
 </div>
 
-<!-- LEITOR DE CÓDIGO DE BARRAS -->
 <div id="modal-scanner" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-4 max-w-sm w-full space-y-3 shadow-2xl border border-slate-700">
     <div class="flex justify-between items-center border-b pb-2">
@@ -830,6 +838,16 @@
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente' };
 
+  // Salvamento Automático Permanente (Garantia contra perda de dados)
+  function persistirDadosCompletos() {
+    localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+    localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+    localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+    localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
+    localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+    localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+  }
+
   function tocarBeepConfirmacaoBip() {
     try {
       if ("vibrate" in navigator) navigator.vibrate(80);
@@ -849,18 +867,33 @@
   function emitirBeepEAlertaVibracao() {
     if (alertaSilenciadoSessao) return;
     try {
-      if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+      if ("vibrate" in navigator) navigator.vibrate([250, 100, 250]);
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(740, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.35);
+      osc.stop(audioCtx.currentTime + 0.4);
     } catch(e) {}
+  }
+
+  function dispararAlertaPDVEstoqueBaixo(nomeProduto, qtdAtual) {
+    emitirBeepEAlertaVibracao();
+    const toast = document.getElementById('toast-alerta-pdv');
+    const texto = document.getElementById('texto-alerta-pdv');
+    if (toast && texto) {
+      texto.innerText = `O produto "${nomeProduto}" está acabando! (Restam apenas ${qtdAtual})`;
+      toast.classList.add('show');
+    }
+  }
+
+  function fecharAlertaPDV() {
+    const toast = document.getElementById('toast-alerta-pdv');
+    if (toast) toast.classList.remove('show');
   }
 
   function verificarAlertasEstoqueValidadeAutomatico() {
@@ -1334,7 +1367,7 @@
         ramo: cadastroTemp.ramo
       };
       userCredential.user.updateProfile({ displayName: cadastroTemp.nomeUsuario });
-      localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+      persistirDadosCompletos();
       db.collection("perfis").doc(userCredential.user.uid).set(perfilNegocio);
     }).catch(err => {
       errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
@@ -1488,7 +1521,7 @@
           });
         } catch(e) {
           document.getElementById('scanner-status').innerText = "Erro na câmera. Verifique a permissão do navegador.";
-          document.getElementById('scanner-controls-fallback').classList.remove('hidden');
+          document.getElementById('scanner-controls-fallback').classList.add('hidden');
         }
       }, 300);
     });
@@ -1566,6 +1599,10 @@
     let estoqueRestante = prod.estoque - qtdNoCarrinho;
 
     if (estoqueRestante <= 0) return;
+
+    if ((estoqueRestante - 1) <= (prod.estMin || 3)) {
+      dispararAlertaPDVEstoqueBaixo(prod.nome, estoqueRestante - 1);
+    }
 
     if (itemNoCarrinho) { 
       itemNoCarrinho.qtd += 1; 
@@ -1672,7 +1709,7 @@
       funcaoUsuario: document.getElementById('perfil-user-funcao-modal').value
     };
 
-    localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) {
@@ -1776,7 +1813,6 @@
 
     document.getElementById('content-inicio').innerHTML = `
       <div class="space-y-4 p-2">
-        <!-- Saudação com Botão Sanduíche Concentrado e Sininho -->
         <div class="bg-gradient-to-r from-teal-600 to-teal-800 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden flex justify-between items-center">
           <div class="flex items-center gap-3">
             <button onclick="abrirDrawerNavegacao()" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center text-xl text-white border border-white/20 transition active:scale-95 shadow-inner">
@@ -1793,7 +1829,6 @@
           </div>
         </div>
 
-        <!-- Visão Geral de Abas (Direcionamento Rápido) -->
         <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
           <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
             <i class="fa-solid fa-compass text-teal-600"></i> Navegação Rápida pelas Abas
@@ -1830,7 +1865,6 @@
           </div>
         </div>
 
-        <!-- Seção Informativa de Planos, Licença e Vantagens -->
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700 pb-2">
             <h3 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -1883,7 +1917,7 @@
 
     const registro = { id: Date.now(), tipo: tipo, valor: valor, motivo: motivo, data: hojeStr };
     sangriasSuprimentos.push(registro);
-    localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
@@ -2192,6 +2226,10 @@
       return;
     }
 
+    if ((estoqueRestante - 1) <= (prod.estMin || 3)) {
+      dispararAlertaPDVEstoqueBaixo(prod.nome, estoqueRestante - 1);
+    }
+
     if (['kg', 'g', 'L'].includes(prod.medida)) {
       prodFracionadoTemp = prod;
       document.getElementById('fracionado-titulo').innerText = `Venda em ${prod.medida.toUpperCase()}: ${prod.nome}`;
@@ -2239,6 +2277,9 @@
         alert(`Limite de estoque atingido! (${prod.estoque} ${prod.medida} disponíveis)`);
         return;
       }
+      if ((prod.estoque - (item.qtd + delta)) <= (prod.estMin || 3)) {
+        dispararAlertaPDVEstoqueBaixo(prod.nome, prod.estoque - (item.qtd + delta));
+      }
     }
 
     item.qtd += delta;
@@ -2281,7 +2322,6 @@
     const totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
     const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
-    // Baixa de estoque automática
     carrinho.forEach(itemCarrinho => {
       let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
       if (prod) {
@@ -2290,9 +2330,7 @@
         if (user) db.collection("produtos").doc(user.uid + "_" + prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
       }
     });
-    localStorage.setItem('crm_produtos', JSON.stringify(produtos));
 
-    // Se for fiado, atualiza o débito do cliente e dispara a mensagem de integração inteligente
     if (formaPagto === 'Fiado') {
       let prazoFiado = document.getElementById('venda-fiado-prazo').value;
       let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeClienteInput.toLowerCase());
@@ -2309,7 +2347,6 @@
           prazoPagamento: prazoFiado || ''
         });
       }
-      localStorage.setItem('crm_clientes', JSON.stringify(clientes));
       clientes.forEach(c => {
         let user = auth.currentUser;
         if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
@@ -2318,7 +2355,6 @@
       exibirToastIntegracaoFiado(nomeClienteInput, totalCarrinho);
     }
 
-    // Registra a venda
     let vendaReg = {
       id: Date.now(),
       itens: carrinho.map(i => ({ nome: i.nome, qtd: i.qtd, precoUnit: i.preco, precoCustoUnit: i.precoCusto, medida: i.medida || 'un' })),
@@ -2328,12 +2364,11 @@
       data: hojeStr
     };
     vendas.push(vendaReg);
-    localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+    persistirDadosCompletos();
 
     let user = auth.currentUser;
     if (user) db.collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
 
-    // Mensagem detalhada para o WhatsApp
     let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
     let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
       `👤 *Cliente:* ${nomeClienteInput}\n` +
@@ -2667,7 +2702,7 @@
     p.preco = parseFloat(document.getElementById('ajuste-prod-preco').value || 0);
     p.validade = document.getElementById('ajuste-prod-validade').value;
 
-    localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
@@ -2725,7 +2760,7 @@
 
   function toggleAtalhoEstoque(index) {
     produtos[index].atalho = !(produtos[index].atalho !== false);
-    localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+    persistirDadosCompletos();
     renderAbaEstoque();
   }
 
@@ -2776,7 +2811,7 @@
       } else produtos.push(prodData);
     }
 
-    localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
@@ -2789,7 +2824,7 @@
   function excluirProduto(index) {
     if (confirm("Remover este produto do estoque?")) {
       produtos.splice(index, 1);
-      localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+      persistirDadosCompletos();
       renderAbaEstoque();
     }
   }
@@ -2941,7 +2976,7 @@
     c.telefone = document.getElementById('edit-cli-telefone').value.trim();
     c.prazoPagamento = document.getElementById('edit-cli-prazo').value;
 
-    localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
@@ -2973,7 +3008,7 @@
     let cliente = clientes[index];
     cliente.debito = Math.max(0, cliente.debito - valorAbater);
 
-    localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+    persistirDadosCompletos();
 
     const user = auth.currentUser;
     if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
@@ -2985,7 +3020,7 @@
   function excluirCliente(index) {
     if (confirm("Deseja excluir este registro de cliente?")) {
       clientes.splice(index, 1);
-      localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+      persistirDadosCompletos();
       renderAba();
     }
   }
@@ -2993,21 +3028,20 @@
   function renderAbaRelatorios() {
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     
-    let totalCustoGeral = 0;
+    // Cálculo do Custo Total dos Produtos Comprados (Valor investido em todo o estoque atual)
+    let totalCustoCompradoEstoque = 0;
+    produtos.forEach(p => {
+      totalCustoCompradoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
+    });
+
+    let totalCustoVendido = 0;
     vendas.forEach(v => {
       if (v.itens && Array.isArray(v.itens)) {
-        v.itens.forEach(it => {
-          totalCustoGeral += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1));
-        });
-      } else if (v.item) {
-        let prod = produtos.find(p => v.item.toLowerCase().includes(p.nome.toLowerCase()));
-        if (prod && prod.precoCusto) {
-          totalCustoGeral += parseFloat(prod.precoCusto);
-        }
+        v.itens.forEach(it => { totalCustoVendido += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
       }
     });
 
-    const lucroLiquido = totalVendasGeral - totalCustoGeral;
+    const lucroLiquido = totalVendasGeral - totalCustoVendido;
     const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
 
     let contagemItens = {};
@@ -3060,8 +3094,8 @@
             </div>
 
             <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">🔴 Custo Total dos Produtos Vendidos:</span>
-              <span class="font-extrabold text-red-300 text-sm">R$ ${totalCustoGeral.toFixed(2)}</span>
+              <span class="text-slate-300 font-medium">📦 Custo Total dos Produtos Comprados (Estoque):</span>
+              <span class="font-extrabold text-amber-300 text-sm">R$ ${totalCustoCompradoEstoque.toFixed(2)}</span>
             </div>
 
             <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
@@ -3186,9 +3220,6 @@
         listaVendasPDF.forEach(v => {
           if (v.itens && Array.isArray(v.itens)) {
             v.itens.forEach(it => { totalCustoGeral += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
-          } else if (v.item) {
-            let prod = produtos.find(p => v.item.toLowerCase().includes(p.nome.toLowerCase()));
-            if (prod && prod.precoCusto) totalCustoGeral += parseFloat(prod.precoCusto);
           }
         });
 
@@ -3262,11 +3293,7 @@
       produtos = [];
       clientes = [];
 
-      localStorage.removeItem('crm_vendas');
-      localStorage.removeItem('crm_sangrias');
-      localStorage.removeItem('crm_fechamentos');
-      localStorage.removeItem('crm_produtos');
-      localStorage.removeItem('crm_clientes');
+      persistirDadosCompletos();
 
       alert("✅ Todos os dados foram limpos com sucesso!");
       renderAba();
@@ -3330,7 +3357,7 @@
     };
 
     historicoFechamentos.push(registro);
-    localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+    persistirDadosCompletos();
 
     closeModalFechamento();
 
@@ -3384,7 +3411,7 @@
       db.collection("perfis").doc(user.uid).get().then(doc => {
         if (doc.exists) {
           perfilNegocio = doc.data();
-          localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+          persistirDadosCompletos();
         }
         switchTab('inicio'); 
         exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
@@ -3400,7 +3427,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 31.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 32.0 carregada com sucesso!");
 </script>
 </body>
 </html>

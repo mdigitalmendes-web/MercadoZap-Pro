@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v38.0 (ERP & Gestão de Funcionários)</title>
+  <title>Caixa Rápido Móvel Pro v39.0 (ERP & Sincronização Realtime)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -138,7 +138,7 @@
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">👋</div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema pronto.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema sincronizado.</p>
     </div>
   </div>
 
@@ -232,18 +232,23 @@
           <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
-            <span>Alterar Nome & Estabelecimento</span>
+            <span>Meu Perfil e Dados</span>
           </button>
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
             <span>Alterar Senha de Acesso</span>
           </button>
+          <!-- BOTÃO EXCLUSIVO PARA FUNCIONÁRIO SE DESVINCULAR DA EMPRESA -->
+          <button id="menu-btn-desvincular" onclick="desvincularFuncionarioEmpresa()" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-amber-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-amber-800 border border-amber-200 mt-1">
+            <i class="fa-solid fa-right-left text-amber-600 w-5 text-center"></i>
+            <span>Desvincular da Empresa Atual</span>
+          </button>
           <!-- OPÇÃO EXCLUSIVA PARA ADMIN: GESTÃO DE FUNCIONÁRIOS (ATÉ 3) -->
-          <button id="menu-btn-gerenciar-funcionarios" onclick="fecharDrawerNavegacao(); abrirModalGerenciarFuncionarios();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+          <button id="menu-btn-gerenciar-funcionarios" onclick="fecharDrawerNavegacao(); abrirModalGerenciarFuncionarios();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
             <i class="fa-solid fa-users-gear text-indigo-600 w-5 text-center"></i>
             <span>Gerenciar Funcionários (Até 3)</span>
           </button>
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
             <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
             <span>Sincronizar Nuvem</span>
           </button>
@@ -527,7 +532,7 @@
 <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
     <div class="flex justify-between items-center border-b pb-2">
-      <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Permissão</h3>
+      <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Meu Perfil & Permissão</h3>
       <button onclick="closeModalPerfil()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
@@ -537,34 +542,10 @@
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Perfil de Acesso no App</label>
-        <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-          <option value="Proprietário / Gerente">Proprietário / Gerente (Acesso Total)</option>
-          <option value="Funcionário / Operador">Funcionário / Operador (Sem Custo e sem Relatórios)</option>
-        </select>
+        <div id="container-perfil-funcao-edicao"></div>
       </div>
       <hr class="my-2">
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Estabelecimento / Loja *</label>
-        <input type="text" id="perfil-nome-loja" required class="w-full p-2 border rounded-lg text-xs font-bold">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
-          <select id="perfil-tipo-registro" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-            <option value="PF">Pessoa Física</option>
-            <option value="MEI">MEI</option>
-            <option value="ME">Microempresa</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
-          <select id="perfil-ramo" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-            <option value="Produtos">Produtos</option>
-            <option value="Servicos">Serviços</option>
-            <option value="Ambos">Ambos</option>
-          </select>
-        </div>
-      </div>
+      <div id="container-dados-estabelecimento-edicao"></div>
       <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
         💾 Salvar Alterações de Perfil
       </button>
@@ -851,9 +832,9 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>🏢 Vínculo de Funcionários:</b> Deixe o código em branco se você for o patrão. Se for funcionário, cole o código recebido do patrão e o app configura tudo automaticamente!</p>
-      <p><b>📅 Alertas de Validade:</b> Defina prazos gerais nas configurações ou prazos específicos diretamente ao cadastrar/editar cada produto no estoque.</p>
-      <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua para agilizar o atendimento.</p>
+      <p><b>🏢 Vínculo de Funcionários:</b> O funcionário herda automaticamente o nome da loja e as configurações do patrão via código. Caso deseje, pode se desvincular a qualquer momento pelo menu lateral.</p>
+      <p><b>⚡ Sincronização em Tempo Real:</b> Todas as alterações de estoque, vendas e fiados são atualizadas instantaneamente entre todos os dispositivos conectados à mesma empresa.</p>
+      <p><b>📷 Leitor de Código de Baras:</b> Funciona de forma contínua para agilizar o atendimento.</p>
     </div>
   </div>
 </div>
@@ -909,7 +890,6 @@
   ];
   let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5, validadeGeralDias: 30 };
   
-  // GESTÃO DOS 3 SLOTS DE FUNCIONÁRIOS DO ADMIN
   let slotsFuncionarios = JSON.parse(localStorage.getItem('crm_slots_func')) || [
     { id: 1, nome: "Funcionário 1", codigo: "FUNC-101", ativo: true },
     { id: 2, nome: "Funcionário 2", codigo: "FUNC-202", ativo: true },
@@ -936,6 +916,10 @@
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', codigoConvite: '', empresaPatraoInfo: null };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente', empresaId: '' };
 
+  let unsubscribeProdutos = null;
+  let unsubscribeVendas = null;
+  let unsubscribeClientes = null;
+
   function eAdmin() {
     return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
   }
@@ -949,6 +933,51 @@
     localStorage.setItem('crm_despesas', JSON.stringify(despesasFixas));
     localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
     localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
+  }
+
+  // CONFIGURAÇÃO DOS LISTENERS FIRESTORE EM TEMPO REAL (REALTIME SYNC)
+  function iniciarListenersTempoReal(empresaId) {
+    if (!empresaId) return;
+
+    if (unsubscribeProdutos) unsubscribeProdutos();
+    if (unsubscribeVendas) unsubscribeVendas();
+    if (unsubscribeClientes) unsubscribeClientes();
+
+    unsubscribeProdutos = db.collection("empresas").doc(empresaId).collection("produtos")
+      .onSnapshot((snapshot) => {
+        let prodsRemotos = [];
+        snapshot.forEach(doc => prodsRemotos.push(doc.data()));
+        if (prodsRemotos.length > 0) {
+          produtos = prodsRemotos;
+        } else if (produtos.length === 0) {
+          produtos = produtosExemplo;
+        }
+        localStorage.setItem('crm_produtos', JSON.stringify(produtos));
+        renderAba();
+        verificarAlertasEstoqueValidadeAutomatico();
+      }, (err) => {});
+
+    unsubscribeVendas = db.collection("empresas").doc(empresaId).collection("vendas")
+      .onSnapshot((snapshot) => {
+        let vendasRemotas = [];
+        snapshot.forEach(doc => vendasRemotas.push(doc.data()));
+        if (vendasRemotas.length > 0) {
+          vendas = vendasRemotas.sort((a, b) => (b.id || 0) - (a.id || 0));
+          localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+          renderAba();
+        }
+      }, (err) => {});
+
+    unsubscribeClientes = db.collection("empresas").doc(empresaId).collection("clientes")
+      .onSnapshot((snapshot) => {
+        let clientesRemotos = [];
+        snapshot.forEach(doc => clientesRemotos.push(doc.data()));
+        if (clientesRemotos.length > 0) {
+          clientes = clientesRemotos;
+          localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+          renderAba();
+        }
+      }, (err) => {});
   }
 
   function tocarBeepConfirmacaoBip() {
@@ -1138,7 +1167,24 @@
     document.getElementById('modal-notificacoes').classList.add('hidden');
   }
 
-  // GERENCIAR FUNCIONÁRIOS (SLOTS ATÉ 3 E INVALIDAÇÃO DE CÓDIGOS)
+  // FUNÇÃO DE DESVINCULAÇÃO AUTÔNOMA PARA O FUNCIONÁRIO
+  function desvincularFuncionarioEmpresa() {
+    if (confirm("Deseja realmente desvincular este aplicativo da empresa atual? Você poderá criar o seu próprio negócio ou se vincular a outro código de patrão.")) {
+      perfilNegocio.empresaId = auth.currentUser.uid;
+      perfilNegocio.funcaoUsuario = "Proprietário / Gerente";
+      persistirDadosCompletos();
+
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("perfis").doc(user.uid).set(perfilNegocio);
+      }
+
+      alert("✅ Desvinculado com sucesso! Agora você é Proprietário do seu próprio negócio no app.");
+      fecharDrawerNavegacao();
+      window.location.reload();
+    }
+  }
+
   function abrirModalGerenciarFuncionarios() {
     if (!eAdmin()) return;
     document.getElementById('novo-func-nome').value = '';
@@ -1493,27 +1539,34 @@
     cadastroTemp.codigoConvite = document.getElementById('cad-convite').value.trim();
 
     if (cadastroTemp.codigoConvite) {
-      // VALIDAÇÃO LOCAL OU FIREBASE DOS SLOTS DO PATRÃO (VERIFICA SE O CÓDIGO ESTÁ ATIVO)
-      let slotEncontrado = slotsFuncionarios.find(s => s.codigo === cadastroTemp.codigoConvite && s.ativo);
-      if (!slotEncontrado) {
-        // Tentar buscar no Firestore se houver conexão online
-        try {
-          let docRef = await db.collection("perfis").doc(cadastroTemp.codigoConvite).get();
-          if (docRef.exists) {
-            cadastroTemp.empresaPatraoInfo = docRef.data();
+      try {
+        let docRef = await db.collection("perfis").doc(cadastroTemp.codigoConvite).get();
+        if (docRef.exists) {
+          cadastroTemp.empresaPatraoInfo = docRef.data();
+          cadastroTemp.funcaoUsuario = "Funcionário / Operador";
+          cadastroTemp.nomeLoja = cadastroTemp.empresaPatraoInfo.nomeLoja || "Loja do Patrão";
+          cadastroTemp.tipo = cadastroTemp.empresaPatraoInfo.tipo || "PF";
+          cadastroTemp.ramo = cadastroTemp.empresaPatraoInfo.ramo || "Produtos";
+          cadastroTemp.empresaId = cadastroTemp.codigoConvite;
+        } else {
+          // Verificar slots locais se offline
+          let slotValido = slotsFuncionarios.find(s => s.codigo === cadastroTemp.codigoConvite && s.ativo);
+          if (slotValido) {
+            cadastroTemp.funcaoUsuario = "Funcionário / Operador";
+            cadastroTemp.nomeLoja = perfilNegocio.nomeLoja;
+            cadastroTemp.empresaId = auth.currentUser ? auth.currentUser.uid : cadastroTemp.codigoConvite;
           } else {
-            alert("⚠️ Código de convite inválido ou desativado pelo administrador! (Ex-funcionário ou código incorreto).");
+            alert("⚠️ Código de convite inválido ou desativado pelo administrador!");
             return;
           }
-        } catch(err) {
-          alert("⚠️ Código de convite não encontrado ou desativado!");
-          return;
         }
+      } catch(err) {
+        alert("⚠️ Erro ao verificar código de convite. Verifique sua conexão.");
+        return;
       }
-      cadastroTemp.funcaoUsuario = "Funcionário / Operador";
     } else {
-      // É Patrão / Dono (ou ex-funcionário abrindo seu próprio negócio)
       cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
+      cadastroTemp.empresaId = ""; // Será gerado após o UID
     }
 
     showStep2CadastroUsuario();
@@ -1552,7 +1605,7 @@
             </div>
 
             <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              ${eFuncionario ? 'Avançar para Concluir <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Avançar <i class="fa-solid fa-arrow-right ml-1"></i>'}
+              ${eFuncionario ? '🚀 Finalizar e Entrar' : 'Avançar <i class="fa-solid fa-arrow-right ml-1"></i>'}
             </button>
           </form>
 
@@ -1570,12 +1623,9 @@
     if (!cadastroTemp.codigoConvite) {
       let selFunc = document.getElementById('cad-funcao-usuario');
       if (selFunc) cadastroTemp.funcaoUsuario = selFunc.value;
-    }
-
-    if (cadastroTemp.codigoConvite) {
-      handleConcluirCadastroDireto();
-    } else {
       showStep3CadastroNegocio();
+    } else {
+      criarContaFirebaseFinal();
     }
   }
 
@@ -1640,10 +1690,6 @@
     criarContaFirebaseFinal();
   }
 
-  function handleConcluirCadastroDireto() {
-    criarContaFirebaseFinal();
-  }
-
   function criarContaFirebaseFinal() {
     const errBox = document.getElementById('auth-error');
     if (errBox) errBox.classList.add('hidden');
@@ -1653,7 +1699,7 @@
       let empresaIdVinculo = cadastroTemp.codigoConvite ? cadastroTemp.codigoConvite.trim() : uidGerado;
 
       perfilNegocio = {
-        nomeLoja: cadastroTemp.nomeLoja || "Loja Vinculada",
+        nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
         nomeUsuario: cadastroTemp.nomeUsuario,
         funcaoUsuario: cadastroTemp.funcaoUsuario,
         tipo: cadastroTemp.tipo || "PF",
@@ -1664,6 +1710,7 @@
       userCredential.user.updateProfile({ displayName: cadastroTemp.nomeUsuario });
       persistirDadosCompletos();
       db.collection("perfis").doc(uidGerado).set(perfilNegocio);
+      iniciarListenersTempoReal(empresaIdVinculo);
     }).catch(err => {
       if (errBox) {
         errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
@@ -1988,15 +2035,18 @@
     const btnCopiar = document.getElementById('btn-copiar-convite');
     const btnGerenciarFunc = document.getElementById('menu-btn-gerenciar-funcionarios');
     const secaoFerramentasAdmin = document.getElementById('menu-secao-ferramentas-admin');
+    const btnDesvincular = document.getElementById('menu-btn-desvincular');
 
     if (eAdmin()) {
       if (btnCopiar) btnCopiar.classList.remove('hidden');
       if (btnGerenciarFunc) btnGerenciarFunc.classList.remove('hidden');
       if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
+      if (btnDesvincular) btnDesvincular.classList.add('hidden');
     } else {
       if (btnCopiar) btnCopiar.classList.add('hidden');
       if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
-      if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden'); // OCULTA DESPESAS E HISTÓRICO DO FUNCIONÁRIO
+      if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
+      if (btnDesvincular) btnDesvincular.classList.remove('hidden'); // MOSTRA OPÇÃO DE DESVINCULAR AO FUNCIONÁRIO
     }
 
     document.getElementById('drawer-menu').classList.remove('hidden'); 
@@ -2009,10 +2059,56 @@
   function openModalPerfil() {
     const user = auth.currentUser;
     document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Rogério';
-    document.getElementById('perfil-nome-loja').value = perfilNegocio.nomeLoja || '';
-    document.getElementById('perfil-tipo-registro').value = perfilNegocio.tipo || 'PF';
-    document.getElementById('perfil-ramo').value = perfilNegocio.ramo || 'Produtos';
-    document.getElementById('perfil-user-funcao-modal').value = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
+
+    const containerFuncao = document.getElementById('container-perfil-funcao-edicao');
+    const containerEstab = document.getElementById('container-dados-estabelecimento-edicao');
+
+    if (eAdmin()) {
+      containerFuncao.innerHTML = `
+        <select id="perfil-user-funcao-modal" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+          <option value="Proprietário / Gerente">Proprietário / Gerente (Acesso Total)</option>
+        </select>
+      `;
+      containerEstab.innerHTML = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Estabelecimento / Loja *</label>
+            <input type="text" id="perfil-nome-loja" value="${perfilNegocio.nomeLoja || ''}" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
+              <select id="perfil-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                <option value="PF" ${perfilNegocio.tipo === 'PF' ? 'selected' : ''}>Pessoa Física</option>
+                <option value="MEI" ${perfilNegocio.tipo === 'MEI' ? 'selected' : ''}>MEI</option>
+                <option value="ME" ${perfilNegocio.tipo === 'ME' ? 'selected' : ''}>Microempresa</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
+              <select id="perfil-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
+                <option value="Produtos" ${perfilNegocio.ramo === 'Produtos' ? 'selected' : ''}>Produtos</option>
+                <option value="Servicos" ${perfilNegocio.ramo === 'Servicos' ? 'selected' : ''}>Serviços</option>
+                <option value="Ambos" ${perfilNegocio.ramo === 'Ambos' ? 'selected' : ''}>Ambos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // FUNCIONÁRIO: PERFIL E DADOS DA LOJA TRAVADOS E HERDADOS DO PATRÃO
+      containerFuncao.innerHTML = `
+        <input type="text" readonly value="Funcionário / Operador (Vinculado via Código)" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">
+      `;
+      containerEstab.innerHTML = `
+        <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
+          <p class="font-bold text-slate-700">🏢 Estabelecimento Vinculado:</p>
+          <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja do Patrão'}</p>
+          <p class="text-[10px] text-slate-500">As configurações da empresa são gerenciadas pelo Administrador.</p>
+        </div>
+      `;
+    }
+
     document.getElementById('modal-perfil').classList.remove('hidden');
   }
 
@@ -2024,14 +2120,13 @@
     e.preventDefault();
     const novoNome = document.getElementById('perfil-nome-usuario').value.trim();
 
-    perfilNegocio = {
-      ...perfilNegocio,
-      nomeUsuario: novoNome,
-      nomeLoja: document.getElementById('perfil-nome-loja').value,
-      tipo: document.getElementById('perfil-tipo-registro').value,
-      ramo: document.getElementById('perfil-ramo').value,
-      funcaoUsuario: document.getElementById('perfil-user-funcao-modal').value
-    };
+    perfilNegocio.nomeUsuario = novoNome;
+    
+    if (eAdmin()) {
+      perfilNegocio.nomeLoja = document.getElementById('perfil-nome-loja').value;
+      perfilNegocio.tipo = document.getElementById('perfil-tipo-registro').value;
+      perfilNegocio.ramo = document.getElementById('perfil-ramo').value;
+    }
 
     persistirDadosCompletos();
 
@@ -2044,7 +2139,7 @@
     closeModalPerfil();
     renderAba();
     exibirBoasVindasToast(novoNome);
-    alert("✅ Perfil atualizado!");
+    alert("✅ Perfil atualizado com sucesso!");
   }
 
   function handleLogin(e) {
@@ -2206,7 +2301,7 @@
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700 pb-2">
             <h3 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-crown"></i> Status da Licença & Vantagens
+              <i class="fa-solid fa-crown"></i> Status da Licença & Sincronização
             </h3>
             <span class="text-[10px] bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded-full">
               ${licencaInfo.vitalicio ? 'Vitalício' : `${diasRestantes} dias restantes`}
@@ -2214,7 +2309,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v38.0</b> garante agilidade e segurança total para o seu comércio com múltiplos operadores sincronizados.
+            O <b>Caixa Rápido Móvel Pro v39.0</b> está conectado em tempo real. Qualquer alteração feita por você ou pelos operadores aparece instantaneamente em todos os aparelhos.
           </p>
 
           <div class="pt-1">
@@ -2251,7 +2346,8 @@
     persistirDadosCompletos();
 
     const user = auth.currentUser;
-    if (user) db.collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
+    let empresaIdDest = perfilNegocio.empresaId || user.uid;
+    if (user) db.collection("empresas").doc(empresaIdDest).collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
 
     fecharModalSangria();
     alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado com sucesso!`);
@@ -2653,12 +2749,17 @@
     const totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
     const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
+    const user = auth.currentUser;
+    let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+
     carrinho.forEach(itemCarrinho => {
       let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
       if (prod) {
         prod.estoque = Math.max(0, prod.estoque - itemCarrinho.qtd);
-        let user = auth.currentUser;
-        if (user) db.collection("produtos").doc(user.uid + "_" + prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
+        persistirDadosCompletos();
+        if (user && empresaIdDest) {
+          db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
+        }
       }
     });
 
@@ -2678,9 +2779,11 @@
           prazoPagamento: prazoFiado || ''
         });
       }
+      persistirDadosCompletos();
       clientes.forEach(c => {
-        let user = auth.currentUser;
-        if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
+        if (user && empresaIdDest) {
+          db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).set(c, { merge: true });
+        }
       });
 
       exibirToastIntegracaoFiado(nomeClienteInput, totalCarrinho);
@@ -2697,8 +2800,9 @@
     vendas.push(vendaReg);
     persistirDadosCompletos();
 
-    let user = auth.currentUser;
-    if (user) db.collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
+    }
 
     let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
     let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
@@ -3073,7 +3177,10 @@
     persistirDadosCompletos();
 
     const user = auth.currentUser;
-    if (user) db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
+    let empresaIdDest = perfilNegocio.empresaId || user.uid;
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).set({ ...p, userId: user.uid }, { merge: true });
+    }
 
     fecharModalAjusteRapido();
     alert(`✅ Produto "${p.nome}" atualizado!`);
@@ -3193,7 +3300,10 @@
     persistirDadosCompletos();
 
     const user = auth.currentUser;
-    if (user) db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
+    let empresaIdDest = perfilNegocio.empresaId || user.uid;
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
+    }
 
     fecharModalCadastroProduto();
     alert("✅ Produto salvo!");
@@ -3203,8 +3313,16 @@
   function excluirProduto(index) {
     if (!eAdmin()) { alert("Apenas o proprietário pode excluir produtos."); return; }
     if (confirm("Remover este produto do estoque?")) {
+      let p = produtos[index];
       produtos.splice(index, 1);
       persistirDadosCompletos();
+      
+      const user = auth.currentUser;
+      let empresaIdDest = perfilNegocio.empresaId || user.uid;
+      if (user && empresaIdDest) {
+        db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).delete().catch(()=>{});
+      }
+
       renderAbaEstoque();
     }
   }
@@ -3359,7 +3477,10 @@
     persistirDadosCompletos();
 
     const user = auth.currentUser;
-    if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
+    let empresaIdDest = perfilNegocio.empresaId || user.uid;
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).set(c, { merge: true });
+    }
 
     fecharModalEditarCliente();
     alert("✅ Dados do cliente atualizados com sucesso!");
@@ -3391,7 +3512,10 @@
     persistirDadosCompletos();
 
     const user = auth.currentUser;
-    if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
+    let empresaIdDest = perfilNegocio.empresaId || user.uid;
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(cliente.id)).set(cliente, { merge: true });
+    }
 
     alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado!`);
     renderAba();
@@ -3399,8 +3523,16 @@
 
   function excluirCliente(index) {
     if (confirm("Deseja excluir este registro de cliente?")) {
+      let c = clientes[index];
       clientes.splice(index, 1);
       persistirDadosCompletos();
+
+      const user = auth.currentUser;
+      let empresaIdDest = perfilNegocio.empresaId || user.uid;
+      if (user && empresaIdDest) {
+        db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).delete().catch(()=>{});
+      }
+
       renderAba();
     }
   }
@@ -3794,6 +3926,7 @@
   function sincronizarNuvemManual() {
     const user = auth.currentUser;
     if (user) {
+      let empresaIdDest = perfilNegocio.empresaId || user.uid;
       db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
       alert("✅ Sincronização concluída com sucesso!");
     } else alert("Você está desconectado. Faça login para sincronizar.");
@@ -3809,21 +3942,30 @@
           perfilNegocio = doc.data();
           persistirDadosCompletos();
         }
+        let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
+        iniciarListenersTempoReal(empresaIdAtivo);
+
         switchTab('inicio'); 
         exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
         verificarAlertasEstoqueValidadeAutomatico();
       }).catch(() => {
+        let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
+        iniciarListenersTempoReal(empresaIdAtivo);
+
         switchTab('inicio');
         exibirBoasVindasToast(user.displayName || 'Rogério');
         verificarAlertasEstoqueValidadeAutomatico();
       });
     } else {
+      if (unsubscribeProdutos) unsubscribeProdutos();
+      if (unsubscribeVendas) unsubscribeVendas();
+      if (unsubscribeClientes) unsubscribeClientes();
       mostrarInterfaceAutenticada(false);
       showLoginForm();
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 38.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 39.0 carregada com sucesso!");
 </script>
 </body>
 </html>

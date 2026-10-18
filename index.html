@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v30.3 Complete</title>
+  <title>Caixa Rápido Móvel Pro v30.4 Complete</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,6 +12,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Leitor de Código de Barras via Câmera -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Gráficos Interativos (Chart.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     html, body {
@@ -164,7 +166,7 @@
       
       <div class="flex justify-between items-center border-b pb-2">
         <span id="tour-passo-badge" class="bg-teal-100 text-teal-800 font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-          Passo 1 de 4
+          Passo 1 de 5
         </span>
         <label class="flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" id="chk-desativar-tour" onchange="toggleStatusTourGeral(this.checked)" class="rounded text-teal-600 w-3.5 h-3.5">
@@ -643,12 +645,11 @@
 
         <div class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-2">
           <label class="block text-xs font-extrabold text-teal-900">Selecione o Modo de Operação:</label>
-          <select id="perfil-ramo" onchange="atualizarPreviewModo(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-white font-extrabold text-slate-800">
+          <select id="perfil-ramo" class="w-full p-2.5 border rounded-xl text-xs bg-white font-extrabold text-slate-800">
             <option value="Produtos">📦 Apenas Produtos (Comércio / Loja)</option>
             <option value="Servicos">💇‍♀️ Apenas Serviços (Estética / Salão / Epilação)</option>
             <option value="Ambos">✨ Híbrido (Prestação de Serviços + Venda de Produtos)</option>
           </select>
-          <p id="preview-modo-desc" class="text-[10px] text-teal-800 leading-tight italic"></p>
         </div>
 
         <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-lg hover:bg-teal-700 transition text-xs shadow">
@@ -981,12 +982,14 @@
     let passoTourAtual = 0;
     let tourPrimeiraInteracaoOcorrida = false;
 
+    let chartPagamentosInstancia = null;
+
     const passosTour = [
       {
         aba: 'home',
         icone: 'fa-solid fa-house',
         titulo: '1. Painel Inicial (Home)',
-        descricao: 'Seu resumo executivo com acesso rápido às principais tarefas, status da licença e avisos importantes.',
+        descricao: 'Seu resumo executivo com acesso rápido às principais tarefas, status da licença e gráficos visuais.',
         dica: '💡 Navegue rapidamente pelos botões de atalho no topo do painel.'
       },
       {
@@ -1159,7 +1162,7 @@
       document.getElementById('modal-central-notificacoes').classList.add('hidden');
     }
 
-    /* RENDERIZAÇÃO DA HOME / TELA INICIAL */
+    /* RENDERIZAÇÃO DA HOME / TELA INICIAL COM GRÁFICOS VISUAIS */
     function renderTelaHomeDashboard() {
       const user = auth.currentUser;
       const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : 'Operador') || 'Operador';
@@ -1218,6 +1221,16 @@
             </div>
           </div>
 
+          <!-- GRÁFICO VISUAL DE VENDAS -->
+          <div class="bg-white p-4 rounded-2xl shadow-sm border space-y-3">
+            <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-2">
+              <i class="fa-solid fa-chart-donut text-teal-600"></i> Formas de Pagamento Mais Utilizadas
+            </h3>
+            <div class="relative w-full h-44 flex items-center justify-center">
+              <canvas id="chart-pagamentos-home"></canvas>
+            </div>
+          </div>
+
           <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-md space-y-2 border border-slate-800">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
               <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -1241,32 +1254,49 @@
             ` : ''}
           </div>
 
-          <div class="bg-white p-4 rounded-2xl shadow-sm border space-y-3">
-            <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-2">
-              <i class="fa-solid fa-gem text-teal-600"></i> Planos & Vantagens Exclusivas
-            </h3>
-
-            <div class="space-y-2 text-xs">
-              <div class="p-3 bg-teal-50 border border-teal-200 rounded-xl space-y-1">
-                <div class="flex justify-between font-extrabold text-teal-900">
-                  <span>Plano Vitalício</span>
-                  <span class="text-green-700">Taxa Única</span>
-                </div>
-                <p class="text-[11px] text-slate-600 leading-relaxed">Pague uma única vez e tenha acesso para sempre com suporte e backups ilimitados.</p>
-              </div>
-
-              <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <div class="flex justify-between font-bold text-slate-800">
-                  <span>Plano Mensal Pro</span>
-                  <span class="text-teal-700">Assinatura</span>
-                </div>
-                <p class="text-[11px] text-slate-600 leading-relaxed">Renovação mensal flexível sem fidelidade com relatórios ilimitados em PDF/CSV.</p>
-              </div>
-            </div>
-          </div>
-
         </div>
       `;
+
+      setTimeout(renderizarGraficoPagamentosHome, 100);
+    }
+
+    function renderizarGraficoPagamentosHome() {
+      const ctx = document.getElementById('chart-pagamentos-home');
+      if (!ctx) return;
+
+      let contagemPagto = { Dinheiro: 0, PIX: 0, Cartao: 0, Fiado: 0 };
+
+      vendas.forEach(v => {
+        let forma = v.formaPagto || 'Dinheiro';
+        if (forma.includes('Dinheiro')) contagemPagto.Dinheiro += parseFloat(v.valor || 0);
+        else if (forma.includes('PIX')) contagemPagto.PIX += parseFloat(v.valor || 0);
+        else if (forma.includes('Cartão') || forma.includes('Cartao')) contagemPagto.Cartao += parseFloat(v.valor || 0);
+        else if (forma.includes('Fiado')) contagemPagto.Fiado += parseFloat(v.valor || 0);
+      });
+
+      if (chartPagamentosInstancia) {
+        chartPagamentosInstancia.destroy();
+      }
+
+      chartPagamentosInstancia = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Dinheiro', 'PIX', 'Cartão', 'Fiado'],
+          datasets: [{
+            data: [contagemPagto.Dinheiro, contagemPagto.PIX, contagemPagto.Cartao, contagemPagto.Fiado],
+            backgroundColor: ['#0d9488', '#10b981', '#6366f1', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } }
+          }
+        }
+      });
     }
 
     /* SONS DE NOTIFICAÇÃO E BEEP */
@@ -1461,13 +1491,11 @@
       const header = document.getElementById('app-main-header');
       const bottomNav = document.getElementById('app-bottom-nav');
       if (mostrar) {
-        header.classList.remove('hidden');
-        header.classList.add('flex');
-        bottomNav.classList.remove('hidden');
+        if (header) { header.classList.remove('hidden'); header.classList.add('flex'); }
+        if (bottomNav) bottomNav.classList.remove('hidden');
       } else {
-        header.classList.add('hidden');
-        header.classList.remove('flex');
-        bottomNav.classList.add('hidden');
+        if (header) { header.classList.add('hidden'); header.classList.remove('flex'); }
+        if (bottomNav) bottomNav.classList.add('hidden');
         fecharDrawerNavegacao();
       }
     }
@@ -1574,45 +1602,52 @@
       window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
     }
 
-    /* MÓDULO DE AUTENTICAÇÃO */
+    /* MÓDULO DE AUTENTICAÇÃO COM CORREÇÃO DE TELA BRANCA */
     function showLoginForm() {
       mostrarInterfaceAutenticada(false);
-      document.getElementById('content-vendas').innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-              <i class="fa-solid fa-store"></i>
-            </div>
-            <h2 class="text-xl font-bold text-slate-800">Entrar no Aplicativo</h2>
-            <p class="text-xs text-slate-500">Acesse com e-mail e senha registrados</p>
-          </div>
-
-          <form onsubmit="handleLogin(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail registrado</label>
-              <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
-            </div>
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label class="block text-xs font-semibold text-slate-600">Sua Senha</label>
-                <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
+      
+      const container = document.getElementById('slider-container');
+      if (container) container.style.transform = 'translateX(0%)';
+      
+      const target = document.getElementById('content-vendas') || document.getElementById('content-home');
+      if (target) {
+        target.innerHTML = `
+          <div class="space-y-4 max-w-sm mx-auto p-2">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
+                <i class="fa-solid fa-store"></i>
               </div>
-              <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+              <h2 class="text-xl font-bold text-slate-800">Entrar no Aplicativo</h2>
+              <p class="text-xs text-slate-500">Acesse com e-mail e senha registrados</p>
             </div>
-            
-            <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-            <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-              Entrar e Abrir Caixa
-            </button>
-          </form>
+            <form onsubmit="handleLogin(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail registrado</label>
+                <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+              </div>
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="block text-xs font-semibold text-slate-600">Sua Senha</label>
+                  <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[11px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
+                </div>
+                <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
+              </div>
+              
+              <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
 
-          <div class="border-t pt-3 text-center">
-            <p class="text-xs text-slate-600">Primeiro acesso no sistema?</p>
-            <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Criar Nova Conta</button>
+              <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+                Entrar e Abrir Caixa
+              </button>
+            </form>
+
+            <div class="border-t pt-3 text-center">
+              <p class="text-xs text-slate-600">Primeiro acesso no sistema?</p>
+              <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-1">Criar Nova Conta</button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
     function showStep1CadastroAcesso() {
@@ -2089,8 +2124,14 @@
       if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
         fecharDrawerNavegacao();
         carrinho = [];
+        clienteAtualVenda = { nome: '', zap: '' };
+        
+        const container = document.getElementById('slider-container');
+        if (container) container.style.transform = 'translateX(0%)';
+        
         auth.signOut().then(() => {
-          mostrarInterfaceAutenticada(false);
+          showLoginForm();
+        }).catch(() => {
           showLoginForm();
         });
       }
@@ -2884,7 +2925,6 @@
           <div class="space-y-2 max-h-72 overflow-y-auto">
             ${minimos.map(p => {
               let idxReal = produtos.findIndex(prod => prod.id === p.id);
-              let faltam = (p.estMin || 3) - p.estoque;
 
               return `
                 <div class="bg-red-50 border border-red-300 p-3 rounded-2xl flex justify-between items-center text-xs alerta-saltando">
@@ -3866,7 +3906,7 @@
       }
     });
 
-    console.log("Caixa Rápido Móvel Pro v30.3 - Carregado com Sucesso!");
+    console.log("Caixa Rápido Móvel Pro v30.4 - Carregado com Sucesso!");
   </script>
 </body>
 </html>

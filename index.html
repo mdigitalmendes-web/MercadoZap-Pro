@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v42.0 (Gestão Unificada & Vínculo Inteligente)</title>
+  <title>Caixa Rápido Móvel Pro v43.0 (Segurança & Vínculo Blindado)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -826,6 +826,7 @@
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
       <p><b>🏢 Vínculo Inteligente:</b> Insira o código de convite do patrão na entrada para carregar instantaneamente o nome da loja e todos os produtos cadastrados.</p>
       <p><b>👥 Gestão Unificada:</b> O administrador gerencia os 3 slots de funcionários de forma prática, gerando códigos personalizados e revogando acessos com um clique.</p>
+      <p><b>🔒 Segurança Blindada:</b> Ex-funcionários desligados perdem o vínculo imediatamente e não conseguem mais acessar a base de dados da empresa.</p>
     </div>
   </div>
 </div>
@@ -1199,7 +1200,7 @@
   }
 
   function desvincularFuncionarioEmpresa() {
-    if (confirm("Deseja realmente desvincular este aplicativo da empresa atual? Todos os dados da empresa anterior serão limpos do seu dispositivo e você retornará à tela de login.")) {
+    if (confirm("Deseja realmente desvincular este aplicativo da empresa atual? Todos os dados da empresa anterior serão limpos do seu dispositivo e você precisará de um novo código de convite.")) {
       produtos = [...produtosExemplo];
       vendas = [];
       sangriasSuprimentos = [];
@@ -1208,11 +1209,11 @@
       despesasFixas = [];
 
       perfilNegocio = {
-        nomeLoja: 'Meu Próprio Negócio',
+        nomeLoja: 'Aguardando Vínculo',
         tipo: 'PF',
         ramo: 'Produtos',
-        nomeUsuario: perfilNegocio.nomeUsuario || 'Usuário',
-        funcaoUsuario: 'Proprietário / Gerente',
+        nomeUsuario: perfilNegocio.nomeUsuario || 'Operador',
+        funcaoUsuario: 'Funcionário / Operador',
         empresaId: ''
       };
 
@@ -1220,7 +1221,10 @@
 
       const user = auth.currentUser;
       if (user) {
-        db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true }).catch(()=>{});
+        db.collection("perfis").doc(user.uid).set({
+          empresaId: '',
+          funcaoUsuario: 'Funcionário / Operador (Desvinculado)'
+        }, { merge: true }).catch(()=>{});
       }
 
       fecharDrawerNavegacao();
@@ -1511,7 +1515,7 @@
     window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
   }
 
-  // TELA DE LOGIN ATUALIZADA COM VÍNCULO INTELIGENTE E AUTO-PREENCHIMENTO
+  // TELA DE LOGIN COM ESCOLHA INTELIGENTE DE PERFIL E VÍNCULO BLINDADO
   function showLoginForm() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
@@ -1524,10 +1528,19 @@
               <i class="fa-solid fa-store"></i>
             </div>
             <h2 class="text-lg font-bold text-slate-800">Entrar no Aplicativo</h2>
-            <p class="text-xs text-slate-500">Acesse com e-mail, senha ou código do patrão</p>
+            <p class="text-xs text-slate-500">Selecione o seu perfil de acesso</p>
           </div>
 
-          <form onsubmit="handleLoginComVinculoDireto(event)" class="space-y-2.5">
+          <div class="grid grid-cols-2 gap-2 pb-1">
+            <button type="button" onclick="mudarTipoLogin('dono')" id="btn-tipo-dono" class="p-2.5 rounded-xl border text-center font-bold text-xs bg-teal-600 text-white shadow-sm">
+              👑 Sou Patrão / Dono
+            </button>
+            <button type="button" onclick="mudarTipoLogin('funcionario')" id="btn-tipo-func" class="p-2.5 rounded-xl border text-center font-bold text-xs bg-slate-100 text-slate-700">
+              👤 Sou Funcionário
+            </button>
+          </div>
+
+          <form onsubmit="handleLoginBlindado(event)" class="space-y-2.5">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">E-mail registrado</label>
               <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
@@ -1540,12 +1553,12 @@
               <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
             </div>
 
-            <!-- CAMPO DE VÍNCULO INTELIGENTE COM DETECÇÃO AUTOMÁTICA DA LOJA -->
-            <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 space-y-1.5">
+            <!-- CAMPO DE VÍNCULO OBRIGATÓRIO PARA FUNCIONÁRIOS -->
+            <div id="container-codigo-funcionario" class="hidden bg-amber-50 p-2.5 rounded-xl border border-amber-300 space-y-1.5">
               <label class="block text-[10px] font-extrabold text-amber-900">
-                🏢 Código de Convite do Patrão (Opcional p/ Funcionários):
+                🏢 Cole o Código de Convite do Patrão *
               </label>
-              <input type="text" id="login-codigo-vinculo" oninput="verificarCodigoVinculoEmTempoReal(this.value)" placeholder="Cole o código (Ex: FUNC-1234)" class="w-full p-2 border rounded-lg text-xs bg-white font-mono font-bold text-amber-950 uppercase">
+              <input type="text" id="login-codigo-vinculo" oninput="verificarCodigoVinculoEmTempoReal(this.value)" placeholder="Ex: FUNC-1234" class="w-full p-2 border rounded-lg text-xs bg-white font-mono font-bold text-amber-950 uppercase">
               <div id="status-vinculo-loja" class="hidden text-[10px] font-bold text-teal-800 bg-teal-50 p-2 rounded-lg border border-teal-200 flex items-center gap-1.5">
                 <i class="fa-solid fa-circle-check text-teal-600"></i>
                 <span id="texto-loja-vinculada">Empresa localizada com sucesso!</span>
@@ -1566,9 +1579,27 @@
         </div>
       </div>
     `;
+    window.modoLoginFuncionario = false;
   }
 
-  // VERIFICAÇÃO EM TEMPO REAL DO CÓDIGO DO PATRÃO PARA MOSTRAR A LOJA E PREENCHER O NOME AUTOMATICAMENTE
+  function mudarTipoLogin(tipo) {
+    const btnDono = document.getElementById('btn-tipo-dono');
+    const btnFunc = document.getElementById('btn-tipo-func');
+    const boxFunc = document.getElementById('container-codigo-funcionario');
+
+    if (tipo === 'dono') {
+      window.modoLoginFuncionario = false;
+      btnDono.className = "p-2.5 rounded-xl border text-center font-bold text-xs bg-teal-600 text-white shadow-sm";
+      btnFunc.className = "p-2.5 rounded-xl border text-center font-bold text-xs bg-slate-100 text-slate-700";
+      boxFunc.classList.add('hidden');
+    } else {
+      window.modoLoginFuncionario = true;
+      btnFunc.className = "p-2.5 rounded-xl border text-center font-bold text-xs bg-teal-600 text-white shadow-sm";
+      btnDono.className = "p-2.5 rounded-xl border text-center font-bold text-xs bg-slate-100 text-slate-700";
+      boxFunc.classList.remove('hidden');
+    }
+  }
+
   async function verificarCodigoVinculoEmTempoReal(codigo) {
     const boxStatus = document.getElementById('status-vinculo-loja');
     const textoLoja = document.getElementById('texto-loja-vinculada');
@@ -1618,20 +1649,26 @@
     }
   }
 
-  async function handleLoginComVinculoDireto(e) {
+  async function handleLoginBlindado(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-password').value;
-    const codigoVinculo = document.getElementById('login-codigo-vinculo').value.trim();
+    const codigoVinculo = window.modoLoginFuncionario ? document.getElementById('login-codigo-vinculo').value.trim() : '';
     const errBox = document.getElementById('auth-error');
 
     errBox.classList.add('hidden');
+
+    if (window.modoLoginFuncionario && !codigoVinculo) {
+      errBox.innerText = "Por favor, insira o código de convite do patrão para entrar como funcionário.";
+      errBox.classList.remove('hidden');
+      return;
+    }
 
     try {
       let userCredential = await auth.signInWithEmailAndPassword(email, pass);
       let user = userCredential.user;
 
-      if (codigoVinculo) {
+      if (window.modoLoginFuncionario) {
         if (window.tempPatraoVinculado) {
           perfilNegocio = {
             nomeLoja: window.tempPatraoVinculado.nomeLoja,
@@ -1644,7 +1681,22 @@
           persistirDadosCompletos();
           await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
         } else {
-          alert("⚠️ Código de convite inválido ou desativado! O login foi realizado, mas sem vínculo de empresa.");
+          errBox.innerText = "⚠️ Código de convite inválido ou desativado pelo administrador!";
+          errBox.classList.remove('hidden');
+          await auth.signOut();
+          return;
+        }
+      } else {
+        // BLINDAGEM DE SEGURANÇA: Se for Dono, verifica perfil no Firestore
+        let docPerfil = await db.collection("perfis").doc(user.uid).get();
+        if (docPerfil.exists) {
+          let dadosDb = docPerfil.data();
+          if (dadosDb.funcaoUsuario && dadosDb.funcaoUsuario.toLowerCase().includes('funcionário') && !dadosDb.empresaId) {
+            errBox.innerText = "⚠️ Seu acesso foi desvinculado. Solicite um novo código de convite ao patrão.";
+            errBox.classList.remove('hidden');
+            await auth.signOut();
+            return;
+          }
         }
       }
     } catch (err) {
@@ -2503,7 +2555,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v42.0</b> está conectado em tempo real. Qualquer alteração feita por você ou pelos operadores aparece instantaneamente em todos os aparelhos.
+            O <b>Caixa Rápido Móvel Pro v43.0</b> está conectado em tempo real com segurança blindada.
           </p>
 
           <div class="pt-1">
@@ -4128,15 +4180,24 @@
 
   auth.onAuthStateChanged((user) => {
     if (user) {
-      mostrarInterfaceAutenticada(true);
-      verificarLicencaStatus();
-
       db.collection("perfis").doc(user.uid).get().then(doc => {
         if (doc.exists) {
           perfilNegocio = doc.data();
           if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
+          
+          // BLINDAGEM NO ESTADO: Se for funcionário sem empresaId, expulsa
+          if (perfilNegocio.funcaoUsuario && perfilNegocio.funcaoUsuario.toLowerCase().includes('funcionário') && !perfilNegocio.empresaId) {
+            auth.signOut();
+            alert("⚠️ Seu acesso foi revogado pelo administrador.");
+            return;
+          }
+
           persistirDadosCompletos();
         }
+
+        mostrarInterfaceAutenticada(true);
+        verificarLicencaStatus();
+
         let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
         iniciarListenersTempoReal(empresaIdAtivo);
 
@@ -4144,6 +4205,9 @@
         exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
         verificarAlertasEstoqueValidadeAutomatico();
       }).catch(() => {
+        mostrarInterfaceAutenticada(true);
+        verificarLicencaStatus();
+
         let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
         iniciarListenersTempoReal(empresaIdAtivo);
 
@@ -4160,7 +4224,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 42.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 43.0 carregada com sucesso!");
 </script>
 </body>
 </html>

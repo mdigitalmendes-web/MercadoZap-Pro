@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v38.0 (ERP & Sincronização Multi-Loja)</title>
+  <title>Caixa Rápido Móvel Pro v37.0 (ERP & Vínculo Automático)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -118,12 +118,12 @@
       border-radius: 0 0 4px 4px;
     }
 
-    #toast-boas-vindas, #toast-integracao-fiado, #toast-alerta-pdv {
+    #toast-boas-vindas, #banner-alerta-estoque, #toast-integracao-fiado, #toast-alerta-pdv {
       transition: all 0.4s ease-in-out;
       transform: translateY(-130%);
       opacity: 0;
     }
-    #toast-boas-vindas.show, #toast-integracao-fiado.show, #toast-alerta-pdv.show {
+    #toast-boas-vindas.show, #banner-alerta-estoque.show, #toast-integracao-fiado.show, #toast-alerta-pdv.show {
       transform: translateY(0);
       opacity: 1;
     }
@@ -138,7 +138,7 @@
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">👋</div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sincronizado.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema pronto.</p>
     </div>
   </div>
 
@@ -223,48 +223,40 @@
               <span id="drawer-user-funcao">Proprietário / Gerente</span>
             </div>
             <button onclick="copiarCodigoConvitePatrao()" id="btn-copiar-convite" class="hidden text-[10px] bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold px-2 py-1 rounded-lg shadow">
-              📋 Copiar Código
+              📋 Copiar Código Empresa
             </button>
           </div>
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Perfil & Negócio</p>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Perfil & Segurança</p>
           <button onclick="fecharDrawerNavegacao(); openModalPerfil();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-user-pen text-teal-600 w-5 text-center"></i>
-            <span>Alterar Nome & Loja</span>
+            <span>Alterar Nome & Estabelecimento</span>
           </button>
           <button onclick="fecharDrawerNavegacao(); abrirModalAlterarSenha();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-key text-amber-600 w-5 text-center"></i>
             <span>Alterar Senha de Acesso</span>
           </button>
-          <button onclick="migrarParaMeuProprioNegocio()" class="w-full text-left px-3.5 py-2.5 hover:bg-teal-50 rounded-xl flex items-center gap-3 text-xs font-bold text-teal-700 border border-teal-200 mt-1 shadow-sm">
-            <i class="fa-solid fa-store text-teal-600 w-5 text-center"></i>
-            <span>🚀 Abrir Meu Próprio Negócio (Virar Patrão)</span>
+          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
+            <span>Sincronizar Nuvem</span>
           </button>
         </div>
 
         <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas Exclusivas do Patrão</p>
-          <button onclick="fecharDrawerNavegacao(); tentarAbrirDespesas();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
+          <button onclick="fecharDrawerNavegacao(); abrirModalDespesas();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-file-invoice-dollar text-red-600 w-5 text-center"></i>
-            <span>Controle de Despesas (Água, Luz)</span>
+            <span>Controle de Despesas (Água, Luz, etc)</span>
           </button>
-          <button onclick="fecharDrawerNavegacao(); tentarAbrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
             <span>Histórico de Fechamento de Caixa</span>
           </button>
-          <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
-            <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
-            <span>Sincronizar Nuvem Agora</span>
-          </button>
-        </div>
-
-        <div class="p-3 space-y-1 border-b">
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Geral & Suporte</p>
           <button onclick="fecharDrawerNavegacao(); abrirSuporteWhatsApp();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-brands fa-whatsapp text-green-600 w-5 text-center"></i>
-            <span>Suporte Técnico WhatsApp</span>
+            <span>Suporte Técnico</span>
           </button>
           <button onclick="toggleModoEscuro()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-moon text-indigo-600 w-5 text-center"></i>
@@ -373,7 +365,7 @@
     <div class="bg-slate-50 p-3 rounded-xl border space-y-2 text-xs">
       <p class="font-bold text-slate-700">Adicionar Nova Conta a Pagar:</p>
       <div>
-        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Descrição (Ex: Aluguel, Luz) *</label>
+        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Descrição (Ex: Aluguel, Luz, Internet) *</label>
         <input type="text" id="nova-desp-desc" placeholder="Ex: Conta de Luz" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
       </div>
       <div class="grid grid-cols-2 gap-2">
@@ -821,8 +813,9 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>🏢 Vínculo de Funcionários:</b> O funcionário digita o código do patrão ao criar a conta e sincroniza automaticamente com o estoque e fiados da empresa.</p>
-      <p><b>🚀 Virar Patrão:</b> Se era funcionária e decidiu abrir o próprio negócio, basta acessar o menu e clicar em "Abrir Meu Próprio Negócio" para gerar seu próprio ecossistema de gestão.</p>
+      <p><b>🏢 Vínculo de Funcionários:</b> Deixe o código em branco se você for o patrão. Se for funcionário, cole o código recebido do patrão e o app configura tudo automaticamente!</p>
+      <p><b>📅 Alertas de Validade:</b> Defina prazos gerais nas configurações ou prazos específicos diretamente ao cadastrar/editar cada produto no estoque.</p>
+      <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua para agilizar o atendimento.</p>
     </div>
   </div>
 </div>
@@ -893,14 +886,13 @@
   let modoScannerDestino = 'caixa';
   let alertaSilenciadoSessao = false;
   let ultimoEanLido = '';
-  let ultimoTempoLeitura = 0;
+  let ultimoTempoLeitura =  0;
   
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', codigoConvite: '', empresaPatraoInfo: null };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente', empresaId: '' };
 
   function eAdmin() {
-    let func = (perfilNegocio.funcaoUsuario || '').toLowerCase();
-    return func.includes('proprietário') || func.includes('gerente') || func.includes('admin');
+    return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
   }
 
   function persistirDadosCompletos() {
@@ -911,74 +903,6 @@
     localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
     localStorage.setItem('crm_despesas', JSON.stringify(despesasFixas));
     localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
-  }
-
-  // SINCRONIZAÇÃO EM TEMPO REAL COM O FIRESTORE (COMPARTILHADO COM O PATRÃO)
-  function iniciarListenersTempoReal() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    let idAlvo = perfilNegocio.empresaId || user.uid;
-
-    // Escutar produtos da empresa
-    db.collection("produtos").where("userId", "==", idAlvo).onSnapshot((snapshot) => {
-      let prodsRemotos = [];
-      snapshot.forEach(doc => prodsRemotos.push(doc.data()));
-      if (prodsRemotos.length > 0) {
-        produtos = prodsRemotos;
-        localStorage.setItem('crm_produtos', JSON.stringify(produtos));
-        if (abaAtual === 'estoque' || abaAtual === 'vendas') renderAba();
-      }
-    }, err => {});
-
-    // Escutar clientes/fiados da empresa
-    db.collection("clientes").where("userId", "==", idAlvo).onSnapshot((snapshot) => {
-      let cliRemotos = [];
-      snapshot.forEach(doc => cliRemotos.push(doc.data()));
-      if (cliRemotos.length > 0) {
-        clientes = cliRemotos;
-        localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-        if (abaAtual === 'clientes') renderAba();
-      }
-    }, err => {});
-  }
-
-  function migrarParaMeuProprioNegocio() {
-    if (confirm("🚀 Deseja sair do vínculo de funcionário e abrir seu próprio negócio gerenciado por você? Seus dados serão redefinidos para uma nova loja exclusiva.")) {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      perfilNegocio.funcaoUsuario = "Proprietário / Gerente";
-      perfilNegocio.empresaId = user.uid;
-      perfilNegocio.nomeLoja = prompt("Digite o nome da sua nova loja:", "Meu Comércio") || "Minha Loja";
-
-      produtos = produtosExemplo;
-      clientes = [];
-      vendas = [];
-      sangriasSuprimentos = [];
-
-      persistirDadosCompletos();
-      db.collection("perfis").doc(user.uid).set(perfilNegocio);
-
-      alert("🎉 Parabéns! Agora você é Proprietário(a) do seu próprio negócio!");
-      window.location.reload();
-    }
-  }
-
-  function tentarAbrirDespesas() {
-    if (!eAdmin()) {
-      alert("⚠️ Acesso Restrito: Apenas Proprietários / Gerentes podem controlar as despesas da empresa.");
-      return;
-    }
-    abrirModalDespesas();
-  }
-
-  function tentarAbrirHistoricoFechamentos() {
-    if (!eAdmin()) {
-      alert("⚠️ Acesso Restrito: Apenas Proprietários / Gerentes podem acessar o histórico de fechamentos.");
-      return;
-    }
-    abrirHistoricoFechamentos();
   }
 
   function tocarBeepConfirmacaoBip() {
@@ -1456,6 +1380,7 @@
     cadastroTemp.codigoConvite = document.getElementById('cad-convite').value.trim();
 
     if (cadastroTemp.codigoConvite) {
+      // Validar se o código existe no Firestore na collection perfis
       try {
         let docRef = await db.collection("perfis").doc(cadastroTemp.codigoConvite).get();
         if (docRef.exists) {
@@ -1465,6 +1390,7 @@
           cadastroTemp.tipo = cadastroTemp.empresaPatraoInfo.tipo || "PF";
           cadastroTemp.ramo = cadastroTemp.empresaPatraoInfo.ramo || "Produtos";
         } else {
+          // Tentar buscar por campo empresaId
           let q = await db.collection("perfis").where("empresaId", "==", cadastroTemp.codigoConvite).get();
           if (!q.empty) {
             cadastroTemp.empresaPatraoInfo = q.docs[0].data();
@@ -1478,10 +1404,12 @@
           }
         }
       } catch(err) {
+        // Fallback local se offline
         cadastroTemp.funcaoUsuario = "Funcionário / Operador";
         cadastroTemp.nomeLoja = "Loja Vinculada";
       }
     } else {
+      // É Patrão / Dono
       cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
     }
 
@@ -1490,6 +1418,7 @@
 
   function showStep2CadastroUsuario() {
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
+    
     let eFuncionario = Boolean(cadastroTemp.codigoConvite);
 
     document.getElementById('content-inicio').innerHTML = `
@@ -1506,7 +1435,7 @@
           <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
-              <input type="text" id="cad-nome-usuario" required placeholder="Ex: Maria" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+              <input type="text" id="cad-nome-usuario" required placeholder="Ex: Maria (Funcionária)" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
             </div>
 
             <div>
@@ -1542,7 +1471,8 @@
     }
 
     if (cadastroTemp.codigoConvite) {
-      criarContaFirebaseFinal();
+      // Se for funcionário, já pula direto para criar a conta sem precisar digitar dados da loja
+      handleConcluirCadastroDireto();
     } else {
       showStep3CadastroNegocio();
     }
@@ -1609,6 +1539,10 @@
     criarContaFirebaseFinal();
   }
 
+  function handleConcluirCadastroDireto() {
+    criarContaFirebaseFinal();
+  }
+
   function criarContaFirebaseFinal() {
     const errBox = document.getElementById('auth-error');
     if (errBox) errBox.classList.add('hidden');
@@ -1618,7 +1552,7 @@
       let empresaIdVinculo = cadastroTemp.codigoConvite ? cadastroTemp.codigoConvite.trim() : uidGerado;
 
       perfilNegocio = {
-        nomeLoja: cadastroTemp.nomeLoja || "Loja Vinculada",
+        nomeLoja: cadastroTemp.nomeLoja || "Loja do Patrão",
         nomeUsuario: cadastroTemp.nomeUsuario,
         funcaoUsuario: cadastroTemp.funcaoUsuario,
         tipo: cadastroTemp.tipo || "PF",
@@ -1631,7 +1565,7 @@
       db.collection("perfis").doc(uidGerado).set(perfilNegocio);
     }).catch(err => {
       if (errBox) {
-        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado. Faça login." : err.message);
+        errBox.innerText = "Erro ao cadastrar: " + (err.message.includes("email-already-in-use") ? "Este e-mail já está cadastrado." : err.message);
         errBox.classList.remove('hidden');
       } else {
         alert("Erro ao cadastrar: " + err.message);
@@ -1644,7 +1578,7 @@
     if (!user) return;
     let codigoLoja = perfilNegocio.empresaId || user.uid;
     navigator.clipboard.writeText(codigoLoja).then(() => {
-      alert(`📋 Código de Convite da Empresa copiado com sucesso!\n\nEnvie este código para o seu funcionário:\n${codigoLoja}`);
+      alert(`📋 Código de Convite da Empresa copiado com sucesso!\n\nEnvie este código para o seu funcionário colar no ato do cadastro:\n${codigoLoja}`);
     }).catch(() => {
       prompt("Copie o código abaixo:", codigoLoja);
     });
@@ -1662,7 +1596,7 @@
               <i class="fa-solid fa-key"></i>
             </div>
             <h2 class="text-xl font-bold text-slate-800">Recuperar Acesso</h2>
-            <p class="text-xs text-slate-500">Enviaremos um link de redefinição de senha para o seu e-mail.</p>
+            <p class="text-xs text-slate-500">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
           </div>
 
           <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
@@ -1694,7 +1628,12 @@
     msgBox.classList.add('hidden');
 
     auth.sendPasswordResetEmail(email).then(() => {
-      msgBox.innerHTML = `✅ <b>E-mail enviado com sucesso!</b><br><span class="text-[11px] font-normal text-green-900 block mt-1">Verifique sua caixa de entrada e SPAM.</span>`;
+      msgBox.innerHTML = `
+        ✅ <b>E-mail enviado com sucesso!</b><br>
+        <span class="text-[11px] font-normal text-green-900 block mt-1">
+          Verifique sua caixa de entrada e também a pasta de <b>SPAM / Lixo Eletrônico</b>.
+        </span>
+      `;
       msgBox.className = "text-xs font-bold text-green-800 bg-green-50 border border-green-300 text-center p-3 rounded-xl shadow-sm";
       msgBox.classList.remove('hidden');
     }).catch((err) => {
@@ -1790,7 +1729,7 @@
             document.getElementById('scanner-controls-fallback').classList.remove('hidden');
           });
         } catch(e) {
-          document.getElementById('scanner-status').innerText = "Erro na câmera. Verifique a permissão.";
+          document.getElementById('scanner-status').innerText = "Erro na câmera. Verifique a permissão do navegador.";
           document.getElementById('scanner-controls-fallback').classList.add('hidden');
         }
       }, 300);
@@ -1815,7 +1754,10 @@
 
   function onScanSuccess(decodedText) {
     let agora = Date.now();
-    if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) return;
+    
+    if (decodedText === ultimoEanLido && (agora - ultimoTempoLeitura) < 1200) {
+      return;
+    }
 
     ultimoEanLido = decodedText;
     ultimoTempoLeitura = agora;
@@ -1830,6 +1772,7 @@
         const feedback = document.getElementById('scanner-feedback-box');
         feedback.innerText = `✅ +1 ${prod.nome} (R$ ${prod.preco.toFixed(2)})`;
         feedback.classList.remove('hidden');
+        
         setTimeout(() => { feedback.classList.add('hidden'); }, 1500);
       } else {
         tocarBeepConfirmacaoBip();
@@ -1837,6 +1780,7 @@
         feedback.innerText = `⚠️ Código ${decodedText} não cadastrado!`;
         feedback.className = "bg-amber-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
         feedback.classList.remove('hidden');
+        
         setTimeout(() => { 
           feedback.classList.add('hidden'); 
           feedback.className = "hidden bg-green-600 text-white font-extrabold text-xs text-center p-2 rounded-xl shadow animate-bounce";
@@ -1852,16 +1796,19 @@
         eanDisp.innerText = `EAN LIDO: ${decodedText}`;
         eanDisp.classList.remove('hidden');
       }
+      alert(`✅ Código EAN lido com sucesso: ${decodedText}`);
     }
   }
 
   function adicionarAoCarrinhoSilent(index) {
     let prod = produtos[index];
+
     let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
     let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
     let estoqueRestante = prod.estoque - qtdNoCarrinho;
 
     if (estoqueRestante <= 0) return;
+
     if ((estoqueRestante - 1) <= (prod.estMin || 3)) {
       dispararAlertaPDVEstoqueBaixo(prod.nome, estoqueRestante - 1);
     }
@@ -1877,6 +1824,7 @@
         medida: prod.medida || 'un' 
       }); 
     }
+    
     renderAbaVendas();
   }
 
@@ -2005,7 +1953,9 @@
 
   function fazerLogoutSeguro() {
     if (confirm("Deseja realmente encerrar a sessão e sair do aplicativo?")) {
-      auth.signOut().then(() => { window.location.reload(); });
+      auth.signOut().then(() => {
+        window.location.reload(); 
+      });
     }
   }
 
@@ -2020,17 +1970,25 @@
 
     abaAtual = aba;
     const idx = ordemAbas.indexOf(aba);
+    
     document.getElementById('slider-container').style.transform = `translateX(-${idx * 20}%)`; 
 
     const bottomNav = document.getElementById('app-bottom-nav');
-    if (aba === 'inicio') bottomNav.classList.add('hidden');
-    else bottomNav.classList.remove('hidden');
+
+    if (aba === 'inicio') {
+      bottomNav.classList.add('hidden');
+    } else {
+      bottomNav.classList.remove('hidden');
+    }
 
     ordemAbas.forEach(a => {
       const btnNav = document.getElementById('bottom-btn-' + a);
       if (btnNav) {
-        if (a === aba) btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
-        else btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
+        if (a === aba) {
+          btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 active";
+        } else {
+          btnNav.className = "nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold";
+        }
       }
     });
 
@@ -2039,8 +1997,13 @@
   }
 
   function renderAba() {
-    if (!auth.currentUser) { showLoginForm(); return; }
+    if (!auth.currentUser) {
+      showLoginForm();
+      return;
+    }
+
     mostrarInterfaceAutenticada(true);
+
     if (!verificarLicencaStatus()) return;
 
     renderAbaInicio(); 
@@ -2143,7 +2106,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v38.0</b> sincroniza funcionários em tempo real com o estoque e fiados do patrão.
+            O <b>Caixa Rápido Móvel Pro v37.0</b> oferece agilidade completa para o seu comércio com múltiplos perfis sincronizados na nuvem.
           </p>
 
           <div class="pt-1">
@@ -2174,6 +2137,7 @@
     if (!valor || valor <= 0) { alert("Informe um valor válido!"); return; }
 
     const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
     const registro = { id: Date.now(), tipo: tipo, valor: valor, motivo: motivo, data: hojeStr };
     sangriasSuprimentos.push(registro);
     persistirDadosCompletos();
@@ -2233,6 +2197,7 @@
     const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
     const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+
     const saldoGavetaDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0) - totalSangrias + totalSuprimentos;
 
     let atalhosProdutos = produtos.filter(p => p.atalho !== false);
@@ -2243,6 +2208,7 @@
       let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === p.nome.toLowerCase());
       let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
       let estoqueDisponivelNoAto = (p.estoque || 0) - qtdNoCarrinho;
+
       let ehEsgotado = estoqueDisponivelNoAto <= 0;
 
       return `
@@ -2473,6 +2439,7 @@
 
   function adicionarAoCarrinho(index) {
     let prod = produtos[index];
+
     let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
     let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
     let estoqueRestante = prod.estoque - qtdNoCarrinho;
@@ -2582,16 +2549,14 @@
       let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
       if (prod) {
         prod.estoque = Math.max(0, prod.estoque - itemCarrinho.qtd);
-        let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-        db.collection("produtos").doc(idAlvoEmpresa + "_" + prod.nome).set({ ...prod, userId: idAlvoEmpresa }, { merge: true });
+        let user = auth.currentUser;
+        if (user) db.collection("produtos").doc(user.uid + "_" + prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
       }
     });
 
     if (formaPagto === 'Fiado') {
       let prazoFiado = document.getElementById('venda-fiado-prazo').value;
       let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeClienteInput.toLowerCase());
-      let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-
       if (clienteExistente) {
         clienteExistente.debito = parseFloat(clienteExistente.debito || 0) + totalCarrinho;
         if (zapClienteInput) clienteExistente.telefone = zapClienteInput;
@@ -2605,9 +2570,9 @@
           prazoPagamento: prazoFiado || ''
         });
       }
-
       clientes.forEach(c => {
-        db.collection("clientes").doc(idAlvoEmpresa + "_" + c.id).set({ ...c, userId: idAlvoEmpresa }, { merge: true });
+        let user = auth.currentUser;
+        if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
       });
 
       exibirToastIntegracaoFiado(nomeClienteInput, totalCarrinho);
@@ -2625,8 +2590,7 @@
     persistirDadosCompletos();
 
     let user = auth.currentUser;
-    let idAlvoEmpresa = perfilNegocio.empresaId || user.uid;
-    if (user) db.collection("vendas").add({ ...vendaReg, userId: idAlvoEmpresa, createdAt: new Date() });
+    if (user) db.collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
 
     let itensFormatadosZap = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} (Unit: R$ ${i.preco.toFixed(2)}) = *R$ ${(i.preco * i.qtd).toFixed(2)}*`).join('\n');
     let resumoTexto = `*COMPROVANTE / CUPOM - ${perfilNegocio.nomeLoja}*\n\n` +
@@ -2786,8 +2750,11 @@
     document.getElementById('cad-prod-atalho').checked = true;
 
     const boxCustoAdmin = document.getElementById('box-custo-admin');
-    if (eAdmin()) boxCustoAdmin.classList.remove('hidden');
-    else boxCustoAdmin.classList.add('hidden');
+    if (eAdmin()) {
+      boxCustoAdmin.classList.remove('hidden');
+    } else {
+      boxCustoAdmin.classList.add('hidden');
+    }
 
     preencherMinimoAutomaticoPorMedida();
     document.getElementById('modal-cadastro-produto').classList.remove('hidden');
@@ -2808,7 +2775,7 @@
                 <div>
                   <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                   <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-                  ${p.validade ? `<p class="text-[10px] text-slate-400 mt-0.5">Val: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
+                  ${p.validade ? `<p class="text-[10px] text-slate-400 mt-0.5">Val: ${p.validade.split('-').reverse().join('/')} ${p.alertaDias ? `(Alerta: ${p.alertaDias}d)` : ''}</p>` : ''}
                 </div>
                 <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                   ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2871,22 +2838,37 @@
 
   function renderSubAbaMinimos() {
     let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+
     if (minimos.length === 0) {
-      return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-circle-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3></div>`;
+      return `
+        <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
+          <i class="fa-solid fa-circle-check text-green-600 text-3xl"></i>
+          <h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3>
+          <p class="text-xs text-green-600">Nenhum produto está abaixo do limite mínimo cadastrado.</p>
+        </div>
+      `;
     }
+
     return `
       <div class="space-y-2">
         <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Produtos com Estoque Crítico (${minimos.length}):</p>
         <div class="space-y-2 max-h-72 overflow-y-auto">
           ${minimos.map(p => {
             let idxReal = produtos.findIndex(prod => prod.id === p.id);
+            let faltam = (p.estMin || 3) - p.estoque;
+
             return `
               <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
                 <div>
                   <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                  <p class="text-red-700 font-bold mt-0.5">Estoque: <b>${p.estoque}${p.medida || 'un'}</b></p>
+                  <p class="text-red-700 font-bold mt-0.5">
+                    Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500 font-normal">(Mín: ${p.estMin || 3})</span>
+                  </p>
+                  <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Sugestão de Reposição: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
                 </div>
-                <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-red-700">⚡ Repor</button>
+                <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-red-700">
+                  ⚡ Repor
+                </button>
               </div>
             `;
           }).join('')}
@@ -2898,6 +2880,7 @@
   function renderSubAbaValidades() {
     let hoje = new Date();
     let diasGeral = minimosPadrao.validadeGeralDias || 30;
+
     let validadesCriticas = produtos.filter(p => {
       if (!p.validade) return false;
       let dVal = new Date(p.validade);
@@ -2908,23 +2891,37 @@
     });
 
     if (validadesCriticas.length === 0) {
-      return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3></div>`;
+      return `
+        <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2">
+          <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
+          <h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3>
+          <p class="text-xs text-green-600">Nenhum produto em risco dentro dos prazos configurados.</p>
+        </div>
+      `;
     }
+
     return `
       <div class="space-y-2">
-        <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">📅 Validades Próximas (${validadesCriticas.length}):</p>
+        <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">📅 Validades Próximas ou Vencidas (${validadesCriticas.length}):</p>
         <div class="space-y-2 max-h-72 overflow-y-auto">
           ${validadesCriticas.map(p => {
             let idxReal = produtos.findIndex(prod => prod.id === p.id);
             let dataVal = new Date(p.validade);
             let ehVencido = dataVal < hoje;
+            let diasConfigProd = p.alertaDias ? p.alertaDias : diasGeral;
+
             return `
               <div class="p-3 rounded-2xl border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
                 <div>
                   <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                  <p class="text-slate-600 mt-0.5">Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1">VENCIDO</span>' : ''}</p>
+                  <p class="text-slate-600 mt-0.5">
+                    Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}
+                  </p>
+                  <p class="text-[10px] text-slate-500">Regra de Alerta: ${diasConfigProd} dias antes</p>
                 </div>
-                <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-amber-700">🏷️ Desconto</button>
+                <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-amber-700">
+                  🏷️ Desconto / Ajustar
+                </button>
               </div>
             `;
           }).join('')}
@@ -2967,8 +2964,8 @@
 
     persistirDadosCompletos();
 
-    let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-    db.collection("produtos").doc(idAlvoEmpresa + "_" + p.nome).set({ ...p, userId: idAlvoEmpresa }, { merge: true });
+    const user = auth.currentUser;
+    if (user) db.collection("produtos").doc(user.uid + "_" + p.nome).set({ ...p, userId: user.uid }, { merge: true });
 
     fecharModalAjusteRapido();
     alert(`✅ Produto "${p.nome}" atualizado!`);
@@ -2977,7 +2974,10 @@
 
   function buscarEExibirProdutoEstoque(termo) {
     const box = document.getElementById('subaba-estoque-conteudo');
-    if (!termo || termo.trim().length < 1) { renderAbaEstoque(); return; }
+    if (!termo || termo.trim().length < 1) {
+      renderAbaEstoque();
+      return;
+    }
 
     let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
     if (filtro.length === 0) {
@@ -2988,19 +2988,32 @@
     box.innerHTML = filtro.map(p => {
       let idxReal = produtos.findIndex(prod => prod.id === p.id);
       let ehAtalho = p.atalho !== false;
+
       return `
         <div class="bg-white p-3 rounded-xl border border-teal-300 shadow-sm space-y-2 text-xs">
           <div class="flex justify-between items-start">
             <div>
               <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
               <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+              ${p.ean ? `<p class="text-[10px] text-slate-400 font-mono">EAN: ${p.ean}</p>` : ''}
             </div>
+            <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
+              ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
+            </span>
           </div>
+
           <div class="flex justify-between items-center border-t pt-2 gap-1">
             <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
               <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
             </button>
-            <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
+            <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
+              <i class="fa-solid fa-pen"></i> Editar
+            </button>
+            ${eAdmin() ? `
+              <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -3026,8 +3039,11 @@
     const atalho = document.getElementById('cad-prod-atalho').checked;
 
     let precoCustoInput = 0;
-    if (eAdmin()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
-    else if (prodEditandoIndex !== null) precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+    if (eAdmin()) {
+      precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
+    } else if (prodEditandoIndex !== null) {
+      precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+    }
 
     if (!nome || !preco) { alert("Preencha o nome e o preço de venda!"); return; }
 
@@ -3068,8 +3084,8 @@
 
     persistirDadosCompletos();
 
-    let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-    db.collection("produtos").doc(idAlvoEmpresa + "_" + prodData.nome).set({ ...prodData, userId: idAlvoEmpresa }, { merge: true });
+    const user = auth.currentUser;
+    if (user) db.collection("produtos").doc(user.uid + "_" + prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
 
     fecharModalCadastroProduto();
     alert("✅ Produto salvo!");
@@ -3123,11 +3139,20 @@
   function filtrarApenasDevedores() {
     listaDevedoresAberta = !listaDevedoresAberta; 
     const box = document.getElementById('resultado-busca-clientes');
+    
     if (!listaDevedoresAberta) {
       if (box) box.innerHTML = '';
       renderAbaClientes();
       return;
     }
+
+    let devedores = clientes.filter(c => c.debito > 0);
+    if (devedores.length === 0) {
+      if (box) box.innerHTML = `<p class="text-xs text-green-700 font-bold text-center py-4 bg-green-50 rounded-xl border border-green-200">🎉 Nenhum cliente com débitos pendentes!</p>`;
+      renderAbaClientes();
+      return;
+    }
+
     renderAbaClientes();
   }
 
@@ -3224,8 +3249,9 @@
     c.prazoPagamento = document.getElementById('edit-cli-prazo').value;
 
     persistirDadosCompletos();
-    let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-    db.collection("clientes").doc(idAlvoEmpresa + "_" + c.id).set({ ...c, userId: idAlvoEmpresa }, { merge: true });
+
+    const user = auth.currentUser;
+    if (user) db.collection("clientes").doc(user.uid + "_" + c.id).set(c, { merge: true });
 
     fecharModalEditarCliente();
     alert("✅ Dados do cliente atualizados com sucesso!");
@@ -3236,9 +3262,10 @@
     let c = clientes[index];
     if (!c.telefone) { alert("Este cliente não possui WhatsApp cadastrado!"); return; }
 
+    let dataFormatada = c.prazoPagamento ? c.prazoPagamento.split('-').reverse().join('/') : '';
     let texto = `Olá *${c.nome}*, tudo bem?\n\nPassando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n💰 Valor Atual: *R$ ${parseFloat(c.debito).toFixed(2)}*\n`;
-    if (c.prazoPagamento) texto += `📅 Prazo Combinado: *${c.prazoPagamento.split('-').reverse().join('/')}*\n\n`;
-    texto += `Agradecemos a preferência!`;
+    if (c.prazoPagamento) texto += `📅 Prazo Combinado: *${dataFormatada}*\n\n`;
+    texto += `Agradecemos a parceria! Qualquer dúvida, estamos à disposição.`;
 
     let numLimpo = c.telefone.replace(/\D/g, '');
     window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`, '_blank');
@@ -3254,8 +3281,9 @@
     cliente.debito = Math.max(0, cliente.debito - valorAbater);
 
     persistirDadosCompletos();
-    let idAlvoEmpresa = perfilNegocio.empresaId || auth.currentUser.uid;
-    db.collection("clientes").doc(idAlvoEmpresa + "_" + cliente.id).set({ ...cliente, userId: idAlvoEmpresa }, { merge: true });
+
+    const user = auth.currentUser;
+    if (user) db.collection("clientes").doc(user.uid + "_" + cliente.id).set(cliente, { merge: true });
 
     alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado!`);
     renderAba();
@@ -3273,8 +3301,11 @@
     if (!eAdmin()) return;
 
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+    
     let capitalImobilizadoEstoque = 0;
-    produtos.forEach(p => { capitalImobilizadoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
+    produtos.forEach(p => {
+      capitalImobilizadoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
+    });
 
     let totalCustoVendido = 0;
     vendas.forEach(v => {
@@ -3298,13 +3329,19 @@
       }
     });
 
-    let topItens = Object.keys(contagemItens).map(key => ({ nome: key, qtd: contagemItens[key] })).sort((a,b) => b.qtd - a.qtd).slice(0, 5);
-    let topItensHTML = topItens.length > 0 ? topItens.map((it, i) => `
-      <div class="flex justify-between items-center text-xs py-1.5 border-b border-slate-100 last:border-0">
-        <span class="font-bold text-slate-800">${i+1}. ${it.nome}</span>
-        <span class="bg-teal-50 text-teal-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} un.</span>
-      </div>
-    `).join('') : '<p class="text-xs text-slate-400 italic text-center py-3">Nenhum histórico de vendas registrado.</p>';
+    let topItens = Object.keys(contagemItens)
+      .map(key => ({ nome: key, qtd: contagemItens[key] }))
+      .sort((a,b) => b.qtd - a.qtd)
+      .slice(0, 5);
+
+    let topItensHTML = topItens.length > 0 
+      ? topItens.map((it, i) => `
+          <div class="flex justify-between items-center text-xs py-1.5 border-b border-slate-100 last:border-0">
+            <span class="font-bold text-slate-800">${i+1}. ${it.nome}</span>
+            <span class="bg-teal-50 text-teal-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] border border-teal-200">${it.qtd} un. vendidas</span>
+          </div>
+        `).join('')
+      : '<p class="text-xs text-slate-400 italic text-center py-3">Nenhum histórico de vendas registrado ainda.</p>';
 
     document.getElementById('content-relatorios').innerHTML = `
       <div class="space-y-4">
@@ -3327,16 +3364,24 @@
               <span class="text-slate-300 font-medium">🟢 Faturamento Bruto:</span>
               <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
             </div>
+
             <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">🔴 (-) Total Despesas:</span>
+              <span class="text-slate-300 font-medium">🔴 (-) Total de Despesas Fixas:</span>
               <span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span>
             </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300 font-medium">📦 Capital Imobilizado em Estoque:</span>
+              <span class="font-extrabold text-amber-300 text-sm">R$ ${capitalImobilizadoEstoque.toFixed(2)}</span>
+            </div>
+
             <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
               <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span>
               <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
             </div>
+
             <div class="flex justify-between items-center pt-1 text-[11px] text-slate-400">
-              <span>📊 Ticket Médio:</span>
+              <span>📊 Ticket Médio por Venda:</span>
               <span class="font-bold text-amber-300">R$ ${ticketMedio.toFixed(2)}</span>
             </div>
           </div>
@@ -3344,9 +3389,11 @@
 
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
           <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
-            <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas
+            <i class="fa-solid fa-trophy text-amber-500"></i> Campeões de Vendas (Top 5)
           </h3>
-          <div class="space-y-1">${topItensHTML}</div>
+          <div class="space-y-1">
+            ${topItensHTML}
+          </div>
         </div>
 
         <div class="pt-1">
@@ -3361,12 +3408,17 @@
   function abrirModalOpcoesRelatorio() {
     if (!eAdmin()) return;
     const hojeStr = new Date().toISOString().split('T')[0];
-    document.getElementById('pdf-data-inicio').value = hojeStr;
-    document.getElementById('pdf-data-fim').value = hojeStr;
+    const elInicio = document.getElementById('pdf-data-inicio');
+    const elFim = document.getElementById('pdf-data-fim');
+    if (elInicio) elInicio.value = hojeStr;
+    if (elFim) elFim.value = hojeStr;
+
     document.getElementById('modal-opcoes-relatorio').classList.remove('hidden');
   }
 
-  function fecharModalOpcoesRelatorio() { document.getElementById('modal-opcoes-relatorio').classList.add('hidden'); }
+  function fecharModalOpcoesRelatorio() {
+    document.getElementById('modal-opcoes-relatorio').classList.add('hidden');
+  }
 
   function toggleInputsDatasRelatorio(tipo) {
     const box = document.getElementById('box-datas-periodo');
@@ -3379,15 +3431,50 @@
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+
       const tipoFiltro = document.getElementById('pdf-periodo-tipo').value;
       const tipoConteudo = document.getElementById('relatorio-tipo-conteudo').value;
 
       let listaVendasPDF = vendas;
+      let dataInicioStr = "";
+      let dataFimStr = "";
+
       let hojeObj = new Date();
       let hojeStrFormatada = hojeObj.toLocaleDateString('pt-BR');
 
       if (tipoFiltro === 'hoje') {
         listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStrFormatada));
+      } else if (tipoFiltro === 'ultimos_7') {
+        let seteDiasAtras = new Date();
+        seteDiasAtras.setDate(hojeObj.getDate() - 7);
+        listaVendasPDF = vendas.filter(v => {
+          if (!v.data) return false;
+          let partes = v.data.split(' ')[0].split('/');
+          if (partes.length < 3) return false;
+          let dV = new Date(partes[2], partes[1] - 1, partes[0]);
+          return dV >= seteDiasAtras;
+        });
+      } else if (tipoFiltro === 'este_mes') {
+        let mesAtual = hojeObj.getMonth() + 1;
+        let anoAtual = hojeObj.getFullYear();
+        listaVendasPDF = vendas.filter(v => {
+          if (!v.data) return false;
+          let partes = v.data.split(' ')[0].split('/');
+          return parseInt(partes[1]) === mesAtual && parseInt(partes[2]) === anoAtual;
+        });
+      } else if (tipoFiltro === 'periodo') {
+        dataInicioStr = document.getElementById('pdf-data-inicio').value;
+        dataFimStr = document.getElementById('pdf-data-fim').value;
+
+        if (dataInicioStr && dataFimStr) {
+          listaVendasPDF = vendas.filter(v => {
+            if (!v.data) return false;
+            let partes = v.data.split(' ')[0].split('/');
+            if (partes.length < 3) return false;
+            let dataVendaFormato = `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
+            return dataVendaFormato >= dataInicioStr && dataVendaFormato <= dataFimStr;
+          });
+        }
       }
 
       let y = 15;
@@ -3398,7 +3485,9 @@
       y += 7;
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`Emissao: ${new Date().toLocaleString('pt-BR')}`, 14, y);
+      let textoPeriodoHeader = tipoFiltro === 'hoje' ? 'Apenas Hoje' : (tipoFiltro === 'periodo' ? `De ${dataInicioStr} ate ${dataFimStr}` : 'Historico Filtrado');
+      doc.text(`Emissao: ${new Date().toLocaleString('pt-BR')} | Periodo: ${textoPeriodoHeader}`, 14, y);
+
       y += 6;
       doc.setLineWidth(0.5);
       doc.line(14, y, 196, y);
@@ -3406,13 +3495,71 @@
 
       if (tipoConteudo === 'completo' || tipoConteudo === 'lucro') {
         const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+        let totalCustoGeral = 0;
+        listaVendasPDF.forEach(v => {
+          if (v.itens && Array.isArray(v.itens)) {
+            v.itens.forEach(it => { totalCustoGeral += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
+          }
+        });
+        const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
+        const lucroBruto = totalVendas - totalCustoGeral;
+        const lucroLiquidoReal = lucroBruto - totalDespesas;
+
         doc.setFontSize(12);
         doc.setTextColor(0);
         doc.text(`1. DRE Executivo (${listaVendasPDF.length} vendas)`, 14, y);
         y += 6;
         doc.setFontSize(10);
         doc.text(`Faturamento Bruto: R$ ${totalVendas.toFixed(2)}`, 14, y);
+        y += 5;
+        doc.text(`Custo das Mercadorias Vendidas (CMV): R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+        y += 5;
+        doc.text(`(-) Despesas Fixas Operacionais: R$ ${totalDespesas.toFixed(2)}`, 14, y);
+        y += 5;
+        doc.setFont(undefined, 'bold');
+        doc.text(`LUCRO LIQUIDO REAL: R$ ${lucroLiquidoReal.toFixed(2)}`, 14, y);
+        doc.setFont(undefined, 'normal');
         y += 10;
+      }
+
+      if (tipoConteudo === 'completo') {
+        doc.setFontSize(12);
+        doc.text(`2. Detalhamento de Vendas do Periodo`, 14, y);
+        y += 6;
+        doc.setFontSize(9);
+        listaVendasPDF.forEach(v => {
+          if (y > 270) { doc.addPage(); y = 15; }
+          let descVenda = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ') : v.item;
+          doc.text(`* ${v.data} - ${descVenda} - Pagto: ${v.formaPagto} - Total: R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
+          y += 5;
+        });
+        y += 6;
+      }
+
+      if (tipoConteudo === 'estoque' || tipoConteudo === 'completo') {
+        doc.setFontSize(12);
+        doc.text(`3. Posicao do Inventario de Estoque (${produtos.length} itens)`, 14, y);
+        y += 6;
+        doc.setFontSize(9);
+        produtos.forEach(p => {
+          if (y > 270) { doc.addPage(); y = 15; }
+          doc.text(`* ${p.nome} - Qtd: ${p.estoque} ${p.medida || 'un'} - Custo: R$ ${parseFloat(p.precoCusto||0).toFixed(2)} - Venda: R$ ${parseFloat(p.preco).toFixed(2)}`, 14, y);
+          y += 5;
+        });
+        y += 6;
+      }
+
+      if (tipoConteudo === 'fiado' || tipoConteudo === 'completo') {
+        let clientesComDebito = clientes.filter(c => c.debito > 0);
+        doc.setFontSize(12);
+        doc.text(`4. Relatorio de Contas Fiado Pendentes (${clientesComDebito.length} clientes)`, 14, y);
+        y += 6;
+        doc.setFontSize(9);
+        clientesComDebito.forEach(c => {
+          if (y > 270) { doc.addPage(); y = 15; }
+          doc.text(`* ${c.nome} - Tel: ${c.telefone || 'N/I'} - Saldo Devedor: R$ ${parseFloat(c.debito).toFixed(2)}`, 14, y);
+          y += 5;
+        });
       }
 
       fecharModalOpcoesRelatorio();
@@ -3424,15 +3571,17 @@
 
   function executarLimpezaTotalManual() {
     if (!eAdmin()) { alert("Apenas o proprietário pode apagar dados."); return; }
-    if (confirm("⚠️ ATENÇÃO: Deseja apagar todo o histórico?")) {
+    if (confirm("⚠️ ATENÇÃO: Esta ação apaga permanentemente todo o histórico de vendas, clientes e estoque do aplicativo. Deseja prosseguir?")) {
       vendas = [];
       sangriasSuprimentos = [];
       historicoFechamentos = [];
       produtos = [];
       clientes = [];
       despesasFixas = [];
+
       persistirDadosCompletos();
-      alert("✅ Dados limpos!");
+
+      alert("✅ Todos os dados foram limpos com sucesso!");
       renderAba();
     }
   }
@@ -3440,18 +3589,33 @@
   function openModalFechamento() {
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+    const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
+
     const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+    const totalDinheiroVendas = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+    const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+    const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+
+    const saldoEsperadoGaveta = totalDinheiroVendas - totalSangrias + totalSuprimentos;
 
     document.getElementById('fechamento-conteudo').innerHTML = `
       <div class="bg-slate-50 p-3 rounded-xl border space-y-1.5">
-        <p class="font-bold text-slate-800 text-xs">Resumo de Hoje (${hojeStr}):</p>
-        <div class="flex justify-between"><span>Vendas:</span> <b>${vendasHoje.length}</b></div>
-        <div class="flex justify-between text-teal-700 font-bold"><span>Total:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
+        <p class="font-bold text-slate-800 text-xs">Resumo do Turno Atual (${hojeStr}):</p>
+        <div class="flex justify-between"><span>Vendas Realizadas:</span> <b>${vendasHoje.length}</b></div>
+        <div class="flex justify-between text-teal-700 font-bold"><span>Total Vendas:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
+        <hr>
+        <div class="flex justify-between"><span>Dinheiro Vendas:</span> <span>R$ ${totalDinheiroVendas.toFixed(2)}</span></div>
+        <div class="flex justify-between text-red-600"><span>(-) Sangrias:</span> <span>R$ ${totalSangrias.toFixed(2)}</span></div>
+        <div class="flex justify-between text-green-600"><span>(+) Suprimentos:</span> <span>R$ ${totalSuprimentos.toFixed(2)}</span></div>
+        <div class="flex justify-between text-amber-800 font-bold border-t pt-1"><span>Gaveta Esperada:</span> <span>R$ ${saldoEsperadoGaveta.toFixed(2)}</span></div>
       </div>
+
       <div class="space-y-2 pt-2">
-        <label class="block font-semibold text-slate-700">Contagem Gaveta (R$):</label>
+        <label class="block font-semibold text-slate-700">Contagem Física na Gaveta (R$):</label>
         <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
-        <button onclick="conferirEGravarFechamentoCaixaManual(${totalHoje}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">Salvar Fechamento</button>
+        <button onclick="conferirEGravarFechamentoCaixaManual(${saldoEsperadoGaveta}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs shadow">
+          Conferir e Salvar Fechamento
+        </button>
       </div>
     `;
     document.getElementById('modal-fechamento').classList.remove('hidden');
@@ -3462,25 +3626,57 @@
   function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, qtdVendas) {
     const gaveta = parseFloat(document.getElementById('fechamento-gaveta').value || 0);
     const diferenca = gaveta - totalEsperado;
+
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
-    historicoFechamentos.push({ id: Date.now(), data: hojeStr, hora: horaStr, vendasQtd: qtdVendas, totalVendas: totalVendas, gavetaContada: gaveta, diferenca: diferenca });
+    const registro = {
+      id: Date.now(),
+      data: hojeStr,
+      hora: horaStr,
+      automatico: false,
+      vendasQtd: qtdVendas,
+      totalVendas: totalVendas,
+      gavetaEsperada: totalEsperado,
+      gavetaContada: gaveta,
+      diferenca: diferenca
+    };
+
+    historicoFechamentos.push(registro);
     persistirDadosCompletos();
+
     closeModalFechamento();
-    alert("✅ Fechamento registrado com sucesso!");
+
+    if (diferenca === 0) alert("✅ Fechamento Registrado! Gaveta exata.");
+    else if (diferenca > 0) alert(`⚠️ Fechamento Registrado com Sobra de R$ ${diferenca.toFixed(2)}.`);
+    else alert(`🚨 Fechamento Registrado com Falta de R$ ${Math.abs(diferenca).toFixed(2)}.`);
+
     renderAba();
   }
 
   function exportarBackupCSV() {
     if (!eAdmin()) return;
-    if (vendas.length === 0) { alert("Sem vendas para exportar."); return; }
-    let csvContent = "data:text/csv;charset=utf-8,ID;Data;Cliente;Valor\n";
-    vendas.forEach(v => { csvContent += `${v.id};"${v.data}";"${v.cliente}";${v.valorTotal}\n`; });
+    if (vendas.length === 0) { alert("Sem histórico de vendas para exportação."); return; }
+    
+    let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
+    
+    vendas.forEach(v => {
+      let descStr = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(' | ') : v.item;
+      let valorBruto = parseFloat(v.valorTotal || v.valor || 0).toFixed(2).replace('.', ',');
+      let custoTotalVenda = 0;
+      if (v.itens) {
+        v.itens.forEach(i => { custoTotalVenda += (i.precoCustoUnit || 0) * i.qtd; });
+      }
+      let custoStr = custoTotalVenda.toFixed(2).replace('.', ',');
+
+      csvContent += `${v.id};"${v.data}";"${descStr}";"${v.formaPagto}";"${v.cliente || 'Consumidor Final'}";${valorBruto};${custoStr}\n`;
+    });
+
     fecharModalOpcoesRelatorio();
+    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", `Backup.csv`);
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Relatorio_Contabil_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -3490,8 +3686,8 @@
     const user = auth.currentUser;
     if (user) {
       db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
-      alert("✅ Sincronizado com a nuvem!");
-    }
+      alert("✅ Sincronização concluída com sucesso!");
+    } else alert("Você está desconectado. Faça login para sincronizar.");
   }
 
   auth.onAuthStateChanged((user) => {
@@ -3504,12 +3700,10 @@
           perfilNegocio = doc.data();
           persistirDadosCompletos();
         }
-        iniciarListenersTempoReal();
         switchTab('inicio'); 
         exibirBoasVindasToast(perfilNegocio.nomeUsuario || user.displayName || 'Rogério');
         verificarAlertasEstoqueValidadeAutomatico();
       }).catch(() => {
-        iniciarListenersTempoReal();
         switchTab('inicio');
         exibirBoasVindasToast(user.displayName || 'Rogério');
         verificarAlertasEstoqueValidadeAutomatico();
@@ -3520,7 +3714,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 38.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 37.0 carregada com sucesso!");
 </script>
 </body>
 </html>

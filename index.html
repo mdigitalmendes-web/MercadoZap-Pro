@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v44.0 (Blindagem & Fábrica Limpa)</title>
+  <title>Caixa Rápido Móvel Pro v45.0 (Fábrica Limpa & Vínculo Perfeito)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -852,12 +852,6 @@
 
   db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
-  const produtosExemplo = [
-    { id: 1, ean: "7891000100101", nome: "Café 500g", precoCusto: 12.00, preco: 16.50, estoque: 15, estMin: 5, medida: "un", dataEntrada: "2026-10-01", validade: "2026-12-31", alertaDias: 30, atalho: true },
-    { id: 2, ean: "7891000200202", nome: "Açúcar 1kg", precoCusto: 3.50, preco: 4.80, estoque: 20, estMin: 5, medida: "kg", dataEntrada: "2026-10-05", validade: "2027-05-10", alertaDias: 30, atalho: true },
-    { id: 3, ean: "7891000300303", nome: "Leite Integral 1L", precoCusto: 4.20, preco: 5.50, estoque: 2, estMin: 5, medida: "L", dataEntrada: "2026-10-10", validade: "2026-10-25", alertaDias: 15, atalho: true }
-  ];
-
   let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || {
     diasDegustacao: 20,
     vitalicio: false,
@@ -868,7 +862,8 @@
     localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
   }
 
-  let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || produtosExemplo;
+  // ORIGEM DE FÁBRICA 100% LIMPA: Zero produtos pré-programados para novos cadastros ou novas lojas
+  let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
   let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
   let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
   let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
@@ -876,7 +871,6 @@
   let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [];
   let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5, validadeGeralDias: 30 };
   
-  // SLOTS DE FUNCIONÁRIOS UNIFICADOS (EXATAMENTE 3)
   let slotsFuncionarios = JSON.parse(localStorage.getItem('crm_slots_func')) || [
     { id: 1, nome: "", codigo: "", ativo: false },
     { id: 2, nome: "", codigo: "", ativo: false },
@@ -941,11 +935,7 @@
       .onSnapshot((snapshot) => {
         let prodsRemotos = [];
         snapshot.forEach(doc => prodsRemotos.push(doc.data()));
-        if (prodsRemotos.length > 0) {
-          produtos = prodsRemotos;
-        } else if (produtos.length === 0 && !eAdmin()) {
-          produtos = produtosExemplo;
-        }
+        produtos = prodsRemotos; // Atualiza com a base exata da empresa (mesmo que vazia)
         localStorage.setItem('crm_produtos', JSON.stringify(produtos));
         renderAba();
         verificarAlertasEstoqueValidadeAutomatico();
@@ -955,22 +945,18 @@
       .onSnapshot((snapshot) => {
         let vendasRemotas = [];
         snapshot.forEach(doc => vendasRemotas.push(doc.data()));
-        if (vendasRemotas.length > 0) {
-          vendas = vendasRemotas.sort((a, b) => (b.id || 0) - (a.id || 0));
-          localStorage.setItem('crm_vendas', JSON.stringify(vendas));
-          renderAba();
-        }
+        vendas = vendasRemotas.sort((a, b) => (b.id || 0) - (a.id || 0));
+        localStorage.setItem('crm_vendas', JSON.stringify(vendas));
+        renderAba();
       }, (err) => {});
 
     unsubscribeClientes = db.collection("empresas").doc(empresaId).collection("clientes")
       .onSnapshot((snapshot) => {
         let clientesRemotos = [];
         snapshot.forEach(doc => clientesRemotos.push(doc.data()));
-        if (clientesRemotos.length > 0) {
-          clientes = clientesRemotos;
-          localStorage.setItem('crm_clientes', JSON.stringify(clientes));
-          renderAba();
-        }
+        clientes = clientesRemotos;
+        localStorage.setItem('crm_clientes', JSON.stringify(clientes));
+        renderAba();
       }, (err) => {});
   }
 
@@ -1671,6 +1657,15 @@
             ramo: window.tempPatraoVinculado.ramo,
             empresaId: window.tempPatraoVinculado.empresaId
           };
+          
+          // Zera dados locais antigos para puxar exclusivamente do novo patrão
+          produtos = [];
+          vendas = [];
+          clientes = [];
+          sangriasSuprimentos = [];
+          historicoFechamentos = [];
+          despesasFixas = [];
+
           persistirDadosCompletos();
           await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
         } else {
@@ -1678,17 +1673,6 @@
           errBox.classList.remove('hidden');
           await auth.signOut();
           return;
-        }
-      } else {
-        let docPerfil = await db.collection("perfis").doc(user.uid).get();
-        if (docPerfil.exists) {
-          let dadosDb = docPerfil.data();
-          if (dadosDb.funcaoUsuario && dadosDb.funcaoUsuario.toLowerCase().includes('funcionário') && !dadosDb.empresaId) {
-            errBox.innerText = "⚠️ Seu acesso anterior foi desvinculado. Para abrir um novo negócio, utilize a opção de Criar Conta.";
-            errBox.classList.remove('hidden');
-            await auth.signOut();
-            return;
-          }
         }
       }
     } catch (err) {
@@ -1942,15 +1926,13 @@
     const errBox = document.getElementById('auth-error');
     if (errBox) errBox.classList.add('hidden');
 
-    // CORREÇÃO CRUCIAL DE FÁBRICA: Garante que um novo patrão nasça com bases zeradas, sem herdar lixo de ex-funcionário
-    if (!cadastroTemp.codigoConvite) {
-      produtos = [...produtosExemplo];
-      vendas = [];
-      sangriasSuprimentos = [];
-      historicoFechamentos = [];
-      clientes = [];
-      despesasFixas = [];
-    }
+    // ORIGEM DE FÁBRICA ABSOLUTA: Zera qualquer dado residual local para nascer 100% limpo
+    produtos = [];
+    vendas = [];
+    sangriasSuprimentos = [];
+    historicoFechamentos = [];
+    clientes = [];
+    despesasFixas = [];
 
     auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
       let uidGerado = userCredential.user.uid;
@@ -1971,7 +1953,7 @@
       db.collection("perfis").doc(uidGerado).set(perfilNegocio);
       iniciarListenersTempoReal(empresaIdVinculo);
     }).catch(err => {
-      // TRATAMENTO INTELIGENTE DE E-MAIL JÁ CADASTRADO (MIGRAÇÃO DE EX-FUNCIONÁRIA PARA NOVA EMPRESA)
+      // TRATAMENTO INTELIGENTE DE E-MAIL JÁ CADASTRADO (EX-FUNCIONÁRIA OU EX-PATRÃO QUE VOLTA A USAR O APP)
       if (err.code === 'auth/email-already-in-use') {
         auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then(async (userCredential) => {
           let user = userCredential.user;
@@ -1987,19 +1969,13 @@
             slotsFuncionarios: slotsFuncionarios
           };
 
-          // RESET DE FÁBRICA LOCAL PARA QUEM MIGRA DE PATRÃO
-          if (!cadastroTemp.codigoConvite) {
-            produtos = [...produtosExemplo];
-            vendas = [];
-            sangriasSuprimentos = [];
-            historicoFechamentos = [];
-            clientes = [];
-            despesasFixas = [];
-          } else {
-            produtos = [];
-            vendas = [];
-            clientes = [];
-          }
+          // Limpa dados locais para garantir ambiente puro de fábrica
+          produtos = [];
+          vendas = [];
+          clientes = [];
+          sangriasSuprimentos = [];
+          historicoFechamentos = [];
+          despesasFixas = [];
 
           persistirDadosCompletos();
           await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
@@ -2600,7 +2576,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v44.0</b> está conectado em tempo real com segurança blindada.
+            O <b>Caixa Rápido Móvel Pro v45.0</b> está conectado em tempo real com segurança blindada.
           </p>
 
           <div class="pt-1">
@@ -4268,7 +4244,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 44.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 45.0 carregada com sucesso!");
 </script>
 </body>
 </html>

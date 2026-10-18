@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v33.0</title>
+  <title>Caixa Rápido Móvel Pro v34.0 (ERP & Multi-Perfil)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -140,7 +140,7 @@
     </div>
     <div class="flex-1 min-w-0">
       <h4 id="toast-nome-usuario" class="font-extrabold text-xs text-teal-300 truncate">Bem-vindo(a)!</h4>
-      <p class="text-[11px] text-slate-300 truncate">Login realizado. Caixa pronto para operar.</p>
+      <p class="text-[11px] text-slate-300 truncate">Login realizado. Sistema pronto.</p>
     </div>
   </div>
 
@@ -224,7 +224,7 @@
           
           <div class="flex items-center justify-between">
             <p id="drawer-user-nome" class="font-extrabold text-sm leading-tight truncate">Usuário do Sistema</p>
-            <button onclick="fecharDrawerNavegacao(); openModalPerfil();" title="Editar Meu Nome" class="text-xs text-amber-300 hover:text-white bg-white/10 p-1.5 rounded-lg border border-white/20">
+            <button onclick="fecharDrawerNavegacao(); openModalPerfil();" title="Editar Meu Perfil" class="text-xs text-amber-300 hover:text-white bg-white/10 p-1.5 rounded-lg border border-white/20">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </div>
@@ -253,6 +253,10 @@
 
         <div class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas & Atalhos</p>
+          <button onclick="fecharDrawerNavegacao(); abrirModalDespesas();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+            <i class="fa-solid fa-file-invoice-dollar text-red-600 w-5 text-center"></i>
+            <span>Controle de Despesas (Água, Luz, etc)</span>
+          </button>
           <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
             <span>Histórico de Fechamento de Caixa</span>
@@ -356,6 +360,43 @@
   </div>
 </div>
 
+<div id="modal-despesas" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b pb-2">
+      <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+        <i class="fa-solid fa-file-invoice-dollar text-red-600"></i> Controle de Despesas Fixas
+      </h3>
+      <button onclick="fecharModalDespesas()" class="text-slate-500 text-xl font-bold">&times;</button>
+    </div>
+    
+    <div class="bg-slate-50 p-3 rounded-xl border space-y-2 text-xs">
+      <p class="font-bold text-slate-700">Adicionar Nova Conta a Pagar:</p>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Descrição (Ex: Aluguel, Luz, Internet) *</label>
+        <input type="text" id="nova-desp-desc" placeholder="Ex: Conta de Luz" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Valor R$ *</label>
+          <input type="number" step="0.01" id="nova-desp-valor" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Vencimento *</label>
+          <input type="date" id="nova-desp-venc" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+        </div>
+      </div>
+      <button onclick="cadastrarDespesaFixa()" class="w-full bg-red-600 text-white font-extrabold py-2 rounded-lg hover:bg-red-700 transition text-xs shadow">
+        + Salvar Despesa
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      <p class="font-bold text-slate-700 text-xs">Despesas Cadastradas:</p>
+      <div id="lista-despesas-box" class="space-y-1.5 max-h-48 overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+</div>
+
 <div id="modal-opcoes-relatorio" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -370,7 +411,7 @@
         <label class="block text-xs font-extrabold text-slate-700 mb-1">1. Escolha o Tipo de Relatório:</label>
         <select id="relatorio-tipo-conteudo" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
           <option value="completo">📊 Faturamento Completo & DRE Executivo</option>
-          <option value="lucro">💰 DRE de Margem de Lucro Real</option>
+          <option value="lucro">💰 DRE de Lucro Líquido Real (Com Despesas)</option>
           <option value="fiado">📋 Contas a Receber (Fiado & Prazos)</option>
           <option value="estoque">📦 Inventário de Estoque & Validades</option>
           <option value="caixa">💸 Movimentações de Gaveta (Sangrias)</option>
@@ -455,7 +496,7 @@
 <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border">
     <div class="flex justify-between items-center border-b pb-2">
-      <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Estabelecimento</h3>
+      <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-teal-600"></i> Seu Perfil & Permissão</h3>
       <button onclick="closeModalPerfil()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <form onsubmit="salvarPerfilNegocio(event)" class="space-y-3">
@@ -464,11 +505,10 @@
         <input type="text" id="perfil-nome-usuario" required placeholder="Ex: Rogério" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white">
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Sua Função no App</label>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Perfil de Acesso no App</label>
         <select id="perfil-user-funcao-modal" class="w-full p-2 border rounded-lg text-xs bg-white font-semibold">
-          <option value="Proprietário / Gerente">Proprietário / Gerente</option>
-          <option value="Caixa / Operador">Caixa / Operador</option>
-          <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+          <option value="Proprietário / Gerente">Proprietário / Gerente (Acesso Total)</option>
+          <option value="Funcionário / Operador">Funcionário / Operador (Sem Custo e sem Relatórios)</option>
         </select>
       </div>
       <hr class="my-2">
@@ -524,17 +564,21 @@
       <input type="text" id="cad-prod-nome" placeholder="Ex: Arroz 5kg" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold">
     </div>
     
-    <div class="grid grid-cols-2 gap-2">
+    <!-- CAMPOS DE CUSTO: OCULTOS PARA FUNCIONÁRIOS, VISÍVEIS PARA DONOS -->
+    <div id="box-custo-admin" class="grid grid-cols-2 gap-2 bg-slate-100 p-2 rounded-xl border">
       <div>
-        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Custo R$</label>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Preço Custo R$ (Dono)</label>
         <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
       </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Venda R$ *</label>
-        <input type="number" step="0.01" id="cad-prod-preco" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-teal-800">
+      <div class="flex flex-col justify-end">
+        <p id="margem-lucro-box" class="text-[10px] font-bold text-teal-700 leading-tight"></p>
       </div>
     </div>
-    <p id="margem-lucro-box" class="text-[11px] font-bold text-teal-700"></p>
+
+    <div>
+      <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Preço Venda R$ *</label>
+      <input type="number" step="0.01" id="cad-prod-preco" placeholder="0.00" class="w-full p-2.5 border rounded-lg text-xs bg-white font-bold text-teal-800">
+    </div>
 
     <div class="grid grid-cols-2 gap-2">
       <div>
@@ -764,9 +808,9 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua! Mantenha a câmera aberta e passe todas as embalagens. O app emitirá um bip de confirmação para cada item reconhecido.</p>
-      <p><b>📁 Relatórios & Contabilidade:</b> Acesse o botão de relatórios para emitir PDFs por período ou exportar arquivos para o contador.</p>
-      <p><b>🔑 Alterar Senha:</b> Altere sua senha confirmando sua senha atual para máxima segurança.</p>
+      <p><b>📷 Leitor de Código de Barras:</b> No Caixa, o leitor funciona de forma contínua para agilizar o atendimento.</p>
+      <p><b>📁 Relatórios & Contabilidade:</b> Emita PDFs e acompanhe o DRE com o abatimento das despesas fixas.</p>
+      <p><b>👥 Perfis Diferenciados:</b> Funcionários cadastram produtos e gerenciam fiados sem visualizar custos ou lucros.</p>
     </div>
   </div>
 </div>
@@ -813,6 +857,10 @@
   let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
   let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
   let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
+  let despesasFixas = JSON.parse(localStorage.getItem('crm_despesas')) || [
+    { id: 1, descricao: "Aluguel", valor: 1200.00, vencimento: "2026-10-10" },
+    { id: 2, descricao: "Energia Elétrica", valor: 250.00, vencimento: "2026-10-15" }
+  ];
   let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [
     { id: 101, nome: "João Silva", telefone: "(75) 99999-1111", debito: 25.00, prazoPagamento: "2026-10-10" }
   ];
@@ -833,10 +881,14 @@
   let modoScannerDestino = 'caixa';
   let alertaSilenciadoSessao = false;
   let ultimoEanLido = '';
-  let ultimoTempoLeitura = 0;
+  let ultimoTempoLeitura =0;
   
   let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos' };
   let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente' };
+
+  function eAdmin() {
+    return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
+  }
 
   function persistirDadosCompletos() {
     localStorage.setItem('crm_produtos', JSON.stringify(produtos));
@@ -844,6 +896,7 @@
     localStorage.setItem('crm_clientes', JSON.stringify(clientes));
     localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
     localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
+    localStorage.setItem('crm_despesas', JSON.stringify(despesasFixas));
     localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
   }
 
@@ -1019,6 +1072,64 @@
 
   function fecharModalNotificacoes() {
     document.getElementById('modal-notificacoes').classList.add('hidden');
+  }
+
+  function abrirModalDespesas() {
+    document.getElementById('nova-desp-desc').value = '';
+    document.getElementById('nova-desp-valor').value = '';
+    document.getElementById('nova-desp-venc').value = new Date().toISOString().split('T')[0];
+    renderizarListaDespesasModal();
+    document.getElementById('modal-despesas').classList.remove('hidden');
+  }
+
+  function fecharModalDespesas() { document.getElementById('modal-despesas').classList.add('hidden'); }
+
+  function cadastrarDespesaFixa() {
+    const desc = document.getElementById('nova-desp-desc').value.trim();
+    const valor = parseFloat(document.getElementById('nova-desp-valor').value);
+    const venc = document.getElementById('nova-desp-venc').value;
+
+    if (!desc || !valor || valor <= 0 || !venc) {
+      alert("Preencha todos os campos da despesa corretamente!");
+      return;
+    }
+
+    despesasFixas.push({ id: Date.now(), descricao: desc, valor: valor, vencimento: venc });
+    persistirDadosCompletos();
+
+    document.getElementById('nova-desp-desc').value = '';
+    document.getElementById('nova-desp-valor').value = '';
+    renderizarListaDespesasModal();
+    alert("✅ Despesa cadastrada com sucesso!");
+  }
+
+  function renderizarListaDespesasModal() {
+    const box = document.getElementById('lista-despesas-box');
+    if (!box) return;
+
+    if (despesasFixas.length === 0) {
+      box.innerHTML = `<p class="text-slate-400 italic text-center py-2">Nenhuma despesa cadastrada.</p>`;
+      return;
+    }
+
+    box.innerHTML = despesasFixas.map((d, index) => `
+      <div class="flex justify-between items-center bg-white p-2 rounded-lg border shadow-sm">
+        <div>
+          <p class="font-bold text-slate-800">${d.descricao}</p>
+          <p class="text-[10px] text-slate-500">Venc: ${d.vencimento.split('-').reverse().join('/')}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-red-600">R$ ${parseFloat(d.valor).toFixed(2)}</span>
+          <button onclick="excluirDespesa(${index})" class="text-red-500 font-bold px-1.5 py-0.5 hover:bg-red-50 rounded">&times;</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function excluirDespesa(index) {
+    despesasFixas.splice(index, 1);
+    persistirDadosCompletos();
+    renderizarListaDespesasModal();
   }
 
   function exibirBoasVindasToast(nomeCompleto) {
@@ -1267,11 +1378,10 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Sua Função no Negócio *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Perfil de Acesso no App *</label>
               <select id="cad-funcao-usuario" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
-                <option value="Proprietário / Gerente">Proprietário / Gerente</option>
-                <option value="Caixa / Operador">Caixa / Operador</option>
-                <option value="Atendente / Vendedor">Atendente / Vendedor</option>
+                <option value="Proprietário / Gerente">Proprietário / Gerente (Acesso Total)</option>
+                <option value="Funcionário / Operador">Funcionário / Operador (Sem Custo e sem Relatórios)</option>
               </select>
             </div>
 
@@ -1747,6 +1857,11 @@
     if (!auth.currentUser) return;
     if (!verificarLicencaStatus()) return;
 
+    if (aba === 'relatorios' && !eAdmin()) {
+      alert("⚠️ Acesso Restrito: Apenas Proprietários / Gerentes podem acessar os Relatórios Contábeis e Financeiros.");
+      return;
+    }
+
     abaAtual = aba;
     const idx = ordemAbas.indexOf(aba);
     
@@ -1789,7 +1904,7 @@
     renderAbaVendas();
     renderAbaEstoque(); 
     renderAbaClientes(); 
-    renderAbaRelatorios(); 
+    if (eAdmin()) renderAbaRelatorios(); 
   }
 
   function renderAbaInicio() {
@@ -1819,7 +1934,7 @@
             </button>
             <div>
               <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-              <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'}</p>
+              <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eAdmin() ? 'Admin' : 'Operador'})</p>
             </div>
           </div>
           <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/10 p-2.5 rounded-xl border border-white/20 hover:bg-white/20 transition">
@@ -1854,13 +1969,23 @@
                 <p class="text-[10px] text-slate-500">Controle de Devedores</p>
               </div>
             </button>
-            <button onclick="switchTab('relatorios')" class="bg-purple-50 border border-purple-200 hover:bg-purple-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
-              <i class="fa-solid fa-chart-pie text-purple-700 text-lg"></i>
-              <div>
-                <p class="font-extrabold text-xs text-slate-800">Relatórios</p>
-                <p class="text-[10px] text-slate-500">DRE & PDFs</p>
+            ${eAdmin() ? `
+              <button onclick="switchTab('relatorios')" class="bg-purple-50 border border-purple-200 hover:bg-purple-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
+                <i class="fa-solid fa-chart-pie text-purple-700 text-lg"></i>
+                <div>
+                  <p class="font-extrabold text-xs text-slate-800">Relatórios</p>
+                  <p class="text-[10px] text-slate-500">DRE & PDFs</p>
+                </div>
+              </button>
+            ` : `
+              <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-left flex items-center gap-2.5 opacity-60">
+                <i class="fa-solid fa-lock text-slate-400 text-lg"></i>
+                <div>
+                  <p class="font-extrabold text-xs text-slate-500">Relatórios</p>
+                  <p class="text-[10px] text-slate-400">Acesso Restrito</p>
+                </div>
               </div>
-            </button>
+            `}
           </div>
         </div>
 
@@ -1875,15 +2000,8 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro</b> oferece agilidade completa para o seu comércio sem travamentos e com sincronização segura na nuvem.
+            O <b>Caixa Rápido Móvel Pro</b> oferece agilidade completa para o seu comércio com múltiplos perfis sincronizados na nuvem.
           </p>
-
-          <div class="space-y-1.5 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700 text-[11px]">
-            <p class="font-bold text-teal-300">✨ Vantagens do Plano Completo:</p>
-            <p>• Leitor contínuo de código de barras por câmera</p>
-            <p>• Emissão de relatórios contábeis e DRE em PDF</p>
-            <p>• Controle rigoroso de estoque e prazos de fiado</p>
-          </div>
 
           <div class="pt-1">
             <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
@@ -2431,6 +2549,7 @@
   }
 
   function calcularEExibirMargemLucro() {
+    if (!eAdmin()) return;
     const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
     const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
     const boxMargem = document.getElementById('margem-lucro-box');
@@ -2438,8 +2557,8 @@
     if (venda > 0 && custo > 0) {
       let lucro = venda - custo;
       let pct = (lucro / venda) * 100;
-      boxMargem.innerText = `Margem de Lucro Real: ${pct.toFixed(1)}% (R$ ${lucro.toFixed(2)} por unidade)`;
-      boxMargem.className = pct < 15 ? "text-[11px] font-bold text-red-600 mt-1" : "text-[11px] font-bold text-green-700 mt-1";
+      boxMargem.innerText = `Margem: ${pct.toFixed(1)}% (Lucro: R$ ${lucro.toFixed(2)})`;
+      boxMargem.className = pct < 15 ? "text-[10px] font-bold text-red-600 mt-1" : "text-[10px] font-bold text-teal-700 mt-1";
     } else boxMargem.innerText = "";
   }
 
@@ -2514,6 +2633,14 @@
     document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
     document.getElementById('cad-prod-validade').value = '';
     document.getElementById('cad-prod-atalho').checked = true;
+
+    const boxCustoAdmin = document.getElementById('box-custo-admin');
+    if (eAdmin()) {
+      boxCustoAdmin.classList.remove('hidden');
+    } else {
+      boxCustoAdmin.classList.add('hidden');
+    }
+
     preencherMinimoAutomaticoPorMedida();
     document.getElementById('modal-cadastro-produto').classList.remove('hidden');
   }
@@ -2546,9 +2673,11 @@
                 <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
-                <button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+                ${eAdmin() ? `
+                  <button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                ` : ''}
               </div>
             </div>
           `;
@@ -2570,7 +2699,15 @@
     } else eanDisp.classList.add('hidden');
 
     document.getElementById('cad-prod-nome').value = p.nome;
-    document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
+    
+    const boxCustoAdmin = document.getElementById('box-custo-admin');
+    if (eAdmin()) {
+      boxCustoAdmin.classList.remove('hidden');
+      document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
+    } else {
+      boxCustoAdmin.classList.add('hidden');
+    }
+
     document.getElementById('cad-prod-preco').value = p.preco;
     document.getElementById('cad-prod-qtd').value = p.estoque;
     document.getElementById('cad-prod-medida').value = p.medida || 'un';
@@ -2748,9 +2885,11 @@
             <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
               <i class="fa-solid fa-pen"></i> Editar
             </button>
-            <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+            ${eAdmin() ? `
+              <button onclick="excluirProduto(${idxReal})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -2766,7 +2905,6 @@
   function cadastrarOuAtualizarProduto() {
     const ean = document.getElementById('cad-prod-ean').value;
     const nome = document.getElementById('cad-prod-nome').value.trim();
-    const precoCusto = document.getElementById('cad-prod-preco-custo').value || 0;
     const preco = document.getElementById('cad-prod-preco').value;
     const qtd = document.getElementById('cad-prod-qtd').value || 1;
     const estMin = document.getElementById('cad-prod-estmin').value || 3;
@@ -2775,13 +2913,20 @@
     const validade = document.getElementById('cad-prod-validade').value;
     const atalho = document.getElementById('cad-prod-atalho').checked;
 
+    let precoCustoInput = 0;
+    if (eAdmin()) {
+      precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
+    } else if (prodEditandoIndex !== null) {
+      precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+    }
+
     if (!nome || !preco) { alert("Preencha o nome e o preço de venda!"); return; }
 
     let prodData = {
       id: prodEditandoIndex !== null ? produtos[prodEditandoIndex].id : Date.now(),
       ean: ean,
       nome: nome,
-      precoCusto: parseFloat(precoCusto),
+      precoCusto: precoCustoInput,
       preco: parseFloat(preco),
       estoque: parseFloat(qtd),
       estMin: parseFloat(estMin),
@@ -2798,7 +2943,7 @@
       let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
       if (prodExistente) {
         prodExistente.ean = ean || prodExistente.ean;
-        prodExistente.precoCusto = parseFloat(precoCusto);
+        if (eAdmin() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
         prodExistente.preco = parseFloat(preco);
         prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
         prodExistente.estMin = parseFloat(estMin);
@@ -2821,6 +2966,7 @@
   }
 
   function excluirProduto(index) {
+    if (!eAdmin()) { alert("Apenas o proprietário pode excluir produtos."); return; }
     if (confirm("Remover este produto do estoque?")) {
       produtos.splice(index, 1);
       persistirDadosCompletos();
@@ -3025,9 +3171,10 @@
   }
 
   function renderAbaRelatorios() {
+    if (!eAdmin()) return;
+
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
     
-    // Capital imobilizado no estoque ATUAL (Qtd Atual x Preço de Custo)
     let capitalImobilizadoEstoque = 0;
     produtos.forEach(p => {
       capitalImobilizadoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
@@ -3040,7 +3187,9 @@
       }
     });
 
-    const lucroLiquido = totalVendasGeral - totalCustoVendido;
+    const lucroBruto = totalVendasGeral - totalCustoVendido;
+    const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
+    const lucroLiquidoReal = lucroBruto - totalDespesas;
     const ticketMedio = vendas.length > 0 ? (totalVendasGeral / vendas.length) : 0;
 
     let contagemItens = {};
@@ -3050,9 +3199,6 @@
           let nome = it.nome || 'Produto';
           contagemItens[nome] = (contagemItens[nome] || 0) + parseFloat(it.qtd || 1);
         });
-      } else if (v.item) {
-        let nomeLegado = v.item.split('(')[0].trim();
-        contagemItens[nomeLegado] = (contagemItens[nomeLegado] || 0) + 1;
       }
     });
 
@@ -3073,33 +3219,38 @@
     document.getElementById('content-relatorios').innerHTML = `
       <div class="space-y-4">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-          <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial Executivo
+          <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial Executivo & DRE
         </h2>
 
         <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-800 pb-2">
             <span class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-wallet"></i> Balanço Financeiro Acumulado
+              <i class="fa-solid fa-wallet"></i> Balanço Financeiro & DRE
             </span>
-            <span class="text-[10px] bg-teal-900/60 text-teal-300 font-bold px-2 py-0.5 rounded-full border border-teal-700/50">
-              ${vendas.length} Vendas
-            </span>
+            <button onclick="abrirModalDespesas()" class="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded-lg">
+              ⚙️ Despesas (R$ ${totalDespesas.toFixed(2)})
+            </button>
           </div>
 
           <div class="space-y-2 text-xs">
             <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">🟢 Faturamento Bruto (Total de Vendas):</span>
+              <span class="text-slate-300 font-medium">🟢 Faturamento Bruto:</span>
               <span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span>
             </div>
 
             <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">📦 Capital Imobilizado em Estoque Atual:</span>
+              <span class="text-slate-300 font-medium">🔴 (-) Total de Despesas Fixas:</span>
+              <span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300 font-medium">📦 Capital Imobilizado em Estoque:</span>
               <span class="font-extrabold text-amber-300 text-sm">R$ ${capitalImobilizadoEstoque.toFixed(2)}</span>
             </div>
 
             <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800/80 my-1">
               <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span>
-              <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquido.toFixed(2)}</span>
+              <span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
             </div>
 
             <div class="flex justify-between items-center pt-1 text-[11px] text-slate-400">
@@ -3128,6 +3279,7 @@
   }
 
   function abrirModalOpcoesRelatorio() {
+    if (!eAdmin()) return;
     const hojeStr = new Date().toISOString().split('T')[0];
     const elInicio = document.getElementById('pdf-data-inicio');
     const elFim = document.getElementById('pdf-data-fim');
@@ -3148,6 +3300,7 @@
   }
 
   function gerarPDFProfissional() {
+    if (!eAdmin()) return;
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -3221,18 +3374,23 @@
             v.itens.forEach(it => { totalCustoGeral += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
           }
         });
+        const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
+        const lucroBruto = totalVendas - totalCustoGeral;
+        const lucroLiquidoReal = lucroBruto - totalDespesas;
 
         doc.setFontSize(12);
         doc.setTextColor(0);
-        doc.text(`1. Resumo Comercial & Financeiro (${listaVendasPDF.length} vendas)`, 14, y);
+        doc.text(`1. DRE Executivo (${listaVendasPDF.length} vendas)`, 14, y);
         y += 6;
         doc.setFontSize(10);
-        doc.text(`Faturamento Bruto Total: R$ ${totalVendas.toFixed(2)}`, 14, y);
+        doc.text(`Faturamento Bruto: R$ ${totalVendas.toFixed(2)}`, 14, y);
         y += 5;
-        doc.text(`Custo Total do Estoque Vendido: R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+        doc.text(`Custo das Mercadorias Vendidas (CMV): R$ ${totalCustoGeral.toFixed(2)}`, 14, y);
+        y += 5;
+        doc.text(`(-) Despesas Fixas Operacionais: R$ ${totalDespesas.toFixed(2)}`, 14, y);
         y += 5;
         doc.setFont(undefined, 'bold');
-        doc.text(`LUCRO LIQUIDO REAL: R$ ${(totalVendas - totalCustoGeral).toFixed(2)}`, 14, y);
+        doc.text(`LUCRO LIQUIDO REAL: R$ ${lucroLiquidoReal.toFixed(2)}`, 14, y);
         doc.setFont(undefined, 'normal');
         y += 10;
       }
@@ -3285,12 +3443,14 @@
   }
 
   function executarLimpezaTotalManual() {
+    if (!eAdmin()) { alert("Apenas o proprietário pode apagar dados."); return; }
     if (confirm("⚠️ ATENÇÃO: Esta ação apaga permanentemente todo o histórico de vendas, clientes e estoque do aplicativo. Deseja prosseguir?")) {
       vendas = [];
       sangriasSuprimentos = [];
       historicoFechamentos = [];
       produtos = [];
       clientes = [];
+      despesasFixas = [];
 
       persistirDadosCompletos();
 
@@ -3368,6 +3528,7 @@
   }
 
   function exportarBackupCSV() {
+    if (!eAdmin()) return;
     if (vendas.length === 0) { alert("Sem histórico de vendas para exportação."); return; }
     
     let csvContent = "data:text/csv;charset=utf-8,ID_Venda;Data_Hora;Item_Descricao;Forma_Pagamento;Cliente;Valor_Bruto_RS;Custo_Estimado_RS\n";
@@ -3426,7 +3587,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 33.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 34.0 carregada com sucesso!");
 </script>
 </body>
 </html>

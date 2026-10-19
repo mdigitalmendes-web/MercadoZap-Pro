@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v52.0 (Auditoria Real-Time & Smart Toast)</title>
+  <title>Caixa Rápido Móvel Pro v54.0 (Modos MEI/Completo & Auditoria no Menu)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -133,7 +133,7 @@
 
 <div id="app-container">
 
-  <!-- TOAST DE BOAS-VINDAS INTELIGENTE (1 VEZ AO DIA NAS ABAS) -->
+  <!-- TOAST DE BOAS-VINDAS INTELIGENTE -->
   <div id="toast-boas-vindas" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-teal-500/40 flex items-center gap-3 pointer-events-none">
     <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-inner">💼</div>
     <div class="flex-1 min-w-0">
@@ -197,10 +197,10 @@
     </div>
   </div>
 
-  <!-- DRAWER LATERAL -->
+  <!-- DRAWER LATERAL (MENU SANDUÍCHE - CENTRAL DE AUDITORIA E GESTÃO) -->
   <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
     <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
-    <div class="drawer-content relative bg-white w-72 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
+    <div class="drawer-content relative bg-white w-80 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
       <div class="overflow-y-auto">
         <div class="brand-header-bg p-4 text-white relative">
           <div class="flex justify-between items-start mb-3">
@@ -252,15 +252,30 @@
           </button>
         </div>
 
+        <!-- CENTRAL DE AUDITORIA & GESTÃO (DISPONÍVEL PARA ADMIN E FUNCIONÁRIOS CONFORME REGRA) -->
+        <div class="p-3 space-y-1 border-b bg-slate-50/70">
+          <p class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider px-2 mb-1 flex items-center gap-1">
+            <i class="fa-solid fa-shield-halved"></i> Auditoria & Fechamentos
+          </p>
+          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-white rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/80">
+            <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
+            <span>Histórico de Fechamentos de Caixa</span>
+          </button>
+          <button onclick="fecharDrawerNavegacao(); abrirModalAuditoriaGavetaMenu();" class="w-full text-left px-3.5 py-2.5 hover:bg-white rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/80 mt-1">
+            <i class="fa-solid fa-vault text-amber-600 w-5 text-center"></i>
+            <span>Auditoria de Sangrias & Suprimentos</span>
+          </button>
+          <button id="menu-btn-auditoria-operadores" onclick="fecharDrawerNavegacao(); abrirModalAuditoriaOperadoresMenu();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-white rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/80 mt-1">
+            <i class="fa-solid fa-users-viewfinder text-indigo-600 w-5 text-center"></i>
+            <span>Auditoria de Vendas por Operador (Admin)</span>
+          </button>
+        </div>
+
         <div id="menu-secao-ferramentas-admin" class="p-3 space-y-1 border-b">
           <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas Gestão (Admin)</p>
           <button onclick="fecharDrawerNavegacao(); abrirModalDespesas();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
             <i class="fa-solid fa-file-invoice-dollar text-red-600 w-5 text-center"></i>
             <span>Controle de Despesas (Água, Luz, etc)</span>
-          </button>
-          <button onclick="fecharDrawerNavegacao(); abrirHistoricoFechamentos();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
-            <i class="fa-solid fa-clock-rotate-left text-purple-600 w-5 text-center"></i>
-            <span>Histórico de Fechamento de Caixa</span>
           </button>
         </div>
 
@@ -324,7 +339,7 @@
     </div>
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE (PDV LIMPO E OTIMIZADO) -->
   <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-5 h-16">
       <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -354,6 +369,38 @@
     </div>
   </nav>
 
+</div>
+
+<!-- MODAL DE AUDITORIA DE SANGRIAS E SUPRIMENTOS (MENU LATERAL) -->
+<div id="modal-auditoria-gaveta-menu" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b pb-2">
+      <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-vault text-amber-600"></i> Auditoria de Sangrias & Suprimentos
+      </h3>
+      <button onclick="fecharModalAuditoriaGavetaMenu()" class="text-slate-500 text-xl font-bold">&times;</button>
+    </div>
+    <p class="text-[11px] text-slate-500 leading-relaxed">
+      Histórico completo de entradas e retiradas de gaveta registradas por todos os operadores em tempo real.
+    </p>
+    <div id="lista-auditoria-gaveta-menu-box" class="space-y-2 text-xs pt-1"></div>
+  </div>
+</div>
+
+<!-- MODAL DE AUDITORIA DE VENDAS POR OPERADOR (ADMIN) -->
+<div id="modal-auditoria-operadores-menu" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b pb-2">
+      <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-users-viewfinder text-indigo-600"></i> Vendas por Operador (Admin)
+      </h3>
+      <button onclick="fecharModalAuditoriaOperadoresMenu()" class="text-slate-500 text-xl font-bold">&times;</button>
+    </div>
+    <p class="text-[11px] text-slate-500 leading-relaxed">
+      Resumo de faturamento e quantidade de vendas realizadas por cada operador no estabelecimento.
+    </p>
+    <div id="lista-auditoria-operadores-menu-box" class="space-y-2 text-xs pt-1"></div>
+  </div>
 </div>
 
 <!-- MODAL DE VÍNCULO DINÂMICO A NOVO PATRÃO -->
@@ -404,7 +451,7 @@
   </div>
 </div>
 
-<!-- MODAIS DE SUPORTE -->
+<!-- MODAIS DE SUPORTE E GESTÃO -->
 <div id="modal-notificacoes" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b pb-2">
@@ -852,7 +899,8 @@
       <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
     </div>
     <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-      <p><b>🏢 Vínculo Dinâmico & Auditoria:</b> Todas as sangrias, suprimentos e fechamentos são sincronizados em tempo real entre todos os funcionários e o administrador.</p>
+      <p><b>🏢 Central de Auditoria no Menu:</b> As sangrias, suprimentos, fechamentos e relatórios de operadores agora ficam centralizados no menu lateral sanduíche para manter o Caixa (PDV) limpo e ágil.</p>
+      <p><b>💼 Modos de Operação (MEI vs. Estrutura Maior):</b> Você pode alternar o perfil da empresa no seu Perfil. No Modo MEI, a complexidade de custos e investimentos em estoque é simplificada. No Modo Estrutura Maior, o DRE e os relatórios patrimoniais de estoque são totalmente ativados.</p>
     </div>
   </div>
 </div>
@@ -920,7 +968,16 @@
   let ultimoEanLido = '';
   let ultimoTempoLeitura = 0;
   
-  let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente', empresaId: '' };
+  // Perfil da empresa (inclui o 'modoNegocio': 'mei' ou 'completo')
+  let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { 
+    nomeLoja: 'Caixa Rápido Móvel Pro', 
+    tipo: 'PF', 
+    ramo: 'Produtos', 
+    nomeUsuario: 'Rogério', 
+    funcaoUsuario: 'Proprietário / Gerente', 
+    empresaId: '',
+    modoNegocio: 'completo' // 'mei' (Simples) ou 'completo' (Estrutura Maior)
+  };
 
   let unsubscribeProdutos = null;
   let unsubscribeVendas = null;
@@ -932,7 +989,10 @@
     return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
   }
 
-  // DETECÇÃO AUTOMÁTICA DE RETORNO DE TELA APAGADA / FOCALIZAÇÃO DO APP
+  function eModoMei() {
+    return perfilNegocio.modoNegocio === 'mei';
+  }
+
   document.addEventListener("visibilitychange", async () => {
     if (document.visibilityState === "visible") {
       const user = auth.currentUser;
@@ -1310,6 +1370,7 @@
           empresaId: empresaIdReal,
           tipo: patraoEncontrado.tipo || "PF",
           ramo: patraoEncontrado.ramo || "Produtos",
+          modoNegocio: patraoEncontrado.modoNegocio || "completo",
           nomeFuncionarioSlot: nomeSlotEncontrado
         };
         textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja do Patrão'}</b>`;
@@ -1338,6 +1399,7 @@
     perfilNegocio.nomeLoja = info.nomeLoja;
     perfilNegocio.tipo = info.tipo;
     perfilNegocio.ramo = info.ramo;
+    perfilNegocio.modoNegocio = info.modoNegocio;
     perfilNegocio.nomeUsuario = info.nomeFuncionarioSlot;
     perfilNegocio.funcaoUsuario = "Funcionário / Operador";
 
@@ -1491,7 +1553,6 @@
     renderizarListaDespesasModal();
   }
 
-  // TOAST INTELIGENTE DE BOAS-VINDAS (1 VEZ AO DIA AO NAVEGAR NAS ABAS)
   function verificarEExibirToastBoasVindasDiario(nomeCompleto) {
     const hojeDataStr = new Date().toDateString();
     const ultimaExibicao = localStorage.getItem('crm_last_toast_date');
@@ -1604,8 +1665,8 @@
     document.body.classList.add('dark-mode');
   }
 
+  // FUNÇÕES DO MENU DE AUDITORIA (MOVIDAS PARA O MENU LATERAL SANDUÍCHE)
   function abrirHistoricoFechamentos() {
-    if (!eAdmin()) { alert("Acesso restrito ao administrador."); return; }
     const box = document.getElementById('lista-historico-fechamentos-box');
     if (historicoFechamentos.length === 0) {
       box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhum fechamento registrado até o momento.</p>`;
@@ -1633,11 +1694,73 @@
     document.getElementById('modal-historico-fechamentos').classList.add('hidden');
   }
 
+  function abrirModalAuditoriaGavetaMenu() {
+    const box = document.getElementById('lista-auditoria-gaveta-menu-box');
+    if (sangriasSuprimentos.length === 0) {
+      box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma sangria ou suprimento registrado.</p>`;
+    } else {
+      box.innerHTML = sangriasSuprimentos.slice().reverse().map(s => `
+        <div class="bg-slate-50 border p-2.5 rounded-xl space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="font-bold ${s.tipo === 'sangria' ? 'text-red-600' : 'text-green-700'}">
+              ${s.tipo === 'sangria' ? '💸 Sangria (Retirada)' : '💰 Suprimento (Entrada)'}
+            </span>
+            <span class="font-extrabold text-slate-800">R$ ${parseFloat(s.valor).toFixed(2)}</span>
+          </div>
+          <p class="text-[11px] text-slate-600">Motivo: ${s.motivo}</p>
+          <div class="flex justify-between text-[10px] text-slate-500 pt-0.5 border-t">
+            <span>👤 Operador: <b>${s.operador || 'Operador'}</b></span>
+            <span>📅 ${s.data}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('modal-auditoria-gaveta-menu').classList.remove('hidden');
+  }
+
+  function fecharModalAuditoriaGavetaMenu() {
+    document.getElementById('modal-auditoria-gaveta-menu').classList.add('hidden');
+  }
+
+  function abrirModalAuditoriaOperadoresMenu() {
+    if (!eAdmin()) return;
+    const box = document.getElementById('lista-auditoria-operadores-menu-box');
+    
+    let dadosOperadores = {};
+    vendas.forEach(v => {
+      let op = v.operador || 'Desconhecido';
+      if (!dadosOperadores[op]) dadosOperadores[op] = { qtd: 0, total: 0 };
+      dadosOperadores[op].qtd += 1;
+      dadosOperadores[op].total += parseFloat(v.valorTotal || v.valor || 0);
+    });
+
+    let operadoresKeys = Object.keys(dadosOperadores);
+    if (operadoresKeys.length === 0) {
+      box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada até o momento.</p>`;
+    } else {
+      box.innerHTML = operadoresKeys.map(op => `
+        <div class="bg-slate-50 border p-3 rounded-xl space-y-1">
+          <div class="flex justify-between items-center font-bold text-slate-800">
+            <span>🧑‍💼 ${op}</span>
+            <span class="text-teal-700">R$ ${dadosOperadores[op].total.toFixed(2)}</span>
+          </div>
+          <div class="text-[11px] text-slate-500">
+            Total de Vendas Realizadas: <b>${dadosOperadores[op].qtd} venda(s)</b>
+          </div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('modal-auditoria-operadores-menu').classList.remove('hidden');
+  }
+
+  function fecharModalAuditoriaOperadoresMenu() {
+    document.getElementById('modal-auditoria-operadores-menu').classList.add('hidden');
+  }
+
   function abrirSuporteWhatsApp() {
     window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
   }
 
-  // TELA DE LOGIN (v52.0)
   function showLoginForm() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
@@ -1820,6 +1943,7 @@
           empresaId: empresaIdReal,
           tipo: patraoEncontrado.tipo || "PF",
           ramo: patraoEncontrado.ramo || "Produtos",
+          modoNegocio: patraoEncontrado.modoNegocio || "completo",
           nomeFuncionarioSlot: nomeSlotEncontrado
         };
         textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja do Patrão'}</b>`;
@@ -1834,7 +1958,7 @@
     }
   }
 
-  let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', codigoConvite: '', empresaPatraoInfo: null };
+  let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', modoNegocio: 'completo', codigoConvite: '', empresaPatraoInfo: null };
 
   async function handleStep1Cadastro(e) {
     e.preventDefault();
@@ -1849,6 +1973,7 @@
         cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
         cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
         cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
+        cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
         cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
         cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot; 
         
@@ -1913,7 +2038,7 @@
               <i class="fa-solid fa-store"></i>
             </div>
             <h2 class="text-xl font-bold text-slate-800">Perfil do Negócio</h2>
-            <p class="text-xs text-slate-500">Dados do Estabelecimento</p>
+            <p class="text-xs text-slate-500">Dados do Estabelecimento & Modo de Operação</p>
           </div>
 
           <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
@@ -1941,6 +2066,14 @@
               </div>
             </div>
 
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação do App *</label>
+              <select id="cad-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
+                <option value="mei">🟢 Modo MEI / Simples (Foco em Vendas & Praticidade)</option>
+                <option value="completo" selected>🔵 Modo Estrutura Maior / Completo (Com Custos & DRE)</option>
+              </select>
+            </div>
+
             <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
               🚀 Finalizar e Entrar
             </button>
@@ -1959,6 +2092,7 @@
     cadastroTemp.nomeLoja = document.getElementById('cad-nome-loja').value;
     cadastroTemp.tipo = document.getElementById('cad-tipo-registro').value;
     cadastroTemp.ramo = document.getElementById('cad-ramo').value;
+    cadastroTemp.modoNegocio = document.getElementById('cad-modo-negocio').value;
     criarContaFirebaseFinal();
   }
 
@@ -1988,6 +2122,7 @@
       funcaoUsuario: cadastroTemp.funcaoUsuario,
       tipo: cadastroTemp.tipo || "PF",
       ramo: cadastroTemp.ramo || "Produtos",
+      modoNegocio: cadastroTemp.modoNegocio || "completo",
       empresaId: empresaIdVinculo,
       slotsFuncionarios: slotsFuncionarios
     };
@@ -2281,6 +2416,7 @@
     const btnVincularNovo = document.getElementById('menu-btn-vincular-novo');
     const secaoFerramentasAdmin = document.getElementById('menu-secao-ferramentas-admin');
     const btnExcluirConta = document.getElementById('menu-btn-excluir-conta-empresa');
+    const btnAuditoriaOperadores = document.getElementById('menu-btn-auditoria-operadores');
 
     if (eAdmin()) {
       if (btnCopiar) btnCopiar.classList.remove('hidden');
@@ -2288,12 +2424,14 @@
       if (btnVincularNovo) btnVincularNovo.classList.add('hidden');
       if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
       if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
+      if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
     } else {
       if (btnCopiar) btnCopiar.classList.add('hidden');
       if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
       if (btnVincularNovo) btnVincularNovo.classList.remove('hidden');
       if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
       if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
+      if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.add('hidden');
     }
 
     document.getElementById('drawer-menu').classList.remove('hidden'); 
@@ -2340,6 +2478,13 @@
               </select>
             </div>
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação do App</label>
+            <select id="perfil-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
+              <option value="mei" ${eModoMei() ? 'selected' : ''}>🟢 Modo MEI / Simples (Prático, sem custos detalhados)</option>
+              <option value="completo" ${!eModoMei() ? 'selected' : ''}>🔵 Modo Estrutura Maior / Completo (Com Custos & DRE)</option>
+            </select>
+          </div>
         </div>
       `;
     } else {
@@ -2350,6 +2495,7 @@
         <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
           <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
           <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja do Patrão'}</p>
+          <p class="text-[10px] text-slate-500">Modo: <b>${eModoMei() ? 'MEI / Simples' : 'Completo'}</b></p>
         </div>
       `;
     }
@@ -2371,6 +2517,7 @@
       perfilNegocio.nomeLoja = document.getElementById('perfil-nome-loja').value;
       perfilNegocio.tipo = document.getElementById('perfil-tipo-registro').value;
       perfilNegocio.ramo = document.getElementById('perfil-ramo').value;
+      perfilNegocio.modoNegocio = document.getElementById('perfil-modo-negocio').value;
     }
 
     persistirDadosCompletos();
@@ -2413,7 +2560,6 @@
     if (aba === 'inicio') bottomNav.classList.add('hidden');
     else {
       bottomNav.classList.remove('hidden');
-      // DISPARA O TOAST INTELIGENTE DE BOAS-VINDAS DIÁRIO AO NAVEGAR PARA QUALQUER ABA FUNCIONAL
       verificarEExibirToastBoasVindasDiario(perfilNegocio.nomeUsuario || auth.currentUser.displayName || 'Rogério');
     }
 
@@ -2471,7 +2617,7 @@
             </button>
             <div>
               <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-              <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eAdmin() ? 'Admin' : 'Operador'})</p>
+              <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eModoMei() ? 'MEI / Simples' : 'Completo'})</p>
             </div>
           </div>
           <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/15 p-2.5 rounded-xl border border-white/20 hover:bg-white/25 transition">
@@ -2537,7 +2683,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v52.0</b> está conectado com auditoria em tempo real para sangrias, suprimentos e fechamentos.
+            O <b>Caixa Rápido Móvel Pro v54.0</b> conta com adaptação inteligente para MEI e empresas completas, mantendo o PDV limpo e a auditoria no Menu Lateral.
           </p>
 
           <div class="pt-1">
@@ -2630,6 +2776,7 @@
     }
   }
 
+  // RENDERIZAÇÃO DA ABA DE VENDAS (PDV LIMPO E FOCADO NO ATENDIMENTO)
   function renderAbaVendas() {
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -2685,16 +2832,6 @@
     `).join('');
 
     let clientesDatalistHTML = clientes.map(c => `<option value="${c.nome}">${c.telefone || ''}</option>`).join('');
-
-    // LISTAGEM RECENTE DE SANGRIAS E SUPRIMENTOS (AUDITORIA VISÍVEL A TODOS)
-    let auditoriaGavetaHojeHTML = sangriasHoje.length > 0 ? sangriasHoje.slice().reverse().map(s => `
-      <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border text-[11px]">
-        <div>
-          <span class="font-bold ${s.tipo === 'sangria' ? 'text-red-600' : 'text-green-700'}">${s.tipo === 'sangria' ? '💸 Sangria' : '💰 Suprimento'} (R$ ${parseFloat(s.valor).toFixed(2)})</span>
-          <p class="text-[10px] text-slate-500">${s.motivo} — <b>👤 ${s.operador || 'Operador'}</b> (${s.data})</p>
-        </div>
-      </div>
-    `).join('') : '<p class="text-[11px] text-slate-400 italic text-center py-1">Nenhuma sangria ou suprimento hoje.</p>';
 
     document.getElementById('content-vendas').innerHTML = `
       <div class="space-y-4">
@@ -2823,9 +2960,10 @@
           </div>
         </div>
 
+        <!-- AÇÕES RÁPIDAS DE GAVETA (SANGRIA, SUPRIMENTO E FECHAMENTO) -->
         <div class="border-t pt-3 space-y-2">
           <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-vault text-amber-600"></i> Gestão de Gaveta & Turno
+            <i class="fa-solid fa-vault text-amber-600"></i> Operações de Gaveta
           </h2>
           <div class="grid grid-cols-2 gap-2">
             <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-xl hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
@@ -2834,12 +2972,6 @@
             <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-xl hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-arrow-up text-green-600"></i> Suprimento (Entrar)
             </button>
-          </div>
-
-          <!-- HISTÓRICO DE MOVIMENTAÇÃO DE GAVETA VISÍVEL A TODOS -->
-          <div class="space-y-1 pt-1">
-            <p class="text-[10px] font-bold text-slate-500 uppercase">Movimentações de Gaveta Hoje (Auditadas):</p>
-            <div class="space-y-1 max-h-32 overflow-y-auto">${auditoriaGavetaHojeHTML}</div>
           </div>
 
           <button onclick="openModalFechamento()" class="w-full bg-amber-600 text-white font-extrabold p-3 rounded-xl hover:bg-amber-700 text-xs flex justify-center items-center gap-2 shadow-md uppercase tracking-wider mt-1">
@@ -3118,7 +3250,7 @@
   }
 
   function calcularEExibirMargemLucro() {
-    if (!eAdmin()) return;
+    if (!eAdmin() || eModoMei()) return;
     const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
     const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
     const boxMargem = document.getElementById('margem-lucro-box');
@@ -3155,7 +3287,7 @@
       <div class="space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
           <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
+            <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque ${eModoMei() ? '(Modo MEI)' : ''}
           </h2>
           <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
             <i class="fa-solid fa-sliders text-teal-600"></i> Configurações
@@ -3211,7 +3343,7 @@
     document.getElementById('cad-prod-atalho').checked = true;
 
     const boxCustoAdmin = document.getElementById('box-custo-admin');
-    if (eAdmin()) boxCustoAdmin.classList.remove('hidden');
+    if (eAdmin() && !eModoMei()) boxCustoAdmin.classList.remove('hidden');
     else boxCustoAdmin.classList.add('hidden');
 
     preencherMinimoAutomaticoPorMedida();
@@ -3233,6 +3365,7 @@
                 <div>
                   <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                   <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+                  ${!eModoMei() && p.precoCusto > 0 ? `<p class="text-[10px] text-slate-400">Custo: R$ ${parseFloat(p.precoCusto).toFixed(2)}</p>` : ''}
                   ${p.validade ? `<p class="text-[10px] text-slate-400 mt-0.5">Val: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
                 </div>
                 <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
@@ -3272,7 +3405,7 @@
     document.getElementById('cad-prod-nome').value = p.nome;
     
     const boxCustoAdmin = document.getElementById('box-custo-admin');
-    if (eAdmin()) {
+    if (eAdmin() && !eModoMei()) {
       boxCustoAdmin.classList.remove('hidden');
       document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
     } else boxCustoAdmin.classList.add('hidden');
@@ -3439,7 +3572,7 @@
     const atalho = document.getElementById('cad-prod-atalho').checked;
 
     let precoCustoInput = 0;
-    if (eAdmin()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
+    if (eAdmin() && !eModoMei()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
     else if (prodEditandoIndex !== null) precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
 
     if (!nome || !preco) { alert("Preencha nome e preço!"); return; }
@@ -3466,7 +3599,7 @@
       let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
       if (prodExistente) {
         prodExistente.ean = ean || prodExistente.ean;
-        if (eAdmin() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
+        if (eAdmin() && !eModoMei() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
         prodExistente.preco = parseFloat(preco);
         prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
         prodExistente.estMin = parseFloat(estMin);
@@ -3650,8 +3783,10 @@
     if (!eAdmin()) return;
 
     const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-    let capitalImobilizadoEstoque = 0;
-    produtos.forEach(p => { capitalImobilizadoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
+    
+    // Cálculo do Capital Investido em Estoque (Disponível apenas no modo completo)
+    let capitalInvestidoEstoque = 0;
+    produtos.forEach(p => { capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
 
     let totalCustoVendido = 0;
     vendas.forEach(v => {
@@ -3660,7 +3795,7 @@
 
     const lucroBruto = totalVendasGeral - totalCustoVendido;
     const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
-    const lucroLiquidoReal = lucroBruto - totalDespesas;
+    const lucroLiquidoReal = eModoMei() ? (totalVendasGeral - totalDespesas) : (lucroBruto - totalDespesas);
 
     let vendasPorOperador = {};
     vendas.forEach(v => {
@@ -3679,9 +3814,14 @@
 
     document.getElementById('content-relatorios').innerHTML = `
       <div class="space-y-4">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b pb-2">
-          <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial & DRE
-        </h2>
+        <div class="flex justify-between items-center border-b pb-2">
+          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial & DRE
+          </h2>
+          <span class="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2 py-0.5 rounded-full">
+            ${eModoMei() ? 'Modo MEI / Simples' : 'Modo Completo'}
+          </span>
+        </div>
 
         <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -3692,6 +3832,11 @@
           <div class="space-y-2 text-xs">
             <div class="flex justify-between items-center"><span class="text-slate-300">🟢 Faturamento Bruto:</span><span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span></div>
             <div class="flex justify-between items-center"><span class="text-slate-300">🔴 (-) Despesas Fixas:</span><span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span></div>
+            
+            ${!eModoMei() ? `
+              <div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital Investido em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>
+            ` : ''}
+
             <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800 my-1">
               <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span><span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
             </div>
@@ -3885,7 +4030,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 52.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 54.0 carregada com sucesso!");
 </script>
 </body>
 </html>

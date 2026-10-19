@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caixa Rápido Móvel Pro v50.0 (Enterprise Security & Recibo Padrão)</title>
+  <title>Caixa Rápido Móvel Pro v51.0 (Full Paridade & Auto-Sync Visibility)</title>
   
   <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -930,9 +930,20 @@
     return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
   }
 
+  // DETECÇÃO AUTOMÁTICA DE RETORNO DE TELA APAGADA / FOCALIZAÇÃO DO APP
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible") {
+      const user = auth.currentUser;
+      if (user && perfilNegocio.empresaId) {
+        await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+        renderAba();
+      }
+    }
+  });
+
   // GUARDA DE VÍNCULO EM TEMPO REAL (ANTI-FRAUDE DE DESLIGAMENTO)
   async function verificarIntegridadeVinculoAtivo() {
-    if (eAdmin()) return true; // Admins nunca são desligados por slots
+    if (eAdmin()) return true; 
     const user = auth.currentUser;
     if (!user || !perfilNegocio.empresaId) return true;
 
@@ -1597,7 +1608,7 @@
     window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
   }
 
-  // TELA DE LOGIN (v50.0)
+  // TELA DE LOGIN (v51.0)
   function showLoginForm() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)'; 
@@ -2347,7 +2358,6 @@
     if (!auth.currentUser) return;
     if (!verificarLicencaStatus()) return;
 
-    // Validação de segurança em tempo real antes de mudar de aba ou realizar ações
     let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
     if (!vinculadoAtivo) return;
 
@@ -2485,7 +2495,7 @@
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            O <b>Caixa Rápido Móvel Pro v50.0</b> está conectado com segurança enterprise e verificação ativa de vínculo.
+            O <b>Caixa Rápido Móvel Pro v51.0</b> está conectado com segurança enterprise e verificação ativa de vínculo.
           </p>
 
           <div class="pt-1">
@@ -2908,7 +2918,6 @@
   async function processarFinalizarVenda(tipoEnvio) {
     if (carrinho.length === 0) { alert("O carrinho está vazio!"); return; }
 
-    // Verificação ativa de vínculo antes de concluir a venda
     let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
     if (!vinculadoAtivo) return;
 
@@ -2992,9 +3001,13 @@
       `    OBRIGADO PELA PREFERÊNCIA!\n` +
       `===================================`;
 
-    if (tipoEnvio === 'whatsapp' && zapClienteInput) {
-      let numLimpo = zapClienteInput.replace(/\D/g, '');
-      window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`, '_blank');
+    if (tipoEnvio === 'whatsapp') {
+      let numLimpo = zapClienteInput ? zapClienteInput.replace(/\D/g, '') : '';
+      if (numLimpo) {
+        window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`, '_blank');
+      } else {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumoTexto)}`, '_blank');
+      }
     } else if (tipoEnvio === 'imprimir') {
       let janelaImpressao = window.open('', '_blank');
       janelaImpressao.document.write(`<html><head><title>Cupom Não Fiscal</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
@@ -3804,7 +3817,7 @@
     }
   });
 
-  console.log("Caixa Rápido Móvel Pro - Versão 50.0 carregada com sucesso!");
+  console.log("Caixa Rápido Móvel Pro - Versão 51.0 carregada com sucesso!");
 </script>
 </body>
 </html>

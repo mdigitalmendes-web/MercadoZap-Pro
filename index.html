@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Caixa Rápido Móvel Pro v55.0 (Vínculo por E-mail & Aniversários)</title>
+<title>Caixa Rápido Móvel Pro v55.2 (Vínculo & Gestão de PIN)</title>
 <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -330,7 +330,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
     </div>
 </div>
 
-<!-- MODAL DE GESTÃO UNIFICADA DE FUNCIONÁRIOS (ATÉ 3 SLOTS COM PIN, E-MAIL E NASCIMENTO) -->
+<!-- MODAL DE GESTÃO UNIFICADA DE FUNCIONÁRIOS (ATÉ 3 SLOTS COM PIN VISÍVEL, E-MAIL E NASCIMENTO) -->
 <div id="modal-gerenciar-funcionarios" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-2">
@@ -886,7 +886,7 @@ async function verificarIntegridadeVinculoAtivo() {
         }
         let dadosPatrao = docPatrao.data();
         if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
-            let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.toLowerCase() === user.email.toLowerCase()) || s.userUid === user.uid));
+            let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid));
             if (!meuSlot) {
                 alert("🚫 ATENÇÃO DE SEGURANÇA: O seu e-mail não corresponde ao slot de funcionário desta empresa!");
                 fazerLogoutSeguro();
@@ -1189,8 +1189,8 @@ async function verificarCodigoVinculoEmTempoRealModal() {
     const textoOperador = document.getElementById('texto-operador-vinculado-modal');
     if (!boxStatus || !textoLoja) return;
 
-    let codLimpo = document.getElementById('input-novo-codigo-convite').value.trim();
-    let pinLimpo = document.getElementById('input-novo-pin-operador').value.trim();
+    let codLimpo = (document.getElementById('input-novo-codigo-convite').value || '').trim();
+    let pinLimpo = (document.getElementById('input-novo-pin-operador').value || '').trim();
 
     if (codLimpo.length < 5 || pinLimpo.length < 4) {
         boxStatus.classList.add('hidden');
@@ -1206,7 +1206,7 @@ async function verificarCodigoVinculoEmTempoRealModal() {
         snapshot.forEach(doc => {
             let dados = doc.data();
             if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-                let s = dados.slotsFuncionarios.find(item => item.codigo && item.codigo.toLowerCase() === codLimpo.toLowerCase() && item.pin === pinLimpo && item.ativo);
+                let s = dados.slotsFuncionarios.find(item => item.codigo && item.codigo.toLowerCase() === codLimpo.toLowerCase() && String(item.pin).trim() === pinLimpo && item.ativo);
                 if (s) {
                     patraoEncontrado = dados;
                     empresaIdReal = doc.id;
@@ -1255,7 +1255,7 @@ async function confirmarVinculoNovoPatrao() {
                 dados.slotsFuncionarios.forEach(s => {
                     if (s.id === info.slotId) {
                         s.userUid = user.uid;
-                        s.email = user.email.toLowerCase();
+                        s.email = user.email.trim().toLowerCase();
                     }
                 });
                 slotsFuncionarios = dados.slotsFuncionarios;
@@ -1311,8 +1311,8 @@ function renderizarListaSlotsFuncionariosUnificada() {
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal (4-6 dig) *</label>
-                    <input type="password" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="****" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold tracking-widest text-indigo-900">
+                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal (Visível) *</label>
+                    <input type="text" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="Ex: 1234" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold text-indigo-900">
                 </div>
                 <div>
                     <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Data de Nascimento</label>
@@ -1355,6 +1355,15 @@ function salvarSlotFuncionario(index) {
     };
 
     persistirDadosCompletos();
+
+    const user = auth.currentUser;
+    if (user && eAdmin()) {
+        db.collection("perfis").doc(user.uid).set({
+            ...perfilNegocio,
+            slotsFuncionarios: slotsFuncionarios
+        }, { merge: true }).catch(err => console.error("Erro ao sincronizar slot:", err));
+    }
+
     renderizarListaSlotsFuncionariosUnificada();
     alert(`✅ Funcionário ${nome} cadastrado e vinculado ao e-mail ${email}!`);
 }
@@ -1715,7 +1724,7 @@ function showStep1CadastroAcesso() {
                     </div>
                     <div class="border-t pt-2 mt-2">
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Se for Funcionário, informe seu PIN:</label>
-                        <input type="password" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN de Operador (4-6 dígitos)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+                        <input type="text" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN de Operador (4-6 dígitos)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
                         <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-teal-800 bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1 mt-2">
                             <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
                             <p id="texto-operador-vinculado" class="text-indigo-900 font-extrabold"></p>
@@ -1739,8 +1748,8 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     const textoOperador = document.getElementById('texto-operador-vinculado');
     if (!boxStatus || !textoLoja) return;
 
-    let emailLimpo = document.getElementById('cad-email').value.trim().toLowerCase();
-    let pinLimpo = document.getElementById('cad-pin').value.trim();
+    let emailLimpo = (document.getElementById('cad-email').value || '').trim().toLowerCase();
+    let pinLimpo = (document.getElementById('cad-pin').value || '').trim();
 
     if (!emailLimpo || pinLimpo.length < 4) {
         boxStatus.classList.add('hidden');
@@ -1756,7 +1765,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         snapshot.forEach(doc => {
             let dados = doc.data();
             if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-                let s = dados.slotsFuncionarios.find(item => item.email && item.email.toLowerCase() === emailLimpo && item.pin === pinLimpo && item.ativo);
+                let s = dados.slotsFuncionarios.find(item => item.email && item.email.trim().toLowerCase() === emailLimpo && String(item.pin).trim() === pinLimpo && item.ativo);
                 if (s) {
                     patraoEncontrado = dados;
                     empresaIdReal = doc.id;
@@ -1791,9 +1800,9 @@ let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Propr
 
 async function handleStep1Cadastro(e) {
     e.preventDefault();
-    cadastroTemp.email = document.getElementById('cad-email').value.trim();
+    cadastroTemp.email = (document.getElementById('cad-email').value || '').trim().toLowerCase();
     cadastroTemp.pass = document.getElementById('cad-pass').value;
-    cadastroTemp.pinOperador = document.getElementById('cad-pin').value.trim();
+    cadastroTemp.pinOperador = (document.getElementById('cad-pin').value || '').trim();
 
     if (cadastroTemp.pinOperador) {
         if (window.tempPatraoVinculado) {
@@ -1946,7 +1955,7 @@ async function concluirVinculoUsuarioAutenticado(user) {
                     dados.slotsFuncionarios.forEach(s => {
                         if (s.id === cadastroTemp.empresaPatraoInfo.slotId) {
                             s.userUid = uidGerado;
-                            s.email = user.email.toLowerCase();
+                            s.email = user.email.trim().toLowerCase();
                         }
                     });
                     slotsFuncionarios = dados.slotsFuncionarios;
@@ -2528,7 +2537,7 @@ function renderAbaInicio() {
                     </span>
                 </div>
                 <p class="text-[11px] text-slate-300 leading-relaxed">
-                    O <b>Caixa Rápido Móvel Pro v55.0</b> protege o acesso dos funcionários através do vínculo único por e-mail e monitora aniversários da equipe.
+                    O <b>Caixa Rápido Móvel Pro v55.2</b> protege o acesso dos funcionários através do vínculo único por e-mail e monitora aniversários da equipe.
                 </p>
                 <div class="pt-1">
                     <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
@@ -3908,7 +3917,7 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-console.log("Caixa Rápido Móvel Pro - Versão 55.0 carregada com sucesso!");
+console.log("Caixa Rápido Móvel Pro - Versão 55.2 carregada com sucesso!");
 </script>
 </body>
 </html>

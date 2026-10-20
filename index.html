@@ -152,7 +152,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
                 </button>
             </div>
 
-            <!-- CENTRAL DE AUDITORIA & GESTÃO (DISPONÍVEL PARA ADMIN E FUNCIONÁRIOS CONFORME REGRA) -->
+            <!-- CENTRAL DE AUDITORIA & GESTÃO -->
             <div class="p-3 space-y-1 border-b bg-slate-50/70">
                 <p class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider px-2 mb-1 flex items-center gap-1">
                     <i class="fa-solid fa-shield-halved"></i> Auditoria & Fechamentos
@@ -239,7 +239,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
     </div>
 </main>
 
-<!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE (PDV LIMPO E OTIMIZADO) -->
+<!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE -->
 <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-5 h-16">
         <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -266,7 +266,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
 </nav>
 </div>
 
-<!-- MODAL DE AUDITORIA DE SANGRIAS E SUPRIMENTOS (MENU LATERAL) -->
+<!-- MODAL DE AUDITORIA DE SANGRIAS E SUPRIMENTOS -->
 <div id="modal-auditoria-gaveta-menu" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-2">
@@ -764,7 +764,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
             <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
         </div>
         <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-            <p><b>🏢 Central de Auditoria no Menu:</b> As sangrias, suprimentos, fechamentos e relatórios de operadores agora ficam centralizados no menu lateral sanduíche para manter o Caixa (PDV) limpo e ágil.</p>
+            <p><b>🏢 Central de Auditoria no Menu:</b> As sangrias, suprimentos, fechamentos e relatórios de operadores ficam centralizados no menu lateral sanduíche para manter o Caixa (PDV) limpo e ágil.</p>
             <p><b>💼 Modos de Operação (MEI vs. Estrutura Maior):</b> Você pode alternar o perfil da empresa no seu Perfil. No Modo MEI, a complexidade de custos e investimentos em estoque é simplificada. No Modo Estrutura Maior, o DRE e os relatórios patrimoniais de estoque são totalmente ativados.</p>
         </div>
     </div>
@@ -1249,17 +1249,22 @@ async function confirmarVinculoNovoPatrao() {
         }
     } catch(e) {}
 
-    perfilNegocio.empresaId = info.empresaId;
-    perfilNegocio.nomeLoja = info.nomeLoja;
-    perfilNegocio.tipo = info.tipo;
-    perfilNegocio.ramo = info.ramo;
-    perfilNegocio.modoNegocio = info.modoNegocio;
-    perfilNegocio.nomeUsuario = info.nomeFuncionarioSlot;
-    perfilNegocio.funcaoUsuario = "Funcionário / Operador";
-    perfilNegocio.slotId = info.slotId;
+    perfilNegocio = {
+        nomeLoja: info.nomeLoja,
+        nomeUsuario: info.nomeFuncionarioSlot,
+        funcaoUsuario: "Funcionário / Operador",
+        tipo: info.tipo,
+        ramo: info.ramo,
+        modoNegocio: info.modoNegocio,
+        empresaId: info.empresaId,
+        slotId: info.slotId,
+        slotsFuncionarios: []
+    };
 
     persistirDadosCompletos();
+    await user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
     await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
+
     fecharModalVincularNovoPatrao();
     alert(`✅ Vínculo realizado com sucesso!\n\nConectado como ${info.nomeFuncionarioSlot} em: ${info.nomeLoja}`);
     await puxarDadosIniciaisDaEmpresa(info.empresaId);
@@ -1498,7 +1503,7 @@ if (localStorage.getItem('crm_theme_dark') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-// FUNÇÕES DO MENU DE AUDITORIA (MOVIDAS PARA O MENU LATERAL SANDUÍCHE)
+// FUNÇÕES DO MENU DE AUDITORIA
 function abrirHistoricoFechamentos() {
     const box = document.getElementById('lista-historico-fechamentos-box');
     if (historicoFechamentos.length === 0) {
@@ -1669,7 +1674,24 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     } catch(e) {}
 }
 
-function showStep1CadastroAcesso() {
+async function showStep1CadastroAcesso() {
+    // 1. Encerra qualquer sessão Firebase ativa antes de novo cadastro/vínculo
+    if (auth.currentUser) {
+        await auth.signOut();
+    }
+    
+    // 2. Limpa variáveis de perfil em memória
+    perfilNegocio = {
+        nomeLoja: 'Caixa Rápido Móvel Pro',
+        tipo: 'PF',
+        ramo: 'Produtos',
+        nomeUsuario: '',
+        funcaoUsuario: 'Proprietário / Gerente',
+        empresaId: '',
+        modoNegocio: 'completo',
+        slotId: null
+    };
+
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)';
     document.getElementById('content-inicio').innerHTML = `
@@ -1914,12 +1936,13 @@ function criarContaFirebaseFinal() {
 
 async function concluirVinculoUsuarioAutenticado(user) {
     let uidGerado = user.uid;
-    let empresaIdVinculo = cadastroTemp.codigoConvite ? (window.tempPatraoVinculado ? window.tempPatraoVinculado.empresaId : uidGerado) : uidGerado;
+    let eFuncionario = Boolean(cadastroTemp.codigoConvite && cadastroTemp.empresaPatraoInfo);
+    let empresaIdVinculo = eFuncionario ? cadastroTemp.empresaPatraoInfo.empresaId : uidGerado;
 
-    if (cadastroTemp.codigoConvite && cadastroTemp.empresaPatraoInfo) {
+    if (eFuncionario) {
         try {
-            let ref = db.collection("perfis").doc(empresaIdVinculo);
-            let snap = await ref.get();
+            let refPatrao = db.collection("perfis").doc(empresaIdVinculo);
+            let snap = await refPatrao.get();
             if (snap.exists) {
                 let dados = snap.data();
                 if (dados.slotsFuncionarios) {
@@ -1928,30 +1951,29 @@ async function concluirVinculoUsuarioAutenticado(user) {
                             s.userUid = uidGerado;
                         }
                     });
-                    slotsFuncionarios = dados.slotsFuncionarios;
-                    await ref.update({ slotsFuncionarios: slotsFuncionarios });
+                    await refPatrao.update({ slotsFuncionarios: dados.slotsFuncionarios });
                 }
             }
         } catch(e) {}
-        await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
     }
 
     perfilNegocio = {
-        nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
-        nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Operador",
-        funcaoUsuario: cadastroTemp.funcaoUsuario,
-        tipo: cadastroTemp.tipo || "PF",
-        ramo: cadastroTemp.ramo || "Produtos",
-        modoNegocio: cadastroTemp.modoNegocio || "completo",
+        nomeLoja: eFuncionario ? cadastroTemp.empresaPatraoInfo.nomeLoja : (cadastroTemp.nomeLoja || "Minha Loja"),
+        nomeUsuario: eFuncionario ? cadastroTemp.empresaPatraoInfo.nomeFuncionarioSlot : (cadastroTemp.nomeUsuario || "Operador"),
+        funcaoUsuario: eFuncionario ? "Funcionário / Operador" : "Proprietário / Gerente",
+        tipo: eFuncionario ? cadastroTemp.empresaPatraoInfo.tipo : (cadastroTemp.tipo || "PF"),
+        ramo: eFuncionario ? cadastroTemp.empresaPatraoInfo.ramo : (cadastroTemp.ramo || "Produtos"),
+        modoNegocio: eFuncionario ? (cadastroTemp.empresaPatraoInfo.modoNegocio || "completo") : (cadastroTemp.modoNegocio || "completo"),
         empresaId: empresaIdVinculo,
-        slotId: cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.slotId : null,
-        slotsFuncionarios: slotsFuncionarios
+        slotId: eFuncionario ? cadastroTemp.empresaPatraoInfo.slotId : null,
+        slotsFuncionarios: eFuncionario ? [] : slotsFuncionarios
     };
 
-    user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
-    persistirDadosCompletos();
+    await user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
     await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
+    persistirDadosCompletos();
 
+    await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
     iniciarListenersTempoReal(empresaIdVinculo);
     switchTab('inicio');
 }
@@ -2405,7 +2427,6 @@ function renderAbaInicio() {
     const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Rogério';
     const primeiroNome = nomeUser.split(' ')[0];
     const hojeStr = new Date().toLocaleDateString('pt-BR');
-    const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
 
     let inicio = licencaInfo.dataInicioLocal || Date.now();
     if (user && user.metadata && user.metadata.creationTime) {
@@ -2579,7 +2600,6 @@ function calcularTrocoEmTempoReal() {
     }
 }
 
-// RENDERIZAÇÃO DA ABA DE VENDAS (PDV LIMPO E FOCADO NO ATENDIMENTO)
 function renderAbaVendas() {
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -2753,7 +2773,7 @@ function renderAbaVendas() {
                 </div>
             </div>
 
-            <!-- AÇÕES RÁPIDAS DE GAVETA (SANGRIA, SUPRIMENTO E FECHAMENTO) -->
+            <!-- AÇÕES RÁPIDAS DE GAVETA -->
             <div class="border-t pt-3 space-y-2">
                 <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <i class="fa-solid fa-vault text-amber-600"></i> Operações de Gaveta
@@ -3832,39 +3852,53 @@ function sincronizarNuvemManual() {
     } else alert("Faça login.");
 }
 
+// ESCUTA DE AUTENTICAÇÃO DO FIREBASE (CORRIGIDA)
 auth.onAuthStateChanged(async (user) => {
     if (user) {
+        try {
+            let docUser = await db.collection("perfis").doc(user.uid).get();
+            if (docUser.exists) {
+                perfilNegocio = docUser.data();
+                if (perfilNegocio.slotsFuncionarios) {
+                    slotsFuncionarios = perfilNegocio.slotsFuncionarios;
+                }
+            } else {
+                perfilNegocio.nomeUsuario = user.displayName || 'Operador';
+            }
+        } catch(err) {
+            console.error("Erro ao carregar perfil:", err);
+        }
+
         let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
         if (!vinculadoAtivo) return;
 
-        db.collection("perfis").doc(user.uid).get().then(doc => {
-            if (doc.exists) {
-                perfilNegocio = doc.data();
-                if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
-                persistirDadosCompletos();
-            }
-            mostrarInterfaceAutenticada(true);
-            verificarLicencaStatus();
-            let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-            puxarDadosIniciaisDaEmpresa(empresaIdAtivo).then(() => {
-                iniciarListenersTempoReal(empresaIdAtivo);
-                switchTab('inicio');
-                verificarAlertasEstoqueValidadeAutomatico();
-            });
-        }).catch(() => {
-            mostrarInterfaceAutenticada(true);
-            verificarLicencaStatus();
-            let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-            iniciarListenersTempoReal(empresaIdAtivo);
-            switchTab('inicio');
-            verificarAlertasEstoqueValidadeAutomatico();
-        });
+        persistirDadosCompletos();
+        mostrarInterfaceAutenticada(true);
+        verificarLicencaStatus();
+
+        let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
+        await puxarDadosIniciaisDaEmpresa(empresaIdAtivo);
+        iniciarListenersTempoReal(empresaIdAtivo);
+        switchTab('inicio');
+        verificarAlertasEstoqueValidadeAutomatico();
     } else {
         if (unsubscribeProdutos) unsubscribeProdutos();
         if (unsubscribeVendas) unsubscribeVendas();
         if (unsubscribeClientes) unsubscribeClientes();
         if (unsubscribeSangrias) unsubscribeSangrias();
         if (unsubscribeFechamentos) unsubscribeFechamentos();
+
+        perfilNegocio = {
+            nomeLoja: 'Caixa Rápido Móvel Pro',
+            tipo: 'PF',
+            ramo: 'Produtos',
+            nomeUsuario: '',
+            funcaoUsuario: 'Proprietário / Gerente',
+            empresaId: '',
+            modoNegocio: 'completo',
+            slotId: null
+        };
+
         mostrarInterfaceAutenticada(false);
         showLoginForm();
     }

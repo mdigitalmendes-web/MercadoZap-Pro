@@ -886,7 +886,6 @@ async function verificarIntegridadeVinculoAtivo() {
         }
         let dadosPatrao = docPatrao.data();
         if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
-            // VERIFICAÇÃO RIGOROSA POR E-MAIL E UID
             let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.toLowerCase() === user.email.toLowerCase()) || s.userUid === user.uid));
             if (!meuSlot) {
                 alert("🚫 ATENÇÃO DE SEGURANÇA: O seu e-mail não corresponde ao slot de funcionário desta empresa!");

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Caixa Rápido Móvel Pro v54.0 (Modos MEI/Completo & Auditoria no Menu)</title>
+<title>Caixa Rápido Móvel Pro v55.0 (Vínculo por E-mail & Aniversários)</title>
 <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -144,7 +144,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
                 </button>
                 <button id="menu-btn-gerenciar-funcionarios" onclick="fecharDrawerNavegacao(); abrirModalGerenciarFuncionarios();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
                     <i class="fa-solid fa-users-gear text-indigo-600 w-5 text-center"></i>
-                    <span>Gerenciar Funcionários e PINs (Até 3)</span>
+                    <span>Gerenciar Funcionários & E-mails (Até 3)</span>
                 </button>
                 <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
                     <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
@@ -152,7 +152,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
                 </button>
             </div>
 
-            <!-- CENTRAL DE AUDITORIA & GESTÃO -->
+            <!-- CENTRAL DE AUDITORIA & GESTÃO (DISPONÍVEL PARA ADMIN E FUNCIONÁRIOS CONFORME REGRA) -->
             <div class="p-3 space-y-1 border-b bg-slate-50/70">
                 <p class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider px-2 mb-1 flex items-center gap-1">
                     <i class="fa-solid fa-shield-halved"></i> Auditoria & Fechamentos
@@ -239,7 +239,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
     </div>
 </main>
 
-<!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE -->
+<!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE (PDV LIMPO E OTIMIZADO) -->
 <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
     <div class="grid grid-cols-5 h-16">
         <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -266,7 +266,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
 </nav>
 </div>
 
-<!-- MODAL DE AUDITORIA DE SANGRIAS E SUPRIMENTOS -->
+<!-- MODAL DE AUDITORIA DE SANGRIAS E SUPRIMENTOS (MENU LATERAL) -->
 <div id="modal-auditoria-gaveta-menu" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-2">
@@ -330,17 +330,17 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
     </div>
 </div>
 
-<!-- MODAL DE GESTÃO UNIFICADA DE FUNCIONÁRIOS (ATÉ 3 SLOTS FIXOS COM PIN) -->
+<!-- MODAL DE GESTÃO UNIFICADA DE FUNCIONÁRIOS (ATÉ 3 SLOTS COM PIN, E-MAIL E NASCIMENTO) -->
 <div id="modal-gerenciar-funcionarios" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-2">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                <i class="fa-solid fa-users-gear text-indigo-600"></i> Gestão de Funcionários & PINs (Até 3)
+                <i class="fa-solid fa-users-gear text-indigo-600"></i> Gestão de Funcionários & E-mails
             </h3>
             <button onclick="fecharModalGerenciarFuncionarios()" class="text-slate-500 text-xl font-bold">&times;</button>
         </div>
         <p class="text-xs text-slate-600 leading-relaxed">
-            Cadastre o nome do funcionário e defina um PIN numérico (4 a 6 dígitos). O sistema gerará o código de vínculo único do operador.
+            Cadastre o nome, e-mail exato do app, PIN e data de nascimento do funcionário para garantir a segurança do acesso.
         </p>
         <div class="space-y-3 pt-1">
             <div id="lista-slots-funcionarios-box" class="space-y-2.5 text-xs"></div>
@@ -764,7 +764,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
             <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
         </div>
         <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-            <p><b>🏢 Central de Auditoria no Menu:</b> As sangrias, suprimentos, fechamentos e relatórios de operadores ficam centralizados no menu lateral sanduíche para manter o Caixa (PDV) limpo e ágil.</p>
+            <p><b>🏢 Central de Auditoria no Menu:</b> As sangrias, suprimentos, fechamentos e relatórios de operadores agora ficam centralizados no menu lateral sanduíche para manter o Caixa (PDV) limpo e ágil.</p>
             <p><b>💼 Modos de Operação (MEI vs. Estrutura Maior):</b> Você pode alternar o perfil da empresa no seu Perfil. No Modo MEI, a complexidade de custos e investimentos em estoque é simplificada. No Modo Estrutura Maior, o DRE e os relatórios patrimoniais de estoque são totalmente ativados.</p>
         </div>
     </div>
@@ -805,9 +805,9 @@ let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [];
 let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5, validadeGeralDias: 30 };
 
 let slotsFuncionarios = JSON.parse(localStorage.getItem('crm_slots_func')) || [
-    { id: 1, nome: "", codigo: "", pin: "", ativo: false, userUid: "" },
-    { id: 2, nome: "", codigo: "", pin: "", ativo: false, userUid: "" },
-    { id: 3, nome: "", codigo: "", pin: "", ativo: false, userUid: "" }
+    { id: 1, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" },
+    { id: 2, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" },
+    { id: 3, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" }
 ];
 
 let carrinho = [];
@@ -886,9 +886,10 @@ async function verificarIntegridadeVinculoAtivo() {
         }
         let dadosPatrao = docPatrao.data();
         if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
-            let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && (s.userUid === user.uid || (s.nome && s.nome.toLowerCase() === (perfilNegocio.nomeUsuario || '').toLowerCase())));
+            // VERIFICAÇÃO RIGOROSA POR E-MAIL E UID
+            let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.toLowerCase() === user.email.toLowerCase()) || s.userUid === user.uid));
             if (!meuSlot) {
-                alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi revogado ou alterado pelo administrador!");
+                alert("🚫 ATENÇÃO DE SEGURANÇA: O seu e-mail não corresponde ao slot de funcionário desta empresa!");
                 fazerLogoutSeguro();
                 return false;
             }
@@ -1001,6 +1002,20 @@ function dispararAlertaPDVEstoqueBaixo(nomeProduto, qtdAtual) {
 function fecharAlertaPDV() {
     const toast = document.getElementById('toast-alerta-pdv');
     if (toast) toast.classList.remove('show');
+}
+
+function verificarAniversariantesDoDia() {
+    const hoje = new Date();
+    const diaAtual = String(hoje.getDate()).padStart(2, '0');
+    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+
+    return slotsFuncionarios.filter(s => {
+        if (!s.ativo || !s.nascimento) return false;
+        const partes = s.nascimento.split('-');
+        if (partes.length < 3) return false;
+        const [ano, mes, dia] = partes;
+        return dia === diaAtual && mes === mesAtual;
+    });
 }
 
 function verificarAlertasEstoqueValidadeAutomatico() {
@@ -1241,6 +1256,7 @@ async function confirmarVinculoNovoPatrao() {
                 dados.slotsFuncionarios.forEach(s => {
                     if (s.id === info.slotId) {
                         s.userUid = user.uid;
+                        s.email = user.email.toLowerCase();
                     }
                 });
                 slotsFuncionarios = dados.slotsFuncionarios;
@@ -1249,22 +1265,17 @@ async function confirmarVinculoNovoPatrao() {
         }
     } catch(e) {}
 
-    perfilNegocio = {
-        nomeLoja: info.nomeLoja,
-        nomeUsuario: info.nomeFuncionarioSlot,
-        funcaoUsuario: "Funcionário / Operador",
-        tipo: info.tipo,
-        ramo: info.ramo,
-        modoNegocio: info.modoNegocio,
-        empresaId: info.empresaId,
-        slotId: info.slotId,
-        slotsFuncionarios: []
-    };
+    perfilNegocio.empresaId = info.empresaId;
+    perfilNegocio.nomeLoja = info.nomeLoja;
+    perfilNegocio.tipo = info.tipo;
+    perfilNegocio.ramo = info.ramo;
+    perfilNegocio.modoNegocio = info.modoNegocio;
+    perfilNegocio.nomeUsuario = info.nomeFuncionarioSlot;
+    perfilNegocio.funcaoUsuario = "Funcionário / Operador";
+    perfilNegocio.slotId = info.slotId;
 
     persistirDadosCompletos();
-    await user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
     await db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
-
     fecharModalVincularNovoPatrao();
     alert(`✅ Vínculo realizado com sucesso!\n\nConectado como ${info.nomeFuncionarioSlot} em: ${info.nomeLoja}`);
     await puxarDadosIniciaisDaEmpresa(info.empresaId);
@@ -1288,64 +1299,71 @@ function renderizarListaSlotsFuncionariosUnificada() {
             <div class="flex justify-between items-center">
                 <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Operador</span>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${slot.ativo ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-600'}">
-                    ${slot.ativo ? 'Ativo' : 'Disponível'}
+                    ${slot.ativo ? 'Ativo' : 'Livre'}
                 </span>
+            </div>
+            <div>
+                <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nome Completo *</label>
+                <input type="text" id="slot-nome-${index}" value="${slot.nome || ''}" placeholder="Ex: Carlos Silva" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">E-mail Cadastrado no App *</label>
+                <input type="email" id="slot-email-${index}" value="${slot.email || ''}" placeholder="funcionario@email.com" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-teal-800">
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nome do Funcionário *</label>
-                    <input type="text" id="slot-nome-${index}" value="${slot.nome || ''}" placeholder="Ex: Carlos Silva" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
+                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal (4-6 dig) *</label>
+                    <input type="password" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="****" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold tracking-widest text-indigo-900">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal (4-6 dig.) *</label>
-                    <input type="text" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="Ex: 1234" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold text-indigo-900">
+                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Data de Nascimento</label>
+                    <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
                 </div>
             </div>
-            <div class="flex items-center justify-between gap-2 pt-1">
-                <div class="min-w-0 flex-1">
-                    <span class="text-[10px] text-slate-500 block">Código de Convite:</span>
-                    <b class="font-mono text-xs text-teal-800 truncate">${slot.codigo || 'Não gerado'}</b>
-                </div>
-                <div class="flex gap-1.5 flex-shrink-0">
-                    <button onclick="gerarOuAtualizarCodigoSlot(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1.5 rounded-xl text-[11px] shadow">
-                        ⚡ ${slot.codigo ? 'Salvar/Regerar' : 'Gerar Código'}
-                    </button>
-                    ${slot.ativo ? `
-                    <button onclick="desligarSlotFuncionario(${index})" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded-xl text-[11px] border border-red-200">
-                        🚫 Desligar
-                    </button>
-                    ` : ''}
-                </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="salvarSlotFuncionario(${index})" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-[11px] shadow">
+                    💾 Salvar Slot
+                </button>
+                ${slot.ativo ? `
+                <button onclick="desligarSlotFuncionario(${index})" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-[11px] border border-red-200">
+                    🚫 Desativar
+                </button>
+                ` : ''}
             </div>
         </div>
     `).join('');
 }
 
-function gerarOuAtualizarCodigoSlot(index) {
-    const nomeInput = document.getElementById(`slot-nome-${index}`).value.trim();
-    const pinInput = document.getElementById(`slot-pin-${index}`).value.trim();
-    if (!nomeInput || !pinInput || pinInput.length < 4) {
-        alert("Preencha o nome do funcionário e um PIN com no mínimo 4 dígitos!");
+function salvarSlotFuncionario(index) {
+    const nome = document.getElementById(`slot-nome-${index}`).value.trim();
+    const email = document.getElementById(`slot-email-${index}`).value.trim().toLowerCase();
+    const pin = document.getElementById(`slot-pin-${index}`).value.trim();
+    const nascimento = document.getElementById(`slot-nasc-${index}`).value;
+
+    if (!nome || !email || !pin || pin.length < 4) {
+        alert("Preencha o nome, e-mail válido e um PIN numérico (mín. 4 dígitos).");
         return;
     }
-    let codigoGerado = slotsFuncionarios[index].codigo || ("FUNC-" + Math.floor(1000 + Math.random() * 9000));
+
     slotsFuncionarios[index] = {
-        id: slotsFuncionarios[index].id || Date.now(),
-        nome: nomeInput,
-        codigo: codigoGerado,
-        pin: pinInput,
+        id: index + 1,
+        nome: nome,
+        email: email,
+        pin: pin,
+        nascimento: nascimento,
         ativo: true,
         userUid: slotsFuncionarios[index].userUid || ""
     };
+
     persistirDadosCompletos();
     renderizarListaSlotsFuncionariosUnificada();
-    alert(`✅ Salvo com sucesso para ${nomeInput}!\n\nCódigo: ${codigoGerado}\nPIN: ${pinInput}\nEnvie o código e o PIN para o funcionário.`);
+    alert(`✅ Funcionário ${nome} cadastrado e vinculado ao e-mail ${email}!`);
 }
 
 function desligarSlotFuncionario(index) {
     let nomeFunc = slotsFuncionarios[index].nome || `Funcionário ${index+1}`;
-    if (confirm(`Deseja realmente desligar ${nomeFunc}? O código e o PIN serão desativados.`)) {
-        slotsFuncionarios[index] = { id: index + 1, nome: "", codigo: "", pin: "", ativo: false, userUid: "" };
+    if (confirm(`Deseja realmente desligar ${nomeFunc}? O e-mail e PIN serão desativados.`)) {
+        slotsFuncionarios[index] = { id: index + 1, nome: "", email: "", pin: "", nascimento: "", ativo: false, userUid: "" };
         persistirDadosCompletos();
         renderizarListaSlotsFuncionariosUnificada();
         alert("✅ Funcionário desligado e acesso revogado!");
@@ -1503,7 +1521,7 @@ if (localStorage.getItem('crm_theme_dark') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-// FUNÇÕES DO MENU DE AUDITORIA
+// FUNÇÕES DO MENU DE AUDITORIA (MOVIDAS PARA O MENU LATERAL SANDUÍCHE)
 function abrirHistoricoFechamentos() {
     const box = document.getElementById('lista-historico-fechamentos-box');
     if (historicoFechamentos.length === 0) {
@@ -1621,7 +1639,7 @@ function showLoginForm() {
                 </form>
                 <div class="border-t pt-2.5 text-center">
                     <p class="text-xs text-slate-600">Primeiro acesso na empresa?</p>
-                    <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-0.5">Criar Conta / Vincular Código de Convite</button>
+                    <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-0.5">Criar Conta / Vincular E-mail</button>
                 </div>
             </div>
         </div>
@@ -1674,24 +1692,7 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     } catch(e) {}
 }
 
-async function showStep1CadastroAcesso() {
-    // 1. Encerra qualquer sessão Firebase ativa antes de novo cadastro/vínculo
-    if (auth.currentUser) {
-        await auth.signOut();
-    }
-    
-    // 2. Limpa variáveis de perfil em memória
-    perfilNegocio = {
-        nomeLoja: 'Caixa Rápido Móvel Pro',
-        tipo: 'PF',
-        ramo: 'Produtos',
-        nomeUsuario: '',
-        funcaoUsuario: 'Proprietário / Gerente',
-        empresaId: '',
-        modoNegocio: 'completo',
-        slotId: null
-    };
-
+function showStep1CadastroAcesso() {
     mostrarInterfaceAutenticada(false);
     document.getElementById('slider-container').style.transform = 'translateX(0%)';
     document.getElementById('content-inicio').innerHTML = `
@@ -1702,11 +1703,11 @@ async function showStep1CadastroAcesso() {
                         <i class="fa-solid fa-user-plus"></i>
                     </div>
                     <h2 class="text-xl font-bold text-slate-800">Primeiro Acesso / Cadastro</h2>
-                    <p class="text-xs text-slate-500">Passo 1 de 2: E-mail, Senha e Vínculo por PIN</p>
+                    <p class="text-xs text-slate-500">E-mail, Senha e Autenticação de Funcionário</p>
                 </div>
                 <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail para Acesso *</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Seu E-mail *</label>
                         <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
                     </div>
                     <div>
@@ -1714,10 +1715,9 @@ async function showStep1CadastroAcesso() {
                         <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
                     </div>
                     <div class="border-t pt-2 mt-2">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Se for Funcionário, informe os dados:</label>
-                        <input type="text" id="cad-convite" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="Código Convite (Ex: FUNC-1234)" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 font-bold text-amber-900 border-amber-300 uppercase">
-                        <input type="password" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN de Operador (4-6 dígitos)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold mt-2">
-                        <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-teal-800 bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1 mt-1">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Se for Funcionário, informe seu PIN:</label>
+                        <input type="password" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN de Operador (4-6 dígitos)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+                        <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-teal-800 bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1 mt-2">
                             <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
                             <p id="texto-operador-vinculado" class="text-indigo-900 font-extrabold"></p>
                         </div>
@@ -1740,10 +1740,10 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     const textoOperador = document.getElementById('texto-operador-vinculado');
     if (!boxStatus || !textoLoja) return;
 
-    let codLimpo = document.getElementById('cad-convite').value.trim();
+    let emailLimpo = document.getElementById('cad-email').value.trim().toLowerCase();
     let pinLimpo = document.getElementById('cad-pin').value.trim();
 
-    if (codLimpo.length < 5 || pinLimpo.length < 4) {
+    if (!emailLimpo || pinLimpo.length < 4) {
         boxStatus.classList.add('hidden');
         return;
     }
@@ -1757,7 +1757,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         snapshot.forEach(doc => {
             let dados = doc.data();
             if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-                let s = dados.slotsFuncionarios.find(item => item.codigo && item.codigo.toLowerCase() === codLimpo.toLowerCase() && item.pin === pinLimpo && item.ativo);
+                let s = dados.slotsFuncionarios.find(item => item.email && item.email.toLowerCase() === emailLimpo && item.pin === pinLimpo && item.ativo);
                 if (s) {
                     patraoEncontrado = dados;
                     empresaIdReal = doc.id;
@@ -1777,7 +1777,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
                 slotId: slotMatch.id
             };
             textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja do Patrão'}</b>`;
-            if (textoOperador) textoOperador.innerHTML = `👤 Operador Autenticado: <b>${slotMatch.nome}</b>`;
+            if (textoOperador) textoOperador.innerHTML = `👤 Operador Reconhecido: <b>${slotMatch.nome}</b>`;
             boxStatus.classList.remove('hidden');
         } else {
             window.tempPatraoVinculado = null;
@@ -1788,16 +1788,15 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     }
 }
 
-let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', modoNegocio: 'completo', codigoConvite: '', pinOperador: '', empresaPatraoInfo: null };
+let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', modoNegocio: 'completo', pinOperador: '', empresaPatraoInfo: null };
 
 async function handleStep1Cadastro(e) {
     e.preventDefault();
     cadastroTemp.email = document.getElementById('cad-email').value.trim();
     cadastroTemp.pass = document.getElementById('cad-pass').value;
-    cadastroTemp.codigoConvite = document.getElementById('cad-convite').value.trim();
     cadastroTemp.pinOperador = document.getElementById('cad-pin').value.trim();
 
-    if (cadastroTemp.codigoConvite) {
+    if (cadastroTemp.pinOperador) {
         if (window.tempPatraoVinculado) {
             cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
             cadastroTemp.funcaoUsuario = "Funcionário / Operador";
@@ -1810,7 +1809,7 @@ async function handleStep1Cadastro(e) {
             criarContaFirebaseFinal();
             return;
         } else {
-            alert("⚠️ Código de convite ou PIN do operador incorretos!");
+            alert("⚠️ E-mail ou PIN do operador incorretos para esta empresa!");
             return;
         }
     } else {
@@ -1936,44 +1935,45 @@ function criarContaFirebaseFinal() {
 
 async function concluirVinculoUsuarioAutenticado(user) {
     let uidGerado = user.uid;
-    let eFuncionario = Boolean(cadastroTemp.codigoConvite && cadastroTemp.empresaPatraoInfo);
-    let empresaIdVinculo = eFuncionario ? cadastroTemp.empresaPatraoInfo.empresaId : uidGerado;
+    let empresaIdVinculo = cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.empresaId : uidGerado;
 
-    if (eFuncionario) {
+    if (cadastroTemp.empresaPatraoInfo) {
         try {
-            let refPatrao = db.collection("perfis").doc(empresaIdVinculo);
-            let snap = await refPatrao.get();
+            let ref = db.collection("perfis").doc(empresaIdVinculo);
+            let snap = await ref.get();
             if (snap.exists) {
                 let dados = snap.data();
                 if (dados.slotsFuncionarios) {
                     dados.slotsFuncionarios.forEach(s => {
                         if (s.id === cadastroTemp.empresaPatraoInfo.slotId) {
                             s.userUid = uidGerado;
+                            s.email = user.email.toLowerCase();
                         }
                     });
-                    await refPatrao.update({ slotsFuncionarios: dados.slotsFuncionarios });
+                    slotsFuncionarios = dados.slotsFuncionarios;
+                    await ref.update({ slotsFuncionarios: slotsFuncionarios });
                 }
             }
         } catch(e) {}
+        await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
     }
 
     perfilNegocio = {
-        nomeLoja: eFuncionario ? cadastroTemp.empresaPatraoInfo.nomeLoja : (cadastroTemp.nomeLoja || "Minha Loja"),
-        nomeUsuario: eFuncionario ? cadastroTemp.empresaPatraoInfo.nomeFuncionarioSlot : (cadastroTemp.nomeUsuario || "Operador"),
-        funcaoUsuario: eFuncionario ? "Funcionário / Operador" : "Proprietário / Gerente",
-        tipo: eFuncionario ? cadastroTemp.empresaPatraoInfo.tipo : (cadastroTemp.tipo || "PF"),
-        ramo: eFuncionario ? cadastroTemp.empresaPatraoInfo.ramo : (cadastroTemp.ramo || "Produtos"),
-        modoNegocio: eFuncionario ? (cadastroTemp.empresaPatraoInfo.modoNegocio || "completo") : (cadastroTemp.modoNegocio || "completo"),
+        nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
+        nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Operador",
+        funcaoUsuario: cadastroTemp.funcaoUsuario,
+        tipo: cadastroTemp.tipo || "PF",
+        ramo: cadastroTemp.ramo || "Produtos",
+        modoNegocio: cadastroTemp.modoNegocio || "completo",
         empresaId: empresaIdVinculo,
-        slotId: eFuncionario ? cadastroTemp.empresaPatraoInfo.slotId : null,
-        slotsFuncionarios: eFuncionario ? [] : slotsFuncionarios
+        slotId: cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.slotId : null,
+        slotsFuncionarios: slotsFuncionarios
     };
 
-    await user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
-    await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
+    user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
     persistirDadosCompletos();
+    await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
 
-    await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
     iniciarListenersTempoReal(empresaIdVinculo);
     switchTab('inicio');
 }
@@ -1983,7 +1983,7 @@ function copiarCodigoConvitePatrao() {
     if (!user) return;
     let codigoLoja = perfilNegocio.empresaId || user.uid;
     navigator.clipboard.writeText(codigoLoja).then(() => {
-        alert(`📋 Código de Convite copiado com sucesso!\n\nEnvie este código para o seu funcionário colar no primeiro acesso:\n${codigoLoja}`);
+        alert(`📋 Código de Convite copiado com sucesso!\n\nEnvie este código para o seu funcionário:\n${codigoLoja}`);
     }).catch(() => {
         prompt("Copie o código abaixo:", codigoLoja);
     });
@@ -2426,7 +2426,6 @@ function renderAbaInicio() {
     const user = auth.currentUser;
     const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Rogério';
     const primeiroNome = nomeUser.split(' ')[0];
-    const hojeStr = new Date().toLocaleDateString('pt-BR');
 
     let inicio = licencaInfo.dataInicioLocal || Date.now();
     if (user && user.metadata && user.metadata.creationTime) {
@@ -2436,6 +2435,23 @@ function renderAbaInicio() {
     const msPassados = Date.now() - inicio;
     const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
     const diasRestantes = Math.max(0, licencaInfo.diasDegustacao - diasUsados);
+
+    let aniversariantesHoje = verificarAniversariantesDoDia();
+    let bannerAniversarioHTML = '';
+    if (aniversariantesHoje.length > 0) {
+        bannerAniversarioHTML = `
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl p-3.5 shadow-md flex items-center justify-between gap-2 border border-purple-400 animate-pulse">
+                <div class="flex items-center gap-3">
+                    <div class="text-2xl">🎉</div>
+                    <div>
+                        <h4 class="font-extrabold text-xs text-amber-300">Hoje é dia de Festa!</h4>
+                        <p class="text-[11px] text-purple-100">Aniversariante(s): <b>${aniversariantesHoje.map(a => a.nome).join(', ')}</b></p>
+                    </div>
+                </div>
+                <button onclick="alert('Deseje um Feliz Aniversário para equipe!')" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl shadow">Parabenizar</button>
+            </div>
+        `;
+    }
 
     document.getElementById('content-inicio').innerHTML = `
         <div class="space-y-4 p-2">
@@ -2454,6 +2470,8 @@ function renderAbaInicio() {
                     <span id="sininho-badge-count" class="hidden absolute -top-1 -right-1 bg-red-600 text-white font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
                 </div>
             </div>
+
+            ${bannerAniversarioHTML}
 
             <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
                 <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -2511,7 +2529,7 @@ function renderAbaInicio() {
                     </span>
                 </div>
                 <p class="text-[11px] text-slate-300 leading-relaxed">
-                    O <b>Caixa Rápido Móvel Pro v54.0</b> conta com adaptação inteligente para MEI e empresas completas, mantendo o PDV limpo e a auditoria no Menu Lateral.
+                    O <b>Caixa Rápido Móvel Pro v55.0</b> protege o acesso dos funcionários através do vínculo único por e-mail e monitora aniversários da equipe.
                 </p>
                 <div class="pt-1">
                     <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
@@ -2600,6 +2618,7 @@ function calcularTrocoEmTempoReal() {
     }
 }
 
+// RENDERIZAÇÃO DA ABA DE VENDAS (PDV LIMPO E FOCADO NO ATENDIMENTO)
 function renderAbaVendas() {
     const hojeStr = new Date().toLocaleDateString('pt-BR');
     const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
@@ -2773,7 +2792,7 @@ function renderAbaVendas() {
                 </div>
             </div>
 
-            <!-- AÇÕES RÁPIDAS DE GAVETA -->
+            <!-- AÇÕES RÁPIDAS DE GAVETA (SANGRIA, SUPRIMENTO E FECHAMENTO) -->
             <div class="border-t pt-3 space-y-2">
                 <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <i class="fa-solid fa-vault text-amber-600"></i> Operações de Gaveta
@@ -3852,59 +3871,45 @@ function sincronizarNuvemManual() {
     } else alert("Faça login.");
 }
 
-// ESCUTA DE AUTENTICAÇÃO DO FIREBASE (CORRIGIDA)
 auth.onAuthStateChanged(async (user) => {
     if (user) {
-        try {
-            let docUser = await db.collection("perfis").doc(user.uid).get();
-            if (docUser.exists) {
-                perfilNegocio = docUser.data();
-                if (perfilNegocio.slotsFuncionarios) {
-                    slotsFuncionarios = perfilNegocio.slotsFuncionarios;
-                }
-            } else {
-                perfilNegocio.nomeUsuario = user.displayName || 'Operador';
-            }
-        } catch(err) {
-            console.error("Erro ao carregar perfil:", err);
-        }
-
         let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
         if (!vinculadoAtivo) return;
 
-        persistirDadosCompletos();
-        mostrarInterfaceAutenticada(true);
-        verificarLicencaStatus();
-
-        let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-        await puxarDadosIniciaisDaEmpresa(empresaIdAtivo);
-        iniciarListenersTempoReal(empresaIdAtivo);
-        switchTab('inicio');
-        verificarAlertasEstoqueValidadeAutomatico();
+        db.collection("perfis").doc(user.uid).get().then(doc => {
+            if (doc.exists) {
+                perfilNegocio = doc.data();
+                if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
+                persistirDadosCompletos();
+            }
+            mostrarInterfaceAutenticada(true);
+            verificarLicencaStatus();
+            let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
+            puxarDadosIniciaisDaEmpresa(empresaIdAtivo).then(() => {
+                iniciarListenersTempoReal(empresaIdAtivo);
+                switchTab('inicio');
+                verificarAlertasEstoqueValidadeAutomatico();
+            });
+        }).catch(() => {
+            mostrarInterfaceAutenticada(true);
+            verificarLicencaStatus();
+            let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
+            iniciarListenersTempoReal(empresaIdAtivo);
+            switchTab('inicio');
+            verificarAlertasEstoqueValidadeAutomatico();
+        });
     } else {
         if (unsubscribeProdutos) unsubscribeProdutos();
         if (unsubscribeVendas) unsubscribeVendas();
         if (unsubscribeClientes) unsubscribeClientes();
         if (unsubscribeSangrias) unsubscribeSangrias();
         if (unsubscribeFechamentos) unsubscribeFechamentos();
-
-        perfilNegocio = {
-            nomeLoja: 'Caixa Rápido Móvel Pro',
-            tipo: 'PF',
-            ramo: 'Produtos',
-            nomeUsuario: '',
-            funcaoUsuario: 'Proprietário / Gerente',
-            empresaId: '',
-            modoNegocio: 'completo',
-            slotId: null
-        };
-
         mostrarInterfaceAutenticada(false);
         showLoginForm();
     }
 });
 
-console.log("Caixa Rápido Móvel Pro - Versão 54.0 carregada com sucesso!");
+console.log("Caixa Rápido Móvel Pro - Versão 55.0 carregada com sucesso!");
 </script>
 </body>
 </html>

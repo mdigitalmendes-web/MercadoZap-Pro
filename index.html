@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Caixa Rápido Móvel Pro v57.0 (Fase 2)</title>
+<title>Caixa Rápido Móvel Pro v57.1 (Fase 2.1)</title>
 <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -124,7 +124,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <div class="flex items-center justify-between mt-2">
 <div class="inline-flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-amber-300">
 <i class="fa-solid fa-id-badge"></i>
-<span id="drawer-user-funcao">Proprietário / Gerente</span>
+<span id="drawer-user-funcao">Proprietário / Sócio / Gerente</span>
 </div>
 <button onclick="copiarCodigoConvitePatrao()" id="btn-copiar-convite" class="hidden text-[10px] bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold px-2 py-1 rounded-lg shadow">
 📋 Código Empresa
@@ -147,7 +147,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </button>
 <button id="menu-btn-gerenciar-funcionarios" onclick="fecharDrawerNavegacao(); abrirModalGerenciarFuncionarios();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
 <i class="fa-solid fa-users-gear text-indigo-600 w-5 text-center"></i>
-<span>Gerenciar Funcionários & E-mails (Até 3)</span>
+<span>Gerenciar Equipe, Sócios & Gerentes</span>
 </button>
 <button onclick="sincronizarNuvemManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700 mt-1">
 <i class="fa-solid fa-cloud-arrow-up text-blue-600 w-5 text-center"></i>
@@ -169,11 +169,11 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </button>
 <button id="menu-btn-auditoria-operadores" onclick="fecharDrawerNavegacao(); abrirModalAuditoriaOperadoresMenu();" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-white rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/80 mt-1">
 <i class="fa-solid fa-users-viewfinder text-indigo-600 w-5 text-center"></i>
-<span>Auditoria de Vendas por Operador (Admin)</span>
+<span>Auditoria de Vendas por Operador</span>
 </button>
 </div>
 <div id="menu-secao-ferramentas-admin" class="p-3 space-y-1 border-b">
-<p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas Gestão (Admin)</p>
+<p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Ferramentas Gestão</p>
 <button onclick="fecharDrawerNavegacao(); abrirModalDespesas();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
 <i class="fa-solid fa-file-invoice-dollar text-red-600 w-5 text-center"></i>
 <span>Controle de Contas a Pagar / Despesas</span>
@@ -199,10 +199,6 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <button id="menu-btn-excluir-conta-empresa" onclick="excluirContaEempresaTotalmente()" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600">
 <i class="fa-solid fa-user-slash w-5 text-center"></i>
 <span>Excluir Conta e Dados da Empresa</span>
-</button>
-<button id="menu-btn-limpeza-total" onclick="executarLimpezaTotalManual()" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600 mt-1">
-<i class="fa-solid fa-trash-can w-5 text-center"></i>
-<span>Apagar Dados e Resetar App</span>
 </button>
 </div>
 </div>
@@ -277,7 +273,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl border max-h-[85vh] overflow-y-auto">
 <div class="flex justify-between items-center border-b pb-2">
 <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-<i class="fa-solid fa-users-viewfinder text-indigo-600"></i> Vendas por Operador (Admin)
+<i class="fa-solid fa-users-viewfinder text-indigo-600"></i> Vendas por Operador
 </h3>
 <button onclick="fecharModalAuditoriaOperadoresMenu()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
@@ -288,7 +284,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl border max-h-[85vh] overflow-y-auto">
 <div class="flex justify-between items-center border-b pb-2">
 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-<i class="fa-solid fa-users-gear text-indigo-600"></i> Gestão de Funcionários & E-mails
+<i class="fa-solid fa-users-gear text-indigo-600"></i> Gestão de Equipe, Sócios & Gerentes
 </h3>
 <button onclick="fecharModalGerenciarFuncionarios()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
@@ -475,7 +471,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </div>
 <div id="box-custo-admin" class="grid grid-cols-2 gap-2 bg-slate-100 p-2 rounded-xl border">
 <div>
-<label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Preço Custo R$ (Dono)</label>
+<label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Preço Custo R$ (Dono/Sócio)</label>
 <input type="number" step="0.01" id="cad-prod-preco-custo" oninput="calcularEExibirMargemLucro()" placeholder="0.00" class="w-full p-2 border rounded-lg text-xs bg-white">
 </div>
 <div class="flex flex-col justify-end">
@@ -694,12 +690,13 @@ Confirmar e Salvar no Caixa
 <div id="modal-ajuda" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
 <div class="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
 <div class="flex justify-between items-center border-b pb-2">
-<h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema</h3>
+<h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-purple-600"></i> Guia do Sistema v57.1</h3>
 <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
 <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-<p><b>🏢 Central de Auditoria no Menu:</b> Sangrias, suprimentos, fechamentos e relatórios ficam centralizados no menu lateral.</p>
-<p><b>🎂 Aniversariantes & Desvinculação:</b> Mensagens automáticas para aniversariantes e opção segura de desvinculação local para funcionários.</p>
+<p><b>🏢 Gestão de Equipe:</b> Agora suporta perfis de Proprietário, Sócio, Gerente e Funcionário/Operador.</p>
+<p><b>🔔 Notificações de Desvinculação:</b> Administradores, sócios e gerentes recebem avisos imediatos no sininho caso um funcionário se desvincule.</p>
+<p><b>🔐 Fechamento de Caixa Inteligente:</b> Ao fechar o turno, os valores do dia são zerados no painel e arquivados no histórico.</p>
 </div>
 </div>
 </div>
@@ -732,11 +729,12 @@ let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || []
 let historicoFechamentos = JSON.parse(localStorage.getItem('crm_fechamentos')) || [];
 let despesasFixas = JSON.parse(localStorage.getItem('crm_despesas')) || [];
 let clientes = JSON.parse(localStorage.getItem('crm_clientes')) || [];
+let notificacoesDesvinculacao = JSON.parse(localStorage.getItem('crm_notif_desv')) || [];
 let minimosPadrao = JSON.parse(localStorage.getItem('crm_minimos_padrao')) || { un: 5, kg: 2.0, cx: 3, L: 5, validadeGeralDias: 30 };
 let slotsFuncionarios = JSON.parse(localStorage.getItem('crm_slots_func')) || [
-  { id: 1, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" },
-  { id: 2, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" },
-  { id: 3, nome: "", email: "", codigo: "", pin: "", nascimento: "", ativo: false, userUid: "" }
+  { id: 1, nome: "", email: "", codigo: "", pin: "", nascimento: "", funcao: "Operador", ativo: false, userUid: "" },
+  { id: 2, nome: "", email: "", codigo: "", pin: "", nascimento: "", funcao: "Operador", ativo: false, userUid: "" },
+  { id: 3, nome: "", email: "", codigo: "", pin: "", nascimento: "", funcao: "Operador", ativo: false, userUid: "" }
 ];
 let carrinho = [];
 let clienteAtualVenda = { nome: '', zap: '' };
@@ -757,9 +755,15 @@ let unsubscribeVendas = null;
 let unsubscribeClientes = null;
 let unsubscribeSangrias = null;
 let unsubscribeFechamentos = null;
+let unsubscribePerfil = null;
 
-function eAdmin() {
-  return (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('proprietário') || (perfilNegocio.funcaoUsuario || '').toLowerCase().includes('gerente');
+function eAdminOuGerenteOuSocio() {
+  const f = (perfilNegocio.funcaoUsuario || '').toLowerCase();
+  return f.includes('proprietário') || f.includes('gerente') || f.includes('sócio') || f.includes('socio');
+}
+function eAdminOuSocio() {
+  const f = (perfilNegocio.funcaoUsuario || '').toLowerCase();
+  return f.includes('proprietário') || f.includes('sócio') || f.includes('socio');
 }
 function eModoMei() {
   return perfilNegocio.modoNegocio === 'mei';
@@ -768,7 +772,7 @@ function mostrarInterfaceAutenticada(mostrar) {
   const bottomNav = document.getElementById('app-bottom-nav');
   const bottomNavGrid = document.getElementById('bottom-nav-grid');
   if (mostrar) {
-    if (eAdmin()) {
+    if (eAdminOuGerenteOuSocio()) {
       bottomNavGrid.className = "grid grid-cols-5 h-16";
       document.getElementById('bottom-btn-relatorios').style.display = 'flex';
     } else {
@@ -796,7 +800,7 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 async function verificarIntegridadeVinculoAtivo() {
-  if (eAdmin()) return true;
+  if (eAdminOuGerenteOuSocio()) return true;
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;
   try {
@@ -826,11 +830,12 @@ function persistirDadosCompletos() {
   localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
   localStorage.setItem('crm_despesas', JSON.stringify(despesasFixas));
   localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
+  localStorage.setItem('crm_notif_desv', JSON.stringify(notificacoesDesvinculacao));
   localStorage.setItem('crm_perfil', JSON.stringify(perfilNegocio));
   const user = auth.currentUser;
-  if (user && eAdmin()) {
+  if (user && eAdminOuSocio()) {
     let empresaIdDest = perfilNegocio.empresaId || user.uid;
-    db.collection("perfis").doc(empresaIdDest).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(()=>{});
+    db.collection("perfis").doc(empresaIdDest).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios, notificacoesDesvinculacao: notificacoesDesvinculacao }, { merge: true }).catch(()=>{});
   }
 }
 function iniciarListenersTempoReal(empresaId) {
@@ -840,6 +845,23 @@ function iniciarListenersTempoReal(empresaId) {
   if (unsubscribeClientes) unsubscribeClientes();
   if (unsubscribeSangrias) unsubscribeSangrias();
   if (unsubscribeFechamentos) unsubscribeFechamentos();
+  if (unsubscribePerfil) unsubscribePerfil();
+
+  unsubscribePerfil = db.collection("perfis").doc(empresaId).onSnapshot((doc) => {
+    if (doc.exists) {
+      let data = doc.data();
+      if (data.slotsFuncionarios) {
+        slotsFuncionarios = data.slotsFuncionarios;
+        localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
+      }
+      if (data.notificacoesDesvinculacao) {
+        notificacoesDesvinculacao = data.notificacoesDesvinculacao;
+        localStorage.setItem('crm_notif_desv', JSON.stringify(notificacoesDesvinculacao));
+        verificarAlertasEstoqueValidadeAutomatico();
+      }
+    }
+  }, () => {});
+
   unsubscribeProdutos = db.collection("empresas").doc(empresaId).collection("produtos")
     .onSnapshot((snapshot) => {
       let prodsRemotos = [];
@@ -848,7 +870,7 @@ function iniciarListenersTempoReal(empresaId) {
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       renderAba();
       verificarAlertasEstoqueValidadeAutomatico();
-    }, (err) => {});
+    }, () => {});
   unsubscribeVendas = db.collection("empresas").doc(empresaId).collection("vendas")
     .onSnapshot((snapshot) => {
       let vendasRemotas = [];
@@ -856,7 +878,7 @@ function iniciarListenersTempoReal(empresaId) {
       vendas = vendasRemotas.sort((a, b) => (b.id || 0) - (a.id || 0));
       localStorage.setItem('crm_vendas', JSON.stringify(vendas));
       renderAba();
-    }, (err) => {});
+    }, () => {});
   unsubscribeClientes = db.collection("empresas").doc(empresaId).collection("clientes")
     .onSnapshot((snapshot) => {
       let clientesRemotos = [];
@@ -864,7 +886,7 @@ function iniciarListenersTempoReal(empresaId) {
       clientes = clientesRemotos;
       localStorage.setItem('crm_clientes', JSON.stringify(clientes));
       renderAba();
-    }, (err) => {});
+    }, () => {});
   unsubscribeSangrias = db.collection("empresas").doc(empresaId).collection("sangrias")
     .onSnapshot((snapshot) => {
       let sangriasRemotas = [];
@@ -872,7 +894,7 @@ function iniciarListenersTempoReal(empresaId) {
       sangriasSuprimentos = sangriasRemotas.sort((a, b) => (b.id || 0) - (a.id || 0));
       localStorage.setItem('crm_sangrias', JSON.stringify(sangriasSuprimentos));
       renderAba();
-    }, (err) => {});
+    }, () => {});
   unsubscribeFechamentos = db.collection("empresas").doc(empresaId).collection("fechamentos")
     .onSnapshot((snapshot) => {
       let fechamentosRemotos = [];
@@ -880,7 +902,7 @@ function iniciarListenersTempoReal(empresaId) {
       historicoFechamentos = fechamentosRemotos.sort((a, b) => (b.id || 0) - (a.id || 0));
       localStorage.setItem('crm_fechamentos', JSON.stringify(historicoFechamentos));
       renderAba();
-    }, (err) => {});
+    }, () => {});
 }
 function tocarBeepConfirmacaoBip() {
   try {
@@ -976,6 +998,7 @@ function verificarAlertasEstoqueValidadeAutomatico() {
   });
   let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
   let despesasPendentes = despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr);
+  let desvNc = eAdminOuGerenteOuSocio() ? notificacoesDesvinculacao.filter(n => !n.lida) : [];
 
   const banner = document.getElementById('banner-alerta-estoque');
   const bannerTitulo = document.getElementById('banner-alerta-titulo');
@@ -983,10 +1006,17 @@ function verificarAlertasEstoqueValidadeAutomatico() {
   const bannerIcone = document.getElementById('banner-alerta-icone');
   const clickArea = document.getElementById('banner-alerta-click-area');
   const btnAcao = document.getElementById('banner-alerta-btn-acao');
-  const totalAlertas = minimos.length + validades.length + fiadosVencidos.length + despesasPendentes.length;
+  const totalAlertas = minimos.length + validades.length + fiadosVencidos.length + despesasPendentes.length + desvNc.length;
 
   if (!alertaSilenciadoSessao && totalAlertas > 0) {
-    if (despesasPendentes.length > 0 && minimos.length === 0) {
+    if (desvNc.length > 0) {
+      bannerTitulo.innerText = "Alerta de Desvinculação!";
+      bannerTexto.innerText = `${desvNc.length} funcionário(s) se desvincularam da empresa.`;
+      bannerIcone.innerText = "👤";
+      banner.className = "fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-indigo-500/80 show";
+      clickArea.onclick = () => abrirModalNotificacoes();
+      if (btnAcao) btnAcao.onclick = () => abrirModalNotificacoes();
+    } else if (despesasPendentes.length > 0 && minimos.length === 0) {
       bannerTitulo.innerText = "Aviso: Contas a Pagar Vencendo!";
       bannerTexto.innerText = `${despesasPendentes.length} conta(s) vencem hoje ou estão em atraso.`;
       bannerIcone.innerText = "💸";
@@ -1043,14 +1073,24 @@ function abrirModalNotificacoes() {
   });
   let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
   let despesasPendentes = despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr);
+  let desvNc = eAdminOuGerenteOuSocio() ? notificacoesDesvinculacao : [];
 
   const box = document.getElementById('lista-notificacoes-box');
   let html = '';
-  if (minimos.length === 0 && validades.length === 0 && fiadosVencidos.length === 0 && despesasPendentes.length === 0) {
+  if (minimos.length === 0 && validades.length === 0 && fiadosVencidos.length === 0 && despesasPendentes.length === 0 && desvNc.length === 0) {
     html = `<p class="text-xs text-green-700 font-bold text-center py-6 bg-green-50 rounded-xl border border-green-200">🎉 Nenhuma notificação pendente no momento!</p>`;
   } else {
+    if (desvNc.length > 0) {
+      html += `<div class="font-bold text-indigo-700 mb-1">👤 Avisos de Desvinculação de Funcionários (${desvNc.length}):</div>`;
+      desvNc.forEach((n, idx) => {
+        html += `<div class="bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 mb-2 flex justify-between items-center">
+          <div><p class="font-bold text-slate-800">${n.nomeFunc} (${n.email})</p><p class="text-[10px] text-indigo-600">Desvinculado em: ${n.data}</p></div>
+          <button onclick="marcarNotifDesvinculacaoLida(${idx})" class="bg-indigo-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">OK</button>
+        </div>`;
+      });
+    }
     if (despesasPendentes.length > 0) {
-      html += `<div class="font-bold text-red-600 mb-1">💸 Contas a Pagar / Despesas (${despesasPendentes.length}):</div>`;
+      html += `<div class="font-bold text-red-600 mb-1 mt-3">💸 Contas a Pagar / Despesas (${despesasPendentes.length}):</div>`;
       despesasPendentes.forEach(d => {
         html += `<div class="bg-red-50 p-2.5 rounded-xl border border-red-200 mb-2 flex justify-between items-center">
           <div><p class="font-bold text-slate-800">${d.descricao}</p><p class="text-[10px] text-red-600">Vencimento: ${d.vencimento.split('-').reverse().join('/')} - R$ ${parseFloat(d.valor).toFixed(2)}</p></div>
@@ -1089,12 +1129,18 @@ function abrirModalNotificacoes() {
   box.innerHTML = html;
   document.getElementById('modal-notificacoes').classList.remove('hidden');
 }
+function marcarNotifDesvinculacaoLida(idx) {
+  notificacoesDesvinculacao.splice(idx, 1);
+  persistirDadosCompletos();
+  abrirModalNotificacoes();
+  verificarAlertasEstoqueValidadeAutomatico();
+}
 function fecharModalNotificacoes() {
   document.getElementById('modal-notificacoes').classList.add('hidden');
 }
 async function excluirContaEempresaTotalmente() {
-  if (!eAdmin()) {
-    alert("Apenas administradores podem excluir a conta e a empresa.");
+  if (!eAdminOuSocio()) {
+    alert("Apenas administradores ou sócios podem excluir a conta e a empresa.");
     return;
   }
   if (confirm("⚠️ ATENÇÃO EXTREMA: Deseja realmente excluir permanentemente sua conta e TODOS OS DADOS da sua empresa para todos os colaboradores? Esta ação não pode ser desfeita.")) {
@@ -1118,11 +1164,11 @@ async function excluirContaEempresaTotalmente() {
   }
 }
 async function desvincularContaFuncionarioLocalmente() {
-  if (eAdmin()) {
-    alert("Administradores não se desvinculam por aqui.");
+  if (eAdminOuGerenteOuSocio()) {
+    alert("Administradores, sócios e gerentes não se desvinculam por aqui.");
     return;
   }
-  if (confirm("Deseja realmente se desvincular desta empresa? Você perderá o acesso e o patrão será notificado.")) {
+  if (confirm("Deseja realmente se desvincular desta empresa? Você perderá o acesso e os gestores serão notificados.")) {
     const user = auth.currentUser;
     if (user && perfilNegocio.empresaId && perfilNegocio.slotId) {
       try {
@@ -1130,16 +1176,25 @@ async function desvincularContaFuncionarioLocalmente() {
         let docPatrao = await refPatrao.get();
         if (docPatrao.exists) {
           let dados = docPatrao.data();
-          if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-            dados.slotsFuncionarios.forEach(s => {
-              if (s.id === perfilNegocio.slotId) {
-                s.ativo = false;
-                s.userUid = "";
-                s.email = "";
-              }
-            });
-            await refPatrao.update({ slotsFuncionarios: dados.slotsFuncionarios });
-          }
+          let nomeDesv = perfilNegocio.nomeUsuario || user.email;
+          let arraySlots = dados.slotsFuncionarios || [];
+          arraySlots.forEach(s => {
+            if (s.id === perfilNegocio.slotId) {
+              nomeDesv = s.nome || nomeDesv;
+              s.ativo = false;
+              s.userUid = "";
+              s.email = "";
+            }
+          });
+          let arrNotif = dados.notificacoesDesvinculacao || [];
+          arrNotif.push({
+            id: Date.now(),
+            nomeFunc: nomeDesv,
+            email: user.email,
+            data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+            lida: false
+          });
+          await refPatrao.update({ slotsFuncionarios: arraySlots, notificacoesDesvinculacao: arrNotif });
         }
       } catch(e) {}
     }
@@ -1157,7 +1212,7 @@ async function desvincularContaFuncionarioLocalmente() {
   }
 }
 function abrirModalGerenciarFuncionarios() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   renderizarListaSlotsFuncionariosUnificada();
   document.getElementById('modal-gerenciar-funcionarios').classList.remove('hidden');
 }
@@ -1170,7 +1225,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
   box.innerHTML = slotsFuncionarios.map((slot, index) => `
     <div class="p-3 rounded-2xl border ${slot.ativo ? 'bg-indigo-50/50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-300'} space-y-2">
       <div class="flex justify-between items-center">
-        <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Operador</span>
+        <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Equipe</span>
         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${slot.ativo ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-600'}">
           ${slot.ativo ? 'Ativo' : 'Livre / Desvinculado'}
         </span>
@@ -1181,7 +1236,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
       </div>
       <div>
         <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">E-mail Cadastrado *</label>
-        <input type="email" id="slot-email-${index}" value="${slot.email || ''}" placeholder="funcionario@email.com" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-teal-800">
+        <input type="email" id="slot-email-${index}" value="${slot.email || ''}" placeholder="membro@email.com" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-teal-800">
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -1189,13 +1244,21 @@ function renderizarListaSlotsFuncionariosUnificada() {
           <input type="text" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="Ex: 1234" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold text-indigo-900">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nascimento</label>
-          <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
+          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Função / Nível *</label>
+          <select id="slot-funcao-${index}" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-indigo-900">
+            <option value="Operador" ${slot.funcao === 'Operador' ? 'selected' : ''}>Operador / Caixa</option>
+            <option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>
+            <option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>
+          </select>
         </div>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nascimento</label>
+        <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
       </div>
       <div class="flex gap-2 pt-1">
         <button onclick="salvarSlotFuncionario(${index})" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-[11px] shadow">
-          💾 Salvar Slot
+          💾 Salvar Membro
         </button>
         ${slot.ativo ? `
           <button onclick="desligarSlotFuncionario(${index})" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-[11px] border border-red-200">
@@ -1210,6 +1273,7 @@ function salvarSlotFuncionario(index) {
   const nome = document.getElementById(`slot-nome-${index}`).value.trim();
   const email = document.getElementById(`slot-email-${index}`).value.trim().toLowerCase();
   const pin = document.getElementById(`slot-pin-${index}`).value.trim();
+  const funcao = document.getElementById(`slot-funcao-${index}`).value;
   const nascimento = document.getElementById(`slot-nasc-${index}`).value;
   if (!nome || !email || !pin || pin.length < 4) {
     alert("Preencha o nome, e-mail válido e um PIN numérico (mín. 4 dígitos).");
@@ -1220,25 +1284,26 @@ function salvarSlotFuncionario(index) {
     nome: nome,
     email: email,
     pin: pin,
+    funcao: funcao,
     nascimento: nascimento,
     ativo: true,
     userUid: slotsFuncionarios[index].userUid || ""
   };
   persistirDadosCompletos();
   const user = auth.currentUser;
-  if (user && eAdmin()) {
+  if (user && eAdminOuSocio()) {
     db.collection("perfis").doc(user.uid).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(()=>{});
   }
   renderizarListaSlotsFuncionariosUnificada();
-  alert(`✅ Funcionário ${nome} cadastrado com sucesso!`);
+  alert(`✅ Membro ${nome} (${funcao}) cadastrado com sucesso!`);
 }
 function desligarSlotFuncionario(index) {
-  let nomeFunc = slotsFuncionarios[index].nome || `Funcionário ${index+1}`;
+  let nomeFunc = slotsFuncionarios[index].nome || `Membro ${index+1}`;
   if (confirm(`Deseja realmente desligar ${nomeFunc}? O acesso será revogado imediatamente.`)) {
-    slotsFuncionarios[index] = { id: index + 1, nome: "", email: "", pin: "", nascimento: "", ativo: false, userUid: "" };
+    slotsFuncionarios[index] = { id: index + 1, nome: "", email: "", pin: "", funcao: "Operador", nascimento: "", ativo: false, userUid: "" };
     persistirDadosCompletos();
     renderizarListaSlotsFuncionariosUnificada();
-    alert("✅ Funcionário desligado com sucesso!");
+    alert("✅ Membro desligado com sucesso!");
   }
 }
 function abrirModalDespesas() {
@@ -1430,7 +1495,7 @@ function fecharModalAuditoriaGavetaMenu() {
   document.getElementById('modal-auditoria-gaveta-menu').classList.add('hidden');
 }
 function abrirModalAuditoriaOperadoresMenu() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   const box = document.getElementById('lista-auditoria-operadores-menu-box');
   let dadosOperadores = {};
   vendas.forEach(v => {
@@ -1462,7 +1527,7 @@ function abrirSuporteWhatsApp() {
   window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
 }
 
-// TELA DE LOGIN REESTRUTURADA COM BOTÕES SEPARADOS
+// TELA DE LOGIN REESTRUTURADA
 function showLoginForm() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
@@ -1472,7 +1537,7 @@ function showLoginForm() {
         <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
           <i class="fa-solid fa-store"></i>
         </div>
-        <h2 class="text-lg font-bold text-slate-800">Caixa Rápido Móvel Pro</h2>
+        <h2 class="text-lg font-bold text-slate-800">Caixa Rápido Móvel Pro v57.1</h2>
         <p class="text-xs text-slate-500">Entre com sua conta para acessar o PDV</p>
       </div>
       <form onsubmit="handleLoginBlindado(event)" class="space-y-3">
@@ -1497,7 +1562,7 @@ function showLoginForm() {
           <i class="fa-solid fa-store text-teal-400"></i> Criar Meu Negócio / Cadastrar Empresa
         </button>
         <button onclick="showStep1CadastroAcesso()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
-          <i class="fa-solid fa-user-plus text-indigo-600"></i> Vincular-me a uma Empresa (Funcionário)
+          <i class="fa-solid fa-user-plus text-indigo-600"></i> Vincular-me a uma Empresa (Equipe)
         </button>
       </div>
     </div>
@@ -1516,6 +1581,7 @@ async function handleLoginBlindado(e) {
     if (docPerfil.exists) {
       perfilNegocio = docPerfil.data();
       if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
+      if (perfilNegocio.notificacoesDesvinculacao) notificacoesDesvinculacao = perfilNegocio.notificacoesDesvinculacao;
       persistirDadosCompletos();
     }
   } catch (err) {
@@ -1531,6 +1597,10 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
       if (d.slotsFuncionarios) {
         slotsFuncionarios = d.slotsFuncionarios;
         localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
+      }
+      if (d.notificacoesDesvinculacao) {
+        notificacoesDesvinculacao = d.notificacoesDesvinculacao;
+        localStorage.setItem('crm_notif_desv', JSON.stringify(notificacoesDesvinculacao));
       }
     }
     let snapProds = await db.collection("empresas").doc(empresaId).collection("produtos").get();
@@ -1565,8 +1635,8 @@ function showStep1CadastroAcesso() {
         <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
           <i class="fa-solid fa-user-plus"></i>
         </div>
-        <h2 class="text-lg font-bold text-slate-800">Vínculo de Funcionário</h2>
-        <p class="text-xs text-slate-500">Informe seu e-mail, senha e o PIN fornecido pelo patrão</p>
+        <h2 class="text-lg font-bold text-slate-800">Vínculo de Membro da Equipe</h2>
+        <p class="text-xs text-slate-500">Informe seu e-mail, senha e o PIN fornecido pelo gestor</p>
       </div>
       <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
         <div>
@@ -1578,7 +1648,7 @@ function showStep1CadastroAcesso() {
           <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">PIN de Operador *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">PIN de Acesso *</label>
           <input type="text" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN numérico (Ex: 1234)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-extrabold text-indigo-900">
           <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-indigo-900 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 space-y-1 mt-2">
             <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
@@ -1629,11 +1699,12 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         tipo: patraoEncontrado.tipo || "PF",
         ramo: patraoEncontrado.ramo || "Produtos",
         modoNegocio: patraoEncontrado.modoNegocio || "completo",
-        nomeFuncionarioSlot: slotMatch.nome || "Funcionário",
+        nomeFuncionarioSlot: slotMatch.nome || "Membro",
+        funcaoSlot: slotMatch.funcao || "Operador",
         slotId: slotMatch.id
       };
       textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Operador Confirmado: <b>${slotMatch.nome}</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Confirmado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
       boxStatus.classList.remove('hidden');
     } else {
       window.tempPatraoVinculado = null;
@@ -1652,7 +1723,7 @@ async function handleStep1Cadastro(e) {
   if (cadastroTemp.pinOperador) {
     if (window.tempPatraoVinculado) {
       cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
-      cadastroTemp.funcaoUsuario = "Funcionário / Operador";
+      cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
       cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
       cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
       cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
@@ -1662,7 +1733,7 @@ async function handleStep1Cadastro(e) {
       criarContaFirebaseFinal();
       return;
     } else {
-      alert("⚠️ E-mail ou PIN inválido ou desativado pelo patrão!");
+      alert("⚠️ E-mail ou PIN inválido ou desativado pelo gestor!");
       return;
     }
   }
@@ -1676,7 +1747,7 @@ function showStep2CadastroUsuario() {
         <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
           <i class="fa-solid fa-user-tie"></i>
         </div>
-        <h2 class="text-lg font-bold text-slate-800">Passo 1: Dados do Proprietário</h2>
+        <h2 class="text-lg font-bold text-slate-800">Passo 1: Dados do Administrador</h2>
         <p class="text-xs text-slate-500">Informe seus dados para criar a administração</p>
       </div>
       <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
@@ -1778,7 +1849,7 @@ function criarContaFirebaseFinal() {
     if (err.code === 'auth/email-already-in-use') {
       auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
         concluirVinculoUsuarioAutenticado(userCredential.user);
-      }).catch(loginErr => {
+      }).catch(() => {
         alert("E-mail já cadastrado, mas a senha informada está incorreta.");
       });
     } else {
@@ -1811,14 +1882,15 @@ async function concluirVinculoUsuarioAutenticado(user) {
   }
   perfilNegocio = {
     nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
-    nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Operador",
+    nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Membro",
     funcaoUsuario: cadastroTemp.funcaoUsuario,
     tipo: cadastroTemp.tipo || "PF",
     ramo: cadastroTemp.ramo || "Produtos",
     modoNegocio: cadastroTemp.modoNegocio || "completo",
     empresaId: empresaIdVinculo,
     slotId: cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.slotId : null,
-    slotsFuncionarios: slotsFuncionarios
+    slotsFuncionarios: slotsFuncionarios,
+    notificacoesDesvinculacao: notificacoesDesvinculacao
   };
   user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
   persistirDadosCompletos();
@@ -1831,7 +1903,7 @@ function copiarCodigoConvitePatrao() {
   if (!user) return;
   let codigoLoja = perfilNegocio.empresaId || user.uid;
   navigator.clipboard.writeText(codigoLoja).then(() => {
-    alert(`📋 Código de Convite copiado!\n\nEnvie este ID para seu funcionário:\n${codigoLoja}`);
+    alert(`📋 Código de Convite copiado!\n\nEnvie este ID para seu funcionário/sócio/gerente:\n${codigoLoja}`);
   }).catch(() => {
     prompt("Código da empresa:", codigoLoja);
   });
@@ -1930,10 +2002,10 @@ function abrirScanner(destino) {
           { facingMode: "environment" },
           { fps: 20, qrbox: { width: 250, height: 140 } },
           (decodedText) => { onScanSuccess(decodedText); },
-          (errorMessage) => {}
+          () => {}
         ).then(() => {
           document.getElementById('scanner-status').innerText = "Câmera ativa. Aproxime o código...";
-        }).catch((err) => {
+        }).catch(() => {
           document.getElementById('scanner-status').innerText = "Clique abaixo para habilitar a câmera";
           document.getElementById('scanner-controls-fallback').classList.remove('hidden');
         });
@@ -1949,11 +2021,11 @@ function iniciarCameraHtml5Manual() {
       { facingMode: "user" },
       { fps: 15, qrbox: { width: 220, height: 120 } },
       (decodedText) => { onScanSuccess(decodedText); },
-      (errorMessage) => {}
+      () => {}
     ).then(() => {
       document.getElementById('scanner-status').innerText = "Câmera iniciada!";
       document.getElementById('scanner-controls-fallback').classList.add('hidden');
-    }).catch(err => alert("Não foi possível acessar a câmera."));
+    }).catch(() => alert("Não foi possível acessar a câmera."));
   }
 }
 function onScanSuccess(decodedText) {
@@ -2043,7 +2115,7 @@ swipeArea.addEventListener('touchend', (e) => {
   const diffX = touchEndX - touchStartX;
   const diffY = touchEndY - touchStartY;
   if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-    let validAbas = eAdmin() ? ordemAbas : ordemAbas.filter(a => a !== 'relatorios');
+    let validAbas = eAdminOuGerenteOuSocio() ? ordemAbas : ordemAbas.filter(a => a !== 'relatorios');
     let idxAtual = validAbas.indexOf(abaAtual);
     if (diffX < 0 && idxAtual < validAbas.length - 1) {
       switchTab(validAbas[idxAtual + 1]);
@@ -2058,22 +2130,24 @@ function abrirDrawerNavegacao() {
   const user = auth.currentUser;
   document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Usuário';
   document.getElementById('drawer-user-email').innerText = user.email || '';
-  document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
+  document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Operador';
   const btnCopiar = document.getElementById('btn-copiar-convite');
   const btnGerenciarFunc = document.getElementById('menu-btn-gerenciar-funcionarios');
   const btnDesvincularFunc = document.getElementById('menu-btn-desvincular-funcionario');
   const secaoFerramentasAdmin = document.getElementById('menu-secao-ferramentas-admin');
   const btnExcluirConta = document.getElementById('menu-btn-excluir-conta-empresa');
   const btnAuditoriaOperadores = document.getElementById('menu-btn-auditoria-operadores');
-  const btnLimpezaTotal = document.getElementById('menu-btn-limpeza-total');
-  if (eAdmin()) {
+  if (eAdminOuGerenteOuSocio()) {
     if (btnCopiar) btnCopiar.classList.remove('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.remove('hidden');
     if (btnDesvincularFunc) btnDesvincularFunc.classList.add('hidden');
     if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
-    if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
-    if (btnLimpezaTotal) btnLimpezaTotal.classList.remove('hidden'); // Ocultado para funcionários conforme solicitado
+    if (eAdminOuSocio()) {
+      if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
+    } else {
+      if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
+    }
   } else {
     if (btnCopiar) btnCopiar.classList.add('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
@@ -2081,7 +2155,6 @@ function abrirDrawerNavegacao() {
     if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
     if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.add('hidden');
-    if (btnLimpezaTotal) btnLimpezaTotal.classList.add('hidden'); // Removido para funcionários
   }
   document.getElementById('drawer-menu').classList.remove('hidden');
 }
@@ -2093,9 +2166,9 @@ function openModalPerfil() {
   document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
   const containerFuncao = document.getElementById('container-perfil-funcao-edicao');
   const containerEstab = document.getElementById('container-dados-estabelecimento-edicao');
-  if (eAdmin()) {
-    containerFuncao.innerHTML = `<input type="text" readonly value="Proprietário / Gerente (Acesso Total)" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
-    containerEstab.innerHTML = `
+  if (eAdminOuGerenteOuSocio()) {
+    containerFuncao.innerHTML = `<input type="text" readonly value="${perfilNegocio.funcaoUsuario || 'Gestão'}" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
+    containerEstab.innerHTML = eAdminOuSocio() ? `
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da Loja *</label>
@@ -2127,9 +2200,14 @@ function openModalPerfil() {
           </select>
         </div>
       </div>
+    ` : `
+      <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
+        <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
+        <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</p>
+      </div>
     `;
   } else {
-    containerFuncao.innerHTML = `<input type="text" readonly value="Funcionário / Operador" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
+    containerFuncao.innerHTML = `<input type="text" readonly value="Operador / Caixa" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
     containerEstab.innerHTML = `
       <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
         <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
@@ -2152,7 +2230,7 @@ function salvarPerfilNegocio(e) {
   e.preventDefault();
   const novoNome = document.getElementById('perfil-nome-usuario').value.trim();
   perfilNegocio.nomeUsuario = novoNome;
-  if (eAdmin()) {
+  if (eAdminOuSocio()) {
     perfilNegocio.nomeLoja = document.getElementById('perfil-nome-loja').value;
     perfilNegocio.tipo = document.getElementById('perfil-tipo-registro').value;
     perfilNegocio.ramo = document.getElementById('perfil-ramo').value;
@@ -2178,12 +2256,12 @@ async function switchTab(aba) {
   if (!verificarLicencaStatus()) return;
   let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
   if (!vinculadoAtivo) return;
-  if (aba === 'relatorios' && !eAdmin()) {
-    alert("⚠️ Acesso Restrito: Apenas administradores podem acessar os Relatórios.");
+  if (aba === 'relatorios' && !eAdminOuGerenteOuSocio()) {
+    alert("⚠️ Acesso Restrito: Apenas administradores, sócios e gerentes podem acessar os Relatórios.");
     return;
   }
   abaAtual = aba;
-  let validAbas = eAdmin() ? ordemAbas : ordemAbas.filter(a => a !== 'relatorios');
+  let validAbas = eAdminOuGerenteOuSocio() ? ordemAbas : ordemAbas.filter(a => a !== 'relatorios');
   document.getElementById('slider-container').style.transform = `translateX(-${ordemAbas.indexOf(aba) * 20}%)`;
   const bottomNav = document.getElementById('app-bottom-nav');
   if (aba === 'inicio') {
@@ -2213,10 +2291,10 @@ function renderAba() {
   renderAbaVendas();
   renderAbaEstoque();
   renderAbaClientes();
-  if (eAdmin()) renderAbaRelatorios();
+  if (eAdminOuGerenteOuSocio()) renderAbaRelatorios();
 }
 
-// TELA INICIAL COM REMOÇÃO DE RELATÓRIOS PARA FUNCIONÁRIOS
+// TELA INICIAL
 function renderAbaInicio() {
   const user = auth.currentUser;
   const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Parceiro';
@@ -2254,7 +2332,7 @@ function renderAbaInicio() {
           </button>
           <div>
             <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-            <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eAdmin() ? 'Administrador' : 'Funcionário'})</p>
+            <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${perfilNegocio.funcaoUsuario || 'Membro'})</p>
           </div>
         </div>
         <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/15 p-2.5 rounded-xl border border-white/20 hover:bg-white/25 transition">
@@ -2289,7 +2367,7 @@ function renderAbaInicio() {
               <p class="text-[10px] text-slate-500">Controle de Devedores</p>
             </div>
           </button>
-          ${eAdmin() ? `
+          ${eAdminOuGerenteOuSocio() ? `
             <button onclick="switchTab('relatorios')" class="bg-purple-50 border border-purple-200 hover:bg-purple-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
               <i class="fa-solid fa-chart-pie text-purple-700 text-lg"></i>
               <div>
@@ -2302,7 +2380,7 @@ function renderAbaInicio() {
               <i class="fa-solid fa-lock text-slate-400 text-lg"></i>
               <div>
                 <p class="font-extrabold text-xs text-slate-400">Restrito</p>
-                <p class="text-[10px] text-slate-400">Apenas Admin</p>
+                <p class="text-[10px] text-slate-400">Apenas Gestão</p>
               </div>
             </div>
           `}
@@ -2311,14 +2389,14 @@ function renderAbaInicio() {
       <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xl border border-slate-700 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-700 pb-2">
           <h3 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-crown"></i> Status da Licença (Fase 2)
+            <i class="fa-solid fa-crown"></i> Status da Licença (v57.1)
           </h3>
           <span class="text-[10px] bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded-full">
             ${licencaInfo.vitalicio ? 'Vitalício' : `${diasRestantes} dias restantes`}
           </span>
         </div>
         <p class="text-[11px] text-slate-300 leading-relaxed">
-          O <b>Caixa Rápido Móvel Pro v57.0</b> está otimizado para operação segura multiusuário e gestão comercial avançada.
+          O <b>Caixa Rápido Móvel Pro v57.1</b> está atualizado com perfis de Sócio, Gerente, notificações de desvinculação e fechamento inteligente de caixa.
         </p>
         <div class="pt-1">
           <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
@@ -2401,8 +2479,12 @@ function calcularTrocoEmTempoReal() {
 }
 function renderAbaVendas() {
   const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
-  const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr));
+  const ultimoFechamentoTs = localStorage.getItem('crm_ultimo_fechamento_ts') || 0;
+  const vendasHoje = vendas.filter(v => {
+    let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
+    return v.data && v.data.includes(hojeStr) && vData > parseInt(ultimoFechamentoTs);
+  });
+  const sangriasHoje = sangriasSuprimentos.filter(s => s.data && s.data.includes(hojeStr) && s.id > parseInt(ultimoFechamentoTs));
   const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
   const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
@@ -2554,6 +2636,9 @@ function renderAbaVendas() {
               <button onclick="processarFinalizarVenda('sem_envio')" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-xl hover:bg-teal-700 transition text-xs shadow flex justify-center items-center gap-1.5">
                 <i class="fa-solid fa-check-circle text-sm"></i> Finalizar Direto (Sem Envio)
               </button>
+              <button onclick="cancelarCompraAtual()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold py-2 rounded-xl transition text-xs shadow-sm flex justify-center items-center gap-1.5 mt-1">
+                <i class="fa-solid fa-ban text-sm"></i> Cancelar Compra
+              </button>
             </div>
           </div>
         </div>
@@ -2576,6 +2661,18 @@ function renderAbaVendas() {
       </div>
     </div>
   `;
+}
+function cancelarCompraAtual() {
+  if (carrinho.length === 0) {
+    alert("O carrinho já está vazio.");
+    return;
+  }
+  if (confirm("Deseja realmente cancelar a compra e limpar o carrinho atual?")) {
+    carrinho = [];
+    clienteAtualVenda = { nome: '', zap: '' };
+    renderAbaVendas();
+    alert("✅ Compra cancelada e carrinho limpo.");
+  }
 }
 function toggleOpcoesPagamento(pagto) {
   const boxDinheiro = document.getElementById('box-pagto-dinheiro');
@@ -2748,7 +2845,7 @@ async function processarFinalizarVenda(tipoEnvio) {
   vendas.push(vendaReg);
   persistirDadosCompletos();
   if (user && empresaIdDest) {
-    db.collection("empresas").doc(empresaIdDest).collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: new Date() });
+    db.collection("empresas").doc(empresaIdDest).collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
   }
   let itensFormatadosCupom = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} - R$ ${(i.preco * i.qtd).toFixed(2)}`).join('\n');
   let resumoTexto = `===================================\n` +
@@ -2763,7 +2860,7 @@ async function processarFinalizarVenda(tipoEnvio) {
     `${itensFormatadosCupom}\n` +
     `-----------------------------------\n` +
     `VALOR TOTAL: R$ ${totalCarrinho.toFixed(2)}\n` +
-    `===================================\n` +
+    `==================================-\n` +
     ` OBRIGADO PELA PREFERÊNCIA!\n` +
     `===================================`;
   if (tipoEnvio === 'whatsapp') {
@@ -2819,7 +2916,7 @@ function preencherMinimoAutomaticoPorMedida() {
   if (minimosPadrao[medida]) campoMin.value = minimosPadrao[medida];
 }
 function calcularEExibirMargemLucro() {
-  if (!eAdmin() || eModoMei()) return;
+  if (!eAdminOuSocio() || eModoMei()) return;
   const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
   const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
   const boxMargem = document.getElementById('margem-lucro-box');
@@ -2895,7 +2992,7 @@ function abrirModalNovoProduto() {
   document.getElementById('cad-prod-alerta-dias').value = '';
   document.getElementById('cad-prod-atalho').checked = true;
   const boxCustoAdmin = document.getElementById('box-custo-admin');
-  if (eAdmin() && !eModoMei()) boxCustoAdmin.classList.remove('hidden');
+  if (eAdminOuSocio() && !eModoMei()) boxCustoAdmin.classList.remove('hidden');
   else boxCustoAdmin.classList.add('hidden');
   preencherMinimoAutomaticoPorMedida();
   document.getElementById('modal-cadastro-produto').classList.remove('hidden');
@@ -2926,7 +3023,7 @@ function renderSubAbaTodosProdutos() {
                 <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
               </button>
               <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
-              ${eAdmin() ? `<button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
+              ${eAdminOuGerenteOuSocio() ? `<button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
           </div>
         `;
@@ -2946,7 +3043,7 @@ function editarProdutoCompleto(index) {
   } else eanDisp.classList.add('hidden');
   document.getElementById('cad-prod-nome').value = p.nome;
   const boxCustoAdmin = document.getElementById('box-custo-admin');
-  if (eAdmin() && !eModoMei()) {
+  if (eAdminOuSocio() && !eModoMei()) {
     boxCustoAdmin.classList.remove('hidden');
     document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
   } else boxCustoAdmin.classList.add('hidden');
@@ -2969,7 +3066,6 @@ function renderSubAbaMinimos() {
       <div class="space-y-2 max-h-72 overflow-y-auto">
         ${minimos.map(p => {
           let idxReal = produtos.findIndex(prod => prod.id === p.id);
-          let faltam = (p.estMin || 3) - p.estoque;
           return `
             <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
               <div>
@@ -3107,7 +3203,7 @@ async function cadastrarOuAtualizarProduto() {
   const alertaDiasInput = document.getElementById('cad-prod-alerta-dias').value;
   const atalho = document.getElementById('cad-prod-atalho').checked;
   let precoCustoInput = 0;
-  if (eAdmin() && !eModoMei()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
+  if (eAdminOuSocio() && !eModoMei()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
   else if (prodEditandoIndex !== null) precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
   if (!nome || !preco) {
     alert("Preencha nome e preço!");
@@ -3134,7 +3230,7 @@ async function cadastrarOuAtualizarProduto() {
     let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
     if (prodExistente) {
       prodExistente.ean = ean || prodExistente.ean;
-      if (eAdmin() && !eModoMei() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
+      if (eAdminOuSocio() && !eModoMei() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
       prodExistente.preco = parseFloat(preco);
       prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
       prodExistente.estMin = parseFloat(estMin);
@@ -3155,7 +3251,7 @@ async function cadastrarOuAtualizarProduto() {
   renderAbaEstoque();
 }
 function excluirProduto(index) {
-  if (!eAdmin()) {
+  if (!eAdminOuGerenteOuSocio()) {
     alert("Acesso Restrito.");
     return;
   }
@@ -3303,7 +3399,7 @@ async function abaterDebitoCliente(index) {
   renderAba();
 }
 function renderAbaRelatorios() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   let capitalInvestidoEstoque = 0;
   produtos.forEach(p => { capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
@@ -3364,7 +3460,7 @@ function renderAbaRelatorios() {
   `;
 }
 function abrirModalOpcoesRelatorio() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   const hojeStr = new Date().toISOString().split('T')[0];
   document.getElementById('pdf-data-inicio').value = hojeStr;
   document.getElementById('pdf-data-fim').value = hojeStr;
@@ -3379,7 +3475,7 @@ function toggleInputsDatasRelatorio(tipo) {
   else box.classList.add('hidden');
 }
 function gerarPDFProfissional() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -3408,34 +3504,24 @@ function gerarPDFProfissional() {
     doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
   } catch(err) { alert("Erro ao gerar PDF."); }
 }
-function executarLimpezaTotalManual() {
-  if (!eAdmin()) return;
-  if (confirm("⚠️ Deseja apagar todos os dados locais?")) {
-    vendas = [];
-    sangriasSuprimentos = [];
-    historicoFechamentos = [];
-    produtos = [];
-    clientes = [];
-    despesasFixas = [];
-    persistirDadosCompletos();
-    alert("✅ Dados limpos!");
-    renderAba();
-  }
-}
 function openModalFechamento() {
   const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const vendasHoje = vendas.filter(v => v.data && v.data.includes(hojeStr));
+  const ultimoFechamentoTs = localStorage.getItem('crm_ultimo_fechamento_ts') || 0;
+  const vendasHoje = vendas.filter(v => {
+    let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
+    return v.data && v.data.includes(hojeStr) && vData > parseInt(ultimoFechamentoTs);
+  });
   const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   document.getElementById('fechamento-conteudo').innerHTML = `
     <div class="bg-slate-50 p-3 rounded-xl border space-y-1">
-      <p class="font-bold text-slate-800 text-xs">Resumo (${hojeStr}):</p>
+      <p class="font-bold text-slate-800 text-xs">Resumo do Turno Atual:</p>
       <div class="flex justify-between"><span>Vendas:</span> <b>${vendasHoje.length}</b></div>
       <div class="flex justify-between text-teal-700 font-bold"><span>Total:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
     </div>
     <div class="space-y-2 pt-2">
       <label class="block font-semibold text-slate-700">Contagem Física na Gaveta (R$):</label>
       <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
-      <button onclick="conferirEGravarFechamentoCaixaManual(${totalHoje}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs">Salvar Fechamento</button>
+      <button onclick="conferirEGravarFechamentoCaixaManual(${totalHoje}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs">Salvar Fechamento & Zerar Caixa</button>
     </div>
   `;
   document.getElementById('modal-fechamento').classList.remove('hidden');
@@ -3454,17 +3540,18 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
   const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
   const fechoReg = { id: Date.now(), data: hojeStr, hora: horaStr, vendasQtd: qtdVendas, totalVendas: totalVendas, gavetaContada: gaveta, diferenca: diferenca, operador: nomeOperadorAtual };
   historicoFechamentos.push(fechoReg);
+  localStorage.setItem('crm_ultimo_fechamento_ts', Date.now());
   persistirDadosCompletos();
   let empresaIdDest = perfilNegocio.empresaId || user.uid;
   if (user && empresaIdDest) {
     db.collection("empresas").doc(empresaIdDest).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
   }
   closeModalFechamento();
-  alert(`✅ Fechamento de caixa salvo!`);
+  alert(`✅ Fechamento de caixa salvo e painel de vendas zerado para o novo turno!`);
   renderAba();
 }
 function exportarBackupCSV() {
-  if (!eAdmin()) return;
+  if (!eAdminOuGerenteOuSocio()) return;
   if (vendas.length === 0) { alert("Sem vendas."); return; }
   let csvContent = "data:text/csv;charset=utf-8,ID;Data;Operador;Valor\n";
   vendas.forEach(v => { csvContent += `${v.id};"${v.data}";"${v.operador || 'Op'}";${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}\n`; });
@@ -3492,6 +3579,7 @@ auth.onAuthStateChanged(async (user) => {
       if (doc.exists) {
         perfilNegocio = doc.data();
         if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
+        if (perfilNegocio.notificacoesDesvinculacao) notificacoesDesvinculacao = perfilNegocio.notificacoesDesvinculacao;
         persistirDadosCompletos();
       }
       mostrarInterfaceAutenticada(true);
@@ -3518,11 +3606,12 @@ auth.onAuthStateChanged(async (user) => {
     if (unsubscribeClientes) unsubscribeClientes();
     if (unsubscribeSangrias) unsubscribeSangrias();
     if (unsubscribeFechamentos) unsubscribeFechamentos();
+    if (unsubscribePerfil) unsubscribePerfil();
     mostrarInterfaceAutenticada(false);
     showLoginForm();
   }
 });
-console.log("Caixa Rápido Móvel Pro - Versão 57.0 (Fase 2) Carregada com Sucesso!");
+console.log("Caixa Rápido Móvel Pro - Versão 57.1 (Fase 2.1) Carregada com Sucesso!");
 </script>
 </body>
 </html>

@@ -1934,7 +1934,6 @@ async function handleStep1Cadastro(e) {
   cadastroTemp.pass = passInput;
   cadastroTemp.pinOperador = pinInput;
 
-  // CAMINHO A: É um Funcionário tentando se vincular (preencheu PIN e localizou a empresa)
   if (window.tempPatraoVinculado && pinInput) {
     cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
     cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
@@ -1949,16 +1948,11 @@ async function handleStep1Cadastro(e) {
     return;
   }
 
-  // CAMINHO B: É um Proprietário / Dono criando uma nova empresa
-  // Avança na hora para a tela de Dados da Loja (Passo 2)
   cadastroTemp.empresaPatraoInfo = null;
   cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
-  
-  const container = document.getElementById('slider-container');
-  if (container) {
-    container.style.transform = 'translateX(-50%)';
-  }
+  showStep2CadastroUsuario();
 }
+
 function showStep2CadastroUsuario() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
@@ -1994,6 +1988,7 @@ function showStep2CadastroUsuario() {
     </div>
   `;
 }
+
 function handleStep2Cadastro(e) {
   e.preventDefault();
   cadastroTemp.nomeUsuario = (document.getElementById('cad-nome-usuario')?.value || '').trim();
@@ -2077,6 +2072,7 @@ function handleConcluirCadastro(e) {
   
   criarContaFirebaseFinal();
 }
+
 function criarContaFirebaseFinal() {
   emProcessoDeCadastro = true;
   const btnSubmit = document.getElementById('btn-concluir-cadastro') || document.getElementById('btn-avancar-cadastro-step1');
@@ -2102,7 +2098,6 @@ function criarContaFirebaseFinal() {
     })
     .catch(err => {
       if (err.code === 'auth/email-already-in-use') {
-        // Se o e-mail já existe, faz o login e registra os dados da loja sem travar a tela
         auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass)
           .then((userCredential) => {
             concluirVinculoUsuarioAutenticado(userCredential.user)
@@ -2118,6 +2113,7 @@ function criarContaFirebaseFinal() {
       }
     });
 }
+
 async function concluirVinculoUsuarioAutenticado(user) {
   emProcessoDeCadastro = true;
   let uidGerado = user.uid;

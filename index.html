@@ -31,13 +31,12 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
 .nav-bottom-item.active::before { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; background: linear-gradient(90deg, #0d9488, #14b8a6); border-radius: 0 0 4px 4px; }
 #toast-boas-vindas, #banner-alerta-estoque, #toast-integracao-fiado, #toast-alerta-pdv, #toast-aniversario-dia { transition: all 0.4s ease-in-out; transform: translateY(-130%); opacity: 0; }
 #toast-boas-vindas.show, #banner-alerta-estoque.show, #toast-integracao-fiado.show, #toast-alerta-pdv.show, #toast-aniversario-dia.show { transform: translateY(0); opacity: 1; }
-</style>
-
-  /* Animações Festivas para o Aniversariante */
+/* Animações Festivas para o Aniversariante */
 @keyframes fogos-jump { 0% { transform: translateY(100px) scale(0.3); opacity: 0; } 50% { transform: translateY(-20px) scale(1.1); opacity: 1; } 100% { transform: translateY(0) scale(1); } }
 .festa-modal-card { animation: fogos-jump 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 @keyframes confete-fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(600px) rotate(720deg); opacity: 0; } }
 .particle-confeti { position: absolute; width: 10px; height: 10px; border-radius: 3px; animation: confete-fall 3.5s linear infinite; }
+</style>
 </head>
 <body>
 <div id="app-container">

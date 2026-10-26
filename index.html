@@ -2063,6 +2063,7 @@ function criarContaFirebaseFinal() {
 async function concluirVinculoUsuarioAutenticado(user) {
   let uidGerado = user.uid;
   let empresaIdVinculo = cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.empresaId : uidGerado;
+  
   if (cadastroTemp.empresaPatraoInfo) {
     try {
       let ref = db.collection("perfis").doc(empresaIdVinculo);
@@ -2074,6 +2075,8 @@ async function concluirVinculoUsuarioAutenticado(user) {
             if (s.id === cadastroTemp.empresaPatraoInfo.slotId) {
               s.userUid = uidGerado;
               s.email = user.email.trim().toLowerCase();
+              s.ativo = true;      // Ativa o slot
+              s.vinculado = true;  // CORREÇÃO: Confirma o vínculo oficial após validação do PIN!
             }
           });
           slotsFuncionarios = dados.slotsFuncionarios;
@@ -2083,6 +2086,7 @@ async function concluirVinculoUsuarioAutenticado(user) {
     } catch(e) {}
     await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
   }
+  
   perfilNegocio = {
     nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
     nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Membro",
@@ -2095,6 +2099,7 @@ async function concluirVinculoUsuarioAutenticado(user) {
     slotsFuncionarios: slotsFuncionarios,
     notificacoesDesvinculacao: notificacoesDesvinculacao
   };
+  
   user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
   persistirDadosCompletos();
   await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });

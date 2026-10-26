@@ -1222,7 +1222,10 @@ function fecharModalGerenciarFuncionarios() {
 function renderizarListaSlotsFuncionariosUnificada() {
   const box = document.getElementById('lista-slots-funcionarios-box');
   if (!box) return;
-  box.innerHTML = slotsFuncionarios.map((slot, index) => `
+  box.innerHTML = slotsFuncionarios.map((slot, index) => {
+    // Verifica se quem está usando é Sócio/Dono
+    const podeSerGerenteSocio = eAdminOuSocio(); 
+    return `
     <div class="p-3 rounded-2xl border ${slot.ativo ? 'bg-indigo-50/50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-300'} space-y-2">
       <div class="flex justify-between items-center">
         <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Equipe</span>
@@ -1247,8 +1250,8 @@ function renderizarListaSlotsFuncionariosUnificada() {
           <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Função / Nível *</label>
           <select id="slot-funcao-${index}" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-indigo-900">
             <option value="Operador" ${slot.funcao === 'Operador' ? 'selected' : ''}>Operador / Caixa</option>
-            <option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>
-            <option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>
+            ${podeSerGerenteSocio ? `<option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>` : ''}
+            ${podeSerGerenteSocio ? `<option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>` : ''}
           </select>
         </div>
       </div>
@@ -1267,7 +1270,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 function salvarSlotFuncionario(index) {
   const nome = document.getElementById(`slot-nome-${index}`).value.trim();
@@ -1275,6 +1278,12 @@ function salvarSlotFuncionario(index) {
   const pin = document.getElementById(`slot-pin-${index}`).value.trim();
   const funcao = document.getElementById(`slot-funcao-${index}`).value;
   const nascimento = document.getElementById(`slot-nasc-${index}`).value;
+  
+  if (!eAdminOuSocio() && (funcao === 'Gerente' || funcao === 'Sócio')) {
+    alert("⚠️ Apenas Administradores ou Sócios podem nomear novos Gerentes ou Sócios.");
+    return;
+  }
+
   if (!nome || !email || !pin || pin.length < 4) {
     alert("Preencha o nome, e-mail válido e um PIN numérico (mín. 4 dígitos).");
     return;
@@ -1295,7 +1304,7 @@ function salvarSlotFuncionario(index) {
     db.collection("perfis").doc(user.uid).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(()=>{});
   }
   renderizarListaSlotsFuncionariosUnificada();
-  alert(`✅ Membro ${nome} (${funcao}) cadastrado com sucesso!`);
+  alert(`✅ Membro ${nome} (${funcao}) salvo com sucesso!`);
 }
 function desligarSlotFuncionario(index) {
   let nomeFunc = slotsFuncionarios[index].nome || `Membro ${index+1}`;
@@ -1316,7 +1325,7 @@ function abrirModalDespesas() {
 function fecharModalDespesas() {
   document.getElementById('modal-despesas').classList.add('hidden');
 }
-function cadastrarDespesaFixa() {
+async function cadastrarDespesaFixa() {
   const desc = document.getElementById('nova-desp-desc').value.trim();
   const valor = parseFloat(document.getElementById('nova-desp-valor').value);
   const venc = document.getElementById('nova-desp-venc').value;
@@ -1324,12 +1333,22 @@ function cadastrarDespesaFixa() {
     alert("Preencha todos os campos corretamente!");
     return;
   }
-  despesasFixas.push({ id: Date.now(), descricao: desc, valor: valor, vencimento: venc });
+  
+  const novaDespesa = { id: Date.now(), descricao: desc, valor: valor, vencimento: venc };
+  despesasFixas.push(novaDespesa);
   persistirDadosCompletos();
+
+  // Salva no banco de dados nas nuvens (Firebase)
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(novaDespesa.id)).set(novaDespesa, { merge: true });
+  }
+
   document.getElementById('nova-desp-desc').value = '';
   document.getElementById('nova-desp-valor').value = '';
   renderizarListaDespesasModal();
-  alert("✅ Conta a pagar cadastrada!");
+  alert("✅ Conta a pagar cadastrada e salva na nuvem!");
   verificarAlertasEstoqueValidadeAutomatico();
 }
 function renderizarListaDespesasModal() {
@@ -1352,9 +1371,17 @@ function renderizarListaDespesasModal() {
     </div>
   `).join('');
 }
-function excluirDespesa(index) {
+async function excluirDespesa(index) {
+  const despesa = despesasFixas[index];
   despesasFixas.splice(index, 1);
   persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest && despesa) {
+    db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(despesa.id)).delete().catch(()=>{});
+  }
+
   renderizarListaDespesasModal();
   verificarAlertasEstoqueValidadeAutomatico();
 }
@@ -1607,22 +1634,33 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     let prodsCarregados = [];
     snapProds.forEach(doc => prodsCarregados.push(doc.data()));
     produtos = prodsCarregados;
+    
     let snapClientes = await db.collection("empresas").doc(empresaId).collection("clientes").get();
     let clientesCarregados = [];
     snapClientes.forEach(doc => clientesCarregados.push(doc.data()));
     clientes = clientesCarregados;
+    
     let snapVendas = await db.collection("empresas").doc(empresaId).collection("vendas").get();
     let vendasCarregadas = [];
     snapVendas.forEach(doc => vendasCarregadas.push(doc.data()));
     vendas = vendasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
+    
     let snapSangrias = await db.collection("empresas").doc(empresaId).collection("sangrias").get();
     let sangriasCarregadas = [];
     snapSangrias.forEach(doc => sangriasCarregadas.push(doc.data()));
     sangriasSuprimentos = sangriasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
+    
     let snapFech = await db.collection("empresas").doc(empresaId).collection("fechamentos").get();
     let fechCarregados = [];
     snapFech.forEach(doc => fechCarregados.push(doc.data()));
     historicoFechamentos = fechCarregados.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+    // NOVA PARTE ADICIONADA: CARREGAR DESPESAS DO FIREBASE
+    let snapDesp = await db.collection("empresas").doc(empresaId).collection("despesas").get();
+    let despCarregadas = [];
+    snapDesp.forEach(doc => despCarregadas.push(doc.data()));
+    despesasFixas = despCarregadas;
+
     persistirDadosCompletos();
   } catch(e) {}
 }

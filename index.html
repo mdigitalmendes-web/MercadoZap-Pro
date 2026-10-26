@@ -823,6 +823,11 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible") {
     const user = auth.currentUser;
     if (user && perfilNegocio.empresaId) {
+      // 1. Garante que o usuário ainda tem permissão de acesso
+      let ativo = await verificarIntegridadeVinculoAtivo();
+      if (!ativo) return;
+      
+      // 2. Força a puxar as vendas e estoque atualizados do Firebase
       await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
       renderAba();
       verificarAlertasEstoqueValidadeAutomatico();
@@ -830,7 +835,9 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 async function verificarIntegridadeVinculoAtivo() {
-  if (eAdminOuGerenteOuSocio()) return true;
+  // Apenas Proprietário e Sócio têm permissão absoluta sem slot
+  if (eAdminOuSocio()) return true;
+  
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;
   try {
@@ -842,9 +849,10 @@ async function verificarIntegridadeVinculoAtivo() {
     }
     let dadosPatrao = docPatrao.data();
     if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
+      // Verifica se o Gerente ou Operador ainda está ATIVO na lista da empresa
       let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid));
       if (!meuSlot) {
-        alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi desvinculado!");
+        alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi revogado pelo administrador!");
         fazerLogoutSeguro();
         return false;
       }
@@ -3562,24 +3570,31 @@ function renderAbaRelatorios() {
   const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   let capitalInvestidoEstoque = 0;
   produtos.forEach(p => { capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
+  
   let totalCustoVendido = 0;
   vendas.forEach(v => {
     if (v.itens && Array.isArray(v.itens)) v.itens.forEach(it => { totalCustoVendido += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
   });
+  
   const lucroBruto = totalVendasGeral - totalCustoVendido;
   const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
   const lucroLiquidoReal = eModoMei() ? (totalVendasGeral - totalDespesas) : (lucroBruto - totalDespesas);
+
   let vendasPorOperador = {};
   vendas.forEach(v => {
     let op = v.operador || 'Desconhecido';
     vendasPorOperador[op] = (vendasPorOperador[op] || 0) + 1;
   });
+  
   let auditoriaOperadoresHTML = Object.keys(vendasPorOperador).length > 0 ? Object.keys(vendasPorOperador).map(op => `
     <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
       <span class="font-bold text-slate-700">🧑‍💼 ${op}</span>
       <span class="bg-indigo-50 text-indigo-800 font-bold px-2 py-0.5 rounded text-[10px]">${vendasPorOperador[op]} venda(s)</span>
     </div>
   `).join('') : '<p class="text-xs text-slate-400 italic text-center py-2">Sem registros.</p>';
+
+  const ehApenasGerente = eGerente() && !eAdminOuSocio();
+
   document.getElementById('content-relatorios').innerHTML = `
     <div class="space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -3587,32 +3602,42 @@ function renderAbaRelatorios() {
           <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial & DRE
         </h2>
         <span class="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2 py-0.5 rounded-full">
-          ${eModoMei() ? 'Modo MEI' : 'Modo Completo'}
+          ${ehApenasGerente ? 'Visão Gerencial' : (eModoMei() ? 'Modo MEI' : 'Modo Completo')}
         </span>
       </div>
+      
       <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <span class="text-xs font-bold text-teal-400 uppercase tracking-wider">Balanço Financeiro & DRE</span>
+          <span class="text-xs font-bold text-teal-400 uppercase tracking-wider">Balanço Operacional</span>
           <button onclick="abrirModalDespesas()" class="text-[10px] bg-red-600 text-white font-bold px-2.5 py-1 rounded-lg">Contas a Pagar (R$ ${totalDespesas.toFixed(2)})</button>
         </div>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between items-center"><span class="text-slate-300">🟢 Faturamento Bruto:</span><span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span></div>
           <div class="flex justify-between items-center"><span class="text-slate-300">🔴 (-) Contas a Pagar / Despesas:</span><span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span></div>
-          ${!eModoMei() ? `<div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>` : ''}
-          <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800 my-1">
-            <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span><span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
-          </div>
+          
+          ${!ehApenasGerente ? `
+            ${!eModoMei() ? `<div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>` : ''}
+            <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800 my-1">
+              <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span><span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
+            </div>
+          ` : `
+            <div class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700 my-1 text-center text-[11px] text-slate-400 italic">
+              🔒 Informações de Lucro Líquido e Margem são restritas à Diretoria.
+            </div>
+          `}
         </div>
       </div>
+
       <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
         <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
           <i class="fa-solid fa-users-gear text-indigo-600"></i> Vendas por Operador
         </h3>
         <div class="space-y-1">${auditoriaOperadoresHTML}</div>
       </div>
+
       <div class="pt-1">
         <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition">
-          <i class="fa-solid fa-file-export text-base"></i> Abrir Central de Relatórios (PDF/CSV)
+          <i class="fa-solid fa-file-export text-base"></i> Central de Relatórios (PDF/CSV)
         </button>
       </div>
     </div>
@@ -3623,6 +3648,16 @@ function abrirModalOpcoesRelatorio() {
   const hojeStr = new Date().toISOString().split('T')[0];
   document.getElementById('pdf-data-inicio').value = hojeStr;
   document.getElementById('pdf-data-fim').value = hojeStr;
+  
+  // Oculta opção de DRE de Lucro Líquido no dropdown do PDF se for Gerente
+  const selectConteudo = document.getElementById('relatorio-tipo-conteudo');
+  if (selectConteudo) {
+    const optLucro = selectConteudo.querySelector('option[value="lucro"]');
+    if (optLucro) {
+      optLucro.style.display = (eGerente() && !eAdminOuSocio()) ? 'none' : 'block';
+    }
+  }
+  
   document.getElementById('modal-opcoes-relatorio').classList.remove('hidden');
 }
 function fecharModalOpcoesRelatorio() {

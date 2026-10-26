@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Caixa Rápido Móvel Pro v56.0 (Fase 1 - Oficial)</title>
+<title>Caixa Rápido Móvel Pro v57.0 (Fase 2)</title>
 <!-- Estilos e Design (Tailwind CSS + FontAwesome 6) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -52,7 +52,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
 </div>
 <button onclick="fecharToastAniversario()" class="bg-purple-900 hover:bg-purple-800 text-amber-300 px-2.5 py-1 rounded-lg text-[10px] font-bold">OK</button>
 </div>
-<!-- TOAST DE ALERTA DINÂMICO NO PDV (ESTOQUE BAIXO) -->
+<!-- TOAST DE ALERTA DINÂMICO NO PDV -->
 <div id="toast-alerta-pdv" class="fixed top-3 left-4 right-4 z-50 max-w-sm mx-auto bg-red-950 text-white p-3.5 rounded-2xl shadow-2xl border border-red-500 flex items-center justify-between gap-3">
 <div class="flex items-center gap-2.5 min-w-0">
 <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0 animate-bounce shadow">⚠️</div>
@@ -85,7 +85,7 @@ body.dark-mode { background-color: #0f172a; color: #f1f5f9; }
 <button onclick="silenciarAlerta()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg font-bold">🔕 Fechar</button>
 </div>
 </div>
-<!-- TELA DE BLOQUEIO SERIAL / LICENÇA EXPIRADA -->
+<!-- TELA DE BLOQUEIO SERIAL / LICENÇA -->
 <div id="screen-licenca-bloqueada" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col justify-center items-center p-6 text-center">
 <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg animate-bounce">
 <i class="fa-solid fa-lock"></i>
@@ -102,7 +102,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <p id="msg-serial-erro" class="text-xs text-red-400 font-bold hidden"></p>
 </div>
 </div>
-<!-- DRAWER LATERAL (MENU SANDUÍCHE - CENTRAL DE AUDITORIA E GESTÃO) -->
+<!-- DRAWER LATERAL (MENU SANDUÍCHE) -->
 <div id="drawer-menu" class="hidden fixed inset-0 z-50 flex">
 <div onclick="fecharDrawerNavegacao()" class="drawer-overlay fixed inset-0 bg-black bg-opacity-60"></div>
 <div class="drawer-content relative bg-white w-80 max-w-xs h-full shadow-2xl z-10 flex flex-col justify-between">
@@ -200,7 +200,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <i class="fa-solid fa-user-slash w-5 text-center"></i>
 <span>Excluir Conta e Dados da Empresa</span>
 </button>
-<button onclick="executarLimpezaTotalManual()" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600 mt-1">
+<button id="menu-btn-limpeza-total" onclick="executarLimpezaTotalManual()" class="hidden w-full text-left px-3.5 py-2.5 hover:bg-red-50 rounded-xl flex items-center gap-3 text-xs font-semibold text-red-600 mt-1">
 <i class="fa-solid fa-trash-can w-5 text-center"></i>
 <span>Apagar Dados e Resetar App</span>
 </button>
@@ -213,7 +213,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </div>
 </div>
 </div>
-<!-- CONTEÚDO PRINCIPAL (SLIDER DE ABAS) -->
+<!-- CONTEÚDO PRINCIPAL (SLIDER) -->
 <main id="main-swipe-area" class="flex-1 w-full max-w-md mx-auto overflow-hidden">
 <div id="slider-wrapper">
 <div id="slider-container">
@@ -235,7 +235,7 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </div>
 </div>
 </main>
-<!-- BARRA DE NAVEGAÇÃO INFERIOR FLUTUANTE -->
+<!-- BARRA DE NAVEGAÇÃO INFERIOR -->
 <nav id="app-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-40 max-w-md mx-auto">
 <div id="bottom-nav-grid" class="grid grid-cols-5 h-16">
 <button onclick="switchTab('inicio')" id="bottom-btn-inicio" class="nav-bottom-item flex flex-col items-center justify-center space-y-1 text-slate-500 font-semibold active">
@@ -270,9 +270,6 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </h3>
 <button onclick="fecharModalAuditoriaGavetaMenu()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
-<p class="text-[11px] text-slate-500 leading-relaxed">
-Histórico completo de entradas e retiradas de gaveta registradas por todos os operadores em tempo real.
-</p>
 <div id="lista-auditoria-gaveta-menu-box" class="space-y-2 text-xs pt-1"></div>
 </div>
 </div>
@@ -284,9 +281,6 @@ Histórico completo de entradas e retiradas de gaveta registradas por todos os o
 </h3>
 <button onclick="fecharModalAuditoriaOperadoresMenu()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
-<p class="text-[11px] text-slate-500 leading-relaxed">
-Resumo de faturamento e quantidade de vendas realizadas por cada operador no estabelecimento.
-</p>
 <div id="lista-auditoria-operadores-menu-box" class="space-y-2 text-xs pt-1"></div>
 </div>
 </div>
@@ -298,9 +292,6 @@ Resumo de faturamento e quantidade de vendas realizadas por cada operador no est
 </h3>
 <button onclick="fecharModalGerenciarFuncionarios()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
-<p class="text-xs text-slate-600 leading-relaxed">
-Cadastre o nome, e-mail exato do app, PIN e data de nascimento do funcionário. Aniversariantes do dia geram mensagens e alertas automáticos.
-</p>
 <div class="space-y-3 pt-1">
 <div id="lista-slots-funcionarios-box" class="space-y-2.5 text-xs"></div>
 </div>
@@ -328,7 +319,7 @@ Cadastre o nome, e-mail exato do app, PIN e data de nascimento do funcionário. 
 <div class="bg-slate-50 p-3 rounded-xl border space-y-2 text-xs">
 <p class="font-bold text-slate-700">Adicionar Nova Conta a Pagar:</p>
 <div>
-<label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Descrição (Ex: Aluguel, Luz, Fornecedor) *</label>
+<label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Descrição *</label>
 <input type="text" id="nova-desp-desc" placeholder="Ex: Conta de Luz" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
 </div>
 <div class="grid grid-cols-2 gap-2">
@@ -707,8 +698,8 @@ Confirmar e Salvar no Caixa
 <button onclick="closeModalAjuda()" class="text-slate-500 text-xl font-bold">&times;</button>
 </div>
 <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-<p><b>🏢 Central de Auditoria no Menu:</b> Sangrias, suprimentos, fechamentos e relatórios ficam centralizados no menu lateral sanduíche.</p>
-<p><b>🎂 Aniversariantes & Desvinculação:</b> Mensagens automáticas para aniversariantes e opção de desvinculação local para funcionários com segurança total.</p>
+<p><b>🏢 Central de Auditoria no Menu:</b> Sangrias, suprimentos, fechamentos e relatórios ficam centralizados no menu lateral.</p>
+<p><b>🎂 Aniversariantes & Desvinculação:</b> Mensagens automáticas para aniversariantes e opção segura de desvinculação local para funcionários.</p>
 </div>
 </div>
 </div>
@@ -730,12 +721,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || { diasDegustacao: 20, vitalicio: false, dataInicioLocal: Date.now() };
+let licencaInfo = JSON.parse(localStorage.getItem('crm_licenca')) || { diasDegustacao: 30, vitalicio: false, dataInicioLocal: Date.now() };
 if (!licencaInfo.dataInicioLocal) {
   licencaInfo.dataInicioLocal = Date.now();
   localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
 }
-// INICIALIZAÇÃO LIMPA (Sem mocks fixos, permitindo que o usuário insira seus próprios dados)
 let produtos = JSON.parse(localStorage.getItem('crm_produtos')) || [];
 let vendas = JSON.parse(localStorage.getItem('crm_vendas')) || [];
 let sangriasSuprimentos = JSON.parse(localStorage.getItem('crm_sangrias')) || [];
@@ -820,7 +810,7 @@ async function verificarIntegridadeVinculoAtivo() {
     if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
       let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid));
       if (!meuSlot) {
-        alert("🚫 ATENÇÃO DE SEGURANÇA: O seu e-mail não corresponde ao slot de funcionário desta empresa!");
+        alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi desvinculado!");
         fazerLogoutSeguro();
         return false;
       }
@@ -985,7 +975,6 @@ function verificarAlertasEstoqueValidadeAutomatico() {
     return dVal <= limiteAlerta;
   });
   let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
-  // Contas a Pagar / Despesas Vencidas ou Vencendo Hoje
   let despesasPendentes = despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr);
 
   const banner = document.getElementById('banner-alerta-estoque');
@@ -1108,7 +1097,7 @@ async function excluirContaEempresaTotalmente() {
     alert("Apenas administradores podem excluir a conta e a empresa.");
     return;
   }
-  if (confirm("⚠️ ATENÇÃO EXTREMA: Deseja realmente excluir permanentemente sua conta e TODOS OS DADOS da sua empresa? Esta ação não pode ser desfeita.")) {
+  if (confirm("⚠️ ATENÇÃO EXTREMA: Deseja realmente excluir permanentemente sua conta e TODOS OS DADOS da sua empresa para todos os colaboradores? Esta ação não pode ser desfeita.")) {
     const senhaConfirmacao = prompt("Para confirmar a exclusão, digite sua senha atual de acesso:");
     if (!senhaConfirmacao) return;
     const user = auth.currentUser;
@@ -1128,12 +1117,32 @@ async function excluirContaEempresaTotalmente() {
     }
   }
 }
-function desvincularContaFuncionarioLocalmente() {
+async function desvincularContaFuncionarioLocalmente() {
   if (eAdmin()) {
-    alert("Administradores não se desvinculam por aqui. Utilize a opção de excluir ou sair.");
+    alert("Administradores não se desvinculam por aqui.");
     return;
   }
-  if (confirm("Deseja realmente se desvincular desta empresa? Seus acessos locais serão removidos, sem afetar os dados da empresa ou dos outros funcionários.")) {
+  if (confirm("Deseja realmente se desvincular desta empresa? Você perderá o acesso e o patrão será notificado.")) {
+    const user = auth.currentUser;
+    if (user && perfilNegocio.empresaId && perfilNegocio.slotId) {
+      try {
+        let refPatrao = db.collection("perfis").doc(perfilNegocio.empresaId);
+        let docPatrao = await refPatrao.get();
+        if (docPatrao.exists) {
+          let dados = docPatrao.data();
+          if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
+            dados.slotsFuncionarios.forEach(s => {
+              if (s.id === perfilNegocio.slotId) {
+                s.ativo = false;
+                s.userUid = "";
+                s.email = "";
+              }
+            });
+            await refPatrao.update({ slotsFuncionarios: dados.slotsFuncionarios });
+          }
+        }
+      } catch(e) {}
+    }
     localStorage.removeItem('crm_perfil');
     localStorage.removeItem('crm_produtos');
     localStorage.removeItem('crm_vendas');
@@ -1141,7 +1150,7 @@ function desvincularContaFuncionarioLocalmente() {
     localStorage.removeItem('crm_sangrias');
     localStorage.removeItem('crm_fechamentos');
     localStorage.removeItem('crm_despesas');
-    alert("✅ Vínculo removido com sucesso deste aparelho!");
+    alert("✅ Vínculo removido com sucesso!");
     auth.signOut().then(() => {
       window.location.reload();
     });
@@ -1163,7 +1172,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
       <div class="flex justify-between items-center">
         <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Operador</span>
         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${slot.ativo ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-600'}">
-          ${slot.ativo ? 'Ativo' : 'Livre'}
+          ${slot.ativo ? 'Ativo' : 'Livre / Desvinculado'}
         </span>
       </div>
       <div>
@@ -1171,16 +1180,16 @@ function renderizarListaSlotsFuncionariosUnificada() {
         <input type="text" id="slot-nome-${index}" value="${slot.nome || ''}" placeholder="Ex: Carlos Silva" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
       </div>
       <div>
-        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">E-mail Cadastrado no App *</label>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">E-mail Cadastrado *</label>
         <input type="email" id="slot-email-${index}" value="${slot.email || ''}" placeholder="funcionario@email.com" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-teal-800">
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal (Visível) *</label>
+          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal *</label>
           <input type="text" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="Ex: 1234" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold text-indigo-900">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Data de Nascimento</label>
+          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nascimento</label>
           <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
         </div>
       </div>
@@ -1218,18 +1227,18 @@ function salvarSlotFuncionario(index) {
   persistirDadosCompletos();
   const user = auth.currentUser;
   if (user && eAdmin()) {
-    db.collection("perfis").doc(user.uid).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(err => console.error("Erro ao sincronizar slot:", err));
+    db.collection("perfis").doc(user.uid).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(()=>{});
   }
   renderizarListaSlotsFuncionariosUnificada();
-  alert(`✅ Funcionário ${nome} cadastrado e vinculado ao e-mail ${email}!`);
+  alert(`✅ Funcionário ${nome} cadastrado com sucesso!`);
 }
 function desligarSlotFuncionario(index) {
   let nomeFunc = slotsFuncionarios[index].nome || `Funcionário ${index+1}`;
-  if (confirm(`Deseja realmente desligar ${nomeFunc}? O e-mail e PIN serão desativados.`)) {
+  if (confirm(`Deseja realmente desligar ${nomeFunc}? O acesso será revogado imediatamente.`)) {
     slotsFuncionarios[index] = { id: index + 1, nome: "", email: "", pin: "", nascimento: "", ativo: false, userUid: "" };
     persistirDadosCompletos();
     renderizarListaSlotsFuncionariosUnificada();
-    alert("✅ Funcionário desligado e acesso revogado!");
+    alert("✅ Funcionário desligado com sucesso!");
   }
 }
 function abrirModalDespesas() {
@@ -1247,7 +1256,7 @@ function cadastrarDespesaFixa() {
   const valor = parseFloat(document.getElementById('nova-desp-valor').value);
   const venc = document.getElementById('nova-desp-venc').value;
   if (!desc || !valor || valor <= 0 || !venc) {
-    alert("Preencha todos os campos da conta a pagar corretamente!");
+    alert("Preencha todos os campos corretamente!");
     return;
   }
   despesasFixas.push({ id: Date.now(), descricao: desc, valor: valor, vencimento: venc });
@@ -1255,7 +1264,7 @@ function cadastrarDespesaFixa() {
   document.getElementById('nova-desp-desc').value = '';
   document.getElementById('nova-desp-valor').value = '';
   renderizarListaDespesasModal();
-  alert("✅ Conta a pagar cadastrada com sucesso!");
+  alert("✅ Conta a pagar cadastrada!");
   verificarAlertasEstoqueValidadeAutomatico();
 }
 function renderizarListaDespesasModal() {
@@ -1297,9 +1306,7 @@ function verificarEExibirToastBoasVindasDiario(nomeCompleto) {
       let primeiroNome = nomeExibicao.split(' ')[0];
       elNome.innerText = `👋 Olá, ${primeiroNome}! Área Ativa`;
       toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 4000);
+      setTimeout(() => { toast.classList.remove('show'); }, 4000);
     }
   }
 }
@@ -1309,9 +1316,7 @@ function exibirToastIntegracaoFiado(nomeCliente, valor) {
   if (toast && elTexto) {
     elTexto.innerText = `Débito de R$ ${valor.toFixed(2)} registrado para ${nomeCliente} na aba Fiado.`;
     toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 4200);
+    setTimeout(() => { toast.classList.remove('show'); }, 4200);
   }
 }
 function verificarLicencaStatus() {
@@ -1347,7 +1352,7 @@ function validarAtivacaoSerial() {
   } else if (senha === "MAIS30DIAS") {
     licencaInfo.diasDegustacao += 30;
     localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
-    alert("🎉 Licença estendida em +30 dias com sucesso!");
+    alert("🎉 Licença estendida em +30 dias!");
     verificarLicencaStatus();
   } else {
     msgErro.innerText = "Senha / Serial inválido!";
@@ -1375,7 +1380,7 @@ if (localStorage.getItem('crm_theme_dark') === 'true') {
 function abrirHistoricoFechamentos() {
   const box = document.getElementById('lista-historico-fechamentos-box');
   if (historicoFechamentos.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhum fechamento registrado até o momento.</p>`;
+    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhum fechamento registrado.</p>`;
   } else {
     box.innerHTML = historicoFechamentos.slice().reverse().map(f => `
       <div class="bg-slate-50 border p-3 rounded-xl space-y-1">
@@ -1436,7 +1441,7 @@ function abrirModalAuditoriaOperadoresMenu() {
   });
   let operadoresKeys = Object.keys(dadosOperadores);
   if (operadoresKeys.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada até o momento.</p>`;
+    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada.</p>`;
   } else {
     box.innerHTML = operadoresKeys.map(op => `
       <div class="bg-slate-50 border p-3 rounded-xl space-y-1">
@@ -1444,9 +1449,7 @@ function abrirModalAuditoriaOperadoresMenu() {
           <span>🧑‍💼 ${op}</span>
           <span class="text-teal-700">R$ ${dadosOperadores[op].total.toFixed(2)}</span>
         </div>
-        <div class="text-[11px] text-slate-500">
-          Total de Vendas Realizadas: <b>${dadosOperadores[op].qtd} venda(s)</b>
-        </div>
+        <div class="text-[11px] text-slate-500">Total: <b>${dadosOperadores[op].qtd} venda(s)</b></div>
       </div>
     `).join('');
   }
@@ -1458,40 +1461,44 @@ function fecharModalAuditoriaOperadoresMenu() {
 function abrirSuporteWhatsApp() {
   window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
 }
+
+// TELA DE LOGIN REESTRUTURADA COM BOTÕES SEPARADOS
 function showLoginForm() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
   document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto">
-      <div class="space-y-3.5">
-        <div class="text-center">
-          <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
-            <i class="fa-solid fa-store"></i>
-          </div>
-          <h2 class="text-lg font-bold text-slate-800">Entrar no Aplicativo</h2>
-          <p class="text-xs text-slate-500">Digite seu e-mail e senha cadastrados</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-2 max-w-sm mx-auto space-y-4">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
+          <i class="fa-solid fa-store"></i>
         </div>
-        <form onsubmit="handleLoginBlindado(event)" class="space-y-2.5">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">E-mail registrado</label>
-            <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-0.5">
-              <label class="block text-[11px] font-semibold text-slate-600">Sua Senha</label>
-              <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[10px] font-bold text-teal-700 hover:underline">Esqueceu a senha?</button>
-            </div>
-            <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
-          <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-            Entrar e Acessar Sistema
-          </button>
-        </form>
-        <div class="border-t pt-2.5 text-center">
-          <p class="text-xs text-slate-600">Primeiro acesso na empresa?</p>
-          <button onclick="showStep1CadastroAcesso()" class="text-xs font-extrabold text-teal-700 hover:underline mt-0.5">Criar Conta / Vincular E-mail</button>
+        <h2 class="text-lg font-bold text-slate-800">Caixa Rápido Móvel Pro</h2>
+        <p class="text-xs text-slate-500">Entre com sua conta para acessar o PDV</p>
+      </div>
+      <form onsubmit="handleLoginBlindado(event)" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">E-mail</label>
+          <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold">
         </div>
+        <div>
+          <div class="flex justify-between items-center mb-0.5">
+            <label class="block text-[11px] font-semibold text-slate-600">Senha</label>
+            <button type="button" onclick="showEsqueceuSenhaForm()" class="text-[10px] font-bold text-teal-700 hover:underline">Esqueceu?</button>
+          </div>
+          <input type="password" id="login-password" required placeholder="******" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold">
+        </div>
+        <p id="auth-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
+        <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          🔑 Entrar no Sistema
+        </button>
+      </form>
+      <div class="border-t pt-3 space-y-2">
+        <button onclick="showStep2CadastroUsuario()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+          <i class="fa-solid fa-store text-teal-400"></i> Criar Meu Negócio / Cadastrar Empresa
+        </button>
+        <button onclick="showStep1CadastroAcesso()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-user-plus text-indigo-600"></i> Vincular-me a uma Empresa (Funcionário)
+        </button>
       </div>
     </div>
   `;
@@ -1553,39 +1560,37 @@ function showStep1CadastroAcesso() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
   document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-8 max-w-sm mx-auto">
-      <div class="space-y-4">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-            <i class="fa-solid fa-user-plus"></i>
-          </div>
-          <h2 class="text-xl font-bold text-slate-800">Primeiro Acesso / Cadastro</h2>
-          <p class="text-xs text-slate-500">E-mail, Senha e Autenticação de Funcionário</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
+          <i class="fa-solid fa-user-plus"></i>
         </div>
-        <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Seu E-mail *</label>
-            <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Sua Senha (mín. 6 dígitos) *</label>
-            <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <div class="border-t pt-2 mt-2">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Se for Funcionário, informe seu PIN:</label>
-            <input type="text" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN de Operador (4-6 dígitos)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-            <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-teal-800 bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1 mt-2">
-              <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
-              <p id="texto-operador-vinculado" class="text-indigo-900 font-extrabold"></p>
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-            Avançar <i class="fa-solid fa-arrow-right ml-1"></i>
-          </button>
-        </form>
-        <div class="border-t pt-3 text-center">
-          <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
+        <h2 class="text-lg font-bold text-slate-800">Vínculo de Funcionário</h2>
+        <p class="text-xs text-slate-500">Informe seu e-mail, senha e o PIN fornecido pelo patrão</p>
+      </div>
+      <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu E-mail *</label>
+          <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Criar Senha (mín. 6 dígitos) *</label>
+          <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">PIN de Operador *</label>
+          <input type="text" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN numérico (Ex: 1234)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-extrabold text-indigo-900">
+          <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-indigo-900 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 space-y-1 mt-2">
+            <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
+            <p id="texto-operador-vinculado" class="text-indigo-800 font-extrabold"></p>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 text-white font-extrabold py-3 rounded-xl hover:bg-indigo-700 transition text-xs shadow-md">
+          Vincular-me à Empresa <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </form>
+      <div class="border-t pt-3 text-center">
+        <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
       </div>
     </div>
   `;
@@ -1627,8 +1632,8 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         nomeFuncionarioSlot: slotMatch.nome || "Funcionário",
         slotId: slotMatch.id
       };
-      textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja do Patrão'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Operador Reconhecido: <b>${slotMatch.nome}</b>`;
+      textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Operador Confirmado: <b>${slotMatch.nome}</b>`;
       boxStatus.classList.remove('hidden');
     } else {
       window.tempPatraoVinculado = null;
@@ -1657,39 +1662,42 @@ async function handleStep1Cadastro(e) {
       criarContaFirebaseFinal();
       return;
     } else {
-      alert("⚠️ E-mail ou PIN do operador incorretos para esta empresa!");
+      alert("⚠️ E-mail ou PIN inválido ou desativado pelo patrão!");
       return;
     }
-  } else {
-    cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
-    cadastroTemp.empresaId = "";
-    showStep2CadastroUsuario();
   }
 }
 function showStep2CadastroUsuario() {
+  mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
   document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-8 max-w-sm mx-auto">
-      <div class="space-y-4">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-            <i class="fa-solid fa-id-card"></i>
-          </div>
-          <h2 class="text-xl font-bold text-slate-800">Seus Dados Pessoais</h2>
-          <p class="text-xs text-slate-500">Passo 2 de 2: Nome do Proprietário</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
+          <i class="fa-solid fa-user-tie"></i>
         </div>
-        <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
-            <input type="text" id="cad-nome-usuario" required placeholder="Ex: Rogério" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-            Avançar <i class="fa-solid fa-arrow-right ml-1"></i>
-          </button>
-        </form>
-        <div class="border-t pt-3 text-center">
-          <button onclick="showStep1CadastroAcesso()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar</button>
+        <h2 class="text-lg font-bold text-slate-800">Passo 1: Dados do Proprietário</h2>
+        <p class="text-xs text-slate-500">Informe seus dados para criar a administração</p>
+      </div>
+      <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
+          <input type="text" id="cad-nome-usuario" required placeholder="Ex: Rogério" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail de Acesso (Administrador) *</label>
+          <input type="email" id="cad-prop-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Senha (mín. 6 dígitos) *</label>
+          <input type="password" id="cad-prop-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+        </div>
+        <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          Avançar para Dados da Loja <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </form>
+      <div class="border-t pt-3 text-center">
+        <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
       </div>
     </div>
   `;
@@ -1697,57 +1705,60 @@ function showStep2CadastroUsuario() {
 function handleStep2Cadastro(e) {
   e.preventDefault();
   cadastroTemp.nomeUsuario = document.getElementById('cad-nome-usuario').value;
+  cadastroTemp.email = document.getElementById('cad-prop-email').value.trim().toLowerCase();
+  cadastroTemp.pass = document.getElementById('cad-prop-pass').value;
+  cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
+  cadastroTemp.empresaId = "";
   showStep3CadastroNegocio();
 }
 function showStep3CadastroNegocio() {
+  mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
   document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-8 max-w-sm mx-auto">
-      <div class="space-y-4">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-            <i class="fa-solid fa-store"></i>
-          </div>
-          <h2 class="text-xl font-bold text-slate-800">Perfil do Negócio</h2>
-          <p class="text-xs text-slate-500">Dados do Estabelecimento & Modo de Operação</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
+          <i class="fa-solid fa-store"></i>
         </div>
-        <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
+        <h2 class="text-lg font-bold text-slate-800">Passo 2: Perfil da Empresa</h2>
+        <p class="text-xs text-slate-500">Configure o nome e a operação da sua loja</p>
+      </div>
+      <form onsubmit="handleConcluirCadastro(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da Loja / Estabelecimento *</label>
+          <input type="text" id="cad-nome-loja" required placeholder="Ex: Meu Negócio" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da sua Loja / Estabelecimento *</label>
-            <input type="text" id="cad-nome-loja" required placeholder="Ex: Meu Negócio" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
-              <select id="cad-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
-                <option value="PF">Pessoa Física</option>
-                <option value="MEI">MEI</option>
-                <option value="ME">Microempresa</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
-              <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
-                <option value="Produtos">Produtos</option>
-                <option value="Servicos">Serviços</option>
-                <option value="Ambos">Ambos</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação do App *</label>
-            <select id="cad-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
-              <option value="mei">🟢 Modo MEI / Simples (Foco em Vendas & Praticidade)</option>
-              <option value="completo" selected>🔵 Modo Estrutura Maior / Completo (Com Custos & DRE)</option>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Registro</label>
+            <select id="cad-tipo-registro" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
+              <option value="PF">Pessoa Física</option>
+              <option value="MEI">MEI</option>
+              <option value="ME">Microempresa</option>
             </select>
           </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-            🚀 Finalizar e Entrar
-          </button>
-        </form>
-        <div class="border-t pt-3 text-center">
-          <button onclick="showStep2CadastroUsuario()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar</button>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Atuação</label>
+            <select id="cad-ramo" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
+              <option value="Produtos">Produtos</option>
+              <option value="Servicos">Serviços</option>
+              <option value="Ambos">Ambos</option>
+            </select>
+          </div>
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação *</label>
+          <select id="cad-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
+            <option value="mei">🟢 Modo MEI / Simples (Prático, sem custos)</option>
+            <option value="completo" selected>🔵 Modo Completo (Com Custos & DRE)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          🚀 Concluir Cadastro & Entrar
+        </button>
+      </form>
+      <div class="border-t pt-3 text-center">
+        <button onclick="showStep2CadastroUsuario()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar</button>
       </div>
     </div>
   `;
@@ -1820,37 +1831,35 @@ function copiarCodigoConvitePatrao() {
   if (!user) return;
   let codigoLoja = perfilNegocio.empresaId || user.uid;
   navigator.clipboard.writeText(codigoLoja).then(() => {
-    alert(`📋 Código de Convite copiado com sucesso!\n\nEnvie este código para o seu funcionário:\n${codigoLoja}`);
+    alert(`📋 Código de Convite copiado!\n\nEnvie este ID para seu funcionário:\n${codigoLoja}`);
   }).catch(() => {
-    prompt("Copie o código abaixo:", codigoLoja);
+    prompt("Código da empresa:", codigoLoja);
   });
 }
 function showEsqueceuSenhaForm() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
   document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-8 max-w-sm mx-auto">
-      <div class="space-y-4">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-2 shadow-sm">
-            <i class="fa-solid fa-key"></i>
-          </div>
-          <h2 class="text-xl font-bold text-slate-800">Recuperar Acesso</h2>
-          <p class="text-xs text-slate-500">Enviaremos um link de redefinição de senha para o seu e-mail.</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
+          <i class="fa-solid fa-key"></i>
         </div>
-        <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Digite seu E-mail *</label>
-            <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-          </div>
-          <p id="recupera-msg" class="text-xs font-bold hidden text-center p-3 rounded-xl leading-relaxed"></p>
-          <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-            📩 Enviar E-mail de Redefinição
-          </button>
-        </form>
-        <div class="border-t pt-3 text-center">
-          <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para Tela de Login</button>
+        <h2 class="text-lg font-bold text-slate-800">Recuperar Acesso</h2>
+        <p class="text-xs text-slate-500">Enviaremos um link de redefinição para o seu e-mail</p>
+      </div>
+      <form onsubmit="handleEsqueceuSenha(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu E-mail *</label>
+          <input type="email" id="recupera-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
         </div>
+        <p id="recupera-msg" class="text-xs font-bold hidden text-center p-3 rounded-xl"></p>
+        <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
+          📩 Enviar Link
+        </button>
+      </form>
+      <div class="border-t pt-3 text-center">
+        <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
       </div>
     </div>
   `;
@@ -1861,7 +1870,7 @@ function handleEsqueceuSenha(e) {
   const msgBox = document.getElementById('recupera-msg');
   msgBox.classList.add('hidden');
   auth.sendPasswordResetEmail(email).then(() => {
-    msgBox.innerHTML = `✅ <b>E-mail enviado com sucesso!</b><br><span class="text-[11px] font-normal text-green-900 block mt-1">Verifique sua caixa de entrada e SPAM.</span>`;
+    msgBox.innerHTML = `✅ <b>E-mail enviado!</b> Verifique sua caixa de entrada e SPAM.`;
     msgBox.className = "text-xs font-bold text-green-800 bg-green-50 border border-green-300 text-center p-3 rounded-xl shadow-sm";
     msgBox.classList.remove('hidden');
   }).catch((err) => {
@@ -1886,18 +1895,8 @@ function salvarNovaSenhaUsuarioComReautenticacao() {
   const confirmaNovaSenha = document.getElementById('input-confirma-nova-senha').value.trim();
   const msgErro = document.getElementById('msg-erro-altera-senha');
   msgErro.classList.add('hidden');
-  if (!senhaAtual) {
-    msgErro.innerText = "Digite sua senha atual!";
-    msgErro.classList.remove('hidden');
-    return;
-  }
-  if (!novaSenha || novaSenha.length < 6) {
-    msgErro.innerText = "A nova senha deve ter no mínimo 6 caracteres!";
-    msgErro.classList.remove('hidden');
-    return;
-  }
-  if (novaSenha !== confirmaNovaSenha) {
-    msgErro.innerText = "As senhas não coincidem!";
+  if (!senhaAtual || !novaSenha || novaSenha.length < 6 || novaSenha !== confirmaNovaSenha) {
+    msgErro.innerText = "Preencha os campos corretamente (mín. 6 caracteres coincidentes).";
     msgErro.classList.remove('hidden');
     return;
   }
@@ -1917,7 +1916,7 @@ function salvarNovaSenhaUsuarioComReautenticacao() {
 function abrirScanner(destino) {
   modoScannerDestino = destino;
   document.getElementById('modal-scanner').classList.remove('hidden');
-  document.getElementById('scanner-status').innerText = "Solicitando permissão da câmera...";
+  document.getElementById('scanner-status').innerText = "Iniciando câmera...";
   document.getElementById('scanner-controls-fallback').classList.add('hidden');
   document.getElementById('scanner-feedback-box').classList.add('hidden');
   ultimoEanLido = '';
@@ -1927,10 +1926,9 @@ function abrirScanner(destino) {
       try {
         const html5QrCode = new Html5Qrcode("reader");
         html5QrcodeScanner = html5QrCode;
-        const config = { fps: 20, qrbox: { width: 250, height: 140 } };
         html5QrCode.start(
           { facingMode: "environment" },
-          config,
+          { fps: 20, qrbox: { width: 250, height: 140 } },
           (decodedText) => { onScanSuccess(decodedText); },
           (errorMessage) => {}
         ).then(() => {
@@ -1941,7 +1939,6 @@ function abrirScanner(destino) {
         });
       } catch(e) {
         document.getElementById('scanner-status').innerText = "Erro na câmera.";
-        document.getElementById('scanner-controls-fallback').classList.add('hidden');
       }
     }, 300);
   });
@@ -1956,9 +1953,7 @@ function iniciarCameraHtml5Manual() {
     ).then(() => {
       document.getElementById('scanner-status').innerText = "Câmera iniciada!";
       document.getElementById('scanner-controls-fallback').classList.add('hidden');
-    }).catch(err => {
-      alert("Não foi possível acessar a câmera.");
-    });
+    }).catch(err => alert("Não foi possível acessar a câmera."));
   }
 }
 function onScanSuccess(decodedText) {
@@ -1975,9 +1970,7 @@ function onScanSuccess(decodedText) {
       const feedback = document.getElementById('scanner-feedback-box');
       feedback.innerText = `✅ +1 ${prod.nome} (R$ ${prod.preco.toFixed(2)})`;
       feedback.classList.remove('hidden');
-      setTimeout(() => {
-        feedback.classList.add('hidden');
-      }, 1500);
+      setTimeout(() => { feedback.classList.add('hidden'); }, 1500);
     } else {
       tocarBeepConfirmacaoBip();
       const feedback = document.getElementById('scanner-feedback-box');
@@ -1999,7 +1992,6 @@ function onScanSuccess(decodedText) {
       eanDisp.innerText = `EAN LIDO: ${decodedText}`;
       eanDisp.classList.remove('hidden');
     }
-    alert(`✅ Código EAN lido: ${decodedText}`);
   }
 }
 function adicionarAoCarrinhoSilent(index) {
@@ -2060,10 +2052,11 @@ swipeArea.addEventListener('touchend', (e) => {
     }
   }
 }, { passive: true });
+
 function abrirDrawerNavegacao() {
   if (!auth.currentUser) return;
   const user = auth.currentUser;
-  document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Rogério';
+  document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Usuário';
   document.getElementById('drawer-user-email').innerText = user.email || '';
   document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Proprietário / Gerente';
   const btnCopiar = document.getElementById('btn-copiar-convite');
@@ -2072,6 +2065,7 @@ function abrirDrawerNavegacao() {
   const secaoFerramentasAdmin = document.getElementById('menu-secao-ferramentas-admin');
   const btnExcluirConta = document.getElementById('menu-btn-excluir-conta-empresa');
   const btnAuditoriaOperadores = document.getElementById('menu-btn-auditoria-operadores');
+  const btnLimpezaTotal = document.getElementById('menu-btn-limpeza-total');
   if (eAdmin()) {
     if (btnCopiar) btnCopiar.classList.remove('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.remove('hidden');
@@ -2079,6 +2073,7 @@ function abrirDrawerNavegacao() {
     if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
     if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
+    if (btnLimpezaTotal) btnLimpezaTotal.classList.remove('hidden'); // Ocultado para funcionários conforme solicitado
   } else {
     if (btnCopiar) btnCopiar.classList.add('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
@@ -2086,6 +2081,7 @@ function abrirDrawerNavegacao() {
     if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
     if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.add('hidden');
+    if (btnLimpezaTotal) btnLimpezaTotal.classList.add('hidden'); // Removido para funcionários
   }
   document.getElementById('drawer-menu').classList.remove('hidden');
 }
@@ -2094,15 +2090,11 @@ function fecharDrawerNavegacao() {
 }
 function openModalPerfil() {
   const user = auth.currentUser;
-  document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Rogério';
+  document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
   const containerFuncao = document.getElementById('container-perfil-funcao-edicao');
   const containerEstab = document.getElementById('container-dados-estabelecimento-edicao');
   if (eAdmin()) {
-    containerFuncao.innerHTML = `
-      <select id="perfil-user-funcao-modal" class="w-full p-2.5 border rounded-lg text-xs bg-white font-semibold">
-        <option value="Proprietário / Gerente">Proprietário / Gerente (Acesso Total)</option>
-      </select>
-    `;
+    containerFuncao.innerHTML = `<input type="text" readonly value="Proprietário / Gerente (Acesso Total)" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
     containerEstab.innerHTML = `
       <div class="space-y-3">
         <div>
@@ -2128,23 +2120,20 @@ function openModalPerfil() {
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação do App</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação</label>
           <select id="perfil-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
-            <option value="mei" ${eModoMei() ? 'selected' : ''}>🟢 Modo MEI / Simples (Prático, sem custos detalhados)</option>
-            <option value="completo" ${!eModoMei() ? 'selected' : ''}>🔵 Modo Estrutura Maior / Completo (Com Custos & DRE)</option>
+            <option value="mei" ${eModoMei() ? 'selected' : ''}>🟢 Modo MEI / Simples</option>
+            <option value="completo" ${!eModoMei() ? 'selected' : ''}>🔵 Modo Completo (Com Custos)</option>
           </select>
         </div>
       </div>
     `;
   } else {
-    containerFuncao.innerHTML = `
-      <input type="text" readonly value="Funcionário / Operador (Vinculado)" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">
-    `;
+    containerFuncao.innerHTML = `<input type="text" readonly value="Funcionário / Operador" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
     containerEstab.innerHTML = `
       <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
         <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
-        <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja do Patrão'}</p>
-        <p class="text-[10px] text-slate-500">Modo: <b>${eModoMei() ? 'MEI / Simples' : 'Completo'}</b></p>
+        <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</p>
       </div>
     `;
   }
@@ -2177,13 +2166,11 @@ function salvarPerfilNegocio(e) {
   }
   closeModalPerfil();
   renderAba();
-  alert("✅ Perfil atualizado!");
+  alert("✅ Perfil atualizado com sucesso!");
 }
 function fazerLogoutSeguro() {
-  if (confirm("Deseja realmente encerrar a sessão?")) {
-    auth.signOut().then(() => {
-      window.location.reload();
-    });
+  if (confirm("Deseja realmente sair da sessão?")) {
+    auth.signOut().then(() => { window.location.reload(); });
   }
 }
 async function switchTab(aba) {
@@ -2192,19 +2179,18 @@ async function switchTab(aba) {
   let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
   if (!vinculadoAtivo) return;
   if (aba === 'relatorios' && !eAdmin()) {
-    alert("⚠️ Acesso Restrito: Apenas Proprietários / Gerentes podem acessar os Relatórios.");
+    alert("⚠️ Acesso Restrito: Apenas administradores podem acessar os Relatórios.");
     return;
   }
   abaAtual = aba;
   let validAbas = eAdmin() ? ordemAbas : ordemAbas.filter(a => a !== 'relatorios');
-  const idx = validAbas.indexOf(aba);
   document.getElementById('slider-container').style.transform = `translateX(-${ordemAbas.indexOf(aba) * 20}%)`;
   const bottomNav = document.getElementById('app-bottom-nav');
   if (aba === 'inicio') {
     bottomNav.classList.add('hidden');
   } else {
     bottomNav.classList.remove('hidden');
-    verificarEExibirToastBoasVindasDiario(perfilNegocio.nomeUsuario || auth.currentUser.displayName || 'Rogério');
+    verificarEExibirToastBoasVindasDiario(perfilNegocio.nomeUsuario || auth.currentUser.displayName || '');
   }
   ordemAbas.forEach(a => {
     const btnNav = document.getElementById('bottom-btn-' + a);
@@ -2229,9 +2215,11 @@ function renderAba() {
   renderAbaClientes();
   if (eAdmin()) renderAbaRelatorios();
 }
+
+// TELA INICIAL COM REMOÇÃO DE RELATÓRIOS PARA FUNCIONÁRIOS
 function renderAbaInicio() {
   const user = auth.currentUser;
-  const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Rogério';
+  const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Parceiro';
   const primeiroNome = nomeUser.split(' ')[0];
   let inicio = licencaInfo.dataInicioLocal || Date.now();
   if (user && user.metadata && user.metadata.creationTime) {
@@ -2249,11 +2237,11 @@ function renderAbaInicio() {
         <div class="flex items-center gap-3">
           <div class="text-2xl">🎉</div>
           <div>
-            <h4 class="font-extrabold text-xs text-amber-300">Hoje é dia de Festa!</h4>
-            <p class="text-[11px] text-purple-100">Aniversariante(s): <b>${aniversariantesHoje.map(a => a.nome).join(', ')}</b></p>
+            <h4 class="font-extrabold text-xs text-amber-300">Aniversariante(s) de Hoje!</h4>
+            <p class="text-[11px] text-purple-100"><b>${aniversariantesHoje.map(a => a.nome).join(', ')}</b></p>
           </div>
         </div>
-        <button onclick="dispararToastAniversariantesAutomatico()" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl shadow">Parabenizar</button>
+        <button onclick="dispararToastAniversariantesAutomatico()" class="bg-amber-400 text-purple-950 font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl shadow">Parabenizar</button>
       </div>
     `;
   }
@@ -2266,7 +2254,7 @@ function renderAbaInicio() {
           </button>
           <div>
             <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-            <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eModoMei() ? 'MEI / Simples' : 'Completo'})</p>
+            <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${eAdmin() ? 'Administrador' : 'Funcionário'})</p>
           </div>
         </div>
         <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/15 p-2.5 rounded-xl border border-white/20 hover:bg-white/25 transition">
@@ -2277,7 +2265,7 @@ function renderAbaInicio() {
       ${bannerAniversarioHTML}
       <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
         <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-compass text-teal-600"></i> Navegação Rápida pelas Abas
+          <i class="fa-solid fa-compass text-teal-600"></i> Navegação Rápida
         </h3>
         <div class="grid grid-cols-2 gap-2">
           <button onclick="switchTab('vendas')" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
@@ -2310,11 +2298,11 @@ function renderAbaInicio() {
               </div>
             </button>
           ` : `
-            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-left flex items-center gap-2.5 opacity-60">
+            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-left flex items-center gap-2.5 opacity-40">
               <i class="fa-solid fa-lock text-slate-400 text-lg"></i>
               <div>
-                <p class="font-extrabold text-xs text-slate-500">Relatórios</p>
-                <p class="text-[10px] text-slate-400">Acesso Restrito</p>
+                <p class="font-extrabold text-xs text-slate-400">Restrito</p>
+                <p class="text-[10px] text-slate-400">Apenas Admin</p>
               </div>
             </div>
           `}
@@ -2323,18 +2311,18 @@ function renderAbaInicio() {
       <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xl border border-slate-700 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-700 pb-2">
           <h3 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-crown"></i> Status da Licença & Sincronização
+            <i class="fa-solid fa-crown"></i> Status da Licença (Fase 2)
           </h3>
           <span class="text-[10px] bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded-full">
             ${licencaInfo.vitalicio ? 'Vitalício' : `${diasRestantes} dias restantes`}
           </span>
         </div>
         <p class="text-[11px] text-slate-300 leading-relaxed">
-          O <b>Caixa Rápido Móvel Pro v56.0</b> protege o acesso dos funcionários, gerencia aniversariantes e contas a pagar em tempo real.
+          O <b>Caixa Rápido Móvel Pro v57.0</b> está otimizado para operação segura multiusuário e gestão comercial avançada.
         </p>
         <div class="pt-1">
           <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
-            🔓 Adquirir Versão Definitiva / Vitalícia
+            🔓 Ativar Versão Profissional Definitiva
           </button>
         </div>
       </div>
@@ -2354,7 +2342,7 @@ function fecharModalSangria() {
 function confirmarSangriaSuprimento() {
   const tipo = document.getElementById('sangria-tipo').value;
   const valor = parseFloat(document.getElementById('sangria-valor').value);
-  const motivo = document.getElementById('sangria-motivo').value.trim() || (tipo === 'sangria' ? 'Retirada de caixa' : 'Entrada de troco');
+  const motivo = document.getElementById('sangria-motivo').value.trim() || (tipo === 'sangria' ? 'Retirada' : 'Suprimento');
   if (!valor || valor <= 0) {
     alert("Informe um valor válido!");
     return;
@@ -2368,7 +2356,7 @@ function confirmarSangriaSuprimento() {
   let empresaIdDest = perfilNegocio.empresaId || user.uid;
   if (user) db.collection("empresas").doc(empresaIdDest).collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
   fecharModalSangria();
-  alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado por ${nomeOperadorAtual}!`);
+  alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado!`);
   renderAbaVendas();
 }
 function atualizarCacheCliente() {
@@ -2471,7 +2459,7 @@ function renderAbaVendas() {
             <p class="text-[10px] text-slate-300">Gaveta (Dinheiro):</p>
             <p class="text-base font-bold text-amber-400">R$ ${saldoGavetaDinheiro.toFixed(2)}</p>
           </div>
-          <span class="text-[9px] text-teal-400 font-semibold">Considerando Sangrias</span>
+          <span class="text-[9px] text-teal-400 font-semibold">Com Sangrias</span>
         </div>
       </div>
       <div class="bg-slate-50 p-3 rounded-2xl border space-y-2">
@@ -2481,7 +2469,7 @@ function renderAbaVendas() {
         <div class="grid grid-cols-2 gap-2">
           <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-xl text-xs bg-white font-bold">
           <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
-          <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp / Telefone" class="p-2 border rounded-xl text-xs bg-white font-bold">
+          <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp" class="p-2 border rounded-xl text-xs bg-white font-bold">
         </div>
       </div>
       <div class="border-t pt-3 space-y-2">
@@ -2494,18 +2482,17 @@ function renderAbaVendas() {
           </button>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos cadastrados. Vá em Estoque e adicione seus itens.</p>'}
+          ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos cadastrados.</p>'}
         </div>
       </div>
-      <div class="border-t pt-3 space-y-2 relative">
+      <div class="border-t pt-3 space-y-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisar Produto ou Avulso
+          <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisa & Item Avulso
         </h2>
         <div class="grid grid-cols-3 gap-2">
           <div class="col-span-2 relative">
             <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome..." class="w-full p-2 border rounded-xl text-xs bg-white">
-            <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y">
-            </div>
+            <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y"></div>
           </div>
           <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-xl text-xs bg-white">
         </div>
@@ -2538,25 +2525,23 @@ function renderAbaVendas() {
             </div>
             <div id="box-pagto-dinheiro" class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-2">
               <div>
-                <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido em Dinheiro R$:</label>
+                <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido R$:</label>
                 <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
               </div>
               <div class="grid grid-cols-6 gap-1">
-                <button onclick="somarValorRecebidoRapido(2)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+2</button>
-                <button onclick="somarValorRecebidoRapido(5)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+5</button>
-                <button onclick="somarValorRecebidoRapido(10)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+10</button>
-                <button onclick="somarValorRecebidoRapido(20)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+20</button>
-                <button onclick="somarValorRecebidoRapido(50)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+50</button>
-                <button onclick="somarValorRecebidoRapido(100)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px] hover:bg-teal-100">+100</button>
+                <button onclick="somarValorRecebidoRapido(2)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+2</button>
+                <button onclick="somarValorRecebidoRapido(5)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+5</button>
+                <button onclick="somarValorRecebidoRapido(10)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+10</button>
+                <button onclick="somarValorRecebidoRapido(20)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+20</button>
+                <button onclick="somarValorRecebidoRapido(50)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+50</button>
+                <button onclick="somarValorRecebidoRapido(100)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+100</button>
               </div>
               <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
-                <span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>
+                <span class="text-slate-500 font-medium">Digite o valor pago</span>
               </div>
             </div>
             <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-xl border border-amber-300 space-y-1">
-              <label class="block text-[10px] font-bold text-amber-900">
-                📅 Data Limite para Pagamento (Opcional):
-              </label>
+              <label class="block text-[10px] font-bold text-amber-900">📅 Data Limite para Pagamento:</label>
               <input type="date" id="venda-fiado-prazo" class="w-full p-2 border rounded-lg text-xs bg-white text-slate-800 font-medium">
             </div>
             <div class="space-y-1.5 pt-1">
@@ -2772,9 +2757,9 @@ async function processarFinalizarVenda(tipoEnvio) {
     `DATA: ${hojeStr}\n` +
     `CLIENTE: ${nomeClienteInput}\n` +
     `OPERADOR: ${nomeOperadorAtual}\n` +
-    `PAGAMENTO: ${formaPagto}\n` +
+    `PAGamento: ${formaPagto}\n` +
     `-----------------------------------\n` +
-    `ITENS ADQUIRIDOS:\n` +
+    `ITENS:\n` +
     `${itensFormatadosCupom}\n` +
     `-----------------------------------\n` +
     `VALOR TOTAL: R$ ${totalCarrinho.toFixed(2)}\n` +
@@ -2790,7 +2775,7 @@ async function processarFinalizarVenda(tipoEnvio) {
     }
   } else if (tipoEnvio === 'imprimir') {
     let janelaImpressao = window.open('', '_blank');
-    janelaImpressao.document.write(`<html><head><title>Cupom Não Fiscal</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
+    janelaImpressao.document.write(`<html><head><title>Cupom</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
     janelaImpressao.document.close();
     janelaImpressao.print();
   }
@@ -2861,40 +2846,36 @@ function renderAbaEstoque() {
   if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
   else if (subAbaEstoque === 'minimos') conteudoSubAba = renderSubAbaMinimos();
   else if (subAbaEstoque === 'validades') conteudoSubAba = renderSubAbaValidades();
-  else conteudoSubAba = `<p class="text-xs text-slate-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima para exibir a lista desejada.</p>`;
+  else conteudoSubAba = `<p class="text-xs text-slate-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima.</p>`;
   document.getElementById('content-estoque').innerHTML = `
     <div class="space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque ${eModoMei() ? '(Modo MEI)' : ''}
+          <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
         </h2>
         <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
-          <i class="fa-solid fa-sliders text-teal-600"></i> Configurações
+          <i class="fa-solid fa-sliders text-teal-600"></i> Limites
         </button>
       </div>
       <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
-        <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+        <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
           Cadastrados (${produtos.length})
         </button>
-        <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-          Estoque Baixo ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdMinimosAlert}</span>` : ''}
+        <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
+          Estoque Baixo ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5">${qtdMinimosAlert}</span>` : ''}
         </button>
-        <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-          Validades Próximas ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5 font-bold">${qtdValidadesAlert}</span>` : ''}
+        <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
+          Validades ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5">${qtdValidadesAlert}</span>` : ''}
         </button>
       </div>
       <button onclick="abrirModalNovoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
         <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
       </button>
       <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-1.5">
-        <label class="block text-xs font-bold text-teal-900">
-          🔍 Consultar Produto por Nome ou Código:
-        </label>
-        <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite o nome ou código EAN..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
+        <label class="block text-xs font-bold text-teal-900">🔍 Consultar por Nome ou Código:</label>
+        <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
       </div>
-      <div id="subaba-estoque-conteudo">
-        ${conteudoSubAba}
-      </div>
+      <div id="subaba-estoque-conteudo">${conteudoSubAba}</div>
     </div>
   `;
 }
@@ -2923,7 +2904,7 @@ function fecharModalCadastroproduto() {
   document.getElementById('modal-cadastro-produto').classList.add('hidden');
 }
 function renderSubAbaTodosProdutos() {
-  if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado ainda.</p>`;
+  if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado.</p>`;
   return `
     <div class="space-y-2 max-h-72 overflow-y-auto">
       ${produtos.map((p, index) => {
@@ -2935,7 +2916,6 @@ function renderSubAbaTodosProdutos() {
                 <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                 <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
                 ${!eModoMei() && p.precoCusto > 0 ? `<p class="text-[10px] text-slate-400">Custo: R$ ${parseFloat(p.precoCusto).toFixed(2)}</p>` : ''}
-                ${p.validade ? `<p class="text-[10px] text-slate-400 mt-0.5">Val: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
@@ -2945,14 +2925,8 @@ function renderSubAbaTodosProdutos() {
               <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
                 <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
               </button>
-              <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">
-                <i class="fa-solid fa-pen"></i> Editar
-              </button>
-              ${eAdmin() ? `
-                <button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              ` : ''}
+              <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
+              ${eAdmin() ? `<button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
           </div>
         `;
@@ -2963,7 +2937,7 @@ function renderSubAbaTodosProdutos() {
 function editarProdutoCompleto(index) {
   let p = produtos[index];
   prodEditandoIndex = index;
-  document.getElementById('form-estoque-titulo').innerText = `✏️ Editar Produto: ${p.nome}`;
+  document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
   document.getElementById('cad-prod-ean').value = p.ean || '';
   let eanDisp = document.getElementById('cad-prod-ean-display');
   if (p.ean) {
@@ -2988,10 +2962,10 @@ function editarProdutoCompleto(index) {
 }
 function renderSubAbaMinimos() {
   let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-  if (minimos.length === 0) return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-circle-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Estoque 100% Regular!</h3></div>`;
+  if (minimos.length === 0) return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-circle-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Estoque Regular!</h3></div>`;
   return `
     <div class="space-y-2">
-      <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Estoque Crítico (${minimos.length}):</p>
+      <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Estoque Baixo (${minimos.length}):</p>
       <div class="space-y-2 max-h-72 overflow-y-auto">
         ${minimos.map(p => {
           let idxReal = produtos.findIndex(prod => prod.id === p.id);
@@ -3001,9 +2975,8 @@ function renderSubAbaMinimos() {
               <div>
                 <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
                 <p class="text-red-700 font-bold mt-0.5">Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500">(Mín: ${p.estMin || 3})</span></p>
-                <p class="text-[10px] text-red-600 font-semibold mt-0.5">💡 Repor: +${faltam > 0 ? faltam : 1} ${p.medida || 'un'}</p>
               </div>
-              <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow hover:bg-red-700">⚡ Repor</button>
+              <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">⚡ Repor</button>
             </div>
           `;
         }).join('')}
@@ -3035,7 +3008,7 @@ function renderSubAbaValidades() {
             <div class="p-3 rounded-2xl border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
               <div>
                 <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-slate-600 mt-0.5">Validade: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b>${ehVencido ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded ml-1 font-bold">VENCIDO!</span>' : ''}</p>
+                <p class="text-slate-600 mt-0.5">Val: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b></p>
               </div>
               <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">🏷️ Ajustar</button>
             </div>
@@ -3183,7 +3156,7 @@ async function cadastrarOuAtualizarProduto() {
 }
 function excluirProduto(index) {
   if (!eAdmin()) {
-    alert("Acesso Restrito: Apenas administradores podem excluir produtos do estoque.");
+    alert("Acesso Restrito.");
     return;
   }
   if (confirm("Remover este produto permanentemente?")) {
@@ -3235,7 +3208,7 @@ function buscarEExibirClientes(termo) {
   }
   let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
   if (filtro.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-3">Nenhum cliente.</p>`;
+    box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-3">Nenhum cliente encontrado.</p>`;
     return;
   }
   renderizarListaClientesCards(filtro);
@@ -3333,14 +3306,10 @@ function renderAbaRelatorios() {
   if (!eAdmin()) return;
   const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   let capitalInvestidoEstoque = 0;
-  produtos.forEach(p => {
-    capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0));
-  });
+  produtos.forEach(p => { capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
   let totalCustoVendido = 0;
   vendas.forEach(v => {
-    if (v.itens && Array.isArray(v.itens)) v.itens.forEach(it => {
-      totalCustoVendido += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1));
-    });
+    if (v.itens && Array.isArray(v.itens)) v.itens.forEach(it => { totalCustoVendido += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
   });
   const lucroBruto = totalVendasGeral - totalCustoVendido;
   const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
@@ -3363,7 +3332,7 @@ function renderAbaRelatorios() {
           <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial & DRE
         </h2>
         <span class="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2 py-0.5 rounded-full">
-          ${eModoMei() ? 'Modo MEI / Simples' : 'Modo Completo'}
+          ${eModoMei() ? 'Modo MEI' : 'Modo Completo'}
         </span>
       </div>
       <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
@@ -3374,9 +3343,7 @@ function renderAbaRelatorios() {
         <div class="space-y-2 text-xs">
           <div class="flex justify-between items-center"><span class="text-slate-300">🟢 Faturamento Bruto:</span><span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span></div>
           <div class="flex justify-between items-center"><span class="text-slate-300">🔴 (-) Contas a Pagar / Despesas:</span><span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span></div>
-          ${!eModoMei() ? `
-            <div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital Investido em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>
-          ` : ''}
+          ${!eModoMei() ? `<div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>` : ''}
           <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800 my-1">
             <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span><span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
           </div>
@@ -3384,7 +3351,7 @@ function renderAbaRelatorios() {
       </div>
       <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
         <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
-          <i class="fa-solid fa-users-gear text-indigo-600"></i> Auditoria de Vendas por Operador
+          <i class="fa-solid fa-users-gear text-indigo-600"></i> Vendas por Operador
         </h3>
         <div class="space-y-1">${auditoriaOperadoresHTML}</div>
       </div>
@@ -3429,29 +3396,21 @@ function gerarPDFProfissional() {
     doc.setFontSize(10);
     doc.setTextColor(0);
     const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-    doc.text(`Total de Vendas no Periodo: R$ ${totalVendas.toFixed(2)} (${listaVendasPDF.length} vendas)`, 14, y);
+    doc.text(`Total de Vendas: R$ ${totalVendas.toFixed(2)} (${listaVendasPDF.length} vendas)`, 14, y);
     y += 8;
     listaVendasPDF.forEach(v => {
-      if (y > 270) {
-        doc.addPage();
-        y = 15;
-      }
+      if (y > 270) { doc.addPage(); y = 15; }
       let descVenda = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ') : 'Venda';
-      doc.text(`* ${v.data} | Op: ${v.operador || 'Operador'} | ${descVenda} | R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
+      doc.text(`* ${v.data} | Op: ${v.operador || 'Op'} | ${descVenda} | R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
       y += 6;
     });
     fecharModalOpcoesRelatorio();
     doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
-  } catch(err) {
-    alert("Erro ao gerar PDF.");
-  }
+  } catch(err) { alert("Erro ao gerar PDF."); }
 }
 function executarLimpezaTotalManual() {
-  if (!eAdmin()) {
-    alert("Apenas proprietários.");
-    return;
-  }
-  if (confirm("⚠️ Deseja apagar todos os dados e resetar?")) {
+  if (!eAdmin()) return;
+  if (confirm("⚠️ Deseja apagar todos os dados locais?")) {
     vendas = [];
     sangriasSuprimentos = [];
     historicoFechamentos = [];
@@ -3469,7 +3428,7 @@ function openModalFechamento() {
   const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   document.getElementById('fechamento-conteudo').innerHTML = `
     <div class="bg-slate-50 p-3 rounded-xl border space-y-1">
-      <p class="font-bold text-slate-800 text-xs">Resumo do Turno (${hojeStr}):</p>
+      <p class="font-bold text-slate-800 text-xs">Resumo (${hojeStr}):</p>
       <div class="flex justify-between"><span>Vendas:</span> <b>${vendasHoje.length}</b></div>
       <div class="flex justify-between text-teal-700 font-bold"><span>Total:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
     </div>
@@ -3493,16 +3452,7 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
   const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
   const user = auth.currentUser;
   const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
-  const fechoReg = {
-    id: Date.now(),
-    data: hojeStr,
-    hora: horaStr,
-    vendasQtd: qtdVendas,
-    totalVendas: totalVendas,
-    gavetaContada: gaveta,
-    diferenca: diferenca,
-    operador: nomeOperadorAtual
-  };
+  const fechoReg = { id: Date.now(), data: hojeStr, hora: horaStr, vendasQtd: qtdVendas, totalVendas: totalVendas, gavetaContada: gaveta, diferenca: diferenca, operador: nomeOperadorAtual };
   historicoFechamentos.push(fechoReg);
   persistirDadosCompletos();
   let empresaIdDest = perfilNegocio.empresaId || user.uid;
@@ -3510,19 +3460,14 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
     db.collection("empresas").doc(empresaIdDest).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
   }
   closeModalFechamento();
-  alert(`✅ Fechamento de caixa salvo com sucesso por ${nomeOperadorAtual}!`);
+  alert(`✅ Fechamento de caixa salvo!`);
   renderAba();
 }
 function exportarBackupCSV() {
   if (!eAdmin()) return;
-  if (vendas.length === 0) {
-    alert("Sem vendas para exportar.");
-    return;
-  }
+  if (vendas.length === 0) { alert("Sem vendas."); return; }
   let csvContent = "data:text/csv;charset=utf-8,ID;Data;Operador;Valor\n";
-  vendas.forEach(v => {
-    csvContent += `${v.id};"${v.data}";"${v.operador || 'Operador'}";${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}\n`;
-  });
+  vendas.forEach(v => { csvContent += `${v.id};"${v.data}";"${v.operador || 'Op'}";${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}\n`; });
   fecharModalOpcoesRelatorio();
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
@@ -3577,7 +3522,7 @@ auth.onAuthStateChanged(async (user) => {
     showLoginForm();
   }
 });
-console.log("Caixa Rápido Móvel Pro - Versão 56.0 (Fase 1) Carregada com Sucesso!");
+console.log("Caixa Rápido Móvel Pro - Versão 57.0 (Fase 2) Carregada com Sucesso!");
 </script>
 </body>
 </html>

@@ -1817,47 +1817,33 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
 }
 function showStep1CadastroAcesso() {
   mostrarInterfaceAutenticada(false);
-  document.getElementById('slider-container').style.transform = 'translateX(0%)';
-  document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
-      <div class="text-center">
-        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
-          <i class="fa-solid fa-user-plus"></i>
-        </div>
-        <h2 class="text-lg font-bold text-slate-800">Vínculo de Membro da Equipe</h2>
-        <p class="text-xs text-slate-500">Informe seu e-mail, senha e o PIN fornecido pelo gestor</p>
-      </div>
-      <form onsubmit="handleStep1Cadastro(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu E-mail *</label>
-          <input type="email" id="cad-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Criar Senha (mín. 6 dígitos) *</label>
-          <input type="password" id="cad-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">PIN de Acesso *</label>
-          <input type="text" id="cad-pin" oninput="verificarCodigoVinculoEmTempoRealCadastro()" placeholder="PIN numérico (Ex: 1234)" maxlength="6" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-extrabold text-indigo-900">
-          <div id="status-vinculo-loja-cad" class="hidden text-[10px] font-bold text-indigo-900 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 space-y-1 mt-2">
-            <p id="texto-loja-vinculada-cad">Empresa localizada!</p>
-            <p id="texto-operador-vinculado" class="text-indigo-800 font-extrabold"></p>
-          </div>
-        </div>
-        <button type="submit" class="w-full bg-indigo-600 text-white font-extrabold py-3 rounded-xl hover:bg-indigo-700 transition text-xs shadow-md">
-          Vincular-me à Empresa <i class="fa-solid fa-arrow-right ml-1"></i>
-        </button>
-      </form>
-      <div class="border-t pt-3 text-center">
-        <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
-      </div>
-    </div>
-  `;
+  const container = document.getElementById('slider-container');
+  if (container) {
+    container.style.transform = 'translateX(0%)';
+  }
+}
+
+function selecionarModoCadastro(modo) {
+  const boxPin = document.getElementById('cad-pin-container') || document.getElementById('status-vinculo-loja-cad');
+  const btnAvancar = document.getElementById('btn-avancar-cadastro-step1');
+  const inputPin = document.getElementById('cad-pin');
+
+  if (modo === 'colaborador') {
+    if (inputPin) inputPin.placeholder = "Digite o PIN fornecido pelo patrão (ex: 1234)";
+    if (btnAvancar) btnAvancar.innerHTML = `<i class="fa-solid fa-link"></i> Vincular-me à Empresa`;
+  } else {
+    if (inputPin) inputPin.value = "";
+    window.tempPatraoVinculado = null;
+    const boxStatus = document.getElementById('status-vinculo-loja-cad');
+    if (boxStatus) boxStatus.classList.add('hidden');
+    if (btnAvancar) btnAvancar.innerHTML = `Avançar: Dados da Loja <i class="fa-solid fa-arrow-right"></i>`;
+  }
 }
 async function verificarCodigoVinculoEmTempoRealCadastro() {
   const boxStatus = document.getElementById('status-vinculo-loja-cad');
   const textoLoja = document.getElementById('texto-loja-vinculada-cad');
   const textoOperador = document.getElementById('texto-operador-vinculado');
+  const inputNome = document.getElementById('cad-nome-usuario') || document.getElementById('cad-nome');
   if (!boxStatus || !textoLoja) return;
 
   let emailLimpo = (document.getElementById('cad-email').value || '').trim().toLowerCase();
@@ -1878,7 +1864,6 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     snapshot.forEach(doc => {
       let dados = doc.data();
       if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-        // Validação RÍGIDA: E-mail ativo AND PIN exato fornecido pelo Dono
         let s = dados.slotsFuncionarios.find(item => 
           item.email && 
           item.email.trim().toLowerCase() === emailLimpo && 
@@ -1904,8 +1889,14 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         funcaoSlot: slotMatch.funcao || "Operador",
         slotId: slotMatch.id
       };
+      
+      // Auto-preenche o nome do colaborador assim que o PIN é validado
+      if (inputNome && slotMatch.nome) {
+        inputNome.value = slotMatch.nome;
+      }
+
       textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
+      if (textoOperador) textoOperador.innerHTML = `🟢 Membro Reconhecido: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
       boxStatus.classList.remove('hidden');
     } else {
       window.tempPatraoVinculado = null;
@@ -1919,16 +1910,25 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
 
 async function handleStep1Cadastro(e) {
   e.preventDefault();
-  cadastroTemp.email = (document.getElementById('cad-email').value || '').trim().toLowerCase();
-  cadastroTemp.pass = document.getElementById('cad-pass').value;
-  cadastroTemp.pinOperador = (document.getElementById('cad-pin').value || '').trim();
+  const emailInput = (document.getElementById('cad-email').value || '').trim().toLowerCase();
+  const passInput = document.getElementById('cad-pass').value;
+  const pinInput = (document.getElementById('cad-pin').value || '').trim();
 
-  if (!cadastroTemp.pinOperador || cadastroTemp.pinOperador.length < 4) {
-    alert("⚠️ É obrigatório digitar o PIN numérico fornecido pelo seu empregador para vincular sua conta!");
+  if (!emailInput || !passInput) {
+    alert("⚠️ Preencha seu e-mail e senha para prosseguir.");
     return;
   }
 
+  cadastroTemp.email = emailInput;
+  cadastroTemp.pass = passInput;
+  cadastroTemp.pinOperador = pinInput;
+
+  // CAMINHO A: É um Funcionário se vinculando (Preencheu PIN válido e encontrou o Patrão)
   if (window.tempPatraoVinculado) {
+    if (!pinInput || pinInput.length < 4) {
+      alert("⚠️ Digite o PIN numérico fornecido pelo seu empregador para concluir o vínculo.");
+      return;
+    }
     cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
     cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
     cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
@@ -1938,44 +1938,21 @@ async function handleStep1Cadastro(e) {
     cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
     cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot;
     criarContaFirebaseFinal();
-  } else {
-    alert("❌ Vínculo Recusado: O E-mail ou o PIN digitado não correspondem a nenhum cadastro ativo fornecido pelo Administrador. Verifique os dados com seu empregador.");
+    return;
   }
+
+  // CAMINHO B: É um Proprietário / Dono criando um novo negócio
+  // Avança imediatamente para a tela de Dados da Loja (Passo 2)
+  cadastroTemp.empresaPatraoInfo = null;
+  cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
+  showStep2CadastroUsuario();
 }
 function showStep2CadastroUsuario() {
-  mostrarInterfaceAutenticada(false);
-  document.getElementById('slider-container').style.transform = 'translateX(0%)';
-  document.getElementById('content-inicio').innerHTML = `
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mt-4 max-w-sm mx-auto space-y-4">
-      <div class="text-center">
-        <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-1.5 shadow-sm">
-          <i class="fa-solid fa-user-tie"></i>
-        </div>
-        <h2 class="text-lg font-bold text-slate-800">Passo 1: Dados do Administrador</h2>
-        <p class="text-xs text-slate-500">Informe seus dados para criar a administração</p>
-      </div>
-      <form onsubmit="handleStep2Cadastro(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome Completo *</label>
-          <input type="text" id="cad-nome-usuario" required placeholder="Ex: Rogério" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail de Acesso (Administrador) *</label>
-          <input type="email" id="cad-prop-email" required placeholder="seu@email.com" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Senha (mín. 6 dígitos) *</label>
-          <input type="password" id="cad-prop-pass" required minlength="6" placeholder="******" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-bold">
-        </div>
-        <button type="submit" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md">
-          Avançar para Dados da Loja <i class="fa-solid fa-arrow-right ml-1"></i>
-        </button>
-      </form>
-      <div class="border-t pt-3 text-center">
-        <button onclick="showLoginForm()" class="text-xs font-bold text-slate-600 hover:underline">← Voltar para o Login</button>
-      </div>
-    </div>
-  `;
+  const container = document.getElementById('slider-container');
+  if (container) {
+    // Move o carrossel do formulário para a segunda etapa (Dados da Loja)
+    container.style.transform = 'translateX(-50%)';
+  }
 }
 function handleStep2Cadastro(e) {
   e.preventDefault();
@@ -2048,24 +2025,41 @@ function handleConcluirCadastro(e) {
 }
 function criarContaFirebaseFinal() {
   emProcessoDeCadastro = true;
+  const btnSubmit = document.getElementById('btn-avancar-cadastro-step1') || document.getElementById('btn-finalizar-cadastro');
+  let textoOriginal = btnSubmit ? btnSubmit.innerHTML : '';
+  
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Processando, aguarde...`;
+  }
+
+  const restaurarBotao = () => {
+    emProcessoDeCadastro = false;
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = textoOriginal;
+    }
+  };
+
   auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass)
     .then((userCredential) => {
-      concluirVinculoUsuarioAutenticado(userCredential.user);
+      concluirVinculoUsuarioAutenticado(userCredential.user)
+        .finally(() => restaurarBotao());
     })
     .catch(err => {
       if (err.code === 'auth/email-already-in-use') {
-        // Se o e-mail já existe, faz o login e conclui o vínculo sem travar a tela
         auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass)
           .then((userCredential) => {
-            concluirVinculoUsuarioAutenticado(userCredential.user);
+            concluirVinculoUsuarioAutenticado(userCredential.user)
+              .finally(() => restaurarBotao());
           })
           .catch((loginErr) => {
-            emProcessoDeCadastro = false;
-            alert("⚠️ Este e-mail já está cadastrado, mas a senha informada está incorreta. Verifique sua senha.");
+            restaurarBotao();
+            alert("⚠️ Este e-mail já possui cadastro. A senha informada está incorreta.");
           });
       } else {
-        emProcessoDeCadastro = false;
-        alert("Erro ao cadastrar conta: " + err.message);
+        restaurarBotao();
+        alert("Erro no cadastro: " + err.message);
       }
     });
 }

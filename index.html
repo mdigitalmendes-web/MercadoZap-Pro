@@ -1746,7 +1746,9 @@ async function handleLoginBlindado(e) {
   }
 }
 async function puxarDadosIniciaisDaEmpresa(empresaId) {
+  if (!empresaId) return;
   try {
+    // 1. Busca os dados do perfil master (Dono/Empresa)
     let docPatrao = await db.collection("perfis").doc(empresaId).get();
     if (docPatrao.exists) {
       let d = docPatrao.data();
@@ -1759,39 +1761,47 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
         localStorage.setItem('crm_notif_desv', JSON.stringify(notificacoesDesvinculacao));
       }
     }
+
+    // 2. Carrega Produtos Unificados
     let snapProds = await db.collection("empresas").doc(empresaId).collection("produtos").get();
     let prodsCarregados = [];
     snapProds.forEach(doc => prodsCarregados.push(doc.data()));
     produtos = prodsCarregados;
     
+    // 3. Carrega Clientes/Fiados Unificados
     let snapClientes = await db.collection("empresas").doc(empresaId).collection("clientes").get();
     let clientesCarregados = [];
     snapClientes.forEach(doc => clientesCarregados.push(doc.data()));
     clientes = clientesCarregados;
     
+    // 4. Carrega Vendas Unificadas do Caixa Master
     let snapVendas = await db.collection("empresas").doc(empresaId).collection("vendas").get();
     let vendasCarregadas = [];
     snapVendas.forEach(doc => vendasCarregadas.push(doc.data()));
     vendas = vendasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
     
+    // 5. Carrega Movimentações de Gaveta
     let snapSangrias = await db.collection("empresas").doc(empresaId).collection("sangrias").get();
     let sangriasCarregadas = [];
     snapSangrias.forEach(doc => sangriasCarregadas.push(doc.data()));
     sangriasSuprimentos = sangriasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
     
+    // 6. Carrega Fechamentos de Turno
     let snapFech = await db.collection("empresas").doc(empresaId).collection("fechamentos").get();
     let fechCarregados = [];
     snapFech.forEach(doc => fechCarregados.push(doc.data()));
     historicoFechamentos = fechCarregados.sort((a, b) => (b.id || 0) - (a.id || 0));
 
-    // NOVA PARTE ADICIONADA: CARREGAR DESPESAS DO FIREBASE
+    // 7. Carrega Contas a Pagar Unificadas
     let snapDesp = await db.collection("empresas").doc(empresaId).collection("despesas").get();
     let despCarregadas = [];
     snapDesp.forEach(doc => despCarregadas.push(doc.data()));
     despesasFixas = despCarregadas;
 
     persistirDadosCompletos();
-  } catch(e) {}
+  } catch(e) {
+    console.error("Erro ao puxar dados master da empresa:", e);
+  }
 }
 function showStep1CadastroAcesso() {
   mostrarInterfaceAutenticada(false);
@@ -1837,21 +1847,32 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
   const textoLoja = document.getElementById('texto-loja-vinculada-cad');
   const textoOperador = document.getElementById('texto-operador-vinculado');
   if (!boxStatus || !textoLoja) return;
+
   let emailLimpo = (document.getElementById('cad-email').value || '').trim().toLowerCase();
   let pinLimpo = (document.getElementById('cad-pin').value || '').trim();
-  if (!emailLimpo || pinLimpo.length < 4) {
+
+  if (!emailLimpo || !pinLimpo || pinLimpo.length < 4) {
     boxStatus.classList.add('hidden');
+    window.tempPatraoVinculado = null;
     return;
   }
+
   try {
     let snapshot = await db.collection("perfis").get();
     let patraoEncontrado = null;
     let empresaIdReal = '';
     let slotMatch = null;
+
     snapshot.forEach(doc => {
       let dados = doc.data();
       if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-        let s = dados.slotsFuncionarios.find(item => item.email && item.email.trim().toLowerCase() === emailLimpo && String(item.pin).trim() === pinLimpo && item.ativo);
+        // Validação RÍGIDA: E-mail ativo AND PIN exato fornecido pelo Dono
+        let s = dados.slotsFuncionarios.find(item => 
+          item.email && 
+          item.email.trim().toLowerCase() === emailLimpo && 
+          String(item.pin).trim() === pinLimpo && 
+          item.ativo
+        );
         if (s) {
           patraoEncontrado = dados;
           empresaIdReal = doc.id;
@@ -1859,6 +1880,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         }
       }
     });
+
     if (patraoEncontrado && slotMatch) {
       window.tempPatraoVinculado = {
         nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
@@ -1870,39 +1892,42 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         funcaoSlot: slotMatch.funcao || "Operador",
         slotId: slotMatch.id
       };
-      textoLoja.innerHTML = `🏢 Empresa: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Confirmado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
+      textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
       boxStatus.classList.remove('hidden');
     } else {
       window.tempPatraoVinculado = null;
       boxStatus.classList.add('hidden');
     }
   } catch(err) {
+    window.tempPatraoVinculado = null;
     boxStatus.classList.add('hidden');
   }
 }
-let cadastroTemp = { email: '', pass: '', nomeUsuario: '', funcaoUsuario: 'Proprietário / Gerente', nomeLoja: '', tipo: 'PF', ramo: 'Produtos', modoNegocio: 'completo', pinOperador: '', empresaPatraoInfo: null };
+
 async function handleStep1Cadastro(e) {
   e.preventDefault();
   cadastroTemp.email = (document.getElementById('cad-email').value || '').trim().toLowerCase();
   cadastroTemp.pass = document.getElementById('cad-pass').value;
   cadastroTemp.pinOperador = (document.getElementById('cad-pin').value || '').trim();
-  if (cadastroTemp.pinOperador) {
-    if (window.tempPatraoVinculado) {
-      cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
-      cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
-      cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
-      cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
-      cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
-      cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
-      cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
-      cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot;
-      criarContaFirebaseFinal();
-      return;
-    } else {
-      alert("⚠️ E-mail ou PIN inválido ou desativado pelo gestor!");
-      return;
-    }
+
+  if (!cadastroTemp.pinOperador || cadastroTemp.pinOperador.length < 4) {
+    alert("⚠️ É obrigatório digitar o PIN numérico fornecido pelo seu empregador para vincular sua conta!");
+    return;
+  }
+
+  if (window.tempPatraoVinculado) {
+    cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
+    cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
+    cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
+    cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
+    cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
+    cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
+    cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
+    cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot;
+    criarContaFirebaseFinal();
+  } else {
+    alert("❌ Vínculo Recusado: O E-mail ou o PIN digitado não correspondem a nenhum cadastro ativo fornecido pelo Administrador. Verifique os dados com seu empregador.");
   }
 }
 function showStep2CadastroUsuario() {

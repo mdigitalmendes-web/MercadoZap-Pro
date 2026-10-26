@@ -835,11 +835,10 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 async function verificarIntegridadeVinculoAtivo() {
-  // Apenas Proprietário e Sócio têm permissão absoluta sem slot
   if (eAdminOuSocio()) return true;
-  
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;
+  
   try {
     let docPatrao = await db.collection("perfis").doc(perfilNegocio.empresaId).get();
     if (!docPatrao.exists) {
@@ -849,10 +848,16 @@ async function verificarIntegridadeVinculoAtivo() {
     }
     let dadosPatrao = docPatrao.data();
     if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
-      // Verifica se o Gerente ou Operador ainda está ATIVO na lista da empresa
-      let meuSlot = dadosPatrao.slotsFuncionarios.find(s => s.ativo && ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid));
+      // Exige que o slot esteja ATIVO, VINCULADO com o PIN e associado ao UID do usuário
+      let meuSlot = dadosPatrao.slotsFuncionarios.find(s => 
+        s.ativo && 
+        s.vinculado && 
+        ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid)
+      );
+      
       if (!meuSlot) {
-        alert("🚫 ATENÇÃO DE SEGURANÇA: Seu acesso a esta empresa foi revogado pelo administrador!");
+        alert("🚫 Acesso não autorizado: Você precisa se vincular novamente digitando o PIN numérico fornecido pelo Administrador.");
+        localStorage.clear();
         fazerLogoutSeguro();
         return false;
       }
@@ -1202,13 +1207,13 @@ async function excluirContaEempresaTotalmente() {
   }
 }
 async function desvincularContaFuncionarioLocalmente() {
-  if (eAdminOuGerenteOuSocio()) {
-    alert("Administradores, sócios e gerentes não se desvinculam por aqui.");
+  if (eAdminOuSocio()) {
+    alert("Proprietários e Sócios gerenciadores não usam este botão para desvinculação.");
     return;
   }
-  if (confirm("Deseja realmente se desvincular desta empresa? Você perderá o acesso e os gestores serão notificados.")) {
+  if (confirm("Deseja realmente se desvincular desta empresa? Seu acesso será removido e todos os dados armazenados neste dispositivo serão zerados.")) {
     const user = auth.currentUser;
-    if (user && perfilNegocio.empresaId && perfilNegocio.slotId) {
+    if (user && perfilNegocio.empresaId) {
       try {
         let refPatrao = db.collection("perfis").doc(perfilNegocio.empresaId);
         let docPatrao = await refPatrao.get();
@@ -1216,14 +1221,16 @@ async function desvincularContaFuncionarioLocalmente() {
           let dados = docPatrao.data();
           let nomeDesv = perfilNegocio.nomeUsuario || user.email;
           let arraySlots = dados.slotsFuncionarios || [];
+          
           arraySlots.forEach(s => {
-            if (s.id === perfilNegocio.slotId) {
+            if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid) {
               nomeDesv = s.nome || nomeDesv;
               s.ativo = false;
+              s.vinculado = false; // Exige novo PIN no futuro
               s.userUid = "";
-              s.email = "";
             }
           });
+          
           let arrNotif = dados.notificacoesDesvinculacao || [];
           arrNotif.push({
             id: Date.now(),
@@ -1236,17 +1243,11 @@ async function desvincularContaFuncionarioLocalmente() {
         }
       } catch(e) {}
     }
-    localStorage.removeItem('crm_perfil');
-    localStorage.removeItem('crm_produtos');
-    localStorage.removeItem('crm_vendas');
-    localStorage.removeItem('crm_clientes');
-    localStorage.removeItem('crm_sangrias');
-    localStorage.removeItem('crm_fechamentos');
-    localStorage.removeItem('crm_despesas');
-    alert("✅ Vínculo removido com sucesso!");
-    auth.signOut().then(() => {
-      window.location.reload();
-    });
+    
+    // ZERA COMPLETAMENTE O ARMAZENAMENTO LOCAL PARA ELIMINAR VENDAS E CAIXA FANTASMA
+    localStorage.clear();
+    alert("✅ Desvinculação concluída com sucesso. Dados locais zerados!");
+    auth.signOut().then(() => { window.location.reload(); });
   }
 }
 function abrirModalGerenciarFuncionarios() {
@@ -1377,11 +1378,21 @@ function salvarSlotFuncionario(index) {
 }
 function desligarSlotFuncionario(index) {
   let nomeFunc = slotsFuncionarios[index].nome || `Membro ${index+1}`;
-  if (confirm(`Deseja realmente desligar ${nomeFunc}? O acesso será revogado imediatamente.`)) {
-    slotsFuncionarios[index] = { id: index + 1, nome: "", email: "", pin: "", funcao: "Operador", nascimento: "", ativo: false, userUid: "" };
+  if (confirm(`Deseja realmente desativar ${nomeFunc}? O acesso será revogado imediatamente.`)) {
+    slotsFuncionarios[index] = { 
+      id: index + 1, 
+      nome: slotsFuncionarios[index].nome || "", 
+      email: slotsFuncionarios[index].email || "", 
+      pin: slotsFuncionarios[index].pin || "", 
+      funcao: slotsFuncionarios[index].funcao || "Operador", 
+      nascimento: slotsFuncionarios[index].nascimento || "", 
+      ativo: false, 
+      vinculado: false, 
+      userUid: "" 
+    };
     persistirDadosCompletos();
     renderizarListaSlotsFuncionariosUnificada();
-    alert("✅ Membro desligado com sucesso!");
+    alert("✅ Acesso do colaborador revogado com sucesso!");
   }
 }
 function abrirModalDespesas() {
@@ -2323,30 +2334,35 @@ function abrirDrawerNavegacao() {
   document.getElementById('drawer-user-nome').innerText = perfilNegocio.nomeUsuario || user.displayName || 'Usuário';
   document.getElementById('drawer-user-email').innerText = user.email || '';
   document.getElementById('drawer-user-funcao').innerText = perfilNegocio.funcaoUsuario || 'Operador';
+  
   const btnCopiar = document.getElementById('btn-copiar-convite');
   const btnGerenciarFunc = document.getElementById('menu-btn-gerenciar-funcionarios');
   const btnDesvincularFunc = document.getElementById('menu-btn-desvincular-funcionario');
   const secaoFerramentasAdmin = document.getElementById('menu-secao-ferramentas-admin');
   const btnExcluirConta = document.getElementById('menu-btn-excluir-conta-empresa');
   const btnAuditoriaOperadores = document.getElementById('menu-btn-auditoria-operadores');
-  if (eAdminOuGerenteOuSocio()) {
+
+  if (eAdminOuSocio()) {
     if (btnCopiar) btnCopiar.classList.remove('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.remove('hidden');
     if (btnDesvincularFunc) btnDesvincularFunc.classList.add('hidden');
     if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
-    if (eAdminOuSocio()) {
-      if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
-    } else {
-      if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
-    }
+    if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
   } else {
+    // Gerente e Operadores podem se desvincular da empresa a qualquer momento
     if (btnCopiar) btnCopiar.classList.add('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
     if (btnDesvincularFunc) btnDesvincularFunc.classList.remove('hidden');
-    if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
     if (btnExcluirConta) btnExcluirConta.classList.add('hidden');
-    if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.add('hidden');
+    
+    if (eGerente()) {
+      if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.remove('hidden');
+      if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
+    } else {
+      if (secaoFerramentasAdmin) secaoFerramentasAdmin.classList.add('hidden');
+      if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.add('hidden');
+    }
   }
   document.getElementById('drawer-menu').classList.remove('hidden');
 }
@@ -2358,6 +2374,7 @@ function openModalPerfil() {
   document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
   const containerFuncao = document.getElementById('container-perfil-funcao-edicao');
   const containerEstab = document.getElementById('container-dados-estabelecimento-edicao');
+  
   if (eAdminOuGerenteOuSocio()) {
     containerFuncao.innerHTML = `<input type="text" readonly value="${perfilNegocio.funcaoUsuario || 'Gestão'}" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
     containerEstab.innerHTML = eAdminOuSocio() ? `
@@ -2365,6 +2382,10 @@ function openModalPerfil() {
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da Loja *</label>
           <input type="text" id="perfil-nome-loja" value="${perfilNegocio.nomeLoja || ''}" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Data do Seu Nascimento (Para Celebração) *</label>
+          <input type="date" id="perfil-nascimento" value="${perfilNegocio.nascimento || ''}" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white text-purple-900">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -2384,26 +2405,25 @@ function openModalPerfil() {
             </select>
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Operação</label>
-          <select id="perfil-modo-negocio" class="w-full p-2.5 border rounded-lg text-xs bg-amber-50 text-amber-900 font-extrabold border-amber-300">
-            <option value="mei" ${eModoMei() ? 'selected' : ''}>🟢 Modo MEI / Simples</option>
-            <option value="completo" ${!eModoMei() ? 'selected' : ''}>🔵 Modo Completo (Com Custos)</option>
-          </select>
-        </div>
       </div>
     ` : `
-      <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
-        <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
-        <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</p>
+      <div class="bg-slate-50 p-3 rounded-xl border space-y-2 text-xs">
+        <p class="font-bold text-slate-700">🏢 Estabelecimento: <b class="text-teal-800">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</b></p>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">Sua Data de Nascimento:</label>
+          <input type="date" id="perfil-nascimento" value="${perfilNegocio.nascimento || ''}" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-purple-900">
+        </div>
       </div>
     `;
   } else {
     containerFuncao.innerHTML = `<input type="text" readonly value="Operador / Caixa" class="w-full p-2.5 border rounded-lg text-xs bg-slate-100 font-bold text-teal-800">`;
     containerEstab.innerHTML = `
-      <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
-        <p class="font-bold text-slate-700">🏢 Estabelecimento:</p>
-        <p class="font-extrabold text-teal-800 text-sm">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</p>
+      <div class="bg-slate-50 p-3 rounded-xl border space-y-2 text-xs">
+        <p class="font-bold text-slate-700">🏢 Estabelecimento: <b class="text-teal-800">${perfilNegocio.nomeLoja || 'Loja Vinculada'}</b></p>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">Sua Data de Nascimento:</label>
+          <input type="date" id="perfil-nascimento" value="${perfilNegocio.nascimento || ''}" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-purple-900">
+        </div>
       </div>
     `;
   }
@@ -2421,13 +2441,17 @@ function closeModalAjuda() {
 function salvarPerfilNegocio(e) {
   e.preventDefault();
   const novoNome = document.getElementById('perfil-nome-usuario').value.trim();
+  const elNasc = document.getElementById('perfil-nascimento');
+  
   perfilNegocio.nomeUsuario = novoNome;
+  if (elNasc) perfilNegocio.nascimento = elNasc.value;
+
   if (eAdminOuSocio()) {
     perfilNegocio.nomeLoja = document.getElementById('perfil-nome-loja').value;
     perfilNegocio.tipo = document.getElementById('perfil-tipo-registro').value;
     perfilNegocio.ramo = document.getElementById('perfil-ramo').value;
-    perfilNegocio.modoNegocio = document.getElementById('perfil-modo-negocio').value;
   }
+  
   persistirDadosCompletos();
   const user = auth.currentUser;
   if (user) {
@@ -2436,10 +2460,13 @@ function salvarPerfilNegocio(e) {
   }
   closeModalPerfil();
   renderAba();
+  verificarEExibirAniversarianteTelaCheia();
   alert("✅ Perfil atualizado com sucesso!");
 }
 function fazerLogoutSeguro() {
   if (confirm("Deseja realmente sair da sessão?")) {
+    // Apaga todo o cache local ao sair para garantir que dados de caixa não fiquem cruzados
+    localStorage.clear();
     auth.signOut().then(() => { window.location.reload(); });
   }
 }
@@ -3838,19 +3865,27 @@ function verificarEExibirAniversarianteTelaCheia() {
   const diaAtual = String(hoje.getDate()).padStart(2, '0');
   const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
   const user = auth.currentUser;
-  const emailAtual = user ? user.email.trim().toLowerCase() : '';
+  if (!user) return;
 
+  const emailAtual = user.email ? user.email.trim().toLowerCase() : '';
   let souAniversariante = false;
   let meuNome = perfilNegocio.nomeUsuario || 'Parceiro';
 
+  // 1. Checa se o usuário atual (seja ADM, Sócio, Gerente ou Operador) faz aniversário pelo perfil
+  if (perfilNegocio.nascimento) {
+    const partes = perfilNegocio.nascimento.split('-');
+    if (partes.length >= 3 && partes[2] === diaAtual && partes[1] === mesAtual) {
+      souAniversariante = true;
+    }
+  }
+
+  // 2. Checa também na lista de slots de colaboradores
   slotsFuncionarios.forEach(s => {
     if (s.ativo && s.nascimento && s.email && s.email.trim().toLowerCase() === emailAtual) {
       const partes = s.nascimento.split('-');
-      if (partes.length >= 3) {
-        if (partes[2] === diaAtual && partes[1] === mesAtual) {
-          souAniversariante = true;
-          meuNome = s.nome || meuNome;
-        }
+      if (partes.length >= 3 && partes[2] === diaAtual && partes[1] === mesAtual) {
+        souAniversariante = true;
+        meuNome = s.nome || meuNome;
       }
     }
   });
@@ -3863,38 +3898,10 @@ function verificarEExibirAniversarianteTelaCheia() {
     const modal = document.getElementById('modal-festejo-aniversario');
     const nomeEl = document.getElementById('aniversario-nome-usuario');
     if (modal && nomeEl) {
-      nomeEl.innerText = `Parabéns, ${meuNome.split(' ')[0]}!`;
+      nomeEl.innerText = `Parabéns, ${meuNome.split(' ')[0]}! 🎉`;
       gerarParticulasConfeti();
       modal.classList.remove('hidden');
     }
-  }
-}
-
-function gerarParticulasConfeti() {
-  const container = document.getElementById('particulas-confeti-container');
-  if (!container) return;
-  container.innerHTML = '';
-  const cores = ['#f59e0b', '#ec4899', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'];
-  for (let i = 0; i < 45; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle-confeti';
-    p.style.left = Math.random() * 100 + '%';
-    p.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
-    p.style.animationDelay = (Math.random() * 2) + 's';
-    p.style.animationDuration = (2.5 + Math.random() * 2) + 's';
-    container.appendChild(p);
-  }
-}
-
-function fecharModalFestejoAniversario() {
-  const modal = document.getElementById('modal-festejo-aniversario');
-  if (modal) {
-    modal.style.transition = 'opacity 0.6s ease';
-    modal.style.opacity = '0';
-    setTimeout(() => {
-      modal.classList.add('hidden');
-      modal.style.opacity = '1';
-    }, 600);
   }
 }
 console.log("Caixa Rápido Móvel Pro - Versão 57.1 (Fase 2.1) Carregada com Sucesso!");

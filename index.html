@@ -776,6 +776,7 @@ let alertaSilenciadoSessao = false;
 let ultimoEanLido = '';
 let ultimoTempoLeitura = 0;
 let perfilNegocio = JSON.parse(localStorage.getItem('crm_perfil')) || { nomeLoja: 'Caixa Rápido Móvel Pro', tipo: 'PF', ramo: 'Produtos', nomeUsuario: 'Rogério', funcaoUsuario: 'Proprietário / Gerente', empresaId: '', modoNegocio: 'completo', slotId: null };
+let emProcessoDeCadastro = false;  
 let unsubscribeProdutos = null;
 let unsubscribeVendas = null;
 let unsubscribeClientes = null;
@@ -2046,26 +2047,35 @@ function handleConcluirCadastro(e) {
   criarContaFirebaseFinal();
 }
 function criarContaFirebaseFinal() {
-  auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
-    concluirVinculoUsuarioAutenticado(userCredential.user);
-  }).catch(err => {
-    if (err.code === 'auth/email-already-in-use') {
-      auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass).then((userCredential) => {
-        concluirVinculoUsuarioAutenticado(userCredential.user);
-      }).catch(() => {
-        alert("E-mail já cadastrado, mas a senha informada está incorreta.");
-      });
-    } else {
-      alert("Erro ao cadastrar: " + err.message);
-    }
-  });
+  emProcessoDeCadastro = true;
+  auth.createUserWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass)
+    .then((userCredential) => {
+      concluirVinculoUsuarioAutenticado(userCredential.user);
+    })
+    .catch(err => {
+      if (err.code === 'auth/email-already-in-use') {
+        // Se o e-mail já existe, faz o login e conclui o vínculo sem travar a tela
+        auth.signInWithEmailAndPassword(cadastroTemp.email, cadastroTemp.pass)
+          .then((userCredential) => {
+            concluirVinculoUsuarioAutenticado(userCredential.user);
+          })
+          .catch((loginErr) => {
+            emProcessoDeCadastro = false;
+            alert("⚠️ Este e-mail já está cadastrado, mas a senha informada está incorreta. Verifique sua senha.");
+          });
+      } else {
+        emProcessoDeCadastro = false;
+        alert("Erro ao cadastrar conta: " + err.message);
+      }
+    });
 }
 async function concluirVinculoUsuarioAutenticado(user) {
+  emProcessoDeCadastro = true; // Pausa o ouvinte de segurança durante o salvamento
   let uidGerado = user.uid;
   let empresaIdVinculo = cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.empresaId : uidGerado;
   
-  if (cadastroTemp.empresaPatraoInfo) {
-    try {
+  try {
+    if (cadastroTemp.empresaPatraoInfo) {
       let ref = db.collection("perfis").doc(empresaIdVinculo);
       let snap = await ref.get();
       if (snap.exists) {
@@ -2075,36 +2085,45 @@ async function concluirVinculoUsuarioAutenticado(user) {
             if (s.id === cadastroTemp.empresaPatraoInfo.slotId) {
               s.userUid = uidGerado;
               s.email = user.email.trim().toLowerCase();
-              s.ativo = true;      // Ativa o slot
-              s.vinculado = true;  // CORREÇÃO: Confirma o vínculo oficial após validação do PIN!
+              s.ativo = true;
+              s.vinculado = true; // Confirma o vínculo
             }
           });
           slotsFuncionarios = dados.slotsFuncionarios;
           await ref.update({ slotsFuncionarios: slotsFuncionarios });
         }
       }
-    } catch(e) {}
-    await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
+      await puxarDadosIniciaisDaEmpresa(empresaIdVinculo);
+    }
+
+    perfilNegocio = {
+      nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
+      nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Membro",
+      funcaoUsuario: cadastroTemp.funcaoUsuario,
+      tipo: cadastroTemp.tipo || "PF",
+      ramo: cadastroTemp.ramo || "Produtos",
+      modoNegocio: cadastroTemp.modoNegocio || "completo",
+      empresaId: empresaIdVinculo,
+      slotId: cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.slotId : null,
+      slotsFuncionarios: slotsFuncionarios,
+      notificacoesDesvinculacao: notificacoesDesvinculacao
+    };
+
+    if (user) {
+      await user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
+    }
+    
+    persistirDadosCompletos();
+    await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
+    iniciarListenersTempoReal(empresaIdVinculo);
+    
+    emProcessoDeCadastro = false; // Libera a verificação de segurança
+    switchTab('inicio');
+    alert("🎉 Vínculo/Cadastro concluído com sucesso!");
+  } catch (err) {
+    emProcessoDeCadastro = false;
+    alert("Erro ao concluir cadastro: " + err.message);
   }
-  
-  perfilNegocio = {
-    nomeLoja: cadastroTemp.nomeLoja || (cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.nomeLoja : "Loja Vinculada"),
-    nomeUsuario: cadastroTemp.nomeUsuario || user.displayName || "Membro",
-    funcaoUsuario: cadastroTemp.funcaoUsuario,
-    tipo: cadastroTemp.tipo || "PF",
-    ramo: cadastroTemp.ramo || "Produtos",
-    modoNegocio: cadastroTemp.modoNegocio || "completo",
-    empresaId: empresaIdVinculo,
-    slotId: cadastroTemp.empresaPatraoInfo ? cadastroTemp.empresaPatraoInfo.slotId : null,
-    slotsFuncionarios: slotsFuncionarios,
-    notificacoesDesvinculacao: notificacoesDesvinculacao
-  };
-  
-  user.updateProfile({ displayName: perfilNegocio.nomeUsuario }).catch(()=>{});
-  persistirDadosCompletos();
-  await db.collection("perfis").doc(uidGerado).set(perfilNegocio, { merge: true });
-  iniciarListenersTempoReal(empresaIdVinculo);
-  switchTab('inicio');
 }
 function copiarCodigoConvitePatrao() {
   let user = auth.currentUser;
@@ -3823,10 +3842,16 @@ function sincronizarNuvemManual() {
   } else alert("Faça login.");
 }
 auth.onAuthStateChanged(async (user) => {
+  // Se o aplicativo estiver no meio de um processo de vínculo ou cadastro de ADM,
+  // aguarda o salvamento terminar antes de tentar validar a sessão
+  if (emProcessoDeCadastro) return;
+
   if (user) {
     let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
     if (!vinculadoAtivo) return;
-    db.collection("perfis").doc(user.uid).get().then(doc => {
+
+    try {
+      let doc = await db.collection("perfis").doc(user.uid).get();
       if (doc.exists) {
         perfilNegocio = doc.data();
         if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
@@ -3836,23 +3861,19 @@ auth.onAuthStateChanged(async (user) => {
       mostrarInterfaceAutenticada(true);
       verificarLicencaStatus();
       let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-      puxarDadosIniciaisDaEmpresa(empresaIdAtivo).then(() => {
-        iniciarListenersTempoReal(empresaIdAtivo);
-        switchTab('inicio');
-        verificarAlertasEstoqueValidadeAutomatico();
-        dispararToastAniversariantesAutomatico();
-        verificarEExibirAniversarianteTelaCheia();
-      });
-    }).catch(() => {
+      
+      await puxarDadosIniciaisDaEmpresa(empresaIdAtivo);
+      iniciarListenersTempoReal(empresaIdAtivo);
+      switchTab('inicio');
+      verificarAlertasEstoqueValidadeAutomatico();
+      verificarEExibirAniversarianteTelaCheia();
+    } catch(err) {
       mostrarInterfaceAutenticada(true);
       verificarLicencaStatus();
       let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
       iniciarListenersTempoReal(empresaIdAtivo);
       switchTab('inicio');
-      verificarAlertasEstoqueValidadeAutomatico();
-      dispararToastAniversariantesAutomatico();
-      verificarEExibirAniversarianteTelaCheia();
-    });
+    }
   } else {
     if (unsubscribeProdutos) unsubscribeProdutos();
     if (unsubscribeVendas) unsubscribeVendas();

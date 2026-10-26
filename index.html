@@ -1264,7 +1264,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
   const box = document.getElementById('lista-slots-funcionarios-box');
   if (!box) return;
 
-  // VISÃO EXCLUSIVA DO GERENTE: Apenas consulta de colaboradores ativos (Sem opção de incluir/alterar)
+  // VISÃO DO GERENTE: Apenas consulta de colaboradores ativos e seus dispositivos
   if (eGerente() && !eAdminOuSocio()) {
     let ativos = slotsFuncionarios.filter(s => s.ativo);
     if (ativos.length === 0) {
@@ -1274,7 +1274,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
     box.innerHTML = `
       <div class="bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100 mb-2">
         <p class="text-[11px] font-bold text-indigo-900 flex items-center gap-1.5">
-          <i class="fa-solid fa-users text-indigo-600"></i> Quadro de Funcionários Disponíveis
+          <i class="fa-solid fa-users text-indigo-600"></i> Quadro de Funcionários & Dispositivos
         </p>
         <p class="text-[10px] text-slate-500">Visualização restrita ao Gerente da Unidade.</p>
       </div>
@@ -1283,18 +1283,74 @@ function renderizarListaSlotsFuncionariosUnificada() {
           <div class="flex justify-between items-center">
             <p class="font-extrabold text-slate-800 text-sm">${slot.nome}</p>
             <span class="text-[10px] font-extrabold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span> 🟢 Em Atividade
+              🟢 Ativo
             </span>
           </div>
-          <div class="flex justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-100">
-            <span>Função: <b class="text-indigo-800">${slot.funcao}</b></span>
-            <span>E-mail: <b>${slot.email}</b></span>
+          <div class="space-y-1 text-[11px] text-slate-600 pt-1 border-t border-slate-100">
+            <p>Função: <b class="text-indigo-800">${slot.funcao}</b> | E-mail: <b>${slot.email}</b></p>
+            <p class="text-[10px] text-slate-500">📱 Dispositivo: <b class="text-slate-700">${slot.dispositivo || 'Não registrado'}</b></p>
+            ${slot.ultimoAcesso ? `<p class="text-[10px] text-slate-400">🕒 Último acesso: ${slot.ultimoAcesso}</p>` : ''}
           </div>
         </div>
       `).join('')}
     `;
     return;
   }
+
+  // VISÃO DO ADMINISTRADOR E SÓCIO
+  box.innerHTML = slotsFuncionarios.map((slot, index) => `
+    <div class="p-3 rounded-2xl border ${slot.ativo ? 'bg-indigo-50/50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-300'} space-y-2">
+      <div class="flex justify-between items-center">
+        <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Equipe</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded ${slot.ativo ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-600'}">
+          ${slot.ativo ? 'Ativo' : 'Livre / Desvinculado'}
+        </span>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nome Completo *</label>
+        <input type="text" id="slot-nome-${index}" value="${slot.nome || ''}" placeholder="Ex: Carlos Silva" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">E-mail Cadastrado *</label>
+        <input type="email" id="slot-email-${index}" value="${slot.email || ''}" placeholder="membro@email.com" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-teal-800">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Pessoal *</label>
+          <input type="text" id="slot-pin-${index}" value="${slot.pin || ''}" maxlength="6" placeholder="Ex: 1234" class="w-full p-2 border rounded-xl text-xs bg-white font-extrabold text-indigo-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Função / Nível *</label>
+          <select id="slot-funcao-${index}" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-indigo-900">
+            <option value="Operador" ${slot.funcao === 'Operador' ? 'selected' : ''}>Operador / Caixa</option>
+            <option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>
+            <option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nascimento</label>
+        <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
+      </div>
+      ${slot.ativo && slot.dispositivo ? `
+        <div class="bg-white p-2 rounded-xl border border-indigo-100 text-[10px] text-slate-600 space-y-0.5">
+          <p>📱 Dispositivo em uso: <b class="text-indigo-900">${slot.dispositivo}</b></p>
+          ${slot.ultimoAcesso ? `<p class="text-slate-400">🕒 Registrado em: ${slot.ultimoAcesso}</p>` : ''}
+        </div>
+      ` : ''}
+      <div class="flex gap-2 pt-1">
+        <button onclick="salvarSlotFuncionario(${index})" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-[11px] shadow">
+          💾 Salvar Membro
+        </button>
+        ${slot.ativo ? `
+          <button onclick="desligarSlotFuncionario(${index})" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-[11px] border border-red-200">
+            🚫 Desativar
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
 
   // VISÃO COMPLETA DO ADMINISTRADOR E SÓCIO (Edição, Criação e Alteração)
   box.innerHTML = slotsFuncionarios.map((slot, index) => `
@@ -1398,6 +1454,10 @@ function desligarSlotFuncionario(index) {
   }
 }
 function abrirModalDespesas() {
+  if (!eAdminOuGerenteOuSocio()) {
+    alert("⚠️ Acesso Restrito: O controle de contas a pagar e despesas é exclusivo para Administradores, Gerentes e Sócios.");
+    return;
+  }
   document.getElementById('nova-desp-desc').value = '';
   document.getElementById('nova-desp-valor').value = '';
   document.getElementById('nova-desp-venc').value = new Date().toISOString().split('T')[0];
@@ -2131,6 +2191,8 @@ async function concluirVinculoUsuarioAutenticado(user) {
               s.email = user.email.trim().toLowerCase();
               s.ativo = true;
               s.vinculado = true;
+              s.dispositivo = obterInfoDispositivoAtual();
+              s.ultimoAcesso = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
             }
           });
           slotsFuncionarios = dados.slotsFuncionarios;
@@ -2617,10 +2679,13 @@ function renderAbaInicio() {
           <button onclick="abrirDrawerNavegacao()" class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center text-xl text-white border border-white/20 transition active:scale-95 shadow-inner">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <div>
-            <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-            <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${perfilNegocio.funcaoUsuario || 'Membro'})</p>
-          </div>
+         <div>
+  <div class="flex items-center gap-2">
+    <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
+    <span id="badge-status-rede"></span>
+  </div>
+  <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${perfilNegocio.funcaoUsuario || 'Membro'})</p>
+</div>
         </div>
         <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/15 p-2.5 rounded-xl border border-white/20 hover:bg-white/25 transition">
           <i id="sininho-icone-principal" class="fa-solid fa-bell text-xl text-amber-300"></i>
@@ -3930,6 +3995,54 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
   // ANIVERSARIANTE DO DIA - COMEMORAÇÃO EM TELA CHEIA (v57.2)
+// ==========================================
+// CELEBRAÇÃO FESTIVA DE ANIVERSARIANTE (v57.2)
+// ==========================================
+
+// Sincronizador de áudio de palmas nativo (sem depender de MP3 externo)
+function tocarEfeitoSonoroPalmas() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    for (let i = 0; i < 16; i++) {
+      setTimeout(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(280 + Math.random() * 420, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
+      }, i * 85);
+    }
+  } catch(e) {}
+}
+
+// Gerador de partículas de confetes coloridos em tela cheia
+function gerarParticulasConfeti() {
+  const container = document.getElementById('particulas-confeti-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const cores = ['#f59e0b', '#ec4899', '#8b5cf6', '#10b981', '#3b82f6', '#ef4444'];
+  for (let i = 0; i < 45; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle-confeti';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+    p.style.animationDelay = (Math.random() * 2) + 's';
+    p.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+    container.appendChild(p);
+  }
+}
+
+function fecharModalFestejoAniversario() {
+  const modal = document.getElementById('modal-festejo-aniversario');
+  if (modal) modal.classList.add('hidden');
+}
+
+// Verificação universal (ADM, Sócio, Gerente, Operador)
 function verificarEExibirAniversarianteTelaCheia() {
   const hoje = new Date();
   const diaAtual = String(hoje.getDate()).padStart(2, '0');
@@ -3941,7 +4054,7 @@ function verificarEExibirAniversarianteTelaCheia() {
   let souAniversariante = false;
   let meuNome = perfilNegocio.nomeUsuario || 'Parceiro';
 
-  // 1. Checa se o usuário atual (seja ADM, Sócio, Gerente ou Operador) faz aniversário pelo perfil
+  // 1. Checa se o usuário logado faz aniversário (Perfil Master / Dono / Gerente)
   if (perfilNegocio.nascimento) {
     const partes = perfilNegocio.nascimento.split('-');
     if (partes.length >= 3 && partes[2] === diaAtual && partes[1] === mesAtual) {
@@ -3949,7 +4062,7 @@ function verificarEExibirAniversarianteTelaCheia() {
     }
   }
 
-  // 2. Checa também na lista de slots de colaboradores
+  // 2. Checa se é um colaborador cadastrado num slot de equipe
   slotsFuncionarios.forEach(s => {
     if (s.ativo && s.nascimento && s.email && s.email.trim().toLowerCase() === emailAtual) {
       const partes = s.nascimento.split('-');
@@ -3970,11 +4083,63 @@ function verificarEExibirAniversarianteTelaCheia() {
     if (modal && nomeEl) {
       nomeEl.innerText = `Parabéns, ${meuNome.split(' ')[0]}! 🎉`;
       gerarParticulasConfeti();
+      tocarEfeitoSonoroPalmas();
       modal.classList.remove('hidden');
     }
   }
 }
-console.log("Caixa Rápido Móvel Pro - Versão 57.1 (Fase 2.1) Carregada com Sucesso!");
+
+// ==========================================
+// DETECTOR DE DISPOSITIVO DO COLABORADOR
+// ==========================================
+function obterInfoDispositivoAtual() {
+  const ua = navigator.userAgent;
+  let plataforma = "Computador (Desktop)";
+  if (/Android/i.test(ua)) plataforma = "Celular Android";
+  else if (/iPhone/i.test(ua)) plataforma = "iPhone (iOS)";
+  else if (/iPad/i.test(ua)) plataforma = "iPad (iOS)";
+
+  let navegador = "Navegador Web";
+  if (/Chrome/i.test(ua)) navegador = "Chrome";
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) navegador = "Safari";
+  else if (/Firefox/i.test(ua)) navegador = "Firefox";
+
+  return `${plataforma} via ${navegador} (${window.screen.width}x${window.screen.height})`;
+}  
+// ==========================================
+// MONITOR DE CONEXÃO (ONLINE / OFFLINE)
+// ==========================================
+function atualizarBadgeConexaoUI(online) {
+  const badge = document.getElementById('badge-status-rede');
+  if (!badge) return;
+
+  if (online) {
+    badge.className = "text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 inline-flex items-center gap-1";
+    badge.innerHTML = `<span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Nuvem Online`;
+  } else {
+    badge.className = "text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/50 inline-flex items-center gap-1 animate-bounce";
+    badge.innerHTML = `<span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span> Offline (Salvação Local)`;
+  }
+}
+
+function iniciarMonitorConexao() {
+  window.addEventListener('online', () => {
+    atualizarBadgeConexaoUI(true);
+    if (typeof auth !== 'undefined' && auth.currentUser && perfilNegocio && perfilNegocio.empresaId) {
+      puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    atualizarBadgeConexaoUI(false);
+  });
+
+  atualizarBadgeConexaoUI(navigator.onLine);
+}
+
+// Liga a verificação de rede ao abrir a aplicação
+iniciarMonitorConexao();
+console.log("Caixa Rápido Móvel Pro - Versão 57.2 Carregada com Sucesso!");
 </script>
 </body>
 </html>

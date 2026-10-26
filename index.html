@@ -791,6 +791,10 @@ function eAdminOuSocio() {
   const f = (perfilNegocio.funcaoUsuario || '').toLowerCase();
   return f.includes('proprietário') || f.includes('sócio') || f.includes('socio');
 }
+  function eGerente() {
+  const f = (perfilNegocio.funcaoUsuario || '').toLowerCase();
+  return f.includes('gerente');
+}
 function eModoMei() {
   return perfilNegocio.modoNegocio === 'mei';
 }
@@ -1248,10 +1252,41 @@ function fecharModalGerenciarFuncionarios() {
 function renderizarListaSlotsFuncionariosUnificada() {
   const box = document.getElementById('lista-slots-funcionarios-box');
   if (!box) return;
-  box.innerHTML = slotsFuncionarios.map((slot, index) => {
-    // Verifica se quem está usando é Sócio/Dono
-    const podeSerGerenteSocio = eAdminOuSocio(); 
-    return `
+
+  // VISÃO EXCLUSIVA DO GERENTE: Apenas consulta de colaboradores ativos (Sem opção de incluir/alterar)
+  if (eGerente() && !eAdminOuSocio()) {
+    let ativos = slotsFuncionarios.filter(s => s.ativo);
+    if (ativos.length === 0) {
+      box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhum funcionário ativo cadastrado no momento.</p>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100 mb-2">
+        <p class="text-[11px] font-bold text-indigo-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-users text-indigo-600"></i> Quadro de Funcionários Disponíveis
+        </p>
+        <p class="text-[10px] text-slate-500">Visualização restrita ao Gerente da Unidade.</p>
+      </div>
+      ${ativos.map((slot) => `
+        <div class="p-3 bg-white rounded-2xl border border-indigo-200 shadow-sm space-y-1.5 text-xs">
+          <div class="flex justify-between items-center">
+            <p class="font-extrabold text-slate-800 text-sm">${slot.nome}</p>
+            <span class="text-[10px] font-extrabold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span> 🟢 Em Atividade
+            </span>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-100">
+            <span>Função: <b class="text-indigo-800">${slot.funcao}</b></span>
+            <span>E-mail: <b>${slot.email}</b></span>
+          </div>
+        </div>
+      `).join('')}
+    `;
+    return;
+  }
+
+  // VISÃO COMPLETA DO ADMINISTRADOR E SÓCIO (Edição, Criação e Alteração)
+  box.innerHTML = slotsFuncionarios.map((slot, index) => `
     <div class="p-3 rounded-2xl border ${slot.ativo ? 'bg-indigo-50/50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-300'} space-y-2">
       <div class="flex justify-between items-center">
         <span class="font-extrabold text-xs text-indigo-900">Slot ${index + 1} de Equipe</span>
@@ -1276,8 +1311,8 @@ function renderizarListaSlotsFuncionariosUnificada() {
           <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Função / Nível *</label>
           <select id="slot-funcao-${index}" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-indigo-900">
             <option value="Operador" ${slot.funcao === 'Operador' ? 'selected' : ''}>Operador / Caixa</option>
-            ${podeSerGerenteSocio ? `<option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>` : ''}
-            ${podeSerGerenteSocio ? `<option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>` : ''}
+            <option value="Gerente" ${slot.funcao === 'Gerente' ? 'selected' : ''}>Gerente</option>
+            <option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>
           </select>
         </div>
       </div>
@@ -1296,7 +1331,7 @@ function renderizarListaSlotsFuncionariosUnificada() {
         ` : ''}
       </div>
     </div>
-  `}).join('');
+  `).join('');
 }
 function salvarSlotFuncionario(index) {
   const nome = document.getElementById(`slot-nome-${index}`).value.trim();
@@ -1551,27 +1586,87 @@ function abrirModalAuditoriaOperadoresMenu() {
   if (!eAdminOuGerenteOuSocio()) return;
   const box = document.getElementById('lista-auditoria-operadores-menu-box');
   let dadosOperadores = {};
+
+  // Agrupa as vendas por operador e por meio de pagamento
   vendas.forEach(v => {
     let op = v.operador || 'Desconhecido';
-    if (!dadosOperadores[op]) dadosOperadores[op] = { qtd: 0, total: 0 };
+    if (!dadosOperadores[op]) {
+      dadosOperadores[op] = {
+        qtd: 0,
+        total: 0,
+        pagamentos: { Dinheiro: 0, PIX: 0, Cartao: 0, Fiado: 0, Outros: 0 }
+      };
+    }
     dadosOperadores[op].qtd += 1;
-    dadosOperadores[op].total += parseFloat(v.valorTotal || v.valor || 0);
+    let val = parseFloat(v.valorTotal || v.valor || 0);
+    dadosOperadores[op].total += val;
+
+    let pg = (v.formaPagto || '').toLowerCase();
+    if (pg.includes('dinheiro')) dadosOperadores[op].pagamentos.Dinheiro += val;
+    else if (pg.includes('pix')) dadosOperadores[op].pagamentos.PIX += val;
+    else if (pg.includes('cartã') || pg.includes('cartao')) dadosOperadores[op].pagamentos.Cartao += val;
+    else if (pg.includes('fiado')) dadosOperadores[op].pagamentos.Fiado += val;
+    else dadosOperadores[op].pagamentos.Outros += val;
   });
+
   let operadoresKeys = Object.keys(dadosOperadores);
   if (operadoresKeys.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada.</p>`;
+    box.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada no sistema.</p>`;
   } else {
-    box.innerHTML = operadoresKeys.map(op => `
-      <div class="bg-slate-50 border p-3 rounded-xl space-y-1">
-        <div class="flex justify-between items-center font-bold text-slate-800">
-          <span>🧑‍💼 ${op}</span>
-          <span class="text-teal-700">R$ ${dadosOperadores[op].total.toFixed(2)}</span>
+    box.innerHTML = operadoresKeys.map((op, idx) => {
+      let d = dadosOperadores[op];
+      let opId = `detalhes-op-${idx}`;
+      return `
+        <div class="bg-slate-50 border rounded-2xl overflow-hidden shadow-sm">
+          <div onclick="toggleDetalhesOperador('${opId}')" class="p-3 bg-white hover:bg-slate-100 cursor-pointer flex justify-between items-center transition select-none">
+            <div>
+              <p class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-user-tie text-indigo-600"></i> ${op}
+              </p>
+              <p class="text-[10px] text-slate-500">${d.qtd} venda(s) realizada(s)</p>
+            </div>
+            <div class="text-right flex items-center gap-2">
+              <span class="font-black text-teal-700 text-xs">R$ ${d.total.toFixed(2)}</span>
+              <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform" id="icon-${opId}"></i>
+            </div>
+          </div>
+          <div id="${opId}" class="hidden p-3 bg-slate-100 border-t border-slate-200 text-xs space-y-1.5">
+            <p class="font-bold text-[10px] text-slate-500 uppercase tracking-wider mb-1">Detalhamento por Forma de Pagamento:</p>
+            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+              <div class="bg-white p-2 rounded-lg border flex justify-between">
+                <span class="text-slate-600">💵 Dinheiro:</span>
+                <span class="font-bold text-slate-800">R$ ${d.pagamentos.Dinheiro.toFixed(2)}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border flex justify-between">
+                <span class="text-teal-700">⚡ PIX:</span>
+                <span class="font-bold text-slate-800">R$ ${d.pagamentos.PIX.toFixed(2)}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border flex justify-between">
+                <span class="text-blue-700">💳 Cartão:</span>
+                <span class="font-bold text-slate-800">R$ ${d.pagamentos.Cartao.toFixed(2)}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border flex justify-between">
+                <span class="text-purple-700">📋 Fiado:</span>
+                <span class="font-bold text-slate-800">R$ ${d.pagamentos.Fiado.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="text-[11px] text-slate-500">Total: <b>${dadosOperadores[op].qtd} venda(s)</b></div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
   document.getElementById('modal-auditoria-operadores-menu').classList.remove('hidden');
+}
+
+function toggleDetalhesOperador(id) {
+  const el = document.getElementById(id);
+  const icon = document.getElementById(`icon-${id}`);
+  if (el) {
+    el.classList.toggle('hidden');
+    if (icon) {
+      icon.classList.toggle('rotate-180');
+    }
+  }
 }
 function fecharModalAuditoriaOperadoresMenu() {
   document.getElementById('modal-auditoria-operadores-menu').classList.add('hidden');

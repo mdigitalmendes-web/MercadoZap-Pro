@@ -1,11 +1,25 @@
-const CACHE_NAME = 'caixa-rapido-v2';
+const CACHE_NAME = 'caixa-rapido-v3';
 
-// Ativação imediata do novo Service Worker
+// Arquivos essenciais que serão gravados obrigatoriamente na instalação
+const PRECACHE_ASSETS = [
+  './',
+  './index.html',
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+];
+
+// 1. Instalação: Baixa e guarda o index.html e as bibliotecas na memória local
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
+    }).then(() => self.skipWaiting())
+  );
 });
 
-// Limpa caches antigos ao atualizar
+// 2. Ativação: Limpa caches antigos (como o v1 e v2) para não dar conflito
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -20,8 +34,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interceptação inteligente: tenta buscar na rede; se conseguir, guarda cópia no cache.
-// Se estiver sem internet, entrega o que está salvo no dispositivo.
+// 3. Interceptação de Requisições: Tenta buscar na rede. Se estiver offline, entrega o cache local
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -37,10 +50,12 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
+        // Se falhar a conexão (OFFLINE):
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
+          // Fallback para abrir a página inicial se for navegação
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html') || caches.match('./');
           }

@@ -2649,7 +2649,7 @@ function renderAba() {
     if (!verificarLicencaStatus()) return;
   }
 
-  // 3. Renderiza todas as abas instantaneamente com dados locais
+  // 3. Renderiza todas as abas instantaneamente com dados locais (online ou offline)
   if (typeof renderAbaInicio === 'function') renderAbaInicio();
   if (typeof renderAbaVendas === 'function') renderAbaVendas();
   if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
@@ -2658,7 +2658,6 @@ function renderAba() {
     if (typeof renderAbaRelatorios === 'function') renderAbaRelatorios();
   }
 }
-
 // TELA INICIAL
 function renderAbaInicio() {
   const user = auth.currentUser;

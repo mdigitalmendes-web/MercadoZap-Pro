@@ -4094,17 +4094,60 @@ function atualizarBadgeConexaoUI(online) {
   }
 }
 
-function iniciarMonitorConexao() {
-  window.addEventListener('online', () => {
-    atualizarBadgeConexaoUI(true);
-    if (typeof auth !== 'undefined' && auth.currentUser && perfilNegocio && perfilNegocio.empresaId) {
-      puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
-    }
-  });
+let statusConexaoAtual = navigator.onLine;
 
+async function checarPingReal() {
+  if (!navigator.onLine) {
+    if (statusConexaoAtual) {
+      statusConexaoAtual = false;
+      atualizarBadgeConexaoUI(false);
+    }
+    return false;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s de limite de resposta
+
+    // Testa um ping levinho sem carregar dados pesados
+    await fetch('https://www.google.com/favicon.ico', { 
+      method: 'HEAD', 
+      mode: 'no-cors', 
+      cache: 'no-store', 
+      signal: controller.signal 
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!statusConexaoAtual) {
+      statusConexaoAtual = true;
+      atualizarBadgeConexaoUI(true);
+      if (typeof auth !== 'undefined' && auth.currentUser && typeof perfilNegocio !== 'undefined' && perfilNegocio && perfilNegocio.empresaId) {
+        puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+      }
+    }
+    return true;
+  } catch (err) {
+    if (statusConexaoAtual) {
+      statusConexaoAtual = false;
+      atualizarBadgeConexaoUI(false);
+    }
+    return false;
+  }
+}
+
+function iniciarMonitorConexao() {
+  checarPingReal();
+
+  window.addEventListener('online', () => checarPingReal());
   window.addEventListener('offline', () => {
+    statusConexaoAtual = false;
     atualizarBadgeConexaoUI(false);
   });
+
+  // Checa a internet real a cada 10 segundos
+  setInterval(() => checarPingReal(), 10000);
+}
 
   atualizarBadgeConexaoUI(navigator.onLine);
 }

@@ -1042,7 +1042,7 @@ function verificarAlertasEstoqueValidadeAutomatico() {
     return dVal <= limiteAlerta;
   });
   let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
-  let despesasPendentes = despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr);
+ let despesasPendentes = eAdminOuGerenteOuSocio() ? despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr) : [];
   let desvNc = eAdminOuGerenteOuSocio() ? notificacoesDesvinculacao.filter(n => !n.lida) : [];
 
   const banner = document.getElementById('banner-alerta-estoque');

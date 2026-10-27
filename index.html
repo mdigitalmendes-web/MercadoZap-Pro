@@ -997,13 +997,27 @@ function verificarAniversariantesDoDia() {
   const hoje = new Date();
   const diaAtual = String(hoje.getDate()).padStart(2, '0');
   const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
-  return slotsFuncionarios.filter(s => {
+
+  // Junta os colaboradores da equipa com o titular do negócio
+  let lista = [...(slotsFuncionarios || [])];
+
+  if (typeof perfilNegocio !== 'undefined' && perfilNegocio && perfilNegocio.nascimento) {
+    lista.push({
+      nome: perfilNegocio.nomeUsuario || 'Gerente',
+      email: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email.trim().toLowerCase() : '',
+      nascimento: perfilNegocio.nascimento,
+      ativo: true
+    });
+  }
+
+  return lista.filter(s => {
     if (!s.ativo || !s.nascimento) return false;
     const partes = s.nascimento.split('-');
     if (partes.length < 3) return false;
     const [ano, mes, dia] = partes;
     return dia === diaAtual && mes === mesAtual;
   });
+}
 }
 function dispararToastAniversariantesAutomatico() {
   const aniversariantes = verificarAniversariantesDoDia();

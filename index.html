@@ -1117,7 +1117,7 @@ function abrirModalNotificacoes() {
     return dVal <= limiteAlerta;
   });
   let fiadosVencidos = clientes.filter(c => c.debito > 0 && c.prazoPagamento && new Date(c.prazoPagamento) <= hoje);
-  let despesasPendentes = despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr);
+  let despesasPendentes = eAdminOuGerenteOuSocio() ? despesasFixas.filter(d => d.vencimento && d.vencimento <= hojeStr) : [];
   let desvNc = eAdminOuGerenteOuSocio() ? notificacoesDesvinculacao : [];
 
   const box = document.getElementById('lista-notificacoes-box');
@@ -1814,6 +1814,13 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     despesasFixas = despCarregadas;
 
     persistirDadosCompletos();
+   // Atualiza a tela inicial e o caixa em tempo real se a aba estiver aberta
+    const abaInicio = document.getElementById('aba-inicio');
+    if (abaInicio && !abaInicio.classList.contains('hidden')) {
+      if (typeof renderAbaInicio === 'function') {
+        renderAbaInicio();
+      }
+    } 
   } catch(e) {
     console.error("Erro ao puxar dados master da empresa:", e);
   }

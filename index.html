@@ -859,18 +859,19 @@ document.addEventListener("visibilitychange", async () => {
       if (!ativo) return;
       
       // 2. Se estiver online, puxa dados atualizados; se estiver offline, desenha a tela direto
-        if (navigator.onLine && typeof checarPingReal === 'function' && await checarPingReal()) {
-          try {
-            await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
-          } catch (err) {
-            console.warn("Sem conexão com a nuvem, carregando dados locais.");
-          }
+      if (navigator.onLine && typeof checarPingReal === 'function' && await checarPingReal()) {
+        try {
+          await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+        } catch (err) {
+          console.warn("Sem conexão com a nuvem, carregando dados locais.");
         }
-        
-        renderAba();
-        verificarAlertasEstoqueValidadeAutomatico();
+      }
+      
+      renderAba();
+      verificarAlertasEstoqueValidadeAutomatico();
+    }
   }
-async function verificarIntegridadeVinculoAtivo() {
+});
   if (eAdminOuSocio()) return true;
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;

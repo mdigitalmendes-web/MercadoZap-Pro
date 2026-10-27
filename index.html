@@ -858,11 +858,17 @@ document.addEventListener("visibilitychange", async () => {
       let ativo = await verificarIntegridadeVinculoAtivo();
       if (!ativo) return;
       
-      // 2. Força a puxar as vendas e estoque atualizados do Firebase
-      await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
-      renderAba();
-      verificarAlertasEstoqueValidadeAutomatico();
-    }
+      // 2. Se estiver online, puxa dados atualizados; se estiver offline, desenha a tela direto
+        if (navigator.onLine && typeof checarPingReal === 'function' && await checarPingReal()) {
+          try {
+            await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+          } catch (err) {
+            console.warn("Sem conexão com a nuvem, carregando dados locais.");
+          }
+        }
+        
+        renderAba();
+        verificarAlertasEstoqueValidadeAutomatico();
   }
 });
 async function verificarIntegridadeVinculoAtivo() {
@@ -2630,17 +2636,27 @@ async function switchTab(aba) {
   verificarAlertasEstoqueValidadeAutomatico();
 }
 function renderAba() {
-  if (!auth.currentUser) {
+  // 1. Se estiver offline, permite utilizar a sessão mantida localmente
+  if (!auth.currentUser && navigator.onLine) {
     showLoginForm();
     return;
   }
+
   mostrarInterfaceAutenticada(true);
-  if (!verificarLicencaStatus()) return;
-  renderAbaInicio();
-  renderAbaVendas();
-  renderAbaEstoque();
-  renderAbaClientes();
-  if (eAdminOuGerenteOuSocio()) renderAbaRelatorios();
+
+  // 2. Só valida licença no servidor se estiver ONLINE
+  if (navigator.onLine && typeof verificarLicencaStatus === 'function') {
+    if (!verificarLicencaStatus()) return;
+  }
+
+  // 3. Renderiza todas as abas instantaneamente com dados locais
+  if (typeof renderAbaInicio === 'function') renderAbaInicio();
+  if (typeof renderAbaVendas === 'function') renderAbaVendas();
+  if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+  if (typeof renderAbaClientes === 'function') renderAbaClientes();
+  if (typeof eAdminOuGerenteOuSocio === 'function' && eAdminOuGerenteOuSocio()) {
+    if (typeof renderAbaRelatorios === 'function') renderAbaRelatorios();
+  }
 }
 
 // TELA INICIAL

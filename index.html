@@ -2700,6 +2700,7 @@ function renderAbaInicio() {
       </div>
     </div>
   `;
+ setTimeout(() => atualizarBadgeConexaoUI(navigator.onLine), 100);
 }
 function abrirModalSangriaSuprimento(tipo) {
   document.getElementById('sangria-tipo').value = tipo;

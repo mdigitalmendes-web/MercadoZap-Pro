@@ -870,7 +870,6 @@ document.addEventListener("visibilitychange", async () => {
         renderAba();
         verificarAlertasEstoqueValidadeAutomatico();
   }
-});
 async function verificarIntegridadeVinculoAtivo() {
   if (eAdminOuSocio()) return true;
   const user = auth.currentUser;

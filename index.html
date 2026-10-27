@@ -228,6 +228,35 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 </button>
 </div>
 </div>
+<!-- CARTÃO DE GESTÃO DE MEMÓRIA E BACKUP SEGURO -->
+<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4">
+  <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">💾</span>
+      <h3 class="font-bold text-slate-800 text-sm">Armazenamento & Backup Offline</h3>
+    </div>
+    <span id="badge-memoria-percent" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+      Memória OK
+    </span>
+  </div>
+
+  <p class="text-xs text-slate-500 mb-3">
+    Exporte cópias de segurança dos seus dados offline ou restaure ficheiros anteriores com proteção contra duplicidade de faturação.
+  </p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <!-- Botão Exportar -->
+    <button onclick="exportarBackupSeguroJSON()" type="button" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white p-2.5 rounded-lg text-xs font-semibold transition-all">
+      <span>📥</span> Exportar Backup (.json)
+    </button>
+
+    <!-- Botão Restaurar -->
+    <label class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-lg text-xs font-semibold cursor-pointer transition-all">
+      <span>📤</span> Restaurar Backup (.json)
+      <input type="file" accept=".json" onchange="restaurarBackupSeguroJSON(event)" class="hidden">
+    </label>
+  </div>
+</div>
 <div class="p-3 bg-slate-50 border-t">
 <button onclick="fazerLogoutSeguro()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
 <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
@@ -4135,7 +4164,130 @@ async function checarPingReal() {
     return false;
   }
 }
+// ==========================================
+// MONITOR DE MEMÓRIA & BACKUP OFFLINE SEGURO
+// ==========================================
 
+async function calcularUsoMemoriaLocal() {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const usadoMB = (estimate.usage / (1024 * 1024)).toFixed(2);
+      const limiteMB = (estimate.quota / (1024 * 1024)).toFixed(2);
+      const percentual = Math.round((estimate.usage / estimate.quota) * 100);
+
+      const badgeElem = document.getElementById('badge-memoria-percent');
+      if (badgeElem) {
+        badgeElem.textContent = `${percentual}% Usado`;
+        if (percentual >= 80) {
+          badgeElem.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
+        } else {
+          badgeElem.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+        }
+      }
+
+      if (percentual >= 80) {
+        if (typeof mostrarToastAlert === 'function') {
+          mostrarToastAlert(`⚠️ Atenção: Memória offline em ${percentual}%. Recomenda-se exportar um backup de segurança!`);
+        }
+      }
+      return { usadoMB, limiteMB, percentual };
+    }
+  } catch (e) {
+    console.warn("Estimativa de memória não suportada neste navegador.", e);
+  }
+  return { usadoMB: 0, limiteMB: 0, percentual: 0 };
+}
+
+function exportarBackupSeguroJSON() {
+  try {
+    const dadosEmpresa = typeof perfilNegocio !== 'undefined' ? perfilNegocio : {};
+    const vendasPendentes = JSON.parse(localStorage.getItem('vendas_offline_pendentes') || '[]');
+    const despesasPendentes = JSON.parse(localStorage.getItem('despesas_offline_pendentes') || '[]');
+    const caixaAtual = JSON.parse(localStorage.getItem('caixa_local') || '{}');
+
+    const backupPayload = {
+      versaoApp: "Caixa Rápido Móvel Pro v2.0",
+      dataExportacao: new Date().toISOString(),
+      empresaId: dadosEmpresa.empresaId || "desconhecido",
+      dados: {
+        vendas: vendasPendentes,
+        despesas: despesasPendentes,
+        caixa: caixaAtual
+      }
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const nomeArquivo = `backup_caixa_rapido_${new Date().toISOString().slice(0, 10)}.json`;
+
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", nomeArquivo);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    alert("✅ Backup exportado com sucesso! Guarde este arquivo em local seguro.");
+  } catch (err) {
+    alert("❌ Erro ao gerar o arquivo de backup: " + err.message);
+  }
+}
+
+function restaurarBackupSeguroJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const conteudo = JSON.parse(e.target.result);
+
+      if (!conteudo.dados || !conteudo.dados.vendas) {
+        alert("❌ Formato de arquivo de backup inválido.");
+        return;
+      }
+
+      let vendasLocais = JSON.parse(localStorage.getItem('vendas_offline_pendentes') || '[]');
+      let despesasLocais = JSON.parse(localStorage.getItem('despesas_offline_pendentes') || '[]');
+
+      let vendasAdicionadas = 0;
+      let vendasIgnoradas = 0;
+
+      // Deduplicação Inteligente por ID Único de Vendas
+      conteudo.dados.vendas.forEach(vendaImportada => {
+        const idExiste = vendasLocais.some(v => v.id && v.id === vendaImportada.id);
+        if (!idExiste) {
+          vendasLocais.push(vendaImportada);
+          vendasAdicionadas++;
+        } else {
+          vendasIgnoradas++;
+        }
+      });
+
+      // Deduplicação Inteligente por ID Único de Despesas
+      if (conteudo.dados.despesas) {
+        conteudo.dados.despesas.forEach(despesaImportada => {
+          const idExiste = despesasLocais.some(d => d.id && d.id === despesaImportada.id);
+          if (!idExiste) {
+            despesasLocais.push(despesaImportada);
+          }
+        });
+      }
+
+      localStorage.setItem('vendas_offline_pendentes', JSON.stringify(vendasLocais));
+      localStorage.setItem('despesas_offline_pendentes', JSON.stringify(despesasLocais));
+
+      alert(`✅ Processamento do Backup Concluído!\n\n• Novas vendas inseridas: ${vendasAdicionadas}\n• Vendas repetidas ignoradas por segurança: ${vendasIgnoradas}`);
+
+      if (typeof renderAbaInicio === 'function') renderAbaInicio();
+
+    } catch (err) {
+      alert("❌ Erro ao ler o arquivo de backup: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+  
 function iniciarMonitorConexao() {
   checarPingReal();
 

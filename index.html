@@ -872,6 +872,7 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
+  async function verificarIntegridadeVinculoAtivo() {
   if (eAdminOuSocio()) return true;
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;

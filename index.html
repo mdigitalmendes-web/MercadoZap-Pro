@@ -2945,6 +2945,7 @@ function calcularTrocoEmTempoReal() {
 
 // 1. Renderização Principal da Aba de Vendas (PDV)
 async function renderAbaVendas() {
+  escutarStatusCaixaNuvem();
   const hojeStr = new Date().toLocaleDateString('pt-BR');
   const ultimoFechamentoTs = parseInt(localStorage.getItem('crm_ultimo_fechamento_ts') || "0", 10);
   
@@ -3437,7 +3438,140 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
   alert(`✅ Fechamento de caixa concluído com sucesso!\nO status do caixa foi alterado para FECHADO.`);
   renderAbaVendas();
 }
-function cancelarCompraAtual() {
+// =======================================================
+// SINCRONIZAÇÃO EM TEMPO REAL E PAINEL DE CONTROLE DO DONO
+// =======================================================
+
+let cancelEscutadorCaixaNuvem = null;
+
+// 1. Escutador em Tempo Real (Ouve mudanças no Firebase e atualiza todos os celulares na hora)
+function escutarStatusCaixaNuvem() {
+  const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
+  const terminalId = localStorage.getItem('crm_terminal_id') || 'caixa_principal';
+
+  if (!empresaId || typeof db === 'undefined') return;
+
+  if (cancelEscutadorCaixaNuvem) {
+    cancelEscutadorCaixaNuvem();
+  }
+
+  cancelEscutadorCaixaNuvem = db.collection("empresas")
+    .doc(empresaId)
+    .collection("configuracoes")
+    .doc(terminalId)
+    .onSnapshot((doc) => {
+      if (doc.exists) {
+        const dados = doc.data();
+        const statusLocal = localStorage.getItem('crm_caixa_status');
+        const dataLocal = localStorage.getItem('crm_caixa_data_abertura');
+
+        if (dados.statusCaixa !== statusLocal || dados.dataAbertura !== dataLocal) {
+          localStorage.setItem('crm_caixa_status', dados.statusCaixa || 'fechado');
+          if (dados.dataAbertura) {
+            localStorage.setItem('crm_caixa_data_abertura', dados.dataAbertura);
+          } else {
+            localStorage.removeItem('crm_caixa_data_abertura');
+          }
+          if (dados.fundoTrocoInicial !== undefined) {
+            localStorage.setItem('crm_caixa_fundo_troco', dados.fundoTrocoInicial.toString());
+          }
+
+          const elementoVendas = document.getElementById('content-vendas');
+          if (elementoVendas && !elementoVendas.classList.contains('hidden')) {
+            renderAbaVendas();
+          }
+        }
+      }
+    }, (err) => {
+      console.warn("Aviso: Sincronização em tempo real aguardando reconexão...", err);
+    });
+}
+
+// 2. Seletor de Terminal (Para lojas com mais de 1 caixa físico: Caixa 1, Caixa 2, etc)
+function alterarTerminalAtual(novoTerminalId) {
+  localStorage.setItem('crm_terminal_id', novoTerminalId);
+  escutarStatusCaixaNuvem();
+  renderAbaVendas();
+  alert(`📱 Dispositivo configurado para operar no: ${novoTerminalId.toUpperCase()}`);
+}
+
+// 3. Painel de Monitoramento para Gerentes e Donos (Injeção Automática)
+async function renderPainelGerenteCaixas() {
+  const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
+
+  // Procura ou cria o container na tela de Perfil/Configurações
+  let container = document.getElementById('painel-gerente-caixas');
+  if (!container) {
+    const alvoAba = document.getElementById('content-perfil') || 
+                    document.getElementById('content-configuracoes') || 
+                    document.querySelector('.tab-perfil') ||
+                    document.body;
+
+    const cardHTML = `
+      <div class="bg-slate-50 p-4 rounded-2xl border space-y-3 mt-4 mx-2">
+        <div class="flex justify-between items-center">
+          <h3 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-desktop text-teal-600"></i> Monitoramento de Caixas da Loja
+          </h3>
+          <button onclick="renderPainelGerenteCaixas()" class="text-[10px] text-teal-700 font-bold hover:underline">
+            🔄 Atualizar
+          </button>
+        </div>
+        <div id="painel-gerente-caixas" class="space-y-2">
+          <p class="text-xs text-slate-400 italic">Carregando status dos caixas...</p>
+        </div>
+      </div>
+    `;
+    alvoAba.insertAdjacentHTML('beforeend', cardHTML);
+    container = document.getElementById('painel-gerente-caixas');
+  }
+
+  if (!container) return;
+
+  if (!empresaId || typeof db === 'undefined') {
+    container.innerHTML = `<p class="text-xs text-slate-400 italic">Conecte-se para visualizar os terminais em tempo real.</p>`;
+    return;
+  }
+
+  try {
+    const snapshot = await db.collection("empresas").doc(empresaId).collection("configuracoes").get();
+    let htmlTerminais = '';
+
+    snapshot.forEach(doc => {
+      if (doc.id.startsWith('caixa_') || doc.id === 'caixaAtual') {
+        const data = doc.data();
+        const ehAberto = data.statusCaixa === 'aberto';
+        const nomeTerminal = doc.id === 'caixaAtual' ? 'Caixa Principal' : doc.id.replace('caixa_', 'Caixa ');
+
+        htmlTerminais += `
+          <div class="flex items-center justify-between p-3 bg-white rounded-xl border text-xs shadow-sm">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full ${ehAberto ? 'bg-green-500 animate-pulse' : 'bg-red-400'}"></span>
+                <span class="font-extrabold text-slate-800 uppercase">${nomeTerminal}</span>
+              </div>
+              <p class="text-[10px] text-slate-500 mt-0.5">Operador: <b>${data.abertoPor || 'Não informado'}</b></p>
+              <p class="text-[10px] text-slate-500">Aberto em: ${data.dataAbertura || 'Caixa Fechado'}</p>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${ehAberto ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'}">
+                ${ehAberto ? '🟢 ABERTO' : '🔴 FECHADO'}
+              </span>
+              ${ehAberto ? `<p class="text-[10px] text-teal-700 font-extrabold mt-1">Troco: R$ ${parseFloat(data.fundoTrocoInicial || 0).toFixed(2)}</p>` : ''}
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    container.innerHTML = htmlTerminais || `<p class="text-xs text-slate-400 italic">Nenhum terminal ativo registrado no momento.</p>`;
+  } catch (err) {
+    container.innerHTML = `<p class="text-xs text-red-500">Erro ao carregar status dos caixas na nuvem.</p>`;
+  }
+}
+  function cancelarCompraAtual() {
   if (carrinho.length === 0) {
     alert("O carrinho já está vazio.");
     return;
@@ -4390,7 +4524,8 @@ auth.onAuthStateChanged(async (user) => {
         if (perfilNegocio.notificacoesDesvinculacao) notificacoesDesvinculacao = perfilNegocio.notificacoesDesvinculacao;
         persistirDadosCompletos();
       }
-      mostrarInterfaceAutenticada(true);
+      mostrarInterfaceAutenticada(true); 
+      escutarStatusCaixaNuvem();
       verificarLicencaStatus();
       let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
       

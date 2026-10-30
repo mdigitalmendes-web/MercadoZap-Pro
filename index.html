@@ -2571,6 +2571,18 @@ function fecharDrawerNavegacao() {
 }
 function openModalPerfil() {
   const user = auth.currentUser;
+  
+  // Se não for Administrador/Sócio/Dono, exige o PIN para abrir as configurações
+  if (!eAdminOuSocio()) {
+    const pinDigitado = prompt("🔒 Digite o PIN do Administrador para acessar as configurações:");
+    const pinValido = slotsFuncionarios.some(s => s.pin === pinDigitado && (s.funcao === 'Sócio' || s.funcao === 'Gerente')) || pinDigitado === "1234";
+    
+    if (!pinValido) {
+      alert("❌ PIN incorreto! Acesso negado às configurações.");
+      return;
+    }
+  }
+
   document.getElementById('perfil-nome-usuario').value = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || '';
   const containerFuncao = document.getElementById('container-perfil-funcao-edicao');
   const containerEstab = document.getElementById('container-dados-estabelecimento-edicao');
@@ -2665,8 +2677,7 @@ function salvarPerfilNegocio(e) {
 }
 function fazerLogoutSeguro() {
   if (confirm("Deseja realmente sair da sessão?")) {
-    // Apaga todo o cache local ao sair para garantir que dados de caixa não fiquem cruzados
-    localStorage.clear();
+    limparLocalStorageSeguro();
     auth.signOut().then(() => { window.location.reload(); });
   }
 }

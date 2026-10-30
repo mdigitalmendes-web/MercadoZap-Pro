@@ -2939,15 +2939,97 @@ function calcularTrocoEmTempoReal() {
     boxTroco.innerHTML = `<span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>`;
   }
 }
-// 1. Renderização da Aba Vendas com Trava de Caixa Pendente e Abertura com Troco
-function renderAbaVendas() {
+// ==========================================
+// FLUXO INTEGRADO E COMPLETO DE CAIXA E PDV
+// ==========================================
+
+// 1. Renderização Principal da Aba de Vendas (PDV)
+async function renderAbaVendas() {
   const hojeStr = new Date().toLocaleDateString('pt-BR');
   const ultimoFechamentoTs = parseInt(localStorage.getItem('crm_ultimo_fechamento_ts') || "0", 10);
-  const caixaAberto = localStorage.getItem('crm_caixa_status') === 'aberto';
-  const dataAberturaCaixa = localStorage.getItem('crm_caixa_data_abertura') || hojeStr;
-  const fundoTrocoInicial = parseFloat(localStorage.getItem('crm_caixa_fundo_troco') || "0");
+  
+  let caixaAberto = localStorage.getItem('crm_caixa_status') === 'aberto';
+  let dataAberturaCaixa = localStorage.getItem('crm_caixa_data_abertura') || hojeStr;
+  let fundoTrocoInicial = parseFloat(localStorage.getItem('crm_caixa_fundo_troco') || "0");
 
-  // CHECAGEM A: CAIXA ESQUECIDO (Vira de dia com turno pendente)
+  const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
+
+  // Sincronização com Firebase Firestore para Multiusuários
+  if (navigator.onLine && empresaId && typeof db !== 'undefined') {
+    try {
+      const docCaixa = await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").get();
+      if (docCaixa.exists) {
+        const dadosNuvem = docCaixa.data();
+        if (dadosNuvem.statusCaixa) {
+          caixaAberto = dadosNuvem.statusCaixa === 'aberto';
+          dataAberturaCaixa = dadosNuvem.dataAbertura || hojeStr;
+          fundoTrocoInicial = parseFloat(dadosNuvem.fundoTrocoInicial || 0);
+
+          localStorage.setItem('crm_caixa_status', dadosNuvem.statusCaixa);
+          localStorage.setItem('crm_caixa_data_abertura', dataAberturaCaixa);
+          localStorage.setItem('crm_caixa_fundo_troco', fundoTrocoInicial.toString());
+        }
+      }
+    } catch (e) {
+      console.warn("Modo Offline: Mantendo estado local do caixa.");
+    }
+  }
+
+  // CENÁRIO 1: ESTOQUE VAZIO / FIRST ONBOARDING (Novo usuário)
+  if (produtos.length === 0 && !caixaAberto) {
+    document.getElementById('content-vendas').innerHTML = `
+      <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border-2 border-teal-200 p-6 rounded-3xl text-center space-y-4 shadow-sm my-4">
+        <div class="w-16 h-16 bg-teal-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-md">
+          👋
+        </div>
+        <div>
+          <h3 class="font-extrabold text-teal-900 text-base">Boas-vindas ao Caixa Rápido!</h3>
+          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+            Para realizar suas primeiras vendas ou testar o aplicativo, abra o seu primeiro turno. Se não tiver dinheiro inicial na gaveta, comece com <b>R$ 0,00</b>.
+          </p>
+        </div>
+        <div class="space-y-2 pt-2">
+          <button onclick="confirmarAberturaCaixaComValor(0)" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+            🚀 Começar Agora (Fundo de Troco R$ 0,00)
+          </button>
+          <button onclick="renderAba('produtos')" class="w-full bg-white hover:bg-slate-50 text-teal-800 font-bold py-2.5 rounded-xl text-xs border border-teal-200 shadow-sm transition">
+            📦 Cadastrar Meus Primeiros Produtos
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // CENÁRIO 2: CAIXA ANTIGO / FÓSSIL (Aberto há mais de 2 dias)
+  const [diaA, mesA, anoA] = dataAberturaCaixa.split('/');
+  const dataAberturaObj = new Date(anoA, mesA - 1, diaA);
+  const hojeObj = new Date();
+  hojeObj.setHours(0, 0, 0, 0);
+  const diffDias = Math.floor((hojeObj - dataAberturaObj) / (1000 * 60 * 60 * 24));
+
+  if (caixaAberto && diffDias >= 2) {
+    document.getElementById('content-vendas').innerHTML = `
+      <div class="bg-slate-100 border-2 border-slate-300 p-6 rounded-3xl text-center space-y-4 shadow-sm my-4">
+        <div class="w-14 h-14 bg-slate-300 text-slate-700 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+          ⏳
+        </div>
+        <div>
+          <h3 class="font-extrabold text-slate-800 text-sm uppercase">Caixa Antigo Detectado</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+            Existe um turno aberto em <b>${dataAberturaCaixa}</b> (${diffDias} dias atrás). Deseja arquivar este período e iniciar as vendas de hoje?
+          </p>
+        </div>
+        <button onclick="arquivarCaixaAntigoEIniciarHoje('${dataAberturaCaixa}')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition">
+          📂 Arquivar Período Antigo & Liberar Hoje
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // CENÁRIO 3: CAIXA ESQUECIDO DO DIA ANTERIOR (1 Dia)
   if (caixaAberto && dataAberturaCaixa !== hojeStr) {
     document.getElementById('content-vendas').innerHTML = `
       <div class="bg-amber-50 border-2 border-amber-400 p-5 rounded-2xl text-center space-y-4 shadow-lg my-4">
@@ -2968,8 +3050,14 @@ function renderAbaVendas() {
     return;
   }
 
-  // CHECAGEM B: CAIXA FECHADO (Exige informe do Fundo de Troco Inicial)
+  // CENÁRIO 4: CAIXA FECHADO (Tela de Abertura + Troco Inteligente Sugerido)
   if (!caixaAberto) {
+    let trocoSugerido = 0;
+    if (historicoFechamentos && historicoFechamentos.length > 0) {
+      const ultimoReg = historicoFechamentos[historicoFechamentos.length - 1];
+      trocoSugerido = parseFloat(ultimoReg.gavetaContada || 0);
+    }
+
     document.getElementById('content-vendas').innerHTML = `
       <div class="bg-white border border-slate-200 p-5 rounded-2xl text-center space-y-4 shadow-md max-w-sm mx-auto my-4">
         <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-sm">
@@ -2977,11 +3065,16 @@ function renderAbaVendas() {
         </div>
         <div>
           <h3 class="font-extrabold text-slate-800 text-sm">Abertura do Caixa de Hoje</h3>
-          <p class="text-xs text-slate-500 mt-1">Informe o valor inicial de troco deixado na gaveta para iniciar as vendas do turno.</p>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Informe o valor inicial de troco deixado na gaveta.
+          </p>
         </div>
-        <div class="text-left space-y-1">
-          <label class="block text-[11px] font-bold text-slate-700">Fundo de Troco Inicial R$:</label>
-          <input type="number" step="0.01" id="input-fundo-troco-inicial" placeholder="0.00 (Ex: 100.00)" class="w-full p-3 border rounded-xl text-sm font-extrabold text-teal-800 bg-slate-50 focus:bg-white">
+        <div class="text-left space-y-1 bg-slate-50 p-3 rounded-xl border">
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-[11px] font-bold text-slate-700">Fundo de Troco Inicial R$:</label>
+            ${trocoSugerido > 0 ? `<span class="text-[10px] text-teal-700 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">Sugerido do caixa anterior</span>` : ''}
+          </div>
+          <input type="number" step="0.01" id="input-fundo-troco-inicial" value="${trocoSugerido.toFixed(2)}" placeholder="0.00" class="w-full p-3 border rounded-xl text-sm font-extrabold text-teal-800 bg-white focus:ring-2 focus:ring-teal-500">
         </div>
         <button onclick="confirmarAberturaCaixa()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition">
           🚀 Abrir Caixa & Iniciar Vendas
@@ -2991,7 +3084,7 @@ function renderAbaVendas() {
     return;
   }
 
-  // CHECAGEM C: CAIXA ABERTO E REGULAR (Carrega o PDV completo)
+  // CENÁRIO 5: CAIXA ABERTO E REGULAR (PDV Completo)
   const vendasHoje = vendas.filter(v => {
     let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
     return vData > ultimoFechamentoTs;
@@ -3002,7 +3095,6 @@ function renderAbaVendas() {
   const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
   const vendasDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
   
-  // Saldo da Gaveta Esperado = Fundo de Troco + Entradas Dinheiro + Suprimentos - Sangrias
   const saldoGavetaDinheiro = fundoTrocoInicial + vendasDinheiro - totalSangrias + totalSuprimentos;
 
   let atalhosProdutos = produtos.filter(p => p.atalho !== false);
@@ -3062,6 +3154,7 @@ function renderAbaVendas() {
           <span class="text-[9px] text-teal-400 font-semibold">Inclui R$ ${fundoTrocoInicial.toFixed(2)} de Troco</span>
         </div>
       </div>
+
       <div class="bg-slate-50 p-3 rounded-2xl border space-y-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
@@ -3072,6 +3165,7 @@ function renderAbaVendas() {
           <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp" class="p-2 border rounded-xl text-xs bg-white font-bold">
         </div>
       </div>
+
       <div class="border-t pt-3 space-y-2">
         <div class="flex justify-between items-center">
           <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -3085,6 +3179,7 @@ function renderAbaVendas() {
           ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos cadastrados.</p>'}
         </div>
       </div>
+
       <div class="border-t pt-3 space-y-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisa & Item Avulso
@@ -3100,6 +3195,7 @@ function renderAbaVendas() {
           + Adicionar Item ao Carrinho
         </button>
       </div>
+
       <div class="border-t pt-3 space-y-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
@@ -3161,6 +3257,7 @@ function renderAbaVendas() {
           </div>
         </div>
       </div>
+
       <div class="border-t pt-3 space-y-2">
         <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-vault text-amber-600"></i> Operações de Gaveta
@@ -3181,21 +3278,79 @@ function renderAbaVendas() {
   `;
 }
 
-// 2. Abertura do Caixa com Troco Inicial
-function confirmarAberturaCaixa() {
-  const inputTroco = document.getElementById('input-fundo-troco-inicial');
-  const valorTroco = parseFloat(inputTroco ? inputTroco.value : "0") || 0;
+// 2. Confirmação da Abertura com Sincronização na Nuvem
+async function confirmarAberturaCaixaComValor(valorTrocoDigitado) {
   const hojeStr = new Date().toLocaleDateString('pt-BR');
+  const valorTroco = parseFloat(valorTrocoDigitado !== undefined ? valorTrocoDigitado : (document.getElementById('input-fundo-troco-inicial')?.value || "0")) || 0;
+  const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
 
   localStorage.setItem('crm_caixa_status', 'aberto');
   localStorage.setItem('crm_caixa_data_abertura', hojeStr);
   localStorage.setItem('crm_caixa_fundo_troco', valorTroco.toString());
 
-  alert(`🔓 Caixa aberto com sucesso!\nFundo de troco inicial registrado: R$ ${valorTroco.toFixed(2)}`);
+  if (user && empresaId && typeof db !== 'undefined') {
+    try {
+      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
+        statusCaixa: 'aberto',
+        dataAbertura: hojeStr,
+        fundoTrocoInicial: valorTroco,
+        abertoPor: perfilNegocio.nomeUsuario || user.displayName || 'Operador',
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.warn("Erro ao salvar caixa na nuvem:", err);
+    }
+  }
+
+  alert(`🔓 Caixa aberto com sucesso!\nFundo de troco inicial: R$ ${valorTroco.toFixed(2)}`);
   renderAbaVendas();
 }
 
-// 3. Modal de Fechamento do Caixa
+function confirmarAberturaCaixa() {
+  confirmarAberturaCaixaComValor();
+}
+
+// 3. Arquivamento de Caixa Fóssil (Mais de 2 dias de inatividade)
+async function arquivarCaixaAntigoEIniciarHoje(dataAntiga) {
+  const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
+
+  const regFechoAntigo = {
+    id: Date.now(),
+    data: dataAntiga,
+    hora: "23:59",
+    vendasQtd: 0,
+    totalVendas: 0,
+    gavetaContada: 0,
+    diferenca: 0,
+    operador: "Sistema (Arquivamento Automático)"
+  };
+
+  historicoFechamentos.push(regFechoAntigo);
+  localStorage.setItem('crm_ultimo_fechamento_ts', Date.now().toString());
+  localStorage.setItem('crm_caixa_status', 'fechado');
+  localStorage.removeItem('crm_caixa_data_abertura');
+  localStorage.removeItem('crm_caixa_fundo_troco');
+
+  persistirDadosCompletos();
+
+  if (user && empresaId && typeof db !== 'undefined') {
+    try {
+      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
+        statusCaixa: 'fechado',
+        dataAbertura: null,
+        fundoTrocoInicial: 0,
+        updatedAt: new Date()
+      });
+    } catch (e) {}
+  }
+
+  alert("📂 Período antigo arquivado com sucesso. Agora você pode abrir o caixa de hoje!");
+  renderAbaVendas();
+}
+
+// 4. Modal de Fechamento de Caixa
 function openModalFechamento() {
   const ultimoFechamentoTs = parseInt(localStorage.getItem('crm_ultimo_fechamento_ts') || "0", 10);
   const fundoTrocoInicial = parseFloat(localStorage.getItem('crm_caixa_fundo_troco') || "0");
@@ -3223,7 +3378,7 @@ function openModalFechamento() {
     </div>
     <div class="space-y-2 pt-2">
       <label class="block font-semibold text-slate-700 text-xs">Contagem Física Contada na Gaveta (R$):</label>
-      <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm font-bold text-teal-800">
+      <input type="number" step="0.01" id="fechamento-gaveta" value="${totalGavetaEsperado.toFixed(2)}" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm font-bold text-teal-800">
       <button onclick="conferirEGravarFechamentoCaixaManual(${totalGavetaEsperado}, ${totalVendas}, ${vendasTurno.length})" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow">
         💾 Concluir Fechamento & Encerrar Caixa
       </button>
@@ -3232,7 +3387,7 @@ function openModalFechamento() {
   document.getElementById('modal-fechamento').classList.remove('hidden');
 }
 
-// 4. Gravação e Encerramento de Turno
+// 5. Encerramento do Caixa e Gravação de Registros
 async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, qtdVendas) {
   let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
   if (!vinculadoAtivo) return;
@@ -3242,6 +3397,7 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
   const hojeStr = new Date().toLocaleDateString('pt-BR');
   const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
   const user = auth.currentUser;
+  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
   const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
 
   const fechoReg = { 
@@ -3263,9 +3419,18 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
 
   persistirDadosCompletos();
 
-  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
-  if (user && empresaIdDest) {
-    db.collection("empresas").doc(empresaIdDest).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
+  if (user && empresaId && typeof db !== 'undefined') {
+    try {
+      await db.collection("empresas").doc(empresaId).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
+      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
+        statusCaixa: 'fechado',
+        dataAbertura: null,
+        fundoTrocoInicial: 0,
+        updatedAt: new Date()
+      });
+    } catch (e) {
+      console.warn("Erro ao registrar fechamento no Firestore:", e);
+    }
   }
 
   closeModalFechamento();

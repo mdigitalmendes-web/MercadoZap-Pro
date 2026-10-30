@@ -882,23 +882,48 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
   // Trava contra alteração manual da data/hora do celular
+// Função de limpeza de cache que preserva os registros de segurança e trava de relógio
+function limparLocalStorageSeguro() {
+  const maxData = localStorage.getItem("maxDataAcessoHistorica");
+  const adulterado = localStorage.getItem("relogioAdulterado");
+  const licenca = localStorage.getItem("statusLicencaCache");
+
+  localStorage.clear();
+
+  if (maxData) localStorage.setItem("maxDataAcessoHistorica", maxData);
+  if (adulterado) localStorage.setItem("relogioAdulterado", adulterado);
+  if (licenca) localStorage.setItem("statusLicencaCache", licenca);
+}
+
+// 1. Trava Anti-Adulteração de Relógio (Inviolável)
 function validarRelogioDispositivo() {
   const agora = Date.now();
-  const ultimaData = parseInt(localStorage.getItem("ultimaDataAcesso") || "0", 10);
-  
-  if (ultimaData > 0 && agora < (ultimaData - 600000)) {
-    alert("❌ Erro de Segurança: A data e hora do seu celular foram alteradas. Corrija o relógio do dispositivo para continuar.");
+  const maxData = parseInt(localStorage.getItem("maxDataAcessoHistorica") || "0", 10);
+  const estaAdulterado = localStorage.getItem("relogioAdulterado") === "true";
+
+  if (maxData > 0 && agora < (maxData - 600000)) {
+    localStorage.setItem("relogioAdulterado", "true");
+    alert("❌ Erro de Segurança: A data e hora do seu celular foram alteradas no passado. Corrija o relógio do dispositivo para a data atual para continuar.");
     return false;
   }
-  
-  localStorage.setItem("ultimaDataAcesso", agora.toString());
+
+  if (estaAdulterado && agora < maxData) {
+    alert("❌ Acesso Bloqueado: O relógio do celular continua atrasado em relação ao último uso registrado. Corrija a data/hora nas configurações do aparelho.");
+    return false;
+  }
+
+  localStorage.removeItem("relogioAdulterado");
+  if (agora > maxData) {
+    localStorage.setItem("maxDataAcessoHistorica", agora.toString());
+  }
   return true;
 }
 
-// Verificação de Licença via Banco de Dados (Nuvem + Cache Seguro)
+// 2. Verificação de Licença via Nuvem (Firestore) + Cache Seguro
 async function verificarIntegridadeVinculoAtivo() {
   if (!validarRelogioDispositivo()) {
-    if (typeof fazerLogoutSeguro === 'function') fazerLogoutSeguro();
+    mostrarInterfaceAutenticada(false);
+    showLoginForm();
     return false;
   }
 
@@ -933,9 +958,11 @@ async function verificarIntegridadeVinculoAtivo() {
         return true;
       }
 
-      if (dadosEmpresa.statusLicenca === "expirada" || (dataExpiracao > 0 && agora > dataExpiracao)) {
-        alert("⚠️ Sua licença do Caixa Rápido expirou. Entre em contato com o suporte para renovar.");
-        if (typeof fazerLogoutSeguro === 'function') fazerLogoutSeguro();
+      if (dadosEmpresa.statusLicenca === "expirada" || (dataExpiracao > 0 && agora > dataExpiracao) || dadosEmpresa.statusLicenca === "bloqueada") {
+        alert("⚠️ Sua licença do Caixa Rápido expirou ou foi suspensa. Entre em contato com o suporte para renovar.");
+        limparLocalStorageSeguro();
+        auth.signOut();
+        window.location.reload();
         return false;
       }
     }

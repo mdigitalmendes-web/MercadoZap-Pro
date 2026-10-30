@@ -881,36 +881,70 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
-  async function verificarIntegridadeVinculoAtivo() {
-  if (eAdminOuSocio()) return true;
+  // Trava contra alteração manual da data/hora do celular
+function validarRelogioDispositivo() {
+  const agora = Date.now();
+  const ultimaData = parseInt(localStorage.getItem("ultimaDataAcesso") || "0", 10);
+  
+  if (ultimaData > 0 && agora < (ultimaData - 600000)) {
+    alert("❌ Erro de Segurança: A data e hora do seu celular foram alteradas. Corrija o relógio do dispositivo para continuar.");
+    return false;
+  }
+  
+  localStorage.setItem("ultimaDataAcesso", agora.toString());
+  return true;
+}
+
+// Verificação de Licença via Banco de Dados (Nuvem + Cache Seguro)
+async function verificarIntegridadeVinculoAtivo() {
+  if (!validarRelogioDispositivo()) {
+    if (typeof fazerLogoutSeguro === 'function') fazerLogoutSeguro();
+    return false;
+  }
+
   const user = auth.currentUser;
   if (!user || !perfilNegocio.empresaId) return true;
-  
+
   try {
-    let docPatrao = await db.collection("perfis").doc(perfilNegocio.empresaId).get();
-    if (!docPatrao.exists) {
-      alert("⚠️ Acesso revogado: A empresa vinculada não foi localizada.");
-      fazerLogoutSeguro();
-      return false;
+    let dadosEmpresa = null;
+
+    if (navigator.onLine && typeof checarPingReal === 'function' && await checarPingReal()) {
+      const docRef = await db.collection("perfis").doc(perfilNegocio.empresaId).get();
+      if (docRef.exists) {
+        dadosEmpresa = docRef.data();
+        localStorage.setItem("statusLicencaCache", JSON.stringify({
+          statusLicenca: dadosEmpresa.statusLicenca || "degustacao",
+          dataExpiracao: dadosEmpresa.dataExpiracao || null,
+          plano: dadosEmpresa.plano || "degustacao"
+        }));
+      }
+    } else {
+      const cacheLocal = localStorage.getItem("statusLicencaCache");
+      if (cacheLocal) {
+        dadosEmpresa = JSON.parse(cacheLocal);
+      }
     }
-    let dadosPatrao = docPatrao.data();
-    if (dadosPatrao.slotsFuncionarios && Array.isArray(dadosPatrao.slotsFuncionarios)) {
-      // Exige que o slot esteja ATIVO, VINCULADO com o PIN e associado ao UID do usuário
-      let meuSlot = dadosPatrao.slotsFuncionarios.find(s => 
-        s.ativo && 
-        s.vinculado && 
-        ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid)
-      );
-      
-      if (!meuSlot) {
-        alert("🚫 Acesso não autorizado: Você precisa se vincular novamente digitando o PIN numérico fornecido pelo Administrador.");
-        localStorage.clear();
-        fazerLogoutSeguro();
+
+    if (dadosEmpresa) {
+      const agora = new Date().getTime();
+      const dataExpiracao = dadosEmpresa.dataExpiracao ? new Date(dadosEmpresa.dataExpiracao).getTime() : 0;
+
+      if (dadosEmpresa.plano === "vitalicio" || dadosEmpresa.statusLicenca === "ativa") {
+        return true;
+      }
+
+      if (dadosEmpresa.statusLicenca === "expirada" || (dataExpiracao > 0 && agora > dataExpiracao)) {
+        alert("⚠️ Sua licença do Caixa Rápido expirou. Entre em contato com o suporte para renovar.");
+        if (typeof fazerLogoutSeguro === 'function') fazerLogoutSeguro();
         return false;
       }
     }
-  } catch(e) {}
-  return true;
+
+    return true;
+  } catch (err) {
+    console.warn("Erro ao checar licença na nuvem, liberando acesso local:", err);
+    return true;
+  }
 }
 function persistirDadosCompletos() {
   localStorage.setItem('crm_produtos', JSON.stringify(produtos));

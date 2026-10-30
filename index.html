@@ -4844,20 +4844,6 @@ function restaurarBackupSeguroJSON(event) {
   };
   reader.readAsText(file);
 }
-
-      localStorage.setItem('vendas_offline_pendentes', JSON.stringify(vendasLocais));
-      localStorage.setItem('despesas_offline_pendentes', JSON.stringify(despesasLocais));
-
-      alert(`✅ Processamento do Backup Concluído!\n\n• Novas vendas inseridas: ${vendasAdicionadas}\n• Vendas repetidas ignoradas por segurança: ${vendasIgnoradas}`);
-
-      if (typeof renderAbaInicio === 'function') renderAbaInicio();
-
-    } catch (err) {
-      alert("❌ Erro ao ler o arquivo de backup: " + err.message);
-    }
-  };
-  reader.readAsText(file);
-}
   
 function iniciarMonitorConexao() {
   checarPingReal();

@@ -1619,21 +1619,14 @@ function verificarLicencaStatus() {
   }
 }
 function validarAtivacaoSerial() {
-  const senha = document.getElementById('input-senha-serial').value.trim();
   const msgErro = document.getElementById('msg-serial-erro');
-  if (senha === "VITALICIO2026") {
-    licencaInfo.vitalicio = true;
-    localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
-    alert("🎉 Licença VITALÍCIA ativada com sucesso!");
-    verificarLicencaStatus();
-  } else if (senha === "MAIS30DIAS") {
-    licencaInfo.diasDegustacao += 30;
-    localStorage.setItem('crm_licenca', JSON.stringify(licencaInfo));
-    alert("🎉 Licença estendida em +30 dias!");
-    verificarLicencaStatus();
-  } else {
-    msgErro.innerText = "Senha / Serial inválido!";
+  const mensagemSuporte = "A ativação de planos é realizada automaticamente pela nuvem. Entre em contato com o suporte para renovar.";
+  
+  if (msgErro) {
+    msgErro.innerText = mensagemSuporte;
     msgErro.classList.remove('hidden');
+  } else {
+    alert(mensagemSuporte);
   }
 }
 function openModalLicencaStatus() {

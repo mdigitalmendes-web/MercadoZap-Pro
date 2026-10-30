@@ -3422,7 +3422,11 @@ async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, 
 
   if (user && empresaId && typeof db !== 'undefined') {
     try {
-      await db.collection("empresas").doc(empresaId).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
+      await db.collection("empresas").doc(empresaId).collection("fechamentos").add({ 
+        ...fechoReg, 
+        userId: user.uid, 
+        createdAt: new Date() 
+      });
       await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
         statusCaixa: 'fechado',
         dataAbertura: null,
@@ -4758,19 +4762,18 @@ async function calcularUsoMemoriaLocal() {
 
 function exportarBackupSeguroJSON() {
   try {
-    const dadosEmpresa = typeof perfilNegocio !== 'undefined' ? perfilNegocio : {};
-    const vendasPendentes = JSON.parse(localStorage.getItem('vendas_offline_pendentes') || '[]');
-    const despesasPendentes = JSON.parse(localStorage.getItem('despesas_offline_pendentes') || '[]');
-    const caixaAtual = JSON.parse(localStorage.getItem('caixa_local') || '{}');
-
     const backupPayload = {
-      versaoApp: "Caixa Rápido Móvel Pro v2.0",
+      versaoApp: "Caixa Rápido Móvel Pro v57.2",
       dataExportacao: new Date().toISOString(),
-      empresaId: dadosEmpresa.empresaId || "desconhecido",
+      empresaId: perfilNegocio.empresaId || "local",
       dados: {
-        vendas: vendasPendentes,
-        despesas: despesasPendentes,
-        caixa: caixaAtual
+        produtos: produtos,
+        vendas: vendas,
+        clientes: clientes,
+        despesas: despesasFixas,
+        sangrias: sangriasSuprimentos,
+        fechamentos: historicoFechamentos,
+        perfil: perfilNegocio
       }
     };
 
@@ -4784,7 +4787,7 @@ function exportarBackupSeguroJSON() {
     downloadAnchor.click();
     downloadAnchor.remove();
 
-    alert("✅ Backup exportado com sucesso! Guarde este arquivo em local seguro.");
+    alert("✅ Backup exportado com sucesso!");
   } catch (err) {
     alert("❌ Erro ao gerar o arquivo de backup: " + err.message);
   }
@@ -4799,37 +4802,48 @@ function restaurarBackupSeguroJSON(event) {
     try {
       const conteudo = JSON.parse(e.target.result);
 
-      if (!conteudo.dados || !conteudo.dados.vendas) {
+      if (!conteudo.dados) {
         alert("❌ Formato de arquivo de backup inválido.");
         return;
       }
 
-      let vendasLocais = JSON.parse(localStorage.getItem('vendas_offline_pendentes') || '[]');
-      let despesasLocais = JSON.parse(localStorage.getItem('despesas_offline_pendentes') || '[]');
-
+      let prodsAdicionados = 0;
       let vendasAdicionadas = 0;
-      let vendasIgnoradas = 0;
 
-      // Deduplicação Inteligente por ID Único de Vendas
-      conteudo.dados.vendas.forEach(vendaImportada => {
-        const idExiste = vendasLocais.some(v => v.id && v.id === vendaImportada.id);
-        if (!idExiste) {
-          vendasLocais.push(vendaImportada);
-          vendasAdicionadas++;
-        } else {
-          vendasIgnoradas++;
-        }
-      });
-
-      // Deduplicação Inteligente por ID Único de Despesas
-      if (conteudo.dados.despesas) {
-        conteudo.dados.despesas.forEach(despesaImportada => {
-          const idExiste = despesasLocais.some(d => d.id && d.id === despesaImportada.id);
-          if (!idExiste) {
-            despesasLocais.push(despesaImportada);
+      // Importa produtos que ainda não existem no sistema
+      if (conteudo.dados.produtos) {
+        conteudo.dados.produtos.forEach(pImp => {
+          if (!produtos.some(p => p.id === pImp.id || p.nome.toLowerCase() === pImp.nome.toLowerCase())) {
+            produtos.push(pImp);
+            prodsAdicionados++;
           }
         });
       }
+
+      // Importa vendas que ainda não foram registradas
+      if (conteudo.dados.vendas) {
+        conteudo.dados.vendas.forEach(vImp => {
+          if (!vendas.some(v => v.id === vImp.id)) {
+            vendas.push(vImp);
+            vendasAdicionadas++;
+          }
+        });
+      }
+
+      if (conteudo.dados.clientes) clientes = conteudo.dados.clientes;
+      if (conteudo.dados.despesas) despesasFixas = conteudo.dados.despesas;
+
+      // Salva no LocalStorage e atualiza a tela
+      persistirDadosCompletos();
+      alert(`✅ Backup restaurado!\n• Novas vendas: ${vendasAdicionadas}\n• Novos produtos: ${prodsAdicionados}`);
+      renderAba();
+
+    } catch (err) {
+      alert("❌ Erro ao processar arquivo de backup: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
 
       localStorage.setItem('vendas_offline_pendentes', JSON.stringify(vendasLocais));
       localStorage.setItem('despesas_offline_pendentes', JSON.stringify(despesasLocais));

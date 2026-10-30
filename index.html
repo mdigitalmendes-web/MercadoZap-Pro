@@ -228,6 +228,10 @@ Sua licença de teste terminou. Insira a Senha ou Serial para continuar utilizan
 <i class="fa-solid fa-file-invoice-dollar text-red-600 w-5 text-center"></i>
 <span>Controle de Contas a Pagar / Despesas</span>
 </button>
+<button onclick="fecharDrawerNavegacao(); abrirModalMinimosPadrao();" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-100 rounded-xl flex items-center gap-3 text-xs font-semibold text-slate-700">
+<i class="fa-solid fa-sliders text-teal-600 w-5 text-center"></i>
+<span>Configurar Estoque Mínimo Padrão</span>
+</button>
 </div>
 <div class="p-3 space-y-1 border-b">
 <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 mb-1">Atalhos</p>
@@ -878,11 +882,9 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible") {
     const user = auth.currentUser;
     if (user && perfilNegocio.empresaId) {
-      // 1. Garante que o usuário ainda tem permissão de acesso
       let ativo = await verificarIntegridadeVinculoAtivo();
       if (!ativo) return;
       
-      // 2. Se estiver online, puxa dados atualizados; se estiver offline, desenha a tela direto
       if (navigator.onLine && typeof checarPingReal === 'function' && await checarPingReal()) {
         try {
           await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
@@ -896,7 +898,6 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
-// Função de limpeza de cache que preserva os registros de segurança e trava de relógio
 function limparLocalStorageSeguro() {
   const maxData = localStorage.getItem("maxDataAcessoHistorica");
   const adulterado = localStorage.getItem("relogioAdulterado");
@@ -909,27 +910,23 @@ function limparLocalStorageSeguro() {
   if (licenca) localStorage.setItem("statusLicencaCache", licenca);
 }
 
-// 1. Trava Anti-Adulteração de Relógio (Inviolável com tolerância de 1 minuto)
 function validarRelogioDispositivo() {
   const agora = Date.now();
   const maxData = parseInt(localStorage.getItem("maxDataAcessoHistorica") || "0", 10);
   const estaAdulterado = localStorage.getItem("relogioAdulterado") === "true";
   const telaBloqueio = document.getElementById('screen-relogio-bloqueado');
 
-  // Tolerância de 1 minuto (60.000 ms)
   if (maxData > 0 && agora < (maxData - 60000)) {
     localStorage.setItem("relogioAdulterado", "true");
     if (telaBloqueio) telaBloqueio.classList.remove('hidden');
     return false;
   }
 
-  // Se o dispositivo foi marcado como adulterado e o relógio continua atrasado
   if (estaAdulterado && agora < maxData) {
     if (telaBloqueio) telaBloqueio.classList.remove('hidden');
     return false;
   }
 
-  // Relógio correto: oculta a tela de bloqueio e atualiza o pico histórico
   if (telaBloqueio) telaBloqueio.classList.add('hidden');
   localStorage.removeItem("relogioAdulterado");
   if (agora > maxData) {
@@ -938,7 +935,6 @@ function validarRelogioDispositivo() {
   return true;
 }
 
-// 2. Verificação de Licença via Nuvem (Firestore) + Cache Seguro
 async function verificarIntegridadeVinculoAtivo() {
   if (!validarRelogioDispositivo()) {
     mostrarInterfaceAutenticada(false);
@@ -1123,7 +1119,6 @@ function verificarAniversariantesDoDia() {
   const diaAtual = String(hoje.getDate()).padStart(2, '0');
   const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
 
-  // Junta os colaboradores da equipa com o titular do negócio
   let lista = [...(slotsFuncionarios || [])];
 
   if (typeof perfilNegocio !== 'undefined' && perfilNegocio && perfilNegocio.nascimento) {
@@ -1366,7 +1361,7 @@ async function desvincularContaFuncionarioLocalmente() {
             if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid) {
               nomeDesv = s.nome || nomeDesv;
               s.ativo = false;
-              s.vinculado = false; // Exige novo PIN no futuro
+              s.vinculado = false;
               s.userUid = "";
             }
           });
@@ -1384,7 +1379,6 @@ async function desvincularContaFuncionarioLocalmente() {
       } catch(e) {}
     }
     
-    // ZERA COMPLETAMENTE O ARMAZENAMENTO LOCAL PARA ELIMINAR VENDAS E CAIXA FANTASMA
     localStorage.clear();
     alert("✅ Desvinculação concluída com sucesso. Dados locais zerados!");
     auth.signOut().then(() => { window.location.reload(); });
@@ -1402,7 +1396,6 @@ function renderizarListaSlotsFuncionariosUnificada() {
   const box = document.getElementById('lista-slots-funcionarios-box');
   if (!box) return;
 
-  // VISÃO DO GERENTE: Apenas consulta de colaboradores ativos e seus dispositivos
   if (eGerente() && !eAdminOuSocio()) {
     let ativos = slotsFuncionarios.filter(s => s.ativo);
     if (ativos.length === 0) {
@@ -1435,7 +1428,6 @@ function renderizarListaSlotsFuncionariosUnificada() {
     return;
   }
 
-  // VISÃO DO ADMINISTRADOR E SÓCIO
   box.innerHTML = slotsFuncionarios.map((slot, index) => `
     <div class="p-3 rounded-2xl border ${slot.ativo ? 'bg-indigo-50/50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-300'} space-y-2">
       <div class="flex justify-between items-center">
@@ -1474,10 +1466,6 @@ function renderizarListaSlotsFuncionariosUnificada() {
             <option value="Sócio" ${slot.funcao === 'Sócio' ? 'selected' : ''}>Sócio</option>
           </select>
         </div>
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nascimento</label>
-        <input type="date" id="slot-nasc-${index}" value="${slot.nascimento || ''}" class="w-full p-2 border rounded-xl text-xs bg-white font-medium">
       </div>
       ${slot.ativo && slot.dispositivo ? `<div class="bg-white p-2 rounded-xl border border-indigo-100 text-[10px] text-slate-600 space-y-0.5"><p>📱 Dispositivo em uso: <b class="text-indigo-900">${slot.dispositivo}</b></p>${slot.ultimoAcesso ? `<p class="text-slate-400">🕒 Registrado em: ${slot.ultimoAcesso}</p>` : ''}</div>` : ''}
       <div class="flex gap-2 pt-1">
@@ -1569,7 +1557,6 @@ async function cadastrarDespesaFixa() {
   despesasFixas.push(novaDespesa);
   persistirDadosCompletos();
 
-  // Salva no banco de dados nas nuvens (Firebase)
   const user = auth.currentUser;
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
   if (user && empresaIdDest) {
@@ -1750,7 +1737,6 @@ function abrirModalAuditoriaOperadoresMenu() {
   const box = document.getElementById('lista-auditoria-operadores-menu-box');
   let dadosOperadores = {};
 
-  // Agrupa as vendas por operador e por meio de pagamento
   vendas.forEach(v => {
     let op = v.operador || 'Desconhecido';
     if (!dadosOperadores[op]) {
@@ -1838,7 +1824,6 @@ function abrirSuporteWhatsApp() {
   window.open('https://api.whatsapp.com/send?phone=5575999999999&text=Ol%C3%A1!%20Preciso%20de%20suporte%20no%20Caixa%20R%C3%A1pido%20M%C3%B3vel%20Pro', '_blank');
 }
 
-// TELA DE LOGIN REESTRUTURADA
 function showLoginForm() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';
@@ -1903,7 +1888,6 @@ async function handleLoginBlindado(e) {
 async function puxarDadosIniciaisDaEmpresa(empresaId) {
   if (!empresaId) return;
   try {
-    // 1. Busca os dados do perfil master (Dono/Empresa)
     let docPatrao = await db.collection("perfis").doc(empresaId).get();
     if (docPatrao.exists) {
       let d = docPatrao.data();
@@ -1917,44 +1901,37 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
       }
     }
 
-    // 2. Carrega Produtos Unificados
     let snapProds = await db.collection("empresas").doc(empresaId).collection("produtos").get();
     let prodsCarregados = [];
     snapProds.forEach(doc => prodsCarregados.push(doc.data()));
     produtos = prodsCarregados;
     
-    // 3. Carrega Clientes/Fiados Unificados
     let snapClientes = await db.collection("empresas").doc(empresaId).collection("clientes").get();
     let clientesCarregados = [];
     snapClientes.forEach(doc => clientesCarregados.push(doc.data()));
     clientes = clientesCarregados;
     
-    // 4. Carrega Vendas Unificadas do Caixa Master
     let snapVendas = await db.collection("empresas").doc(empresaId).collection("vendas").get();
     let vendasCarregadas = [];
     snapVendas.forEach(doc => vendasCarregadas.push(doc.data()));
     vendas = vendasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
     
-    // 5. Carrega Movimentações de Gaveta
     let snapSangrias = await db.collection("empresas").doc(empresaId).collection("sangrias").get();
     let sangriasCarregadas = [];
     snapSangrias.forEach(doc => sangriasCarregadas.push(doc.data()));
     sangriasSuprimentos = sangriasCarregadas.sort((a, b) => (b.id || 0) - (a.id || 0));
     
-    // 6. Carrega Fechamentos de Turno
     let snapFech = await db.collection("empresas").doc(empresaId).collection("fechamentos").get();
     let fechCarregados = [];
     snapFech.forEach(doc => fechCarregados.push(doc.data()));
     historicoFechamentos = fechCarregados.sort((a, b) => (b.id || 0) - (a.id || 0));
 
-    // 7. Carrega Contas a Pagar Unificadas
     let snapDesp = await db.collection("empresas").doc(empresaId).collection("despesas").get();
     let despCarregadas = [];
     snapDesp.forEach(doc => despCarregadas.push(doc.data()));
     despesasFixas = despCarregadas;
 
     persistirDadosCompletos();
-   // Atualiza a tela inicial e o caixa em tempo real se a aba estiver aberta
     const abaInicio = document.getElementById('aba-inicio');
     if (abaInicio && !abaInicio.classList.contains('hidden')) {
       if (typeof renderAbaInicio === 'function') {
@@ -2028,7 +2005,6 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     snapshot.forEach(doc => {
       let dados = doc.data();
       if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-        // Validação RÍGIDA: E-mail ativo AND PIN exato fornecido pelo Dono
         let s = dados.slotsFuncionarios.find(item => 
           item.email && 
           item.email.trim().toLowerCase() === emailLimpo && 
@@ -2490,6 +2466,14 @@ function onScanSuccess(decodedText) {
 }
 function adicionarAoCarrinhoSilent(index) {
   let prod = produtos[index];
+  if (!prod) return;
+
+  // Se o produto for fracionado (kg, g, L), abre o modal de quantidade fracionada
+  if (['kg', 'g', 'L'].includes(prod.medida)) {
+    abrirModalFracionado(index);
+    return;
+  }
+
   let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
   let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
   let estoqueRestante = prod.estoque - qtdNoCarrinho;
@@ -2569,7 +2553,6 @@ function abrirDrawerNavegacao() {
     if (btnAuditoriaOperadores) btnAuditoriaOperadores.classList.remove('hidden');
     if (btnExcluirConta) btnExcluirConta.classList.remove('hidden');
   } else {
-    // Gerente e Operadores podem se desvincular da empresa a qualquer momento
     if (btnCopiar) btnCopiar.classList.add('hidden');
     if (btnGerenciarFunc) btnGerenciarFunc.classList.add('hidden');
     if (btnDesvincularFunc) btnDesvincularFunc.classList.remove('hidden');
@@ -2591,7 +2574,6 @@ function fecharDrawerNavegacao() {
 function openModalPerfil() {
   const user = auth.currentUser;
   
-  // Se não for Administrador/Sócio/Dono, exige o PIN para abrir as configurações
   if (!eAdminOuSocio()) {
     const pinDigitado = prompt("🔒 Digite o PIN do Administrador para acessar as configurações:");
     const pinValido = slotsFuncionarios.some(s => s.pin === pinDigitado && (s.funcao === 'Sócio' || s.funcao === 'Gerente')) || pinDigitado === "1234";
@@ -2730,7 +2712,6 @@ async function switchTab(aba) {
   verificarAlertasEstoqueValidadeAutomatico();
 }
 function renderAba() {
-  // 1. Se estiver offline, permite utilizar a sessão mantida localmente
   if (!auth.currentUser && navigator.onLine) {
     showLoginForm();
     return;
@@ -2738,12 +2719,10 @@ function renderAba() {
 
   mostrarInterfaceAutenticada(true);
 
-  // 2. Só valida licença no servidor se estiver ONLINE
   if (navigator.onLine && typeof verificarLicencaStatus === 'function') {
     if (!verificarLicencaStatus()) return;
   }
 
-  // 3. Renderiza todas as abas instantaneamente com dados locais (online ou offline)
   if (typeof renderAbaInicio === 'function') renderAbaInicio();
   if (typeof renderAbaVendas === 'function') renderAbaVendas();
   if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
@@ -2752,1843 +2731,40 @@ function renderAba() {
     if (typeof renderAbaRelatorios === 'function') renderAbaRelatorios();
   }
 }
-// TELA INICIAL
-function renderAbaInicio() {
-  const user = auth.currentUser;
-  const nomeUser = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Parceiro';
-  const primeiroNome = nomeUser.split(' ')[0];
-  let inicio = licencaInfo.dataInicioLocal || Date.now();
-  if (user && user.metadata && user.metadata.creationTime) {
-    let dataCriacaoFirebase = new Date(user.metadata.creationTime).getTime();
-    if (dataCriacaoFirebase < inicio) inicio = dataCriacaoFirebase;
-  }
-  const msPassados = Date.now() - inicio;
-  const diasUsados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
-  const diasRestantes = Math.max(0, licencaInfo.diasDegustacao - diasUsados);
-  let aniversariantesHoje = verificarAniversariantesDoDia();
-  let bannerAniversarioHTML = '';
-  if (aniversariantesHoje.length > 0) {
-    bannerAniversarioHTML = `
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl p-3.5 shadow-md flex items-center justify-between gap-2 border border-purple-400 animate-pulse">
-        <div class="flex items-center gap-3">
-          <div class="text-2xl">🎉</div>
-          <div>
-            <h4 class="font-extrabold text-xs text-amber-300">Aniversariante(s) de Hoje!</h4>
-            <p class="text-[11px] text-purple-100"><b>${aniversariantesHoje.map(a => a.nome).join(', ')}</b></p>
-          </div>
-        </div>
-        <button onclick="dispararToastAniversariantesAutomatico()" class="bg-amber-400 text-purple-950 font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl shadow">Parabenizar</button>
-      </div>
-    `;
-  }
-  document.getElementById('content-inicio').innerHTML = `
-    <div class="space-y-4 p-2">
-      <div class="bg-gradient-to-r from-teal-600 to-teal-800 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <button onclick="abrirDrawerNavegacao()" class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center text-xl text-white border border-white/20 transition active:scale-95 shadow-inner">
-            <i class="fa-solid fa-bars"></i>
-          </button>
-         <div>
-  <div class="flex items-center gap-2">
-    <h2 class="text-lg font-extrabold mb-0.5">Olá, ${primeiroNome}! 👋</h2>
-    <span id="badge-status-rede"></span>
-  </div>
-  <p class="text-[11px] text-teal-100">${perfilNegocio.nomeLoja || 'Seu Negócio'} (${perfilNegocio.funcaoUsuario || 'Membro'})</p>
-</div>
-        </div>
-        <div onclick="abrirModalNotificacoes()" class="relative cursor-pointer bg-white/15 p-2.5 rounded-xl border border-white/20 hover:bg-white/25 transition">
-          <i id="sininho-icone-principal" class="fa-solid fa-bell text-xl text-amber-300"></i>
-          <span id="sininho-badge-count" class="hidden absolute -top-1 -right-1 bg-red-600 text-white font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
-        </div>
-      </div>
-      ${bannerAniversarioHTML}
-      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
-        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-compass text-teal-600"></i> Navegação Rápida
-        </h3>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="switchTab('vendas')" class="bg-teal-50 border border-teal-200 hover:bg-teal-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
-            <i class="fa-solid fa-cash-register text-teal-700 text-lg"></i>
-            <div>
-              <p class="font-extrabold text-xs text-slate-800">Caixa (PDV)</p>
-              <p class="text-[10px] text-slate-500">Vendas & Carrinho</p>
-            </div>
-          </button>
-          <button onclick="switchTab('estoque')" class="bg-blue-50 border border-blue-200 hover:bg-blue-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
-            <i class="fa-solid fa-boxes-stacked text-blue-700 text-lg"></i>
-            <div>
-              <p class="font-extrabold text-xs text-slate-800">Estoque</p>
-              <p class="text-[10px] text-slate-500">Produtos & Validades</p>
-            </div>
-          </button>
-          <button onclick="switchTab('clientes')" class="bg-amber-50 border border-amber-200 hover:bg-amber-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
-            <i class="fa-solid fa-users text-amber-700 text-lg"></i>
-            <div>
-              <p class="font-extrabold text-xs text-slate-800">Fiado & Prazos</p>
-              <p class="text-[10px] text-slate-500">Controle de Devedores</p>
-            </div>
-          </button>
-          ${eAdminOuGerenteOuSocio() ? `
-            <button onclick="switchTab('relatorios')" class="bg-purple-50 border border-purple-200 hover:bg-purple-100 p-2.5 rounded-xl text-left flex items-center gap-2.5 transition shadow-sm">
-              <i class="fa-solid fa-chart-pie text-purple-700 text-lg"></i>
-              <div>
-                <p class="font-extrabold text-xs text-slate-800">Relatórios</p>
-                <p class="text-[10px] text-slate-500">DRE & PDFs</p>
-              </div>
-            </button>
-          ` : `
-            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-left flex items-center gap-2.5 opacity-40">
-              <i class="fa-solid fa-lock text-slate-400 text-lg"></i>
-              <div>
-                <p class="font-extrabold text-xs text-slate-400">Restrito</p>
-                <p class="text-[10px] text-slate-400">Apenas Gestão</p>
-              </div>
-            </div>
-          `}
-        </div>
-      </div>
-      <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xl border border-slate-700 space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-          <h3 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-crown"></i> Status da Licença (v57.1)
-          </h3>
-          <span class="text-[10px] bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded-full">
-            ${licencaInfo.vitalicio ? 'Vitalício' : `${diasRestantes} dias restantes`}
-          </span>
-        </div>
-        <p class="text-[11px] text-slate-300 leading-relaxed">
-          O <b>Caixa Rápido Móvel Pro v57.1</b> está atualizado com perfis de Sócio, Gerente, notificações de desvinculação e fechamento inteligente de caixa.
-        </p>
-        <div class="pt-1">
-          <button onclick="openModalLicencaStatus()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition">
-            🔓 Ativar Versão Profissional Definitiva
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
- setTimeout(() => atualizarBadgeConexaoUI(navigator.onLine), 100);
-}
-function abrirModalSangriaSuprimento(tipo) {
-  document.getElementById('sangria-tipo').value = tipo;
-  document.getElementById('sangria-modal-titulo').innerText = tipo === 'sangria' ? '💸 Registrar Sangria (Retirada)' : '💰 Registrar Suprimento (Entrada)';
-  document.getElementById('sangria-valor').value = '';
-  document.getElementById('sangria-motivo').value = '';
-  document.getElementById('modal-sangria-suprimento').classList.remove('hidden');
-}
-function fecharModalSangria() {
-  document.getElementById('modal-sangria-suprimento').classList.add('hidden');
-}
-function confirmarSangriaSuprimento() {
-  const tipo = document.getElementById('sangria-tipo').value;
-  const valor = parseFloat(document.getElementById('sangria-valor').value);
-  const motivo = document.getElementById('sangria-motivo').value.trim() || (tipo === 'sangria' ? 'Retirada' : 'Suprimento');
-  if (!valor || valor <= 0) {
-    alert("Informe um valor válido!");
-    return;
-  }
-  const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-  const user = auth.currentUser;
-  const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
-  const registro = { id: Date.now(), tipo: tipo, valor: valor, motivo: motivo, operador: nomeOperadorAtual, data: hojeStr };
-  sangriasSuprimentos.push(registro);
-  persistirDadosCompletos();
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user) db.collection("empresas").doc(empresaIdDest).collection("sangrias").add({ ...registro, userId: user.uid, createdAt: new Date() });
-  fecharModalSangria();
-  alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} de R$ ${valor.toFixed(2)} registrado!`);
-  renderAbaVendas();
-}
-function atualizarCacheCliente() {
-  const elNome = document.getElementById('venda-cliente-nome');
-  const elZap = document.getElementById('venda-cliente-zap');
-  if (elNome) clienteAtualVenda.nome = elNome.value;
-  if (elZap) clienteAtualVenda.zap = elZap.value;
-}
-function autoPreencherZapCliente() {
-  const elNome = document.getElementById('venda-cliente-nome');
-  if (!elNome) return;
-  clienteAtualVenda.nome = elNome.value;
-  let cli = clientes.find(c => c.nome.toLowerCase() === elNome.value.toLowerCase());
-  if (cli && cli.telefone) {
-    clienteAtualVenda.zap = cli.telefone;
-    const elZap = document.getElementById('venda-cliente-zap');
-    if (elZap) elZap.value = cli.telefone;
-  }
-}
-function somarValorRecebidoRapido(valorAdicionar) {
-  const inputRecebido = document.getElementById('venda-dinheiro-recebido');
-  if (!inputRecebido) return;
-  let atual = parseFloat(inputRecebido.value || 0);
-  inputRecebido.value = (atual + valorAdicionar).toFixed(2);
-  calcularTrocoEmTempoReal();
-}
-function calcularTrocoEmTempoReal() {
-  const totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-  const valorRecebido = parseFloat(document.getElementById('venda-dinheiro-recebido').value || 0);
-  const boxTroco = document.getElementById('venda-troco-display');
-  if (!boxTroco) return;
-  if (valorRecebido > 0) {
-    const troco = valorRecebido - totalCarrinho;
-    if (troco >= 0) {
-      boxTroco.innerHTML = `<span class="text-green-700 font-extrabold">Troco a Devolver: R$ ${troco.toFixed(2)}</span>`;
-    } else {
-      boxTroco.innerHTML = `<span class="text-red-600 font-bold">Faltam R$ ${Math.abs(troco).toFixed(2)}</span>`;
-    }
-  } else {
-    boxTroco.innerHTML = `<span class="text-slate-500 font-medium">Digite o valor pago pelo cliente</span>`;
-  }
-}
-// ==========================================
-// FLUXO INTEGRADO E COMPLETO DE CAIXA E PDV
+
+  // ==========================================
+// PARTE 2: LÓGICA DAS ABAS, RENDERIZAÇÃO E PDV
 // ==========================================
 
-// 1. Renderização Principal da Aba de Vendas (PDV)
-async function renderAbaVendas() {
-  escutarStatusCaixaNuvem();
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const ultimoFechamentoTs = parseInt(localStorage.getItem('crm_ultimo_fechamento_ts') || "0", 10);
-  
-  let caixaAberto = localStorage.getItem('crm_caixa_status') === 'aberto';
-  let dataAberturaCaixa = localStorage.getItem('crm_caixa_data_abertura') || hojeStr;
-  let fundoTrocoInicial = parseFloat(localStorage.getItem('crm_caixa_fundo_troco') || "0");
-
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-
-  // Sincronização com Firebase Firestore para Multiusuários
-  if (navigator.onLine && empresaId && typeof db !== 'undefined') {
-    try {
-      const docCaixa = await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").get();
-      if (docCaixa.exists) {
-        const dadosNuvem = docCaixa.data();
-        if (dadosNuvem.statusCaixa) {
-          caixaAberto = dadosNuvem.statusCaixa === 'aberto';
-          dataAberturaCaixa = dadosNuvem.dataAbertura || hojeStr;
-          fundoTrocoInicial = parseFloat(dadosNuvem.fundoTrocoInicial || 0);
-
-          localStorage.setItem('crm_caixa_status', dadosNuvem.statusCaixa);
-          localStorage.setItem('crm_caixa_data_abertura', dataAberturaCaixa);
-          localStorage.setItem('crm_caixa_fundo_troco', fundoTrocoInicial.toString());
-        }
-      }
-    } catch (e) {
-      console.warn("Modo Offline: Mantendo estado local do caixa.");
-    }
-  }
-
-  // CENÁRIO 1: ESTOQUE VAZIO / FIRST ONBOARDING (Novo usuário)
-  if (produtos.length === 0 && !caixaAberto) {
-    document.getElementById('content-vendas').innerHTML = `
-      <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border-2 border-teal-200 p-6 rounded-3xl text-center space-y-4 shadow-sm my-4">
-        <div class="w-16 h-16 bg-teal-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-md">
-          👋
-        </div>
-        <div>
-          <h3 class="font-extrabold text-teal-900 text-base">Boas-vindas ao Caixa Rápido!</h3>
-          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
-            Para realizar suas primeiras vendas ou testar o aplicativo, abra o seu primeiro turno. Se não tiver dinheiro inicial na gaveta, comece com <b>R$ 0,00</b>.
-          </p>
-        </div>
-        <div class="space-y-2 pt-2">
-          <button onclick="confirmarAberturaCaixaComValor(0)" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
-            🚀 Começar Agora (Fundo de Troco R$ 0,00)
-          </button>
-          <button onclick="renderAba('produtos')" class="w-full bg-white hover:bg-slate-50 text-teal-800 font-bold py-2.5 rounded-xl text-xs border border-teal-200 shadow-sm transition">
-            📦 Cadastrar Meus Primeiros Produtos
-          </button>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  // CENÁRIO 2: CAIXA ANTIGO / FÓSSIL (Aberto há mais de 2 dias)
-  const [diaA, mesA, anoA] = dataAberturaCaixa.split('/');
-  const dataAberturaObj = new Date(anoA, mesA - 1, diaA);
-  const hojeObj = new Date();
-  hojeObj.setHours(0, 0, 0, 0);
-  const diffDias = Math.floor((hojeObj - dataAberturaObj) / (1000 * 60 * 60 * 24));
-
-  if (caixaAberto && diffDias >= 2) {
-    document.getElementById('content-vendas').innerHTML = `
-      <div class="bg-slate-100 border-2 border-slate-300 p-6 rounded-3xl text-center space-y-4 shadow-sm my-4">
-        <div class="w-14 h-14 bg-slate-300 text-slate-700 rounded-2xl flex items-center justify-center text-2xl mx-auto">
-          ⏳
-        </div>
-        <div>
-          <h3 class="font-extrabold text-slate-800 text-sm uppercase">Caixa Antigo Detectado</h3>
-          <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-            Existe um turno aberto em <b>${dataAberturaCaixa}</b> (${diffDias} dias atrás). Deseja arquivar este período e iniciar as vendas de hoje?
-          </p>
-        </div>
-        <button onclick="arquivarCaixaAntigoEIniciarHoje('${dataAberturaCaixa}')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition">
-          📂 Arquivar Período Antigo & Liberar Hoje
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  // CENÁRIO 3: CAIXA ESQUECIDO DO DIA ANTERIOR (1 Dia)
-  if (caixaAberto && dataAberturaCaixa !== hojeStr) {
-    document.getElementById('content-vendas').innerHTML = `
-      <div class="bg-amber-50 border-2 border-amber-400 p-5 rounded-2xl text-center space-y-4 shadow-lg my-4">
-        <div class="w-14 h-14 bg-amber-400 text-amber-950 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow animate-bounce">
-          ⚠️
-        </div>
-        <div>
-          <h3 class="font-extrabold text-amber-900 text-sm uppercase">Fechamento Pendente Detectado</h3>
-          <p class="text-xs text-amber-800 mt-1 leading-relaxed">
-            O caixa aberto em <b>${dataAberturaCaixa}</b> não foi encerrado. Realize a conferência do turno anterior para liberar as vendas de hoje.
-          </p>
-        </div>
-        <button onclick="openModalFechamento()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition">
-          🔒 Conferir e Fechar Turno Anterior
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  // CENÁRIO 4: CAIXA FECHADO (Tela de Abertura + Troco Inteligente Sugerido)
-  if (!caixaAberto) {
-    let trocoSugerido = 0;
-    if (historicoFechamentos && historicoFechamentos.length > 0) {
-      const ultimoReg = historicoFechamentos[historicoFechamentos.length - 1];
-      trocoSugerido = parseFloat(ultimoReg.gavetaContada || 0);
-    }
-
-    document.getElementById('content-vendas').innerHTML = `
-      <div class="bg-white border border-slate-200 p-5 rounded-2xl text-center space-y-4 shadow-md max-w-sm mx-auto my-4">
-        <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-sm">
-          🔓
-        </div>
-        <div>
-          <h3 class="font-extrabold text-slate-800 text-sm">Abertura do Caixa de Hoje</h3>
-          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            Informe o valor inicial de troco deixado na gaveta.
-          </p>
-        </div>
-        <div class="text-left space-y-1 bg-slate-50 p-3 rounded-xl border">
-          <div class="flex justify-between items-center mb-1">
-            <label class="block text-[11px] font-bold text-slate-700">Fundo de Troco Inicial R$:</label>
-            ${trocoSugerido > 0 ? `<span class="text-[10px] text-teal-700 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">Sugerido do caixa anterior</span>` : ''}
-          </div>
-          <input type="number" step="0.01" id="input-fundo-troco-inicial" value="${trocoSugerido.toFixed(2)}" placeholder="0.00" class="w-full p-3 border rounded-xl text-sm font-extrabold text-teal-800 bg-white focus:ring-2 focus:ring-teal-500">
-        </div>
-        <button onclick="confirmarAberturaCaixa()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow transition">
-          🚀 Abrir Caixa & Iniciar Vendas
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  // CENÁRIO 5: CAIXA ABERTO E REGULAR (PDV Completo)
-  const vendasHoje = vendas.filter(v => {
-    let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
-    return vData > ultimoFechamentoTs;
-  });
-  const sangriasHoje = sangriasSuprimentos.filter(s => s.id > ultimoFechamentoTs);
-  const totalVendasBruto = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  const totalSangrias = sangriasHoje.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-  const totalSuprimentos = sangriasHoje.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-  const vendasDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  
-  const saldoGavetaDinheiro = fundoTrocoInicial + vendasDinheiro - totalSangrias + totalSuprimentos;
-
-  let atalhosProdutos = produtos.filter(p => p.atalho !== false);
-  let atalhosProdutosHTML = atalhosProdutos.map((p) => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
-    let ehFracionado = ['kg', 'g', 'L'].includes(p.medida);
-    let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === p.nome.toLowerCase());
-    let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
-    let estoqueDisponivelNoAto = (p.estoque || 0) - qtdNoCarrinho;
-    let ehEsgotado = estoqueDisponivelNoAto <= 0;
-    return `
-      <button onclick="${ehEsgotado ? 'alert(\'Produto esgotado no estoque!\')' : `adicionarAoCarrinho(${idxReal})`}" class="${ehEsgotado ? 'bg-slate-200 border-slate-300 opacity-50 cursor-not-allowed' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 active:scale-95'} border p-2.5 rounded-xl text-left flex flex-col justify-between h-20 transition shadow-sm">
-        <span class="font-bold text-slate-800 text-xs line-clamp-1">${p.nome} ${ehFracionado ? '⚖️' : ''}</span>
-        <div class="flex justify-between items-center w-full mt-1">
-          <span class="text-[10px] ${ehEsgotado ? 'text-red-600 font-bold' : 'text-slate-500'}">
-            ${ehEsgotado ? 'Esgotado' : `Est: <b>${estoqueDisponivelNoAto} ${p.medida || 'un'}</b>`}
-          </span>
-          <span class="font-extrabold text-teal-800 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-        </div>
-      </button>
-    `;
-  }).join('');
-
-  let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-  let carrinhoHTML = carrinho.map((item, index) => `
-    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border text-xs">
-      <div>
-        <p class="font-bold text-slate-800">${item.nome}</p>
-        <p class="text-slate-500">R$ ${item.preco.toFixed(2)} / ${item.medida || 'un'}</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="flex items-center border rounded-lg bg-white overflow-hidden">
-          <button onclick="alterarQtdCarrinho(${index}, -1)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">-</button>
-          <span class="px-2 font-bold text-slate-800 text-xs">${item.qtd}</span>
-          <button onclick="alterarQtdCarrinho(${index}, 1)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">+</button>
-        </div>
-        <span class="font-bold text-teal-700 text-xs w-16 text-right">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
-        <button onclick="removerDoCarrinho(${index})" class="text-red-500 font-bold px-1.5 py-1 hover:bg-red-100 rounded-lg">&times;</button>
-      </div>
-    </div>
-  `).join('');
-  let clientesDatalistHTML = clientes.map(c => `<option value="${c.nome}">${c.telefone || ''}</option>`).join('');
-
-  document.getElementById('content-vendas').innerHTML = `
-    <div class="space-y-4">
-      <div class="grid grid-cols-2 gap-2">
-        <div class="bg-teal-600 text-white p-3 rounded-2xl shadow-sm">
-          <p class="text-[10px] text-teal-100 uppercase font-bold">Vendido no Turno</p>
-          <p class="text-lg font-extrabold mt-0.5">R$ ${totalVendasBruto.toFixed(2)}</p>
-          <p class="text-[10px] text-teal-200 mt-0.5">${vendasHoje.length} venda(s)</p>
-        </div>
-        <div class="bg-slate-800 text-white p-3 rounded-2xl shadow-sm flex flex-col justify-between">
-          <div>
-            <p class="text-[10px] text-slate-300">Gaveta Esperada (Dinheiro):</p>
-            <p class="text-base font-bold text-amber-400">R$ ${saldoGavetaDinheiro.toFixed(2)}</p>
-          </div>
-          <span class="text-[9px] text-teal-400 font-semibold">Inclui R$ ${fundoTrocoInicial.toFixed(2)} de Troco</span>
-        </div>
-      </div>
-
-      <div class="bg-slate-50 p-3 rounded-2xl border space-y-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-user-check text-teal-600"></i> Dados do Cliente (Recibo & Fiado)
-        </h2>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="venda-cliente-nome" value="${clienteAtualVenda.nome}" list="lista-clientes-sugestao" oninput="atualizarCacheCliente()" onchange="autoPreencherZapCliente()" placeholder="Nome do Cliente" class="p-2 border rounded-xl text-xs bg-white font-bold">
-          <datalist id="lista-clientes-sugestao">${clientesDatalistHTML}</datalist>
-          <input type="text" id="venda-cliente-zap" value="${clienteAtualVenda.zap}" oninput="atualizarCacheCliente()" placeholder="WhatsApp" class="p-2 border rounded-xl text-xs bg-white font-bold">
-        </div>
-      </div>
-
-      <div class="border-t pt-3 space-y-2">
-        <div class="flex justify-between items-center">
-          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-bolt text-teal-600"></i> Atalhos de Produtos Rápidos
-          </h2>
-          <button onclick="abrirScanner('caixa')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow active:scale-95 transition">
-            <i class="fa-solid fa-barcode text-sm"></i> Bipar Vários Itens
-          </button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          ${atalhosProdutosHTML || '<p class="text-xs text-slate-400 italic col-span-2 text-center py-3 border border-dashed rounded-xl">Sem produtos cadastrados.</p>'}
-        </div>
-      </div>
-
-      <div class="border-t pt-3 space-y-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-magnifying-glass text-teal-600"></i> Pesquisa & Item Avulso
-        </h2>
-        <div class="grid grid-cols-3 gap-2">
-          <div class="col-span-2 relative">
-            <input type="text" id="venda-nome-manual" oninput="filtrarSugestoesProdutos(this.value)" placeholder="Digite o nome..." class="w-full p-2 border rounded-xl text-xs bg-white">
-            <div id="dropdown-busca-produtos" class="hidden absolute left-0 right-0 top-10 bg-white border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y"></div>
-          </div>
-          <input type="number" step="0.01" id="venda-valor-manual" placeholder="Valor R$" class="p-2 border rounded-xl text-xs bg-white">
-        </div>
-        <button onclick="adicionarManualAoCarrinho()" class="w-full bg-slate-100 text-slate-700 font-semibold py-1.5 rounded-xl border hover:bg-slate-200 text-xs">
-          + Adicionar Item ao Carrinho
-        </button>
-      </div>
-
-      <div class="border-t pt-3 space-y-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-cart-shopping text-teal-600"></i> Carrinho do Caixa
-        </h2>
-        <div class="space-y-1.5 max-h-40 overflow-y-auto">
-          ${carrinhoHTML || '<p class="text-xs text-slate-400 italic text-center py-2">Carrinho vazio.</p>'}
-        </div>
-        <div class="bg-slate-50 p-3 rounded-2xl border space-y-2.5">
-          <div class="flex justify-between items-center font-bold text-xs text-slate-800">
-            <span>Total a Pagar:</span>
-            <span class="text-teal-700 text-lg font-extrabold">R$ ${totalCarrinho.toFixed(2)}</span>
-          </div>
-          <div class="space-y-2">
-            <div>
-              <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Forma de Pagamento:</label>
-              <select id="venda-pagto" onchange="toggleOpcoesPagamento(this.value)" class="w-full p-2.5 border rounded-xl text-xs bg-white font-extrabold text-teal-900">
-                <option value="Dinheiro" selected>💵 Dinheiro (Calcular Troco)</option>
-                <option value="PIX">⚡ PIX</option>
-                <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
-                <option value="Cartão de Débito">💳 Cartão de Débito</option>
-                <option value="Fiado">📋 Fiado / A Prazo</option>
-              </select>
-            </div>
-            <div id="box-pagto-dinheiro" class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-2">
-              <div>
-                <label class="block text-[10px] font-bold text-teal-900 mb-0.5">Valor Recebido R$:</label>
-                <input type="number" step="0.01" id="venda-dinheiro-recebido" oninput="calcularTrocoEmTempoReal()" placeholder="Ex: 50.00" class="w-full p-2 border rounded-lg text-xs bg-white font-extrabold text-teal-800">
-              </div>
-              <div class="grid grid-cols-6 gap-1">
-                <button onclick="somarValorRecebidoRapido(2)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+2</button>
-                <button onclick="somarValorRecebidoRapido(5)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+5</button>
-                <button onclick="somarValorRecebidoRapido(10)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+10</button>
-                <button onclick="somarValorRecebidoRapido(20)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+20</button>
-                <button onclick="somarValorRecebidoRapido(50)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+50</button>
-                <button onclick="somarValorRecebidoRapido(100)" class="bg-white border border-teal-200 text-teal-800 font-bold py-1 rounded text-[10px]">+100</button>
-              </div>
-              <div id="venda-troco-display" class="text-xs font-bold text-center bg-white p-2 rounded border border-teal-100">
-                <span class="text-slate-500 font-medium">Digite o valor pago</span>
-              </div>
-            </div>
-            <div id="box-prazo-fiado" class="hidden bg-amber-50 p-2.5 rounded-xl border border-amber-300 space-y-1">
-              <label class="block text-[10px] font-bold text-amber-900">📅 Data Limite para Pagamento:</label>
-              <input type="date" id="venda-fiado-prazo" class="w-full p-2 border rounded-lg text-xs bg-white text-slate-800 font-medium">
-            </div>
-            <div class="space-y-1.5 pt-1">
-              <button onclick="processarFinalizarVenda('whatsapp')" class="w-full bg-green-600 text-white font-bold py-2.5 rounded-xl hover:bg-green-700 transition text-xs shadow flex justify-center items-center gap-1.5">
-                <i class="fa-brands fa-whatsapp text-sm"></i> Finalizar & Enviar no WhatsApp
-              </button>
-              <button onclick="processarFinalizarVenda('imprimir')" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl hover:bg-slate-900 transition text-xs shadow flex justify-center items-center gap-1.5">
-                <i class="fa-solid fa-print text-sm"></i> Finalizar & Imprimir Recibo
-              </button>
-              <button onclick="processarFinalizarVenda('sem_envio')" class="w-full bg-teal-600 text-white font-bold py-2.5 rounded-xl hover:bg-teal-700 transition text-xs shadow flex justify-center items-center gap-1.5">
-                <i class="fa-solid fa-check-circle text-sm"></i> Finalizar Direto (Sem Envio)
-              </button>
-              <button onclick="cancelarCompraAtual()" class="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold py-2 rounded-xl transition text-xs shadow-sm flex justify-center items-center gap-1.5 mt-1">
-                <i class="fa-solid fa-ban text-sm"></i> Cancelar Compra
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="border-t pt-3 space-y-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-vault text-amber-600"></i> Operações de Gaveta
-        </h2>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="abrirModalSangriaSuprimento('sangria')" class="bg-red-50 text-red-700 border border-red-200 font-bold p-2.5 rounded-xl hover:bg-red-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-arrow-down text-red-600"></i> Sangria (Retirar)
-          </button>
-          <button onclick="abrirModalSangriaSuprimento('suprimento')" class="bg-green-50 text-green-700 border border-green-200 font-bold p-2.5 rounded-xl hover:bg-green-100 text-xs flex justify-center items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-arrow-up text-green-600"></i> Suprimento (Entrar)
-          </button>
-        </div>
-        <button onclick="openModalFechamento()" class="w-full bg-amber-600 text-white font-extrabold p-3 rounded-xl hover:bg-amber-700 text-xs flex justify-center items-center gap-2 shadow-md uppercase tracking-wider mt-1">
-          <i class="fa-solid fa-lock text-sm"></i> Fechar Caixa do Turno / Conferir Gaveta
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-// 2. Confirmação da Abertura com Sincronização na Nuvem
-async function confirmarAberturaCaixaComValor(valorTrocoDigitado) {
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const valorTroco = parseFloat(valorTrocoDigitado !== undefined ? valorTrocoDigitado : (document.getElementById('input-fundo-troco-inicial')?.value || "0")) || 0;
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-
-  localStorage.setItem('crm_caixa_status', 'aberto');
-  localStorage.setItem('crm_caixa_data_abertura', hojeStr);
-  localStorage.setItem('crm_caixa_fundo_troco', valorTroco.toString());
-
-  if (user && empresaId && typeof db !== 'undefined') {
-    try {
-      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
-        statusCaixa: 'aberto',
-        dataAbertura: hojeStr,
-        fundoTrocoInicial: valorTroco,
-        abertoPor: perfilNegocio.nomeUsuario || user.displayName || 'Operador',
-        updatedAt: new Date()
-      });
-    } catch (err) {
-      console.warn("Erro ao salvar caixa na nuvem:", err);
-    }
-  }
-
-  alert(`🔓 Caixa aberto com sucesso!\nFundo de troco inicial: R$ ${valorTroco.toFixed(2)}`);
-  renderAbaVendas();
-}
-
-function confirmarAberturaCaixa() {
-  confirmarAberturaCaixaComValor();
-}
-
-// 3. Arquivamento de Caixa Fóssil (Mais de 2 dias de inatividade)
-async function arquivarCaixaAntigoEIniciarHoje(dataAntiga) {
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-
-  const regFechoAntigo = {
-    id: Date.now(),
-    data: dataAntiga,
-    hora: "23:59",
-    vendasQtd: 0,
-    totalVendas: 0,
-    gavetaContada: 0,
-    diferenca: 0,
-    operador: "Sistema (Arquivamento Automático)"
-  };
-
-  historicoFechamentos.push(regFechoAntigo);
-  localStorage.setItem('crm_ultimo_fechamento_ts', Date.now().toString());
-  localStorage.setItem('crm_caixa_status', 'fechado');
-  localStorage.removeItem('crm_caixa_data_abertura');
-  localStorage.removeItem('crm_caixa_fundo_troco');
-
-  persistirDadosCompletos();
-
-  if (user && empresaId && typeof db !== 'undefined') {
-    try {
-      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
-        statusCaixa: 'fechado',
-        dataAbertura: null,
-        fundoTrocoInicial: 0,
-        updatedAt: new Date()
-      });
-    } catch (e) {}
-  }
-
-  alert("📂 Período antigo arquivado com sucesso. Agora você pode abrir o caixa de hoje!");
-  renderAbaVendas();
-}
-
-// 4. Modal de Fechamento de Caixa
-function openModalFechamento() {
-  const ultimoFechamentoTs = parseInt(localStorage.getItem('crm_ultimo_fechamento_ts') || "0", 10);
-  const fundoTrocoInicial = parseFloat(localStorage.getItem('crm_caixa_fundo_troco') || "0");
-  
-  const vendasTurno = vendas.filter(v => {
-    let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
-    return vData > ultimoFechamentoTs;
-  });
-  const sangriasTurno = sangriasSuprimentos.filter(s => s.id > ultimoFechamentoTs);
-
-  const totalVendas = vendasTurno.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  const vendasDinheiro = vendasTurno.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  const totalSangrias = sangriasTurno.filter(s => s.tipo === 'sangria').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-  const totalSuprimentos = sangriasTurno.filter(s => s.tipo === 'suprimento').reduce((acc, s) => acc + parseFloat(s.valor), 0);
-
-  const totalGavetaEsperado = fundoTrocoInicial + vendasDinheiro - totalSangrias + totalSuprimentos;
-
-  document.getElementById('fechamento-conteudo').innerHTML = `
-    <div class="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
-      <p class="font-bold text-slate-800">Resumo do Turno Atual:</p>
-      <div class="flex justify-between"><span>Total de Vendas:</span> <b>R$ ${totalVendas.toFixed(2)} (${vendasTurno.length} vendas)</b></div>
-      <div class="flex justify-between text-slate-600"><span>Fundo de Troco Inicial:</span> <span>R$ ${fundoTrocoInicial.toFixed(2)}</span></div>
-      <div class="flex justify-between text-slate-600"><span>Dinheiro Entrado:</span> <span>R$ ${vendasDinheiro.toFixed(2)}</span></div>
-      <div class="flex justify-between text-teal-700 font-extrabold border-t pt-1"><span>Gaveta Esperada (Dinheiro):</span> <span>R$ ${totalGavetaEsperado.toFixed(2)}</span></div>
-    </div>
-    <div class="space-y-2 pt-2">
-      <label class="block font-semibold text-slate-700 text-xs">Contagem Física Contada na Gaveta (R$):</label>
-      <input type="number" step="0.01" id="fechamento-gaveta" value="${totalGavetaEsperado.toFixed(2)}" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm font-bold text-teal-800">
-      <button onclick="conferirEGravarFechamentoCaixaManual(${totalGavetaEsperado}, ${totalVendas}, ${vendasTurno.length})" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow">
-        💾 Concluir Fechamento & Encerrar Caixa
-      </button>
-    </div>
-  `;
-  document.getElementById('modal-fechamento').classList.remove('hidden');
-}
-
-// 5. Encerramento do Caixa e Gravação de Registros
-async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, qtdVendas) {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-
-  const gaveta = parseFloat(document.getElementById('fechamento-gaveta').value || 0);
-  const diferenca = gaveta - totalEsperado;
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-  const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
-
-  const fechoReg = { 
-    id: Date.now(), 
-    data: hojeStr, 
-    hora: horaStr, 
-    vendasQtd: qtdVendas, 
-    totalVendas: totalVendas, 
-    gavetaContada: gaveta, 
-    diferenca: diferenca, 
-    operador: nomeOperadorAtual 
-  };
-
-  historicoFechamentos.push(fechoReg);
-  localStorage.setItem('crm_ultimo_fechamento_ts', Date.now().toString());
-  localStorage.setItem('crm_caixa_status', 'fechado');
-  localStorage.removeItem('crm_caixa_data_abertura');
-  localStorage.removeItem('crm_caixa_fundo_troco');
-
-  persistirDadosCompletos();
-
-  if (user && empresaId && typeof db !== 'undefined') {
-    try {
-      await db.collection("empresas").doc(empresaId).collection("fechamentos").add({ 
-        ...fechoReg, 
-        userId: user.uid, 
-        createdAt: new Date() 
-      });
-      await db.collection("empresas").doc(empresaId).collection("configuracoes").doc("caixaAtual").set({
-        statusCaixa: 'fechado',
-        dataAbertura: null,
-        fundoTrocoInicial: 0,
-        updatedAt: new Date()
-      });
-    } catch (e) {
-      console.warn("Erro ao registrar fechamento no Firestore:", e);
-    }
-  }
-
-  closeModalFechamento();
-  alert(`✅ Fechamento de caixa concluído com sucesso!\nO status do caixa foi alterado para FECHADO.`);
-  renderAbaVendas();
-}
-// =======================================================
-// SINCRONIZAÇÃO EM TEMPO REAL E PAINEL DE CONTROLE DO DONO
-// =======================================================
-
-let cancelEscutadorCaixaNuvem = null;
-
-// 1. Escutador em Tempo Real (Ouve mudanças no Firebase e atualiza todos os celulares na hora)
-function escutarStatusCaixaNuvem() {
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-  const terminalId = localStorage.getItem('crm_terminal_id') || 'caixa_principal';
-
-  if (!empresaId || typeof db === 'undefined') return;
-
-  if (cancelEscutadorCaixaNuvem) {
-    cancelEscutadorCaixaNuvem();
-  }
-
-  cancelEscutadorCaixaNuvem = db.collection("empresas")
-    .doc(empresaId)
-    .collection("configuracoes")
-    .doc(terminalId)
-    .onSnapshot((doc) => {
-      if (doc.exists) {
-        const dados = doc.data();
-        const statusLocal = localStorage.getItem('crm_caixa_status');
-        const dataLocal = localStorage.getItem('crm_caixa_data_abertura');
-
-        if (dados.statusCaixa !== statusLocal || dados.dataAbertura !== dataLocal) {
-          localStorage.setItem('crm_caixa_status', dados.statusCaixa || 'fechado');
-          if (dados.dataAbertura) {
-            localStorage.setItem('crm_caixa_data_abertura', dados.dataAbertura);
-          } else {
-            localStorage.removeItem('crm_caixa_data_abertura');
-          }
-          if (dados.fundoTrocoInicial !== undefined) {
-            localStorage.setItem('crm_caixa_fundo_troco', dados.fundoTrocoInicial.toString());
-          }
-
-          const elementoVendas = document.getElementById('content-vendas');
-          if (elementoVendas && !elementoVendas.classList.contains('hidden')) {
-            renderAbaVendas();
-          }
-        }
-      }
-    }, (err) => {
-      console.warn("Aviso: Sincronização em tempo real aguardando reconexão...", err);
-    });
-}
-
-// 2. Seletor de Terminal (Para lojas com mais de 1 caixa físico: Caixa 1, Caixa 2, etc)
-function alterarTerminalAtual(novoTerminalId) {
-  localStorage.setItem('crm_terminal_id', novoTerminalId);
-  escutarStatusCaixaNuvem();
-  renderAbaVendas();
-  alert(`📱 Dispositivo configurado para operar no: ${novoTerminalId.toUpperCase()}`);
-}
-
-// 3. Painel de Monitoramento para Gerentes e Donos (Injeção Automática)
-async function renderPainelGerenteCaixas() {
-  const user = auth.currentUser;
-  const empresaId = perfilNegocio.empresaId || (user ? user.uid : null);
-
-  // Procura ou cria o container na tela de Perfil/Configurações
-  let container = document.getElementById('painel-gerente-caixas');
-  if (!container) {
-    const alvoAba = document.getElementById('content-perfil') || 
-                    document.getElementById('content-configuracoes') || 
-                    document.querySelector('.tab-perfil') ||
-                    document.body;
-
-    const cardHTML = `
-      <div class="bg-slate-50 p-4 rounded-2xl border space-y-3 mt-4 mx-2">
-        <div class="flex justify-between items-center">
-          <h3 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-desktop text-teal-600"></i> Monitoramento de Caixas da Loja
-          </h3>
-          <button onclick="renderPainelGerenteCaixas()" class="text-[10px] text-teal-700 font-bold hover:underline">
-            🔄 Atualizar
-          </button>
-        </div>
-        <div id="painel-gerente-caixas" class="space-y-2">
-          <p class="text-xs text-slate-400 italic">Carregando status dos caixas...</p>
-        </div>
-      </div>
-    `;
-    alvoAba.insertAdjacentHTML('beforeend', cardHTML);
-    container = document.getElementById('painel-gerente-caixas');
-  }
-
-  if (!container) return;
-
-  if (!empresaId || typeof db === 'undefined') {
-    container.innerHTML = `<p class="text-xs text-slate-400 italic">Conecte-se para visualizar os terminais em tempo real.</p>`;
-    return;
-  }
-
-  try {
-    const snapshot = await db.collection("empresas").doc(empresaId).collection("configuracoes").get();
-    let htmlTerminais = '';
-
-    snapshot.forEach(doc => {
-      if (doc.id.startsWith('caixa_') || doc.id === 'caixaAtual') {
-        const data = doc.data();
-        const ehAberto = data.statusCaixa === 'aberto';
-        const nomeTerminal = doc.id === 'caixaAtual' ? 'Caixa Principal' : doc.id.replace('caixa_', 'Caixa ');
-
-        htmlTerminais += `
-          <div class="flex items-center justify-between p-3 bg-white rounded-xl border text-xs shadow-sm">
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full ${ehAberto ? 'bg-green-500 animate-pulse' : 'bg-red-400'}"></span>
-                <span class="font-extrabold text-slate-800 uppercase">${nomeTerminal}</span>
-              </div>
-              <p class="text-[10px] text-slate-500 mt-0.5">Operador: <b>${data.abertoPor || 'Não informado'}</b></p>
-              <p class="text-[10px] text-slate-500">Aberto em: ${data.dataAbertura || 'Caixa Fechado'}</p>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${ehAberto ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'}">
-                ${ehAberto ? '🟢 ABERTO' : '🔴 FECHADO'}
-              </span>
-              ${ehAberto ? `<p class="text-[10px] text-teal-700 font-extrabold mt-1">Troco: R$ ${parseFloat(data.fundoTrocoInicial || 0).toFixed(2)}</p>` : ''}
-            </div>
-          </div>
-        `;
-      }
-    });
-
-    container.innerHTML = htmlTerminais || `<p class="text-xs text-slate-400 italic">Nenhum terminal ativo registrado no momento.</p>`;
-  } catch (err) {
-    container.innerHTML = `<p class="text-xs text-red-500">Erro ao carregar status dos caixas na nuvem.</p>`;
-  }
-}
-  function cancelarCompraAtual() {
-  if (carrinho.length === 0) {
-    alert("O carrinho já está vazio.");
-    return;
-  }
-  if (confirm("Deseja realmente cancelar a compra e limpar o carrinho atual?")) {
-    carrinho = [];
-    clienteAtualVenda = { nome: '', zap: '' };
-    renderAbaVendas();
-    alert("✅ Compra cancelada e carrinho limpo.");
-  }
-}
-function toggleOpcoesPagamento(pagto) {
-  const boxDinheiro = document.getElementById('box-pagto-dinheiro');
-  const boxFiado = document.getElementById('box-prazo-fiado');
-  if (pagto === 'Dinheiro') {
-    boxDinheiro.classList.remove('hidden');
-    boxFiado.classList.add('hidden');
-  } else if (pagto === 'Fiado') {
-    boxDinheiro.classList.add('hidden');
-    boxFiado.classList.remove('hidden');
-  } else {
-    boxDinheiro.classList.add('hidden');
-    boxFiado.classList.add('hidden');
-  }
-}
-function filtrarSugestoesProdutos(texto) {
-  const box = document.getElementById('dropdown-busca-produtos');
-  if (!texto || texto.trim().length < 1) {
-    box.classList.add('hidden');
-    return;
-  }
-  let filtro = produtos.filter(p => p.nome.toLowerCase().includes(texto.toLowerCase()) || (p.ean && p.ean.includes(texto)));
-  if (filtro.length === 0) {
-    box.classList.add('hidden');
-    return;
-  }
-  box.innerHTML = filtro.map(p => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
-    return `
-      <div onclick="selecionarProdutoDaBusca(${idxReal})" class="p-2 hover:bg-teal-50 cursor-pointer flex justify-between items-center text-xs">
-        <div>
-          <p class="font-bold text-slate-800">${p.nome}</p>
-          <p class="text-[10px] text-slate-500">Estoque: ${p.estoque} ${p.medida || 'un'}</p>
-        </div>
-        <span class="font-bold text-teal-700">R$ ${p.preco.toFixed(2)}</span>
-      </div>
-    `;
-  }).join('');
-  box.classList.remove('hidden');
-}
-function selecionarProdutoDaBusca(index) {
-  document.getElementById('dropdown-busca-produtos').classList.add('hidden');
-  document.getElementById('venda-nome-manual').value = '';
-  adicionarAoCarrinho(index);
-}
-function adicionarAoCarrinho(index) {
-  let prod = produtos[index];
-  let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prod.nome.toLowerCase());
-  let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
-  let estoqueRestante = prod.estoque - qtdNoCarrinho;
-  if (estoqueRestante <= 0) {
-    alert(`O produto "${prod.nome}" está totalmente esgotado!`);
-    return;
-  }
-  if ((estoqueRestante - 1) <= (prod.estMin || 3)) {
-    dispararAlertaPDVEstoqueBaixo(prod.nome, estoqueRestante - 1);
-  }
-  if (['kg', 'g', 'L'].includes(prod.medida)) {
-    prodFracionadoTemp = prod;
-    document.getElementById('fracionado-titulo').innerText = `Venda em ${prod.medida.toUpperCase()}: ${prod.nome}`;
-    document.getElementById('fracionado-sub').innerText = `Preço: R$ ${prod.preco.toFixed(2)} / ${prod.medida} (Disponível: ${estoqueRestante} ${prod.medida})`;
-    document.getElementById('fracionado-qtd').value = '';
-    document.getElementById('modal-fracionado').classList.remove('hidden');
-    return;
-  }
-  if (itemNoCarrinho) {
-    itemNoCarrinho.qtd += 1;
-  } else {
-    carrinho.push({ nome: prod.nome, preco: parseFloat(prod.preco), precoCusto: parseFloat(prod.precoCusto || 0), qtd: 1, medida: prod.medida || 'un' });
-  }
-  renderAbaVendas();
-}
-function adicionarManualAoCarrinho() {
-  const nomeInput = document.getElementById('venda-nome-manual').value.trim();
-  const valorInput = parseFloat(document.getElementById('venda-valor-manual').value);
-  if (!nomeInput || !valorInput || valorInput <= 0) {
-    alert("Digite o nome e o valor do item avulso!");
-    return;
-  }
-  carrinho.push({ nome: nomeInput, preco: valorInput, precoCusto: 0, qtd: 1, medida: 'un' });
-  document.getElementById('venda-nome-manual').value = '';
-  document.getElementById('venda-valor-manual').value = '';
-  renderAbaVendas();
-}
-function alterarQtdCarrinho(index, delta) {
-  let item = carrinho[index];
-  let prod = produtos.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
-  if (delta > 0 && prod) {
-    if (item.qtd + delta > prod.estoque) {
-      alert(`Limite de estoque atingido! (${prod.estoque} ${prod.medida} disponíveis)`);
-      return;
-    }
-    if ((prod.estoque - (item.qtd + delta)) <= (prod.estMin || 3)) {
-      dispararAlertaPDVEstoqueBaixo(prod.nome, prod.estoque - (item.qtd + delta));
-    }
-  }
-  item.qtd += delta;
-  if (item.qtd <= 0) carrinho.splice(index, 1);
-  renderAbaVendas();
-}
-function removerDoCarrinho(index) {
-  carrinho.splice(index, 1);
-  renderAbaVendas();
-}
-function closeModalFracionado() {
-  document.getElementById('modal-fracionado').classList.add('hidden');
-}
-function confirmarItemFracionado() {
-  const qtdInput = parseFloat(document.getElementById('fracionado-qtd').value);
-  if (!qtdInput || qtdInput <= 0) {
-    alert("Informe uma quantidade válida!");
-    return;
-  }
-  carrinho.push({ nome: prodFracionadoTemp.nome, preco: parseFloat(prodFracionadoTemp.preco), precoCusto: parseFloat(prodFracionadoTemp.precoCusto || 0), qtd: qtdInput, medida: prodFracionadoTemp.medida });
-  closeModalFracionado();
-  renderAbaVendas();
-}
-async function processarFinalizarVenda(tipoEnvio) {
-  if (carrinho.length === 0) {
-    alert("O carrinho está vazio!");
-    return;
-  }
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  const formaPagto = document.getElementById('venda-pagto').value;
-  const nomeClienteInput = document.getElementById('venda-cliente-nome').value.trim() || 'Consumidor Final';
-  const zapClienteInput = document.getElementById('venda-cliente-zap').value.trim() || '';
-  const totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-  const hojeStr = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
-  let nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
-  carrinho.forEach(itemCarrinho => {
-    let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
-    if (prod) {
-      prod.estoque = Math.max(0, prod.estoque - itemCarrinho.qtd);
-      persistirDadosCompletos();
-      if (user && empresaIdDest) {
-        db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
-      }
-    }
-  });
-  if (formaPagto === 'Fiado') {
-    let prazoFiado = document.getElementById('venda-fiado-prazo').value;
-    let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeClienteInput.toLowerCase());
-    if (clienteExistente) {
-      clienteExistente.debito = parseFloat(clienteExistente.debito || 0) + totalCarrinho;
-      if (zapClienteInput) clienteExistente.telefone = zapClienteInput;
-      if (prazoFiado) clienteExistente.prazoPagamento = prazoFiado;
-    } else {
-      clientes.push({ id: Date.now(), nome: nomeClienteInput, telefone: zapClienteInput, debito: totalCarrinho, prazoPagamento: prazoFiado || '' });
-    }
-    persistirDadosCompletos();
-    clientes.forEach(c => {
-      if (user && empresaIdDest) {
-        db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).set(c, { merge: true });
-      }
-    });
-    exibirToastIntegracaoFiado(nomeClienteInput, totalCarrinho);
-  }
-  let vendaReg = {
-    id: Date.now(),
-    itens: carrinho.map(i => ({ nome: i.nome, qtd: i.qtd, precoUnit: i.preco, precoCustoUnit: i.precoCusto, medida: i.medida || 'un' })),
-    valorTotal: totalCarrinho,
-    formaPagto: formaPagto,
-    cliente: nomeClienteInput,
-    operador: nomeOperadorAtual,
-    data: hojeStr
-  };
-  vendas.push(vendaReg);
-  persistirDadosCompletos();
-  if (user && empresaIdDest) {
-    db.collection("empresas").doc(empresaIdDest).collection("vendas").add({ ...vendaReg, userId: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  }
-  let itensFormatadosCupom = carrinho.map(i => `• ${i.qtd} ${i.medida || 'un'} x ${i.nome} - R$ ${(i.preco * i.qtd).toFixed(2)}`).join('\n');
-  let resumoTexto = `===================================\n` +
-    ` ${perfilNegocio.nomeLoja.toUpperCase()}\n` +
-    `===================================\n` +
-    `DATA: ${hojeStr}\n` +
-    `CLIENTE: ${nomeClienteInput}\n` +
-    `OPERADOR: ${nomeOperadorAtual}\n` +
-    `PAGamento: ${formaPagto}\n` +
-    `-----------------------------------\n` +
-    `ITENS:\n` +
-    `${itensFormatadosCupom}\n` +
-    `-----------------------------------\n` +
-    `VALOR TOTAL: R$ ${totalCarrinho.toFixed(2)}\n` +
-    `==================================-\n` +
-    ` OBRIGADO PELA PREFERÊNCIA!\n` +
-    `===================================`;
-  if (tipoEnvio === 'whatsapp') {
-    let numLimpo = zapClienteInput ? zapClienteInput.replace(/\D/g, '') : '';
-    if (numLimpo) {
-      window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`, '_blank');
-    } else {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumoTexto)}`, '_blank');
-    }
-  } else if (tipoEnvio === 'imprimir') {
-    let janelaImpressao = window.open('', '_blank');
-    janelaImpressao.document.write(`<html><head><title>Cupom</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
-    janelaImpressao.document.close();
-    janelaImpressao.print();
-  }
-  carrinho = [];
-  clienteAtualVenda = { nome: '', zap: '' };
-  alert("✅ Venda finalizada com sucesso!");
-  renderAba();
-}
-function setSubAbaEstoque(sub) {
-  if (subAbaEstoque === sub) subAbaEstoque = 'none';
-  else subAbaEstoque = sub;
-  renderAbaEstoque();
-}
-function abrirModalMinimosPadrao() {
-  document.getElementById('min-padrao-un').value = minimosPadrao.un || 5;
-  document.getElementById('min-padrao-kg').value = minimosPadrao.kg || 2;
-  document.getElementById('min-padrao-cx').value = minimosPadrao.cx || 3;
-  document.getElementById('min-padrao-L').value = minimosPadrao.L || 5;
-  document.getElementById('config-dias-validade-geral').value = minimosPadrao.validadeGeralDias || 30;
-  document.getElementById('modal-minimos-padrao').classList.remove('hidden');
-}
-function fecharModalMinimosPadrao() {
-  document.getElementById('modal-minimos-padrao').classList.add('hidden');
-}
-function salvarMinimosPadrao() {
-  minimosPadrao = {
-    un: parseFloat(document.getElementById('min-padrao-un').value || 5),
-    kg: parseFloat(document.getElementById('min-padrao-kg').value || 2),
-    cx: parseFloat(document.getElementById('min-padrao-cx').value || 3),
-    L: parseFloat(document.getElementById('min-padrao-L').value || 5),
-    validadeGeralDias: parseInt(document.getElementById('config-dias-validade-geral').value || 30)
-  };
-  localStorage.setItem('crm_minimos_padrao', JSON.stringify(minimosPadrao));
-  fecharModalMinimosPadrao();
-  alert("✅ Configurações salvas!");
-  renderAbaEstoque();
-}
-function preencherMinimoAutomaticoPorMedida() {
-  const medida = document.getElementById('cad-prod-medida').value;
-  const campoMin = document.getElementById('cad-prod-estmin');
-  if (minimosPadrao[medida]) campoMin.value = minimosPadrao[medida];
-}
-function calcularEExibirMargemLucro() {
-  if (!eAdminOuSocio() || eModoMei()) return;
-  const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
-  const venda = parseFloat(document.getElementById('cad-prod-preco').value || 0);
-  const boxMargem = document.getElementById('margem-lucro-box');
-  if (venda > 0 && custo > 0) {
-    let lucro = venda - custo;
-    let pct = (lucro / venda) * 100;
-    boxMargem.innerText = `Margem: ${pct.toFixed(1)}% (Lucro: R$ ${lucro.toFixed(2)})`;
-    boxMargem.className = pct < 15 ? "text-[10px] font-bold text-red-600 mt-1" : "text-[10px] font-bold text-teal-700 mt-1";
-  } else boxMargem.innerText = "";
-}
-function renderAbaEstoque() {
-  let hoje = new Date();
-  let diasGeral = minimosPadrao.validadeGeralDias || 30;
-  let qtdMinimosAlert = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
-  let qtdValidadesAlert = produtos.filter(p => {
-    if (!p.validade) return false;
-    let dVal = new Date(p.validade);
-    let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
-    let limiteAlerta = new Date();
-    limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
-    return dVal <= limiteAlerta;
-  }).length;
-  let conteudoSubAba = '';
-  if (subAbaEstoque === 'todos') conteudoSubAba = renderSubAbaTodosProdutos();
-  else if (subAbaEstoque === 'minimos') conteudoSubAba = renderSubAbaMinimos();
-  else if (subAbaEstoque === 'validades') conteudoSubAba = renderSubAbaValidades();
-  else conteudoSubAba = `<p class="text-xs text-slate-400 italic text-center py-4 border border-dashed rounded-xl">Selecione uma opção acima.</p>`;
-  document.getElementById('content-estoque').innerHTML = `
-    <div class="space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
-        </h2>
-        <button onclick="abrirModalMinimosPadrao()" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1">
-          <i class="fa-solid fa-sliders text-teal-600"></i> Limites
-        </button>
-      </div>
-      <div class="grid grid-cols-3 gap-1.5 text-[10px] font-extrabold">
-        <button onclick="setSubAbaEstoque('todos')" class="py-2.5 px-1 rounded-xl text-center leading-tight transition ${subAbaEstoque === 'todos' ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
-          Cadastrados (${produtos.length})
-        </button>
-        <button onclick="setSubAbaEstoque('minimos')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
-          Estoque Baixo ${qtdMinimosAlert > 0 ? `<span class="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5">${qtdMinimosAlert}</span>` : ''}
-        </button>
-        <button onclick="setSubAbaEstoque('validades')" class="py-2.5 px-1 rounded-xl text-center leading-tight relative transition ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600'}">
-          Validades ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5">${qtdValidadesAlert}</span>` : ''}
-        </button>
-      </div>
-      <button onclick="abrirModalNovoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
-        <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
-      </button>
-      <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-1.5">
-        <label class="block text-xs font-bold text-teal-900">🔍 Consultar por Nome ou Código:</label>
-        <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
-      </div>
-      <div id="subaba-estoque-conteudo">${conteudoSubAba}</div>
-    </div>
-  `;
-}
-function abrirModalNovoProduto() {
-  prodEditandoIndex = null;
-  document.getElementById('form-estoque-titulo').innerText = "📦 Cadastrar Novo Produto";
-  document.getElementById('cad-prod-ean').value = '';
-  document.getElementById('cad-prod-ean-display').innerText = '';
-  document.getElementById('cad-prod-ean-display').classList.add('hidden');
-  document.getElementById('cad-prod-nome').value = '';
-  document.getElementById('cad-prod-preco-custo').value = '';
-  document.getElementById('cad-prod-preco').value = '';
-  document.getElementById('cad-prod-qtd').value = '';
-  document.getElementById('cad-prod-medida').value = 'un';
-  document.getElementById('cad-prod-entrada').value = new Date().toISOString().split('T')[0];
-  document.getElementById('cad-prod-validade').value = '';
-  document.getElementById('cad-prod-alerta-dias').value = '';
-  document.getElementById('cad-prod-atalho').checked = true;
-  const boxCustoAdmin = document.getElementById('box-custo-admin');
-  if (eAdminOuSocio() && !eModoMei()) boxCustoAdmin.classList.remove('hidden');
-  else boxCustoAdmin.classList.add('hidden');
-  preencherMinimoAutomaticoPorMedida();
-  document.getElementById('modal-cadastro-produto').classList.remove('hidden');
-}
-function fecharModalCadastroproduto() {
-  document.getElementById('modal-cadastro-produto').classList.add('hidden');
-}
-function renderSubAbaTodosProdutos() {
-  if (produtos.length === 0) return `<p class="text-xs text-slate-400 italic text-center py-6 border border-dashed rounded-xl">Nenhum produto cadastrado.</p>`;
-  return `
-    <div class="space-y-2 max-h-72 overflow-y-auto">
-      ${produtos.map((p, index) => {
-        let ehAtalho = p.atalho !== false;
-        return `
-          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
-            <div class="flex justify-between items-start">
-              <div>
-                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-                ${!eModoMei() && p.precoCusto > 0 ? `<p class="text-[10px] text-slate-400">Custo: R$ ${parseFloat(p.precoCusto).toFixed(2)}</p>` : ''}
-              </div>
-              <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
-                ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
-              </span>
-            </div>
-            <div class="flex justify-between items-center border-t pt-2 gap-1">
-              <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
-                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
-              </button>
-              <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
-              ${eAdminOuGerenteOuSocio() ? `<button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-function editarProdutoCompleto(index) {
-  let p = produtos[index];
-  prodEditandoIndex = index;
-  document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
-  document.getElementById('cad-prod-ean').value = p.ean || '';
-  let eanDisp = document.getElementById('cad-prod-ean-display');
-  if (p.ean) {
-    eanDisp.innerText = `EAN: ${p.ean}`;
-    eanDisp.classList.remove('hidden');
-  } else eanDisp.classList.add('hidden');
-  document.getElementById('cad-prod-nome').value = p.nome;
-  const boxCustoAdmin = document.getElementById('box-custo-admin');
-  if (eAdminOuSocio() && !eModoMei()) {
-    boxCustoAdmin.classList.remove('hidden');
-    document.getElementById('cad-prod-preco-custo').value = p.precoCusto || '';
-  } else boxCustoAdmin.classList.add('hidden');
-  document.getElementById('cad-prod-preco').value = p.preco;
-  document.getElementById('cad-prod-qtd').value = p.estoque;
-  document.getElementById('cad-prod-medida').value = p.medida || 'un';
-  document.getElementById('cad-prod-estmin').value = p.estMin || 3;
-  document.getElementById('cad-prod-entrada').value = p.dataEntrada || '';
-  document.getElementById('cad-prod-validade').value = p.validade || '';
-  document.getElementById('cad-prod-alerta-dias').value = p.alertaDias || '';
-  document.getElementById('cad-prod-atalho').checked = p.atalho !== false;
-  document.getElementById('modal-cadastro-produto').classList.remove('hidden');
-}
-function renderSubAbaMinimos() {
-  let minimos = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
-  if (minimos.length === 0) return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-circle-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Estoque Regular!</h3></div>`;
-  return `
-    <div class="space-y-2">
-      <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Estoque Baixo (${minimos.length}):</p>
-      <div class="space-y-2 max-h-72 overflow-y-auto">
-        ${minimos.map(p => {
-          let idxReal = produtos.findIndex(prod => prod.id === p.id);
-          return `
-            <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
-              <div>
-                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-red-700 font-bold mt-0.5">Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500">(Mín: ${p.estMin || 3})</span></p>
-              </div>
-              <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">⚡ Repor</button>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-function renderSubAbaValidades() {
-  let hoje = new Date();
-  let diasGeral = minimosPadrao.validadeGeralDias || 30;
-  let validadesCriticas = produtos.filter(p => {
-    if (!p.validade) return false;
-    let dVal = new Date(p.validade);
-    let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
-    let limiteAlerta = new Date();
-    limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
-    return dVal <= limiteAlerta;
-  });
-  if (validadesCriticas.length === 0) return `<div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center space-y-2"><i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i><h3 class="font-bold text-green-800 text-sm">Validades em Dia!</h3></div>`;
-  return `
-    <div class="space-y-2">
-      <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">📅 Validades Próximas (${validadesCriticas.length}):</p>
-      <div class="space-y-2 max-h-72 overflow-y-auto">
-        ${validadesCriticas.map(p => {
-          let idxReal = produtos.findIndex(prod => prod.id === p.id);
-          let dataVal = new Date(p.validade);
-          let ehVencido = dataVal < hoje;
-          return `
-            <div class="p-3 rounded-2xl border ${ehVencido ? 'bg-red-100 border-red-400' : 'bg-amber-50 border-amber-300'} flex justify-between items-center text-xs">
-              <div>
-                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-slate-600 mt-0.5">Val: <b class="${ehVencido ? 'text-red-700 font-extrabold' : 'text-amber-800'}">${p.validade.split('-').reverse().join('/')}</b></p>
-              </div>
-              <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-amber-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">🏷️ Ajustar</button>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-function abrirModalAjusteRapido(index) {
-  let p = produtos[index];
-  document.getElementById('ajuste-prod-index').value = index;
-  document.getElementById('ajuste-rapido-titulo').innerText = `✏️ Ajuste: ${p.nome}`;
-  document.getElementById('ajuste-prod-qtd').value = p.estoque;
-  document.getElementById('ajuste-prod-preco').value = p.preco;
-  document.getElementById('ajuste-prod-validade').value = p.validade || '';
-  document.getElementById('modal-ajuste-rapido-prod').classList.remove('hidden');
-}
-function fecharModalAjusteRapido() {
-  document.getElementById('modal-ajuste-rapido-prod').classList.add('hidden');
-}
-function adicionarQtdDireta(qtd) {
-  let campo = document.getElementById('ajuste-prod-qtd');
-  campo.value = parseFloat(campo.value || 0) + qtd;
-}
-function aplicarDescontoPorcentagem(pct) {
-  let campo = document.getElementById('ajuste-prod-preco');
-  let valAtual = parseFloat(campo.value || 0);
-  campo.value = (valAtual * (1 - pct / 100)).toFixed(2);
-}
-async function salvarAjusteRapidoProduto() {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  let idx = document.getElementById('ajuste-prod-index').value;
-  if (idx === "") return;
-  let p = produtos[idx];
-  p.estoque = parseFloat(document.getElementById('ajuste-prod-qtd').value || 0);
-  p.preco = parseFloat(document.getElementById('ajuste-prod-preco').value || 0);
-  p.validade = document.getElementById('ajuste-prod-validade').value;
-  persistirDadosCompletos();
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).set({ ...p, userId: user.uid }, { merge: true });
-  fecharModalAjusteRapido();
-  alert("✅ Produto atualizado!");
-  renderAbaEstoque();
-}
-function buscarEExibirProdutoEstoque(termo) {
-  const box = document.getElementById('subaba-estoque-conteudo');
-  if (!termo || termo.trim().length < 1) {
-    renderAbaEstoque();
-    return;
-  }
-  let filtro = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()) || (p.ean && p.ean.includes(termo)));
-  if (filtro.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-4 border border-dashed rounded-xl">Nenhum produto encontrado.</p>`;
-    return;
-  }
-  box.innerHTML = filtro.map(p => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
-    let ehAtalho = p.atalho !== false;
-    return `
-      <div class="bg-white p-3 rounded-xl border border-teal-300 shadow-sm space-y-2 text-xs">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-            <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
-          </div>
-        </div>
-        <div class="flex justify-between items-center border-t pt-2 gap-1">
-          <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
-            <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
-          </button>
-          <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-function toggleAtalhoEstoque(index) {
-  produtos[index].atalho = !(produtos[index].atalho !== false);
-  persistirDadosCompletos();
-  renderAbaEstoque();
-}
-async function cadastrarOuAtualizarProduto() {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  const ean = document.getElementById('cad-prod-ean').value;
-  const nome = document.getElementById('cad-prod-nome').value.trim();
-  const preco = document.getElementById('cad-prod-preco').value;
-  const qtd = document.getElementById('cad-prod-qtd').value || 1;
-  const estMin = document.getElementById('cad-prod-estmin').value || 3;
-  const medida = document.getElementById('cad-prod-medida').value;
-  const dataEntrada = document.getElementById('cad-prod-entrada').value;
-  const validade = document.getElementById('cad-prod-validade').value;
-  const alertaDiasInput = document.getElementById('cad-prod-alerta-dias').value;
-  const atalho = document.getElementById('cad-prod-atalho').checked;
-  let precoCustoInput = 0;
-  if (eAdminOuSocio() && !eModoMei()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
-  else if (prodEditandoIndex !== null) precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
-  if (!nome || !preco) {
-    alert("Preencha nome e preço!");
-    return;
-  }
-  let prodData = {
-    id: prodEditandoIndex !== null ? produtos[prodEditandoIndex].id : Date.now(),
-    ean: ean,
-    nome: nome,
-    precoCusto: precoCustoInput,
-    preco: parseFloat(preco),
-    estoque: parseFloat(qtd),
-    estMin: parseFloat(estMin),
-    medida: medida,
-    dataEntrada: dataEntrada,
-    validade: validade || '',
-    alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
-    atalho: atalho
-  };
-  if (prodEditandoIndex !== null) {
-    produtos[prodEditandoIndex] = prodData;
-    prodEditandoIndex = null;
-  } else {
-    let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
-    if (prodExistente) {
-      prodExistente.ean = ean || prodExistente.ean;
-      if (eAdminOuSocio() && !eModoMei() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
-      prodExistente.preco = parseFloat(preco);
-      prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
-      prodExistente.estMin = parseFloat(estMin);
-      prodExistente.medida = medida;
-      prodExistente.dataEntrada = dataEntrada;
-      prodExistente.validade = validade || '';
-      prodExistente.alertaDias = alertaDiasInput ? parseInt(alertaDiasInput) : prodExistente.alertaDias;
-      prodExistente.atalho = atalho;
-      prodData = prodExistente;
-    } else produtos.push(prodData);
-  }
-  persistirDadosCompletos();
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
-  fecharModalCadastroproduto();
-  alert("✅ Produto salvo!");
-  renderAbaEstoque();
-}
-function excluirProduto(index) {
-  if (!eAdminOuGerenteOuSocio()) {
-    alert("Acesso Restrito.");
-    return;
-  }
-  if (confirm("Remover este produto permanentemente?")) {
-    let p = produtos[index];
-    produtos.splice(index, 1);
-    persistirDadosCompletos();
+function verificarEExibirAniversarianteTelaCheia() {
+  const anivs = verificarAniversariantesDoDia();
+  if (anivs.length > 0) {
     const user = auth.currentUser;
-    let empresaIdDest = perfilNegocio.empresaId || user.uid;
-    if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).delete().catch(()=>{});
-    renderAbaEstoque();
-  }
-}
-function renderAbaClientes() {
-  const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
-  const devedoresQtd = clientes.filter(c => c.debito > 0).length;
-  document.getElementById('content-clientes').innerHTML = `
-    <div class="space-y-4">
-      <div class="bg-red-50 border border-red-200 p-3.5 rounded-2xl flex justify-between items-center shadow-sm">
-        <div>
-          <p class="text-[10px] text-red-600 font-bold uppercase">Total a Receber (Fiado)</p>
-          <p class="text-xl font-extrabold text-red-700">R$ ${totalFiadoAcumulado.toFixed(2)}</p>
-        </div>
-        <button onclick="filtrarApenasDevedores()" class="text-xs ${listaDevedoresAberta ? 'bg-slate-700' : 'bg-red-600'} text-white px-3 py-2 rounded-xl font-extrabold shadow">
-          <i class="fa-solid fa-users"></i> ${devedoresQtd} Devedor(es) ${listaDevedoresAberta ? '▲' : '▼'}
-        </button>
-      </div>
-      <div class="bg-teal-50 border border-teal-200 p-3.5 rounded-2xl space-y-2.5">
-        <label class="block text-xs font-bold text-teal-900">🔍 Consultar ou Cobrar Cliente:</label>
-        <input type="text" id="busca-cliente-input" oninput="buscarEExibirClientes(this.value)" placeholder="Digite o nome..." class="w-full p-3 border rounded-xl text-xs bg-white shadow-sm font-bold">
-        <div id="resultado-busca-clientes" class="space-y-2 pt-1"></div>
-      </div>
-    </div>
-  `;
-  if (listaDevedoresAberta) {
-    let devedores = clientes.filter(c => c.debito > 0);
-    renderizarListaClientesCards(devedores);
-  }
-}
-function filtrarApenasDevedores() {
-  listaDevedoresAberta = !listaDevedoresAberta;
-  renderAbaClientes();
-}
-function buscarEExibirClientes(termo) {
-  const box = document.getElementById('resultado-busca-clientes');
-  if (!box) return;
-  if (!termo || termo.trim().length < 1) {
-    if (!listaDevedoresAberta) box.innerHTML = '';
-    return;
-  }
-  let filtro = clientes.filter(c => c.nome.toLowerCase().includes(termo.toLowerCase()) || (c.telefone && c.telefone.includes(termo)));
-  if (filtro.length === 0) {
-    box.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-3">Nenhum cliente encontrado.</p>`;
-    return;
-  }
-  renderizarListaClientesCards(filtro);
-}
-function renderizarListaClientesCards(lista) {
-  const box = document.getElementById('resultado-busca-clientes');
-  if (!box) return;
-  const hojeStr = new Date().toISOString().split('T')[0];
-  box.innerHTML = lista.map(c => {
-    let idxReal = clientes.findIndex(cli => cli.id === c.id);
-    let temDebito = c.debito > 0;
-    let ehAtrasado = temDebito && c.prazoPagamento && c.prazoPagamento <= hojeStr;
-    return `
-      <div class="bg-white p-3.5 rounded-2xl border ${ehAtrasado ? 'border-red-500 bg-red-50/50 alerta-saltando' : 'border-slate-200'} shadow space-y-3 text-xs">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="font-extrabold text-slate-800 text-sm">${c.nome} ${ehAtrasado ? '<span class="text-[9px] bg-red-600 text-white px-1.5 py-0.2 rounded">VENCIDO</span>' : ''}</p>
-            <p class="text-slate-500 text-[11px]">Zap: <b>${c.telefone || 'N/I'}</b></p>
-          </div>
-          <span class="font-extrabold text-xs px-2.5 py-1 rounded-lg border ${temDebito ? 'text-red-700 bg-red-100 border-red-300' : 'text-green-700 bg-green-100'}">
-            ${temDebito ? 'R$ ' + parseFloat(c.debito).toFixed(2) : 'Em dia'}
-          </span>
-        </div>
-        <div class="grid grid-cols-2 gap-2 pt-1 border-t">
-          <button onclick="enviarLembreteCobrancaZap(${idxReal})" class="bg-green-600 text-white font-bold py-2 px-2 rounded-xl text-xs shadow"><i class="fa-brands fa-whatsapp"></i> Enviar Zap</button>
-          <button onclick="abrirModalEditarCliente(${idxReal})" class="bg-teal-50 text-teal-800 border border-teal-300 font-bold py-2 px-2 rounded-xl text-xs">Editar</button>
-        </div>
-        ${temDebito ? `
-          <div class="flex gap-1.5 pt-1 items-center bg-slate-50 p-2 rounded-xl border">
-            <input type="number" step="0.01" id="abatimento-val-${idxReal}" placeholder="Abater R$" class="w-full p-2 border rounded-lg text-xs bg-white font-bold">
-            <button onclick="abaterDebitoCliente(${idxReal})" class="bg-teal-600 text-white font-extrabold px-3 py-2 rounded-lg text-xs">Abater</button>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }).join('');
-}
-function abrirModalEditarCliente(index) {
-  let c = clientes[index];
-  document.getElementById('edit-cli-index').value = index;
-  document.getElementById('edit-cli-nome').value = c.nome;
-  document.getElementById('edit-cli-telefone').value = c.telefone || '';
-  document.getElementById('edit-cli-prazo').value = c.prazoPagamento || '';
-  document.getElementById('modal-editar-cliente').classList.remove('hidden');
-}
-function fecharModalEditarCliente() {
-  document.getElementById('modal-editar-cliente').classList.add('hidden');
-}
-async function salvarEdicaoCliente() {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  let idx = document.getElementById('edit-cli-index').value;
-  if (idx === "") return;
-  let c = clientes[idx];
-  c.nome = document.getElementById('edit-cli-nome').value.trim();
-  c.telefone = document.getElementById('edit-cli-telefone').value.trim();
-  c.prazoPagamento = document.getElementById('edit-cli-prazo').value;
-  persistirDadosCompletos();
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).set(c, { merge: true });
-  fecharModalEditarCliente();
-  alert("✅ Cliente atualizado!");
-  renderAba();
-}
-function enviarLembreteCobrancaZap(index) {
-  let c = clientes[index];
-  if (!c.telefone) {
-    alert("Cliente sem WhatsApp!");
-    return;
-  }
-  let texto = `Olá *${c.nome}*, passando para informar sobre seu saldo pendente no *${perfilNegocio.nomeLoja}*.\n\n💰 Valor: *R$ ${parseFloat(c.debito).toFixed(2)}*\nObrigado!`;
-  let numLimpo = c.telefone.replace(/\D/g, '');
-  window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(texto)}`, '_blank');
-}
-async function abaterDebitoCliente(index) {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  const valInput = document.getElementById(`abatimento-val-${index}`);
-  const valorAbater = parseFloat(valInput.value);
-  if (!valorAbater || valorAbater <= 0) {
-    alert("Valor inválido!");
-    return;
-  }
-  let cliente = clientes[index];
-  cliente.debito = Math.max(0, cliente.debito - valorAbater);
-  persistirDadosCompletos();
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(cliente.id)).set(cliente, { merge: true });
-  alert(`✅ Abatimento de R$ ${valorAbater.toFixed(2)} registrado!`);
-  renderAba();
-}
-function renderAbaRelatorios() {
-  if (!eAdminOuGerenteOuSocio()) return;
-  const totalVendasGeral = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  let capitalInvestidoEstoque = 0;
-  produtos.forEach(p => { capitalInvestidoEstoque += (parseFloat(p.precoCusto || 0) * parseFloat(p.estoque || 0)); });
-  
-  let totalCustoVendido = 0;
-  vendas.forEach(v => {
-    if (v.itens && Array.isArray(v.itens)) v.itens.forEach(it => { totalCustoVendido += (parseFloat(it.precoCustoUnit || 0) * parseFloat(it.qtd || 1)); });
-  });
-  
-  const lucroBruto = totalVendasGeral - totalCustoVendido;
-  const totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
-  const lucroLiquidoReal = eModoMei() ? (totalVendasGeral - totalDespesas) : (lucroBruto - totalDespesas);
-
-  let vendasPorOperador = {};
-  vendas.forEach(v => {
-    let op = v.operador || 'Desconhecido';
-    vendasPorOperador[op] = (vendasPorOperador[op] || 0) + 1;
-  });
-  
-  let auditoriaOperadoresHTML = Object.keys(vendasPorOperador).length > 0 ? Object.keys(vendasPorOperador).map(op => `
-    <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
-      <span class="font-bold text-slate-700">🧑‍💼 ${op}</span>
-      <span class="bg-indigo-50 text-indigo-800 font-bold px-2 py-0.5 rounded text-[10px]">${vendasPorOperador[op]} venda(s)</span>
-    </div>
-  `).join('') : '<p class="text-xs text-slate-400 italic text-center py-2">Sem registros.</p>';
-
-  const ehApenasGerente = eGerente() && !eAdminOuSocio();
-
-  document.getElementById('content-relatorios').innerHTML = `
-    <div class="space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-chart-line text-teal-600"></i> Painel Comercial & DRE
-        </h2>
-        <span class="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2 py-0.5 rounded-full">
-          ${ehApenasGerente ? 'Visão Gerencial' : (eModoMei() ? 'Modo MEI' : 'Modo Completo')}
-        </span>
-      </div>
-      
-      <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <span class="text-xs font-bold text-teal-400 uppercase tracking-wider">Balanço Operacional</span>
-          <button onclick="abrirModalDespesas()" class="text-[10px] bg-red-600 text-white font-bold px-2.5 py-1 rounded-lg">Contas a Pagar (R$ ${totalDespesas.toFixed(2)})</button>
-        </div>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between items-center"><span class="text-slate-300">🟢 Faturamento Bruto:</span><span class="font-extrabold text-white text-sm">R$ ${totalVendasGeral.toFixed(2)}</span></div>
-          <div class="flex justify-between items-center"><span class="text-slate-300">🔴 (-) Contas a Pagar / Despesas:</span><span class="font-extrabold text-red-400 text-sm">R$ ${totalDespesas.toFixed(2)}</span></div>
-          
-          ${!ehApenasGerente ? `
-            ${!eModoMei() ? `<div class="flex justify-between items-center"><span class="text-slate-300">📦 Capital em Estoque:</span><span class="font-extrabold text-amber-300 text-sm">R$ ${capitalInvestidoEstoque.toFixed(2)}</span></div>` : ''}
-            <div class="flex justify-between items-center bg-teal-950/80 p-2.5 rounded-xl border border-teal-800 my-1">
-              <span class="text-teal-200 font-bold">💰 LUCRO LÍQUIDO REAL:</span><span class="font-extrabold text-green-400 text-base">R$ ${lucroLiquidoReal.toFixed(2)}</span>
-            </div>
-          ` : `
-            <div class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700 my-1 text-center text-[11px] text-slate-400 italic">
-              🔒 Informações de Lucro Líquido e Margem são restritas à Diretoria.
-            </div>
-          `}
-        </div>
-      </div>
-
-      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-        <h3 class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 border-b pb-1.5">
-          <i class="fa-solid fa-users-gear text-indigo-600"></i> Vendas por Operador
-        </h3>
-        <div class="space-y-1">${auditoriaOperadoresHTML}</div>
-      </div>
-
-      <div class="pt-1">
-        <button onclick="abrirModalOpcoesRelatorio()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition">
-          <i class="fa-solid fa-file-export text-base"></i> Central de Relatórios (PDF/CSV)
-        </button>
-      </div>
-    </div>
-  `;
-}
-function abrirModalOpcoesRelatorio() {
-  if (!eAdminOuGerenteOuSocio()) return;
-  const hojeStr = new Date().toISOString().split('T')[0];
-  document.getElementById('pdf-data-inicio').value = hojeStr;
-  document.getElementById('pdf-data-fim').value = hojeStr;
-  
-  // Oculta opção de DRE de Lucro Líquido no dropdown do PDF se for Gerente
-  const selectConteudo = document.getElementById('relatorio-tipo-conteudo');
-  if (selectConteudo) {
-    const optLucro = selectConteudo.querySelector('option[value="lucro"]');
-    if (optLucro) {
-      optLucro.style.display = (eGerente() && !eAdminOuSocio()) ? 'none' : 'block';
-    }
-  }
-  
-  document.getElementById('modal-opcoes-relatorio').classList.remove('hidden');
-}
-function fecharModalOpcoesRelatorio() {
-  document.getElementById('modal-opcoes-relatorio').classList.add('hidden');
-}
-function toggleInputsDatasRelatorio(tipo) {
-  const box = document.getElementById('box-datas-periodo');
-  if (tipo === 'periodo') box.classList.remove('hidden');
-  else box.classList.add('hidden');
-}
-function gerarPDFProfissional() {
-  if (!eAdminOuGerenteOuSocio()) return;
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const tipoFiltro = document.getElementById('pdf-periodo-tipo').value;
-    let listaVendasPDF = vendas;
-    let hojeObj = new Date();
-    let hojeStrFormatada = hojeObj.toLocaleDateString('pt-BR');
-    if (tipoFiltro === 'hoje') listaVendasPDF = vendas.filter(v => v.data && v.data.includes(hojeStrFormatada));
-    let y = 15;
-    doc.setFontSize(16);
-    doc.setTextColor(7, 94, 84);
-    doc.text(`Relatorio - ${perfilNegocio.nomeLoja || 'Caixa Rapido Movel Pro'}`, 14, y);
-    y += 10;
-    doc.setFontSize(10);
-    doc.setTextColor(0);
-    const totalVendas = listaVendasPDF.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-    doc.text(`Total de Vendas: R$ ${totalVendas.toFixed(2)} (${listaVendasPDF.length} vendas)`, 14, y);
-    y += 8;
-    listaVendasPDF.forEach(v => {
-      if (y > 270) { doc.addPage(); y = 15; }
-      let descVenda = v.itens ? v.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ') : 'Venda';
-      doc.text(`* ${v.data} | Op: ${v.operador || 'Op'} | ${descVenda} | R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
-      y += 6;
-    });
-    fecharModalOpcoesRelatorio();
-    doc.save(`Relatorio_${perfilNegocio.nomeLoja.replace(/\s+/g, '_')}.pdf`);
-  } catch(err) { alert("Erro ao gerar PDF."); }
-}
-function openModalFechamento() {
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const ultimoFechamentoTs = localStorage.getItem('crm_ultimo_fechamento_ts') || 0;
-  const vendasHoje = vendas.filter(v => {
-    let vData = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : v.id;
-    return v.data && v.data.includes(hojeStr) && vData > parseInt(ultimoFechamentoTs);
-  });
-  const totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
-  document.getElementById('fechamento-conteudo').innerHTML = `
-    <div class="bg-slate-50 p-3 rounded-xl border space-y-1">
-      <p class="font-bold text-slate-800 text-xs">Resumo do Turno Atual:</p>
-      <div class="flex justify-between"><span>Vendas:</span> <b>${vendasHoje.length}</b></div>
-      <div class="flex justify-between text-teal-700 font-bold"><span>Total:</span> <span>R$ ${totalHoje.toFixed(2)}</span></div>
-    </div>
-    <div class="space-y-2 pt-2">
-      <label class="block font-semibold text-slate-700">Contagem Física na Gaveta (R$):</label>
-      <input type="number" step="0.01" id="fechamento-gaveta" placeholder="0.00" class="w-full p-2 border rounded-lg text-sm font-bold">
-      <button onclick="conferirEGravarFechamentoCaixaManual(${totalHoje}, ${totalHoje}, ${vendasHoje.length})" class="w-full bg-teal-600 text-white font-bold py-2 rounded-lg text-xs">Salvar Fechamento & Zerar Caixa</button>
-    </div>
-  `;
-  document.getElementById('modal-fechamento').classList.remove('hidden');
-}
-function closeModalFechamento() {
-  document.getElementById('modal-fechamento').classList.add('hidden');
-}
-async function conferirEGravarFechamentoCaixaManual(totalEsperado, totalVendas, qtdVendas) {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
-  const gaveta = parseFloat(document.getElementById('fechamento-gaveta').value || 0);
-  const diferenca = gaveta - totalEsperado;
-  const hojeStr = new Date().toLocaleDateString('pt-BR');
-  const horaStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-  const user = auth.currentUser;
-  const nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
-  const fechoReg = { id: Date.now(), data: hojeStr, hora: horaStr, vendasQtd: qtdVendas, totalVendas: totalVendas, gavetaContada: gaveta, diferenca: diferenca, operador: nomeOperadorAtual };
-  historicoFechamentos.push(fechoReg);
-  localStorage.setItem('crm_ultimo_fechamento_ts', Date.now());
-  persistirDadosCompletos();
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) {
-    db.collection("empresas").doc(empresaIdDest).collection("fechamentos").add({ ...fechoReg, userId: user.uid, createdAt: new Date() });
-  }
-  closeModalFechamento();
-  alert(`✅ Fechamento de caixa salvo e painel de vendas zerado para o novo turno!`);
-  renderAba();
-}
-function exportarBackupCSV() {
-  if (!eAdminOuGerenteOuSocio()) return;
-  if (vendas.length === 0) { alert("Sem vendas."); return; }
-  let csvContent = "data:text/csv;charset=utf-8,ID;Data;Operador;Valor\n";
-  vendas.forEach(v => { csvContent += `${v.id};"${v.data}";"${v.operador || 'Op'}";${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}\n`; });
-  fecharModalOpcoesRelatorio();
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `Backup.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-function sincronizarNuvemManual() {
-  const user = auth.currentUser;
-  if (user) {
-    db.collection("perfis").doc(user.uid).set(perfilNegocio, { merge: true });
-    alert("✅ Sincronizado!");
-  } else alert("Faça login.");
-}
-auth.onAuthStateChanged(async (user) => {
-  // Se o aplicativo estiver no meio de um processo de vínculo ou cadastro de ADM,
-  // aguarda o salvamento terminar antes de tentar validar a sessão
-  if (emProcessoDeCadastro) return;
-
-  if (user) {
-    let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-    if (!vinculadoAtivo) return;
-
-    try {
-      let doc = await db.collection("perfis").doc(user.uid).get();
-      if (doc.exists) {
-        perfilNegocio = doc.data();
-        if (perfilNegocio.slotsFuncionarios) slotsFuncionarios = perfilNegocio.slotsFuncionarios;
-        if (perfilNegocio.notificacoesDesvinculacao) notificacoesDesvinculacao = perfilNegocio.notificacoesDesvinculacao;
-        persistirDadosCompletos();
+    const emailAtual = user ? user.email.trim().toLowerCase() : '';
+    let souAniversariante = anivs.some(a => a.email && a.email.trim().toLowerCase() === emailAtual);
+    if (souAniversariante) {
+      const modalFesta = document.getElementById('modal-festejo-aniversario');
+      const elNome = document.getElementById('aniversario-nome-usuario');
+      if (modalFesta && elNome) {
+        elNome.innerText = `Parabéns, ${perfilNegocio.nomeUsuario || 'Amigo(a)'}! 🎉`;
+        gerarParticulasConfeti();
+        modalFesta.classList.remove('hidden');
       }
-      mostrarInterfaceAutenticada(true); 
-      escutarStatusCaixaNuvem();
-      verificarLicencaStatus();
-      let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-      
-      await puxarDadosIniciaisDaEmpresa(empresaIdAtivo);
-      iniciarListenersTempoReal(empresaIdAtivo);
-      switchTab('inicio');
-      verificarAlertasEstoqueValidadeAutomatico();
-      verificarEExibirAniversarianteTelaCheia();
-    } catch(err) {
-      mostrarInterfaceAutenticada(true);
-      verificarLicencaStatus();
-      let empresaIdAtivo = perfilNegocio.empresaId || user.uid;
-      iniciarListenersTempoReal(empresaIdAtivo);
-      switchTab('inicio');
     }
-  } else {
-    if (unsubscribeProdutos) unsubscribeProdutos();
-    if (unsubscribeVendas) unsubscribeVendas();
-    if (unsubscribeClientes) unsubscribeClientes();
-    if (unsubscribeSangrias) unsubscribeSangrias();
-    if (unsubscribeFechamentos) unsubscribeFechamentos();
-    if (unsubscribePerfil) unsubscribePerfil();
-    mostrarInterfaceAutenticada(false);
-    showLoginForm();
   }
-});
-  // ANIVERSARIANTE DO DIA - COMEMORAÇÃO EM TELA CHEIA (v57.2)
-// ==========================================
-// CELEBRAÇÃO FESTIVA DE ANIVERSARIANTE (v57.2)
-// ==========================================
-
-// Sincronizador de áudio de palmas nativo (sem depender de MP3 externo)
-function tocarEfeitoSonoroPalmas() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    for (let i = 0; i < 16; i++) {
-      setTimeout(() => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(280 + Math.random() * 420, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.14);
-      }, i * 85);
-    }
-  } catch(e) {}
 }
 
-// Gerador de partículas de confetes coloridos em tela cheia
+function fecharModalFestejoAniversario() {
+  const modalFesta = document.getElementById('modal-festejo-aniversario');
+  if (modalFesta) modalFesta.classList.add('hidden');
+}
+
 function gerarParticulasConfeti() {
   const container = document.getElementById('particulas-confeti-container');
   if (!container) return;
   container.innerHTML = '';
-  const cores = ['#f59e0b', '#ec4899', '#8b5cf6', '#10b981', '#3b82f6', '#ef4444'];
-  for (let i = 0; i < 45; i++) {
+  const cores = ['#fbbf24', '#f43f5e', '#3b82f6', '#10b981', '#a855f7', '#ec4899'];
+  for (let i = 0; i < 40; i++) {
     const p = document.createElement('div');
     p.className = 'particle-confeti';
     p.style.left = Math.random() * 100 + '%';
@@ -4599,270 +2775,1187 @@ function gerarParticulasConfeti() {
   }
 }
 
-function fecharModalFestejoAniversario() {
-  const modal = document.getElementById('modal-festejo-aniversario');
-  if (modal) modal.classList.add('hidden');
+// ------------------------------------------
+// ABA INÍCIO / PAINEL PRINCIPAL
+// ------------------------------------------
+function renderAbaInicio() {
+  const cont = document.getElementById('content-inicio');
+  if (!cont) return;
+
+  let hojeStr = new Date().toLocaleDateString('pt-BR');
+  let vendasHoje = vendas.filter(v => v.data === hojeStr);
+  let totalHoje = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+  let totalFiadoPendente = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);
+  let itensEstoqueBaixo = produtos.filter(p => (p.estoque || 0) <= (p.estMin || 3)).length;
+
+  cont.innerHTML = `
+    <!-- HEADER DA LOJA -->
+    <div class="brand-header-bg p-5 rounded-3xl text-white shadow-lg mb-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <button onclick="abrirDrawerNavegacao()" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-2xl flex items-center justify-center text-lg transition active:scale-95">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="text-center">
+          <h1 class="text-base font-black tracking-wide truncate max-w-[180px]">${perfilNegocio.nomeLoja || 'Minha Loja'}</h1>
+          <p class="text-[10px] text-teal-100 font-bold uppercase tracking-wider">${perfilNegocio.funcaoUsuario || 'Operador'}</p>
+        </div>
+        <button onclick="abrirModalNotificacoes()" class="relative w-10 h-10 bg-white/20 hover:bg-white/30 rounded-2xl flex items-center justify-center text-lg transition active:scale-95">
+          <i id="sininho-icone-principal" class="fa-solid fa-bell"></i>
+          <span id="sininho-badge-count" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">0</span>
+        </button>
+      </div>
+
+      <div class="bg-black/20 p-3.5 rounded-2xl border border-white/10 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] text-teal-100 font-bold uppercase tracking-wider">Faturamento Hoje</p>
+          <p class="text-2xl font-black text-white">R$ ${totalHoje.toFixed(2)}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-teal-100 font-bold uppercase tracking-wider">Vendas</p>
+          <p class="text-lg font-black text-amber-300">${vendasHoje.length} realizadas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS DE MÉTRICAS -->
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div onclick="switchTab('clientes')" class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-purple-300 transition active:scale-95">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[10px] font-black text-purple-700 uppercase tracking-wider">Fiado Pendente</span>
+          <div class="w-7 h-7 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center text-xs">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+        </div>
+        <p class="text-base font-black text-slate-800">R$ ${totalFiadoPendente.toFixed(2)}</p>
+        <p class="text-[10px] text-slate-400 font-medium">Contas a receber</p>
+      </div>
+
+      <div onclick="irParaSubabaEstoqueEspecifica('minimos')" class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-red-300 transition active:scale-95">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[10px] font-black text-red-600 uppercase tracking-wider">Estoque Mínimo</span>
+          <div class="w-7 h-7 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-xs">
+            <i class="fa-solid fa-boxes-packing"></i>
+          </div>
+        </div>
+        <p class="text-base font-black text-slate-800">${itensEstoqueBaixo} item(ns)</p>
+        <p class="text-[10px] text-slate-400 font-medium">Abaixo do limite</p>
+      </div>
+    </div>
+
+    <!-- AÇÕES RÁPIDAS -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3 mb-5">
+      <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+        <i class="fa-solid fa-bolt text-amber-500"></i> Ações Rápidas
+      </h3>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="switchTab('vendas')" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-2xl font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 shadow transition active:scale-95">
+          <i class="fa-solid fa-cash-register text-lg"></i>
+          <span>Abrir Caixa / PDV</span>
+        </button>
+        <button onclick="abrirModalCadastroProduto()" class="bg-slate-900 hover:bg-slate-800 text-white p-3 rounded-2xl font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 shadow transition active:scale-95">
+          <i class="fa-solid fa-box-open text-lg text-teal-400"></i>
+          <span>Novo Produto</span>
+        </button>
+        <button onclick="abrirModalSangria('sangria')" class="bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 p-3 rounded-2xl font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 transition active:scale-95">
+          <i class="fa-solid fa-arrow-up-from-bracket text-lg"></i>
+          <span>Sangria (Retirada)</span>
+        </button>
+        <button onclick="abrirModalSangria('suprimento')" class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 p-3 rounded-2xl font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 transition active:scale-95">
+          <i class="fa-solid fa-arrow-down-to-bracket text-lg"></i>
+          <span>Suprimento (Entrada)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BOTÃO FECHAR TURNO -->
+    <button onclick="abrirModalFechamento()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
+      <i class="fa-solid fa-vault text-amber-400"></i> Fechamento de Caixa / Turno
+    </button>
+  `;
 }
 
-// Verificação universal (ADM, Sócio, Gerente, Operador)
-function verificarEExibirAniversarianteTelaCheia() {
-  const hoje = new Date();
-  const diaAtual = String(hoje.getDate()).padStart(2, '0');
-  const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
-  const user = auth.currentUser;
-  if (!user) return;
+// ------------------------------------------
+// ABA CAIXA / PDV (VENDAS)
+// ------------------------------------------
+function renderAbaVendas() {
+  const cont = document.getElementById('content-vendas');
+  if (!cont) return;
 
-  const emailAtual = user.email ? user.email.trim().toLowerCase() : '';
-  let souAniversariante = false;
-  let meuNome = perfilNegocio.nomeUsuario || 'Parceiro';
+  let totalCarrinho = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+  let totalItens = carrinho.reduce((acc, item) => acc + item.qtd, 0);
 
-  // 1. Checa se o usuário logado faz aniversário (Perfil Master / Dono / Gerente)
-  if (perfilNegocio.nascimento) {
-    const partes = perfilNegocio.nascimento.split('-');
-    if (partes.length >= 3 && partes[2] === diaAtual && partes[1] === mesAtual) {
-      souAniversariante = true;
+  cont.innerHTML = `
+    <!-- BARRA SUPERIOR PDV -->
+    <div class="flex items-center justify-between pb-3 border-b mb-3">
+      <h2 class="text-sm font-black text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-cash-register text-teal-600"></i> Caixa Rápido PDV
+      </h2>
+      <button onclick="abrirScanner('caixa')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition active:scale-95">
+        <i class="fa-solid fa-camera"></i> Ler Código
+      </button>
+    </div>
+
+    <!-- BUSCA DE PRODUTO -->
+    <div class="relative mb-3">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+      <input type="text" id="busca-pdv" oninput="filtrarAtalhosPDV(this.value)" placeholder="Buscar produto por nome ou EAN..." class="w-full pl-9 pr-3 py-2.5 border rounded-xl text-xs font-bold bg-slate-50 focus:bg-white focus:outline-none focus:border-teal-500 transition">
+    </div>
+
+    <!-- ATALHOS DE PRODUTOS -->
+    <div id="grid-atalhos-pdv" class="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto mb-4 p-1 bg-slate-50/80 rounded-2xl border border-slate-100">
+      ${renderAtalhosProdutosHTML(produtos)}
+    </div>
+
+    <!-- LISTA DO CARRINHO -->
+    <div class="space-y-2 mb-4">
+      <div class="flex justify-between items-center px-1">
+        <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Itens no Carrinho (${carrinho.length})</span>
+        ${carrinho.length > 0 ? `<button onclick="limparCarrinho()" class="text-[10px] font-bold text-red-600 hover:underline">Limpar Tudo</button>` : ''}
+      </div>
+
+      <div class="max-h-48 overflow-y-auto space-y-1.5">
+        ${carrinho.length === 0 ? `
+          <div class="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <p class="text-xs font-bold text-slate-400">Carrinho Vazio</p>
+            <p class="text-[10px] text-slate-400">Toque em um produto ou bipe o código de barras</p>
+          </div>
+        ` : carrinho.map((item, idx) => `
+          <div class="bg-white p-2.5 rounded-xl border shadow-sm flex items-center justify-between text-xs">
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 truncate">${item.nome}</p>
+              <p class="text-[10px] text-slate-500">R$ ${item.preco.toFixed(2)} / ${item.medida || 'un'}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border">
+                <button onclick="alterarQtdCarrinho(${idx}, -1)" class="w-6 h-6 bg-white rounded-md font-black text-slate-700 shadow-sm flex items-center justify-center">-</button>
+                <span class="w-8 text-center font-extrabold text-slate-800">${item.qtd}</span>
+                <button onclick="alterarQtdCarrinho(${idx}, 1)" class="w-6 h-6 bg-white rounded-md font-black text-slate-700 shadow-sm flex items-center justify-center">+</button>
+              </div>
+              <span class="font-black text-teal-800 w-16 text-right">R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- VINCULAR CLIENTE (FIADO/VENDA) -->
+    <div class="bg-purple-50/80 p-3 rounded-2xl border border-purple-200 mb-4 space-y-2">
+      <div class="flex justify-between items-center">
+        <span class="text-[11px] font-extrabold text-purple-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-user-tag text-purple-600"></i> Cliente para Fiado / Comprovante
+        </span>
+        ${clienteAtualVenda.nome ? `<button onclick="removerClienteDaVenda()" class="text-[10px] text-red-600 font-bold">Remover</button>` : ''}
+      </div>
+      ${clienteAtualVenda.nome ? `
+        <div class="bg-white p-2 rounded-xl border border-purple-300 text-xs font-bold text-purple-950 flex justify-between items-center">
+          <span>👤 ${clienteAtualVenda.nome}</span>
+          <span class="text-[10px] text-slate-500">${clienteAtualVenda.zap || 'Sem Whats'}</span>
+        </div>
+      ` : `
+        <select onchange="selecionarClienteNaVenda(this.value)" class="w-full p-2 border rounded-xl text-xs font-bold bg-white text-slate-800">
+          <option value="">-- Selecione o Cliente (Opcional) --</option>
+          ${clientes.map((c, i) => `<option value="${i}">${c.nome} ${c.debito > 0 ? '(Débito: R$ ' + parseFloat(c.debito).toFixed(2) + ')' : ''}</option>`).join('')}
+        </select>
+      `}
+    </div>
+
+    <!-- PAINEL DE PAGAMENTO -->
+    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <span class="text-xs font-bold text-slate-400">Total a Pagar:</span>
+        <span class="text-2xl font-black text-teal-400">R$ ${totalCarrinho.toFixed(2)}</span>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Forma de Pagamento:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="finalizarVendaAtual('Dinheiro')" ${carrinho.length === 0 ? 'disabled' : ''} class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-extrabold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition active:scale-95">
+            💵 Dinheiro
+          </button>
+          <button onclick="finalizarVendaAtual('PIX')" ${carrinho.length === 0 ? 'disabled' : ''} class="bg-teal-600 hover:bg-teal-500 disabled:opacity-40 text-white font-extrabold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition active:scale-95">
+            ⚡ PIX
+          </button>
+          <button onclick="finalizarVendaAtual('Cartão de Débito')" ${carrinho.length === 0 ? 'disabled' : ''} class="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-extrabold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition active:scale-95">
+            💳 Débito
+          </button>
+          <button onclick="finalizarVendaAtual('Cartão de Crédito')" ${carrinho.length === 0 ? 'disabled' : ''} class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-extrabold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition active:scale-95">
+            💳 Crédito
+          </button>
+        </div>
+        <button onclick="finalizarVendaAtual('Fiado')" ${carrinho.length === 0 ? 'disabled' : ''} class="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white font-extrabold py-3 rounded-xl text-xs shadow mt-1 flex items-center justify-center gap-1.5 transition active:scale-95">
+          📋 Registrar no Fiado / Prazo
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAtalhosProdutosHTML(listaProds) {
+  let filtrados = listaProds.filter(p => p.atalho !== false);
+  if (filtrados.length === 0) {
+    return `<p class="col-span-2 text-center text-xs text-slate-400 py-4">Nenhum atalho configurado.</p>`;
+  }
+  return filtrados.map((p) => {
+    let indexReal = produtos.findIndex(item => item.id === p.id);
+    let esgotado = (p.estoque || 0) <= 0;
+    return `
+      <div onclick="${esgotado ? '' : 'adicionarAoCarrinhoSilent(' + indexReal + ')'}" class="${esgotado ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'bg-white hover:bg-teal-50 cursor-pointer'} p-2 rounded-xl border shadow-sm transition active:scale-95 flex flex-col justify-between">
+        <p class="font-bold text-slate-800 text-xs truncate">${p.nome}</p>
+        <div class="flex justify-between items-center mt-1">
+          <span class="text-[10px] text-slate-500 font-semibold">${p.estoque || 0} ${p.medida || 'un'}</span>
+          <span class="font-black text-teal-700 text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filtrarAtalhosPDV(termo) {
+  let bus = termo.toLowerCase().trim();
+  let filtrados = produtos.filter(p => p.nome.toLowerCase().includes(bus) || (p.ean && p.ean.includes(bus)));
+  document.getElementById('grid-atalhos-pdv').innerHTML = renderAtalhosProdutosHTML(filtrados);
+}
+
+function alterarQtdCarrinho(idx, delta) {
+  if (carrinho[idx]) {
+    carrinho[idx].qtd += delta;
+    if (carrinho[idx].qtd <= 0) {
+      carrinho.splice(idx, 1);
+    }
+    renderAbaVendas();
+  }
+}
+
+function limparCarrinho() {
+  carrinho = [];
+  renderAbaVendas();
+}
+
+function selecionarClienteNaVenda(idxStr) {
+  if (idxStr === "") {
+    clienteAtualVenda = { nome: '', zap: '' };
+  } else {
+    let c = clientes[parseInt(idxStr)];
+    if (c) {
+      clienteAtualVenda = { nome: c.nome, zap: c.telefone || '' };
     }
   }
+  renderAbaVendas();
+}
 
-  // 2. Checa se é um colaborador cadastrado num slot de equipe
-  slotsFuncionarios.forEach(s => {
-    if (s.ativo && s.nascimento && s.email && s.email.trim().toLowerCase() === emailAtual) {
-      const partes = s.nascimento.split('-');
-      if (partes.length >= 3 && partes[2] === diaAtual && partes[1] === mesAtual) {
-        souAniversariante = true;
-        meuNome = s.nome || meuNome;
-      }
+function removerClienteDaVenda() {
+  clienteAtualVenda = { nome: '', zap: '' };
+  renderAbaVendas();
+}
+
+async function finalizarVendaAtual(formaPagto) {
+  if (carrinho.length === 0) return;
+
+  if (formaPagto === 'Fiado' && !clienteAtualVenda.nome) {
+    alert("⚠️ Selecione um cliente para registrar a venda no Fiado.");
+    return;
+  }
+
+  let totalVenda = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+  let totalCustoVenda = carrinho.reduce((acc, item) => acc + ((item.precoCusto || 0) * item.qtd), 0);
+  let operadorNome = perfilNegocio.nomeUsuario || "Operador";
+
+  // Baixa no Estoque
+  carrinho.forEach(itemCart => {
+    let p = produtos.find(prod => prod.nome.toLowerCase() === itemCart.nome.toLowerCase());
+    if (p) {
+      p.estoque = Math.max(0, (p.estoque || 0) - itemCart.qtd);
     }
   });
 
-  const hojeChave = `${hoje.getFullYear()}-${mesAtual}-${diaAtual}_${emailAtual}`;
-  const jaExibiuHoje = localStorage.getItem('crm_festejo_exibido') === hojeChave;
+  let novaVenda = {
+    id: Date.now(),
+    data: new Date().toLocaleDateString('pt-BR'),
+    hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    itens: [...carrinho],
+    valorTotal: totalVenda,
+    custoTotal: totalCustoVenda,
+    formaPagto: formaPagto,
+    cliente: clienteAtualVenda.nome || 'Consumidor Final',
+    operador: operadorNome
+  };
 
-  if (souAniversariante && !jaExibiuHoje) {
-    localStorage.setItem('crm_festejo_exibido', hojeChave);
-    const modal = document.getElementById('modal-festejo-aniversario');
-    const nomeEl = document.getElementById('aniversario-nome-usuario');
-    if (modal && nomeEl) {
-      nomeEl.innerText = `Parabéns, ${meuNome.split(' ')[0]}! 🎉`;
-      gerarParticulasConfeti();
-      tocarEfeitoSonoroPalmas();
-      modal.classList.remove('hidden');
+  vendas.unshift(novaVenda);
+
+  // Registro de Fiado
+  if (formaPagto === 'Fiado') {
+    let cli = clientes.find(c => c.nome.toLowerCase() === clienteAtualVenda.nome.toLowerCase());
+    if (cli) {
+      cli.debito = (cli.debito || 0) + totalVenda;
+      cli.historico = cli.historico || [];
+      cli.historico.push({
+        data: novaVenda.data,
+        descricao: `Compra Fiado (${carrinho.length} itens)`,
+        valor: totalVenda
+      });
+    } else {
+      clientes.push({
+        id: Date.now(),
+        nome: clienteAtualVenda.nome,
+        telefone: clienteAtualVenda.zap,
+        debito: totalVenda,
+        historico: [{
+          data: novaVenda.data,
+          descricao: `Compra Fiado (${carrinho.length} itens)`,
+          valor: totalVenda
+        }]
+      });
     }
-  }
-}
-
-// ==========================================
-// DETECTOR DE DISPOSITIVO DO COLABORADOR
-// ==========================================
-function obterInfoDispositivoAtual() {
-  const ua = navigator.userAgent;
-  let plataforma = "Computador (Desktop)";
-  if (/Android/i.test(ua)) plataforma = "Celular Android";
-  else if (/iPhone/i.test(ua)) plataforma = "iPhone (iOS)";
-  else if (/iPad/i.test(ua)) plataforma = "iPad (iOS)";
-
-  let navegador = "Navegador Web";
-  if (/Chrome/i.test(ua)) navegador = "Chrome";
-  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) navegador = "Safari";
-  else if (/Firefox/i.test(ua)) navegador = "Firefox";
-
-  return `${plataforma} via ${navegador} (${window.screen.width}x${window.screen.height})`;
-}  
-// ==========================================
-// MONITOR DE CONEXÃO (ONLINE / OFFLINE)
-// ==========================================
-function atualizarBadgeConexaoUI(online) {
-  const badge = document.getElementById('badge-status-rede');
-  if (!badge) return;
-
-  if (online) {
-    badge.className = "text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 inline-flex items-center gap-1";
-    badge.innerHTML = `<span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Nuvem Online`;
-  } else {
-    badge.className = "text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/50 inline-flex items-center gap-1 animate-bounce";
-    badge.innerHTML = `<span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span> Offline (Salvação Local)`;
-  }
-}
-
-let statusConexaoAtual = navigator.onLine;
-
-async function checarPingReal() {
-  if (!navigator.onLine) {
-    if (statusConexaoAtual) {
-      statusConexaoAtual = false;
-      atualizarBadgeConexaoUI(false);
-    }
-    return false;
+    exibirToastIntegracaoFiado(clienteAtualVenda.nome, totalVenda);
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s de limite de resposta
+  persistirDadosCompletos();
 
-    // Testa um ping levinho sem carregar dados pesados
-    await fetch('https://www.google.com/favicon.ico', { 
-      method: 'HEAD', 
-      mode: 'no-cors', 
-      cache: 'no-store', 
-      signal: controller.signal 
+  // Envio para Nuvem
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("vendas").doc(String(novaVenda.id)).set(novaVenda, { merge: true });
+    carrinho.forEach(itemCart => {
+      let p = produtos.find(prod => prod.nome.toLowerCase() === itemCart.nome.toLowerCase());
+      if (p) {
+        db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(p.id)).set(p, { merge: true });
+      }
     });
-    
-    clearTimeout(timeoutId);
-
-    if (!statusConexaoAtual) {
-      statusConexaoAtual = true;
-      atualizarBadgeConexaoUI(true);
-      if (typeof auth !== 'undefined' && auth.currentUser && typeof perfilNegocio !== 'undefined' && perfilNegocio && perfilNegocio.empresaId) {
-        puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+    if (formaPagto === 'Fiado') {
+      let cli = clientes.find(c => c.nome.toLowerCase() === clienteAtualVenda.nome.toLowerCase());
+      if (cli) {
+        db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(cli.id)).set(cli, { merge: true });
       }
     }
-    return true;
-  } catch (err) {
-    if (statusConexaoAtual) {
-      statusConexaoAtual = false;
-      atualizarBadgeConexaoUI(false);
-    }
-    return false;
   }
-}
-// ==========================================
-// MONITOR DE MEMÓRIA & BACKUP OFFLINE SEGURO
-// ==========================================
 
-async function calcularUsoMemoriaLocal() {
-  try {
-    if (navigator.storage && navigator.storage.estimate) {
-      const estimate = await navigator.storage.estimate();
-      const usadoMB = (estimate.usage / (1024 * 1024)).toFixed(2);
-      const limiteMB = (estimate.quota / (1024 * 1024)).toFixed(2);
-      const percentual = Math.round((estimate.usage / estimate.quota) * 100);
-
-      const badgeElem = document.getElementById('badge-memoria-percent');
-      if (badgeElem) {
-        badgeElem.textContent = `${percentual}% Usado`;
-        if (percentual >= 80) {
-          badgeElem.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
-        } else {
-          badgeElem.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
-        }
-      }
-
-      if (percentual >= 80) {
-        if (typeof mostrarToastAlert === 'function') {
-          mostrarToastAlert(`⚠️ Atenção: Memória offline em ${percentual}%. Recomenda-se exportar um backup de segurança!`);
-        }
-      }
-      return { usadoMB, limiteMB, percentual };
-    }
-  } catch (e) {
-    console.warn("Estimativa de memória não suportada neste navegador.", e);
-  }
-  return { usadoMB: 0, limiteMB: 0, percentual: 0 };
+  carrinho = [];
+  clienteAtualVenda = { nome: '', zap: '' };
+  tocarBeepConfirmacaoBip();
+  alert(`✅ Venda de R$ ${totalVenda.toFixed(2)} (${formaPagto}) finalizada com sucesso!`);
+  renderAbaVendas();
 }
 
+// ------------------------------------------
+// ABA ESTOQUE / PRODUTOS
+// ------------------------------------------
+function setSubAbaEstoque(sub) {
+  subAbaEstoque = sub;
+  renderAbaEstoque();
+}
+
+function renderAbaEstoque() {
+  const cont = document.getElementById('content-estoque');
+  if (!cont) return;
+
+  let prodsExibidos = [...produtos];
+  if (subAbaEstoque === 'minimos') {
+    prodsExibidos = prodsExibidos.filter(p => (p.estoque || 0) <= (p.estMin || 3));
+  } else if (subAbaEstoque === 'validades') {
+    let diasGeral = minimosPadrao.validadeGeralDias || 30;
+    let hoje = new Date();
+    prodsExibidos = prodsExibidos.filter(p => {
+      if (!p.validade) return false;
+      let dVal = new Date(p.validade);
+      let diasAlertaProd = p.alertaDias ? parseInt(p.alertaDias) : diasGeral;
+      let limiteAlerta = new Date();
+      limiteAlerta.setDate(hoje.getDate() + diasAlertaProd);
+      return dVal <= limiteAlerta;
+    });
+  }
+
+  cont.innerHTML = `
+    <div class="flex justify-between items-center pb-3 border-b mb-3">
+      <h2 class="text-sm font-black text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked text-teal-600"></i> Gestão de Estoque
+      </h2>
+      <button onclick="abrirModalCadastroProduto()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition active:scale-95">
+        <i class="fa-solid fa-plus"></i> Novo Item
+      </button>
+    </div>
+
+    <!-- SUB-ABAS DE FILTRO -->
+    <div class="flex gap-1.5 mb-3 overflow-x-auto pb-1 text-xs font-bold">
+      <button onclick="setSubAbaEstoque('none')" class="px-3 py-1.5 rounded-xl border ${subAbaEstoque === 'none' ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-100 text-slate-600'}">
+        Todos (${produtos.length})
+      </button>
+      <button onclick="setSubAbaEstoque('minimos')" class="px-3 py-1.5 rounded-xl border ${subAbaEstoque === 'minimos' ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-200'}">
+        Mínimos
+      </button>
+      <button onclick="setSubAbaEstoque('validades')" class="px-3 py-1.5 rounded-xl border ${subAbaEstoque === 'validades' ? 'bg-amber-600 text-white border-amber-600' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+        Validades
+      </button>
+    </div>
+
+    <!-- BUSCA -->
+    <div class="relative mb-3">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+      <input type="text" oninput="filtrarListaEstoque(this.value)" placeholder="Buscar no estoque..." class="w-full pl-9 pr-3 py-2 border rounded-xl text-xs font-bold bg-slate-50">
+    </div>
+
+    <!-- LISTA DE PRODUTOS -->
+    <div id="lista-produtos-estoque" class="space-y-2 max-h-[60vh] overflow-y-auto">
+      ${renderListaEstoqueHTML(prodsExibidos)}
+    </div>
+  `;
+}
+
+function renderListaEstoqueHTML(lista) {
+  if (lista.length === 0) {
+    return `<p class="text-xs text-slate-400 italic text-center py-8">Nenhum produto cadastrado nesta visualização.</p>`;
+  }
+  return lista.map((p) => {
+    let idxReal = produtos.findIndex(item => item.id === p.id);
+    let estoqueBaixo = (p.estoque || 0) <= (p.estMin || 3);
+    return `
+      <div class="bg-white p-3 rounded-2xl border shadow-sm flex items-center justify-between text-xs">
+        <div class="min-w-0 flex-1 space-y-1">
+          <div class="flex items-center gap-2">
+            <p class="font-extrabold text-slate-800 text-xs truncate">${p.nome}</p>
+            ${estoqueBaixo ? `<span class="bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded">Mínimo</span>` : ''}
+          </div>
+          <p class="text-[10px] text-slate-500">
+            Estoque: <b class="${estoqueBaixo ? 'text-red-600 font-extrabold' : 'text-slate-800'}">${p.estoque || 0} ${p.medida || 'un'}</b> | 
+            Custo: R$ ${parseFloat(p.precoCusto || 0).toFixed(2)} | 
+            Venda: <b class="text-teal-700">R$ ${parseFloat(p.preco).toFixed(2)}</b>
+          </p>
+          ${p.validade ? `<p class="text-[9px] text-amber-700 font-semibold">📅 Validade: ${p.validade.split('-').reverse().join('/')}</p>` : ''}
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="abrirModalAjusteRapido(${idxReal})" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold" title="Ajuste Rápido">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button onclick="excluirProdutoEstoque(${idxReal})" class="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold" title="Excluir">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filtrarListaEstoque(termo) {
+  let bus = termo.toLowerCase().trim();
+  let filtrados = produtos.filter(p => p.nome.toLowerCase().includes(bus) || (p.ean && p.ean.includes(bus)));
+  document.getElementById('lista-produtos-estoque').innerHTML = renderListaEstoqueHTML(filtrados);
+}
+
+function abrirModalCadastroProduto() {
+  document.getElementById('cad-prod-nome').value = '';
+  document.getElementById('cad-prod-preco-custo').value = '';
+  document.getElementById('cad-prod-preco').value = '';
+  document.getElementById('cad-prod-qtd').value = '';
+  document.getElementById('cad-prod-estmin').value = '';
+  document.getElementById('cad-prod-ean').value = '';
+  document.getElementById('cad-prod-validade').value = '';
+  document.getElementById('cad-prod-alerta-dias').value = '';
+  document.getElementById('cad-prod-ean-display').classList.add('hidden');
+  prodEditandoIndex = null;
+  document.getElementById('form-estoque-titulo').innerText = "Cadastrar Novo Produto";
+  document.getElementById('modal-cadastro-produto').classList.remove('hidden');
+}
+
+function fecharModalCadastroproduto() {
+  document.getElementById('modal-cadastro-produto').classList.add('hidden');
+}
+
+function preencherMinimoAutomaticoPorMedida() {
+  const med = document.getElementById('cad-prod-medida').value;
+  const campoMin = document.getElementById('cad-prod-estmin');
+  if (minimosPadrao[med]) {
+    campoMin.value = minimosPadrao[med];
+  }
+}
+
+function calcularEExibirMargemLucro() {
+  const custo = parseFloat(document.getElementById('cad-prod-preco-custo').value) || 0;
+  const venda = parseFloat(document.getElementById('cad-prod-preco').value) || 0;
+  const boxMargem = document.getElementById('margem-lucro-box');
+  if (custo > 0 && venda > 0) {
+    let lucro = venda - custo;
+    let margem = (lucro / venda) * 100;
+    boxMargem.innerText = `Lucro: R$ ${lucro.toFixed(2)} (${margem.toFixed(1)}%)`;
+  } else {
+    boxMargem.innerText = '';
+  }
+}
+
+async function cadastrarOuAtualizarProduto() {
+  const nome = document.getElementById('cad-prod-nome').value.trim();
+  const preco = parseFloat(document.getElementById('cad-prod-preco').value);
+  const precoCusto = parseFloat(document.getElementById('cad-prod-preco-custo').value) || 0;
+  const qtd = parseFloat(document.getElementById('cad-prod-qtd').value) || 0;
+  const medida = document.getElementById('cad-prod-medida').value;
+  const estMin = parseFloat(document.getElementById('cad-prod-estmin').value) || 3;
+  const ean = document.getElementById('cad-prod-ean').value;
+  const entrada = document.getElementById('cad-prod-entrada').value;
+  const validade = document.getElementById('cad-prod-validade').value;
+  const alertaDias = document.getElementById('cad-prod-alerta-dias').value;
+  const atalho = document.getElementById('cad-prod-atalho').checked;
+
+  if (!nome || isNaN(preco) || preco <= 0) {
+    alert("Informe o nome e um preço de venda válido.");
+    return;
+  }
+
+  let prodObj = {
+    id: prodEditandoIndex !== null ? produtos[prodEditandoIndex].id : Date.now(),
+    nome: nome,
+    preco: preco,
+    precoCusto: precoCusto,
+    estoque: qtd,
+    medida: medida,
+    estMin: estMin,
+    ean: ean,
+    entrada: entrada,
+    validade: validade,
+    alertaDias: alertaDias,
+    atalho: atalho
+  };
+
+  if (prodEditandoIndex !== null) {
+    produtos[prodEditandoIndex] = prodObj;
+  } else {
+    produtos.push(prodObj);
+  }
+
+  persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(prodObj.id)).set(prodObj, { merge: true });
+  }
+
+  fecharModalCadastroproduto();
+  renderAbaEstoque();
+  alert("✅ Produto salvo com sucesso!");
+}
+
+function abrirModalAjusteRapido(idx) {
+  prodEditandoIndex = idx;
+  let p = produtos[idx];
+  document.getElementById('ajuste-prod-index').value = idx;
+  document.getElementById('ajuste-prod-qtd').value = p.estoque || 0;
+  document.getElementById('ajuste-prod-preco').value = p.preco || 0;
+  document.getElementById('ajuste-prod-validade').value = p.validade || '';
+  document.getElementById('ajuste-rapido-titulo').innerText = `Ajustar: ${p.nome}`;
+  document.getElementById('modal-ajuste-rapido-prod').classList.remove('hidden');
+}
+
+function fecharModalAjusteRapido() {
+  document.getElementById('modal-ajuste-rapido-prod').classList.add('hidden');
+}
+
+function adicionarQtdDireta(qtdAdd) {
+  let campo = document.getElementById('ajuste-prod-qtd');
+  campo.value = (parseFloat(campo.value) || 0) + qtdAdd;
+}
+
+function aplicarDescontoPorcentagem(pct) {
+  let campo = document.getElementById('ajuste-prod-preco');
+  let val = parseFloat(campo.value) || 0;
+  campo.value = (val * (1 - pct / 100)).toFixed(2);
+}
+
+async function salvarAjusteRapidoProduto() {
+  let idx = parseInt(document.getElementById('ajuste-prod-index').value);
+  if (produtos[idx]) {
+    produtos[idx].estoque = parseFloat(document.getElementById('ajuste-prod-qtd').value) || 0;
+    produtos[idx].preco = parseFloat(document.getElementById('ajuste-prod-preco').value) || 0;
+    produtos[idx].validade = document.getElementById('ajuste-prod-validade').value;
+
+    persistirDadosCompletos();
+
+    const user = auth.currentUser;
+    let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(produtos[idx].id)).set(produtos[idx], { merge: true });
+    }
+
+    fecharModalAjusteRapido();
+    renderAbaEstoque();
+    alert("✅ Alterações salvas!");
+  }
+}
+
+async function excluirProdutoEstoque(idx) {
+  if (confirm(`Deseja realmente excluir o produto ${produtos[idx].nome}?`)) {
+    let prod = produtos[idx];
+    produtos.splice(idx, 1);
+    persistirDadosCompletos();
+
+    const user = auth.currentUser;
+    let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(prod.id)).delete().catch(()=>{});
+    }
+
+    renderAbaEstoque();
+  }
+}
+
+// ------------------------------------------
+// ABA FIADO / CLIENTES
+// ------------------------------------------
+function renderAbaClientes() {
+  const cont = document.getElementById('content-clientes');
+  if (!cont) return;
+
+  let totalGeralDebitos = clientes.reduce((acc, c) => acc + (c.debito || 0), 0);
+
+  cont.innerHTML = `
+    <div class="flex justify-between items-center pb-3 border-b mb-3">
+      <div>
+        <h2 class="text-sm font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-users-viewfinder text-purple-600"></i> Caderneta / Fiado
+        </h2>
+        <p class="text-[10px] text-slate-500">Total a Receber: <b class="text-purple-700">R$ ${totalGeralDebitos.toFixed(2)}</b></p>
+      </div>
+      <button onclick="cadastrarClienteNovoPrompt()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition active:scale-95">
+        <i class="fa-solid fa-user-plus"></i> Novo Cliente
+      </button>
+    </div>
+
+    <!-- LISTA DE CLIENTES -->
+    <div class="space-y-2 max-h-[65vh] overflow-y-auto">
+      ${clientes.length === 0 ? `
+        <p class="text-xs text-slate-400 italic text-center py-8">Nenhum cliente cadastrado na caderneta.</p>
+      ` : clientes.map((c, idx) => `
+        <div class="bg-white p-3.5 rounded-2xl border shadow-sm space-y-2 text-xs">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-extrabold text-slate-800 text-sm">${c.nome}</p>
+              <p class="text-[10px] text-slate-500">📱 ${c.telefone || 'Sem telefone'}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold text-slate-400 block">Débito Atual</span>
+              <span class="font-black text-base ${c.debito > 0 ? 'text-purple-700' : 'text-green-600'}">R$ ${parseFloat(c.debito || 0).toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div class="flex gap-2 pt-1 border-t">
+            ${c.debito > 0 ? `
+              <button onclick="quitarDebitoClientePrompt(${idx})" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-extrabold py-2 rounded-xl text-xs shadow transition active:scale-95">
+                💵 Receber / Quitar
+              </button>
+              ${c.telefone ? `
+                <button onclick="cobrarWhatsAppCliente(${idx})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow flex items-center gap-1">
+                  <i class="fa-brands fa-whatsapp"></i> Cobrar
+                </button>
+              ` : ''}
+            ` : `<span class="text-[10px] text-green-700 font-bold bg-green-50 px-2.5 py-1 rounded-lg">✅ Em Dia</span>`}
+            <button onclick="abrirModalEditarCliente(${idx})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function cadastrarClienteNovoPrompt() {
+  let nome = prompt("Digite o nome completo do cliente:");
+  if (!nome) return;
+  let tel = prompt("Digite o WhatsApp/Telefone (com DDD):") || "";
+  let novoCli = { id: Date.now(), nome: nome.trim(), telefone: tel.trim(), debito: 0, historico: [] };
+  clientes.push(novoCli);
+  persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(novoCli.id)).set(novoCli, { merge: true });
+  }
+
+  renderAbaClientes();
+  alert("✅ Cliente cadastrado!");
+}
+
+async function quitarDebitoClientePrompt(idx) {
+  let c = clientes[idx];
+  let valorAbater = parseFloat(prompt(`Digite o valor do pagamento recebido de ${c.nome} (Débito: R$ ${c.debito.toFixed(2)}):`));
+  if (isNaN(valorAbater) || valorAbater <= 0) return;
+
+  c.debito = Math.max(0, c.debito - valorAbater);
+  c.historico = c.historico || [];
+  c.historico.push({
+    data: new Date().toLocaleDateString('pt-BR'),
+    descricao: `Pagamento Recebido`,
+    valor: -valorAbater
+  });
+
+  persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(c.id)).set(c, { merge: true });
+  }
+
+  renderAbaClientes();
+  alert(`✅ Pagamento de R$ ${valorAbater.toFixed(2)} registrado com sucesso!`);
+}
+
+function cobrarWhatsAppCliente(idx) {
+  let c = clientes[idx];
+  if (!c.telefone) return;
+  let numLimpo = c.telefone.replace(/\D/g, '');
+  let msg = `Olá ${c.nome}! Passando para lembrar do seu débito pendente na ${perfilNegocio.nomeLoja || 'nossa loja'} no valor de R$ ${c.debito.toFixed(2)}. Como prefere realizar o pagamento? Obrigado!`;
+  window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function abrirModalEditarCliente(idx) {
+  let c = clientes[idx];
+  document.getElementById('edit-cli-index').value = idx;
+  document.getElementById('edit-cli-nome').value = c.nome;
+  document.getElementById('edit-cli-telefone').value = c.telefone || '';
+  document.getElementById('edit-cli-prazo').value = c.prazoPagamento || '';
+  document.getElementById('modal-editar-cliente').classList.remove('hidden');
+}
+
+function fecharModalEditarCliente() {
+  document.getElementById('modal-editar-cliente').classList.add('hidden');
+}
+
+async function salvarEdicaoCliente() {
+  let idx = parseInt(document.getElementById('edit-cli-index').value);
+  if (clientes[idx]) {
+    clientes[idx].nome = document.getElementById('edit-cli-nome').value.trim();
+    clientes[idx].telefone = document.getElementById('edit-cli-telefone').value.trim();
+    clientes[idx].prazoPagamento = document.getElementById('edit-cli-prazo').value;
+
+    persistirDadosCompletos();
+
+    const user = auth.currentUser;
+    let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+    if (user && empresaIdDest) {
+      db.collection("empresas").doc(empresaIdDest).collection("clientes").doc(String(clientes[idx].id)).set(clientes[idx], { merge: true });
+    }
+
+    fecharModalEditarCliente();
+    renderAbaClientes();
+    alert("✅ Dados do cliente atualizados!");
+  }
+}
+
+// ------------------------------------------
+// ABA RELATÓRIOS & DRE EXECUTIVO
+// ------------------------------------------
+function renderAbaRelatorios() {
+  const cont = document.getElementById('content-relatorios');
+  if (!cont) return;
+
+  let totalFaturado = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+  let totalCusto = vendas.reduce((acc, v) => acc + parseFloat(v.custoTotal || 0), 0);
+  let lucroBruto = totalFaturado - totalCusto;
+  let totalDespesas = despesasFixas.reduce((acc, d) => acc + parseFloat(d.valor || 0), 0);
+  let lucroLíquidoReal = lucroBruto - totalDespesas;
+
+  cont.innerHTML = `
+    <div class="flex justify-between items-center pb-3 border-b mb-4">
+      <h2 class="text-sm font-black text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-chart-pie text-teal-600"></i> Relatórios & DRE Executivo
+      </h2>
+      <button onclick="abrirModalOpcoesRelatorio()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition active:scale-95">
+        <i class="fa-solid fa-file-export"></i> Exportar PDF / CSV
+      </button>
+    </div>
+
+    <!-- DRE RESUMIDO -->
+    <div class="bg-slate-900 text-white p-4 rounded-3xl shadow-xl space-y-3 mb-5">
+      <h3 class="text-xs font-black text-teal-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+        📊 DRE de Resultado Comercial
+      </h3>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Receita Bruta (Vendas):</span>
+          <span class="font-extrabold text-white">R$ ${totalFaturado.toFixed(2)}</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-400">
+          <span>(-) Custo das Mercadorias (CMV):</span>
+          <span class="font-bold text-red-400">- R$ ${totalCusto.toFixed(2)}</span>
+        </div>
+        <div class="flex justify-between items-center border-t border-slate-800 pt-1.5 font-bold">
+          <span class="text-teal-300">(=) Lucro Bruto Comercial:</span>
+          <span class="text-teal-300">R$ ${lucroBruto.toFixed(2)}</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-400">
+          <span>(-) Contas a Pagar / Despesas:</span>
+          <span class="font-bold text-red-400">- R$ ${totalDespesas.toFixed(2)}</span>
+        </div>
+        <div class="flex justify-between items-center border-t-2 border-teal-500/50 pt-2 text-sm font-black">
+          <span class="text-amber-300">(=) Lucro Líquido Real:</span>
+          <span class="${lucroLíquidoReal >= 0 ? 'text-amber-300' : 'text-red-500'}">R$ ${lucroLíquidoReal.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMO DE VENDAS RECENTES -->
+    <div class="space-y-2">
+      <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider px-1">Histórico Recente de Vendas</h3>
+      <div class="space-y-1.5 max-h-56 overflow-y-auto">
+        ${vendas.length === 0 ? `
+          <p class="text-xs text-slate-400 italic text-center py-4">Nenhuma venda registrada.</p>
+        ` : vendas.slice(0, 15).map(v => `
+          <div class="bg-white p-2.5 rounded-xl border text-xs flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-800">${v.cliente || 'Consumidor'} (${v.formaPagto})</p>
+              <p class="text-[10px] text-slate-500">📅 ${v.data} às ${v.hora || ''} | Op: ${v.operador || 'Caixa'}</p>
+            </div>
+            <span class="font-black text-teal-800 text-xs">R$ ${parseFloat(v.valorTotal || v.valor || 0).toFixed(2)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function abrirModalOpcoesRelatorio() {
+  document.getElementById('modal-opcoes-relatorio').classList.remove('hidden');
+}
+
+function fecharModalOpcoesRelatorio() {
+  document.getElementById('modal-opcoes-relatorio').classList.add('hidden');
+}
+
+function toggleInputsDatasRelatorio(val) {
+  const box = document.getElementById('box-datas-periodo');
+  if (val === 'periodo') box.classList.remove('hidden');
+  else box.classList.add('hidden');
+}
+
+function exportarBackupCSV() {
+  let csv = "ID;Data;Hora;Cliente;FormaPagto;ValorTotal;Operador\n";
+  vendas.forEach(v => {
+    csv += `${v.id};${v.data};${v.hora || ''};${v.cliente || 'Consumidor'};${v.formaPagto};${(v.valorTotal || v.valor || 0).toFixed(2)};${v.operador || ''}\n`;
+  });
+  let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = `relatorio_vendas_${perfilNegocio.nomeLoja || 'caixa'}.csv`;
+  a.click();
+}
+
+function gerarPDFProfissional() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  doc.setFontSize(16);
+  doc.text(perfilNegocio.nomeLoja || 'Caixa Rápido Móvel Pro', 14, 20);
+  doc.setFontSize(10);
+  doc.text(`Relatório Comercial - Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
+  doc.line(14, 32, 196, 32);
+
+  let y = 40;
+  let totalFaturado = vendas.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+  
+  doc.setFontSize(12);
+  doc.text(`Resumo Geral:`, 14, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text(`Total de Vendas Realizadas: ${vendas.length}`, 14, y);
+  y += 6;
+  doc.text(`Faturamento Total: R$ ${totalFaturado.toFixed(2)}`, 14, y);
+  y += 12;
+
+  doc.text(`Últimas Vendas Registradas:`, 14, y);
+  y += 8;
+
+  vendas.slice(0, 20).forEach(v => {
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
+    doc.text(`${v.data} - ${v.cliente || 'Consumidor'} - ${v.formaPagto}: R$ ${(v.valorTotal || v.valor || 0).toFixed(2)}`, 14, y);
+    y += 6;
+  });
+
+  doc.save(`relatorio_${perfilNegocio.nomeLoja || 'loja'}.pdf`);
+  fecharModalOpcoesRelatorio();
+}
+
+// ------------------------------------------
+// DEMAIS MODAIS & SANGRIA/SUPRIMENTO
+// ------------------------------------------
+function abrirModalSangria(tipo) {
+  document.getElementById('sangria-tipo').value = tipo;
+  document.getElementById('sangria-valor').value = '';
+  document.getElementById('sangria-motivo').value = '';
+  document.getElementById('sangria-modal-titulo').innerText = tipo === 'sangria' ? 'Registrar Sangria (Retirada)' : 'Registrar Suprimento (Entrada)';
+  document.getElementById('modal-sangria-suprimento').classList.remove('hidden');
+}
+
+function fecharModalSangria() {
+  document.getElementById('modal-sangria-suprimento').classList.add('hidden');
+}
+
+async function confirmarSangriaSuprimento() {
+  let tipo = document.getElementById('sangria-tipo').value;
+  let valor = parseFloat(document.getElementById('sangria-valor').value);
+  let motivo = document.getElementById('sangria-motivo').value.trim();
+
+  if (isNaN(valor) || valor <= 0 || !motivo) {
+    alert("Informe um valor e um motivo válidos.");
+    return;
+  }
+
+  let registro = {
+    id: Date.now(),
+    tipo: tipo,
+    valor: valor,
+    motivo: motivo,
+    operador: perfilNegocio.nomeUsuario || 'Operador',
+    data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  };
+
+  sangriasSuprimentos.unshift(registro);
+  persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("sangrias").doc(String(registro.id)).set(registro, { merge: true });
+  }
+
+  fecharModalSangria();
+  alert(`✅ ${tipo === 'sangria' ? 'Sangria' : 'Suprimento'} registrado com sucesso!`);
+}
+
+function abrirModalFechamento() {
+  let hojeStr = new Date().toLocaleDateString('pt-BR');
+  let vendasHoje = vendas.filter(v => v.data === hojeStr);
+  let totalVendasCalculado = vendasHoje.reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0);
+  
+  let box = document.getElementById('fechamento-conteudo');
+  box.innerHTML = `
+    <div class="space-y-3">
+      <p class="font-bold text-slate-700">Resumo do Turno Atual (${hojeStr}):</p>
+      <div class="bg-slate-100 p-3 rounded-xl space-y-1">
+        <div class="flex justify-between"><span>Vendas Realizadas:</span><b>${vendasHoje.length}</b></div>
+        <div class="flex justify-between text-teal-800"><span>Total em Vendas:</span><b>R$ ${totalVendasCalculado.toFixed(2)}</b></div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Informe o valor em dinheiro na gaveta R$:</label>
+        <input type="number" step="0.01" id="gaveta-contada-input" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-xs font-black bg-white">
+      </div>
+      <button onclick="confirmarFechamentoTurno(${totalVendasCalculado})" class="w-full bg-slate-900 text-white font-extrabold py-3 rounded-xl text-xs shadow">
+        🔒 Confirmar e Fechar Turno
+      </button>
+    </div>
+  `;
+  document.getElementById('modal-fechamento').classList.remove('hidden');
+}
+
+function closeModalFechamento() {
+  document.getElementById('modal-fechamento').classList.add('hidden');
+}
+
+async function confirmarFechamentoTurno(totalCalculado) {
+  let contagem = parseFloat(document.getElementById('gaveta-contada-input').value) || 0;
+  let diferenca = contagem - totalCalculado;
+  let hojeStr = new Date().toLocaleDateString('pt-BR');
+
+  let novoFechamento = {
+    id: Date.now(),
+    data: hojeStr,
+    hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    totalVendas: totalCalculado,
+    vendasQtd: vendas.filter(v => v.data === hojeStr).length,
+    gavetaContada: contagem,
+    diferenca: diferenca,
+    operador: perfilNegocio.nomeUsuario || 'Operador'
+  };
+
+  historicoFechamentos.unshift(novoFechamento);
+  persistirDadosCompletos();
+
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    db.collection("empresas").doc(empresaIdDest).collection("fechamentos").doc(String(novoFechamento.id)).set(novoFechamento, { merge: true });
+  }
+
+  closeModalFechamento();
+  alert("🔒 Turno e Caixa Fechados com Sucesso! Registrado no Histórico.");
+  renderAbaInicio();
+}
+
+// ------------------------------------------
+// EXPORTAR E RESTAURAR BACKUP OFFLINE JSON
+// ------------------------------------------
 function exportarBackupSeguroJSON() {
-  try {
-    const backupPayload = {
-      versaoApp: "Caixa Rápido Móvel Pro v57.2",
-      dataExportacao: new Date().toISOString(),
-      empresaId: perfilNegocio.empresaId || "local",
-      dados: {
-        produtos: produtos,
-        vendas: vendas,
-        clientes: clientes,
-        despesas: despesasFixas,
-        sangrias: sangriasSuprimentos,
-        fechamentos: historicoFechamentos,
-        perfil: perfilNegocio
-      }
-    };
-
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 2));
-    const downloadAnchor = document.createElement('a');
-    const nomeArquivo = `backup_caixa_rapido_${new Date().toISOString().slice(0, 10)}.json`;
-
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", nomeArquivo);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-
-    alert("✅ Backup exportado com sucesso!");
-  } catch (err) {
-    alert("❌ Erro ao gerar o arquivo de backup: " + err.message);
-  }
+  let dadosBackup = {
+    versao: "57.1",
+    dataExportacao: new Date().toISOString(),
+    perfil: perfilNegocio,
+    produtos: produtos,
+    vendas: vendas,
+    clientes: clientes,
+    sangrias: sangriasSuprimentos,
+    fechamentos: historicoFechamentos,
+    despesas: despesasFixas
+  };
+  let blob = new Blob([JSON.stringify(dadosBackup, null, 2)], { type: 'application/json' });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_crm_${perfilNegocio.nomeLoja || 'loja'}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
 }
 
-function restaurarBackupSeguroJSON(event) {
-  const file = event.target.files[0];
+function restaurarBackupSeguroJSON(e) {
+  let file = e.target.files[0];
   if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
+  let reader = new FileReader();
+  reader.onload = function(event) {
     try {
-      const conteudo = JSON.parse(e.target.result);
+      let data = JSON.parse(event.target.result);
+      if (data.produtos) produtos = data.produtos;
+      if (data.vendas) vendas = data.vendas;
+      if (data.clientes) clientes = data.clientes;
+      if (data.sangrias) sangriasSuprimentos = data.sangrias;
+      if (data.fechamentos) historicoFechamentos = data.fechamentos;
+      if (data.despesas) despesasFixas = data.despesas;
+      if (data.perfil) perfilNegocio = data.perfil;
 
-      if (!conteudo.dados) {
-        alert("❌ Formato de arquivo de backup inválido.");
-        return;
-      }
-
-      let prodsAdicionados = 0;
-      let vendasAdicionadas = 0;
-
-      // Importa produtos que ainda não existem no sistema
-      if (conteudo.dados.produtos) {
-        conteudo.dados.produtos.forEach(pImp => {
-          if (!produtos.some(p => p.id === pImp.id || p.nome.toLowerCase() === pImp.nome.toLowerCase())) {
-            produtos.push(pImp);
-            prodsAdicionados++;
-          }
-        });
-      }
-
-      // Importa vendas que ainda não foram registradas
-      if (conteudo.dados.vendas) {
-        conteudo.dados.vendas.forEach(vImp => {
-          if (!vendas.some(v => v.id === vImp.id)) {
-            vendas.push(vImp);
-            vendasAdicionadas++;
-          }
-        });
-      }
-
-      if (conteudo.dados.clientes) clientes = conteudo.dados.clientes;
-      if (conteudo.dados.despesas) despesasFixas = conteudo.dados.despesas;
-
-      // Salva no LocalStorage e atualiza a tela
       persistirDadosCompletos();
-      alert(`✅ Backup restaurado!\n• Novas vendas: ${vendasAdicionadas}\n• Novos produtos: ${prodsAdicionados}`);
       renderAba();
-
-    } catch (err) {
-      alert("❌ Erro ao processar arquivo de backup: " + err.message);
+      alert("✅ Backup restaurado com sucesso!");
+    } catch(err) {
+      alert("❌ Ficheiro de backup inválido ou corrompido.");
     }
   };
   reader.readAsText(file);
 }
-  
-function iniciarMonitorConexao() {
-  checarPingReal();
 
-  window.addEventListener('online', () => checarPingReal());
-  window.addEventListener('offline', () => {
-    statusConexaoAtual = false;
-    atualizarBadgeConexaoUI(false);
-  });
+  // ==========================================
+// FUNÇÕES AUXILIARES E COMPLEMENTARES
+// ==========================================
 
-  // Checa a internet real a cada 10 segundos
-  setInterval(() => checarPingReal(), 10000);
+// Fix 1: Identificação de Dispositivo para Vínculo de Funcionários
+function obterInfoDispositivoAtual() {
+  const ua = navigator.userAgent;
+  if (/android/i.test(ua)) return "Android Mobile";
+  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS Mobile";
+  if (/windows/i.test(ua)) return "Windows PC";
+  if (/mac/i.test(ua)) return "Mac";
+  return "Navegador Web";
 }
 
+// Fix 2: Sincronização Manual com a Nuvem
+async function sincronizarNuvemManual() {
+  if (!auth.currentUser || !perfilNegocio.empresaId) {
+    alert("⚠️ Faça login e selecione uma empresa para sincronizar.");
+    return;
+  }
+  try {
+    await puxarDadosIniciaisDaEmpresa(perfilNegocio.empresaId);
+    renderAba();
+    fecharDrawerNavegacao();
+    alert("✅ Dados sincronizados com a nuvem com sucesso!");
+  } catch (e) {
+    alert("❌ Erro ao sincronizar: " + e.message);
+  }
+}
 
-// Liga a verificação de rede ao abrir a aplicação
-iniciarMonitorConexao();
+// Fix 3: Gestão do Modal de Mínimos Padrão de Estoque
+function fecharModalMinimosPadrao() {
+  const modal = document.getElementById('modal-minimos-padrao');
+  if (modal) modal.classList.add('hidden');
+}
 
-console.log("Caixa Rápido Móvel Pro - Versão 57.2 Carregada com Sucesso!");
+function salvarMinimosPadrao() {
+  const un = parseFloat(document.getElementById('min-padrao-un')?.value) || 5;
+  const kg = parseFloat(document.getElementById('min-padrao-kg')?.value) || 2.0;
+  const cx = parseFloat(document.getElementById('min-padrao-cx')?.value) || 3;
+  const L = parseFloat(document.getElementById('min-padrao-L')?.value) || 5;
+  const validadeGeralDias = parseInt(document.getElementById('config-dias-validade-geral')?.value) || 30;
+
+  minimosPadrao = { un, kg, cx, L, validadeGeralDias };
+  localStorage.setItem('crm_minimos_padrao', JSON.stringify(minimosPadrao));
+  fecharModalMinimosPadrao();
+  renderAba();
+  alert("✅ Configurações de estoque mínimo salvas!");
+}
+
+// Fix 4: Gestão do Modal de Produtos Fracionados
+function closeModalFracionado() {
+  const modal = document.getElementById('modal-fracionado');
+  if (modal) modal.classList.add('hidden');
+  prodFracionadoTemp = null;
+}
+
+function confirmarItemFracionado() {
+  const qtdInput = parseFloat(document.getElementById('fracionado-qtd')?.value);
+  if (isNaN(qtdInput) || qtdInput <= 0) {
+    alert("⚠️ Digite uma quantidade válida.");
+    return;
+  }
+  if (prodFracionadoTemp) {
+    let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === prodFracionadoTemp.nome.toLowerCase());
+    if (itemNoCarrinho) {
+      itemNoCarrinho.qtd += qtdInput;
+    } else {
+      carrinho.push({
+        nome: prodFracionadoTemp.nome,
+        preco: parseFloat(prodFracionadoTemp.preco),
+        precoCusto: parseFloat(prodFracionadoTemp.precoCusto || 0),
+        qtd: qtdInput,
+        medida: prodFracionadoTemp.medida || 'un'
+      });
+    }
+    closeModalFracionado();
+    renderAbaVendas();
+    tocarBeepConfirmacaoBip();
+  }
+}
+  // Fix 5: Abertura do Modal de Produtos Fracionados (Peso/Medida)
+function abrirModalFracionado(index) {
+  let prod = produtos[index];
+  if (!prod) return;
+  prodFracionadoTemp = prod;
+  document.getElementById('fracionado-titulo').innerText = `Informe a quantidade (${prod.medida || 'un'})`;
+  document.getElementById('fracionado-sub').innerText = `Produto: ${prod.nome} - R$ ${prod.preco.toFixed(2)}/${prod.medida || 'un'}`;
+  document.getElementById('fracionado-qtd').value = '';
+  document.getElementById('modal-fracionado').classList.remove('hidden');
+}
+
+// Fix 6: Abertura do Modal de Mínimos Padrão
+function abrirModalMinimosPadrao() {
+  document.getElementById('min-padrao-un').value = minimosPadrao.un || 5;
+  document.getElementById('min-padrao-kg').value = minimosPadrao.kg || 2.0;
+  document.getElementById('min-padrao-cx').value = minimosPadrao.cx || 3;
+  document.getElementById('min-padrao-L').value = minimosPadrao.L || 5;
+  document.getElementById('config-dias-validade-geral').value = minimosPadrao.validadeGeralDias || 30;
+  document.getElementById('modal-minimos-padrao').classList.remove('hidden');
+}
+// ------------------------------------------
+// INICIALIZAÇÃO AUTOMÁTICA
+// ------------------------------------------
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    validarRelogioDispositivo();
+    let docRef = await db.collection("perfis").doc(user.uid).get();
+    if (docRef.exists) {
+      let dataP = docRef.data();
+      perfilNegocio = { ...perfilNegocio, ...dataP };
+      if (dataP.slotsFuncionarios) slotsFuncionarios = dataP.slotsFuncionarios;
+      if (dataP.notificacoesDesvinculacao) notificacoesDesvinculacao = dataP.notificacoesDesvinculacao;
+      persistirDadosCompletos();
+    }
+    iniciarListenersTempoReal(perfilNegocio.empresaId || user.uid);
+    switchTab('inicio');
+    verificarEExibirAniversarianteTelaCheia();
+    dispararToastAniversariantesAutomatico();
+  } else {
+    showLoginForm();
+  }
+});
 </script>
 </body>
 </html>

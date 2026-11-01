@@ -3605,12 +3605,38 @@ function buscarEExibirProdutoEstoque(termo) {
     `;
   }).join('');
 }
-function toggleAtalhoEstoque(index) {
-  produtos[index].atalho = !(produtos[index].atalho !== false);
-  persistirDadosCompletos();
-  renderAbaEstoque();
+async function toggleAtalhoEstoque(index) {
+  let p = produtos[index];
+  if (!p) return;
+
+  // Se for Dono, Gerente ou Sócio, altera o atalho OBRIGATÓRIO GLOBAL no Firebase
+  if (eAdminOuGerenteOuSocio()) {
+    p.atalho = !p.atalho;
+    
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
+    
+    if (user && empresaIdDest) {
+      try {
+        let docChave = String(p.id || p.nome);
+        await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set({
+          atalho: p.atalho
+        }, { merge: true });
+      } catch (erro) {
+        console.error("Erro ao atualizar atalho global:", erro);
+      }
+    }
+    
+    if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+    if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
+
+  } else {
+    // Se for Operador, chama o gerenciador de atalhos pessoais do operador
+    await alternarAtalhoProduto(p.id || p.nome);
+  }
 }
-  // Gerenciador de Atalhos por Operador na Nuvem
+
+// Gerenciador de Atalhos (Gerência + Operador na Nuvem)
 let atalhosOperadorNuvem = null;
 
 async function carregarAtalhosOperadorNuvem() {
@@ -3624,6 +3650,7 @@ async function carregarAtalhosOperadorNuvem() {
     if (docRef.exists && docRef.data().atalhos) {
       atalhosOperadorNuvem = docRef.data().atalhos;
       localStorage.setItem('crm_atalhos_' + user.uid, JSON.stringify(atalhosOperadorNuvem));
+      if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
     }
   } catch (erro) {
     console.error("Erro ao carregar atalhos na nuvem:", erro);
@@ -3655,6 +3682,9 @@ async function salvarAtalhosOperadorNuvem(listaIds) {
 function eProdutoAtalho(prod) {
   if (!prod) return false;
 
+  // 1. Se o dono/gerente definiu como atalho global, SEMPRE exibe no Caixa
+  if (prod.atalho === true) return true;
+
   const user = typeof auth !== 'undefined' ? auth.currentUser : null;
   
   if (atalhosOperadorNuvem === null && user) {
@@ -3663,18 +3693,26 @@ function eProdutoAtalho(prod) {
     } catch (e) {}
   }
 
+  // 2. Se o operador adicionou aos atalhos pessoais dele, exibe
   if (atalhosOperadorNuvem !== null && Array.isArray(atalhosOperadorNuvem)) {
     return atalhosOperadorNuvem.includes(String(prod.id || prod.nome));
   }
 
-  return !!prod.atalho;
+  return false;
 }
 
 async function alternarAtalhoProduto(prodIdOuNome) {
   const prodChave = String(prodIdOuNome);
+  const prod = produtos.find(p => String(p.id || p.nome) === prodChave);
+
+  // Trava de segurança: impede o operador de remover atalhos obrigatórios da gerência
+  if (prod && prod.atalho === true) {
+    alert("⚠️ Este item foi definido como atalho obrigatório pela gerência e não pode ser removido!");
+    return;
+  }
 
   if (atalhosOperadorNuvem === null) {
-    atalhosOperadorNuvem = produtos.filter(p => p.atalho).map(p => String(p.id || p.nome));
+    atalhosOperadorNuvem = [];
   }
 
   const idx = atalhosOperadorNuvem.indexOf(prodChave);

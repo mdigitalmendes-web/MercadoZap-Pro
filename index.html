@@ -1891,13 +1891,19 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     snapFech.forEach(doc => fechCarregados.push(doc.data()));
     historicoFechamentos = fechCarregados.sort((a, b) => (b.id || 0) - (a.id || 0));
 
-    // 7. Carrega Contas a Pagar Unificadas
-    let snapDesp = await db.collection("empresas").doc(empresaId).collection("despesas").get();
-    let despCarregadas = [];
-    snapDesp.forEach(doc => despCarregadas.push(doc.data()));
-    despesasFixas = despCarregadas;
+  // 7. Carrega e escuta Contas a Pagar Unificadas em tempo real
+db.collection("empresas").doc(empresaId).collection("despesas").onSnapshot((snapshot) => {
+  let despCarregadas = [];
+  snapshot.forEach(doc => despCarregadas.push(doc.data()));
+  despesasFixas = despCarregadas;
+  persistirDadosCompletos();
+  if (typeof renderizarListaDespesasModal === 'function') {
+    renderizarListaDespesasModal();
+  }
+}, (erro) => {
+  console.error("Erro no escutador em tempo real de despesas:", erro);
+});
 
-    persistirDadosCompletos();
    // Atualiza a tela inicial e o caixa em tempo real se a aba estiver aberta
     const abaInicio = document.getElementById('aba-inicio');
     if (abaInicio && !abaInicio.classList.contains('hidden')) {

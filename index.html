@@ -1489,7 +1489,7 @@ async function cadastrarDespesaFixa() {
   const user = auth.currentUser;
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
 
-  // 2. Monta o objeto com a empresa informada
+  // 2. Monta o objeto contendo o identificador da empresa
   const novaDespesa = { 
     id: Date.now(), 
     empresaId: empresaIdDest, 
@@ -1498,24 +1498,20 @@ async function cadastrarDespesaFixa() {
     vencimento: venc 
   };
 
-  // 3. Salva no Firebase AGUARDANDO confirmação (await) e tratando erros (try/catch)
+  // 3. Salva no Firebase AGUARDANDO confirmação (await)
   if (user && empresaIdDest) {
     try {
       await db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(novaDespesa.id)).set(novaDespesa, { merge: true });
     } catch (erro) {
       console.error("Erro ao salvar despesa na nuvem:", erro);
       alert("❌ Erro ao salvar na nuvem: " + erro.message);
-      return; // Interrompe para não mostrar falso alerta de sucesso
+      return;
     }
   }
 
-  // 4. Salva localmente apenas se o envio para a nuvem não falhou
-  despesasFixas.push(novaDespesa);
-  persistirDadosCompletos();
-
+  // 4. Limpa os campos da tela (O escutador em tempo real atualizará a lista e o cache)
   document.getElementById('nova-desp-desc').value = '';
   document.getElementById('nova-desp-valor').value = '';
-  renderizarListaDespesasModal();
   alert("✅ Conta a pagar cadastrada e salva na nuvem!");
   verificarAlertasEstoqueValidadeAutomatico();
 }
@@ -1539,11 +1535,12 @@ function renderizarListaDespesasModal() {
     </div>
   `).join('');
 }
-async function excluirDespesa(index) {
-  const despesa = despesasFixas[index];
-  if (!despesa) return;
-
+async function excluirDespesa(identificador) {
   if (!confirm("Tem certeza que deseja excluir esta despesa?")) return;
+
+  // Busca a despesa pelo ID real (seja passado como id direto ou como index)
+  let despesa = despesasFixas.find(d => String(d.id) === String(identificador)) || despesasFixas[identificador];
+  if (!despesa) return;
 
   // 1. Tenta excluir no Firebase aguardando a resposta (await)
   const user = auth.currentUser;
@@ -1554,15 +1551,11 @@ async function excluirDespesa(index) {
     } catch (erro) {
       console.error("Erro ao excluir despesa na nuvem:", erro);
       alert("❌ Erro ao excluir na nuvem: " + erro.message);
-      return; // Interrompe para não apagar localmente se falhar na nuvem
+      return;
     }
   }
 
-  // 2. Remove localmente apenas se a exclusão na nuvem tiver sucesso
-  despesasFixas.splice(index, 1);
-  persistirDadosCompletos();
-  renderizarListaDespesasModal();
-  verificarAlertasEstoqueValidadeAutomatico();
+  // O escutador em tempo real (onSnapshot) removerá o item da tela e atualizará o cache automaticamente
 }
 function verificarEExibirToastBoasVindasDiario(nomeCompleto) {
   const hojeDataStr = new Date().toDateString();

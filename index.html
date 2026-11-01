@@ -960,6 +960,7 @@ function iniciarListenersTempoReal(empresaId) {
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       renderAba();
       if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+      if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
       verificarAlertasEstoqueValidadeAutomatico();
     }, () => {});
   unsubscribeVendas = db.collection("empresas").doc(empresaId).collection("vendas")
@@ -3696,25 +3697,33 @@ async function excluirProduto(index) {
   let p = produtos[index];
   if (!p) return;
 
-  // 1. Tenta excluir no Firebase aguardando a resposta da nuvem (await)
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
-  let docId = p.id ? String(p.id) : p.nome;
+  const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+  let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
 
   if (user && empresaIdDest) {
     try {
-      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docId).delete();
+      // Apaga tanto pelo ID quanto pelo Nome para garantir a remoção de itens antigos e novos da nuvem
+      let promessasExclusao = [];
+      if (p.id) {
+        promessasExclusao.push(db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(p.id)).delete());
+      }
+      if (p.nome) {
+        promessasExclusao.push(db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).delete());
+      }
+      await Promise.all(promessasExclusao);
     } catch (erro) {
       console.error("Erro ao excluir produto na nuvem:", erro);
       alert("❌ Erro ao excluir na nuvem: " + erro.message);
-      return; // Interrompe para não apagar localmente se falhar na nuvem
+      return;
     }
   }
 
-  // 2. Remove da lista local e atualiza a interface apenas se a nuvem confirmar
+  // Remove da lista local e atualiza todas as telas (Estoque e Caixa)
   produtos.splice(index, 1);
   persistirDadosCompletos();
-  renderAbaEstoque();
+  if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+  if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
+  if (typeof renderAba === 'function') renderAba();
 }
 function renderAbaClientes() {
   const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);

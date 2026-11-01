@@ -1485,11 +1485,11 @@ async function cadastrarDespesaFixa() {
     return;
   }
   
-  // Identifica a empresa antes de montar o registro
+  // 1. Identifica a empresa de destino
   const user = auth.currentUser;
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
 
-  // Cria o objeto contendo o identificador da empresa
+  // 2. Monta o objeto com a empresa informada
   const novaDespesa = { 
     id: Date.now(), 
     empresaId: empresaIdDest, 
@@ -1497,14 +1497,21 @@ async function cadastrarDespesaFixa() {
     valor: valor, 
     vencimento: venc 
   };
-  
+
+  // 3. Salva no Firebase AGUARDANDO confirmação (await) e tratando erros (try/catch)
+  if (user && empresaIdDest) {
+    try {
+      await db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(novaDespesa.id)).set(novaDespesa, { merge: true });
+    } catch (erro) {
+      console.error("Erro ao salvar despesa na nuvem:", erro);
+      alert("❌ Erro ao salvar na nuvem: " + erro.message);
+      return; // Interrompe para não mostrar falso alerta de sucesso
+    }
+  }
+
+  // 4. Salva localmente apenas se o envio para a nuvem não falhou
   despesasFixas.push(novaDespesa);
   persistirDadosCompletos();
-
-  // Salva no banco de dados nas nuvens (Firebase)
-  if (user && empresaIdDest) {
-    db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(novaDespesa.id)).set(novaDespesa, { merge: true });
-  }
 
   document.getElementById('nova-desp-desc').value = '';
   document.getElementById('nova-desp-valor').value = '';

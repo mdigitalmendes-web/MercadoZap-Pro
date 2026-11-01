@@ -3609,39 +3609,72 @@ async function toggleAtalhoEstoque(index) {
   let p = produtos[index];
   if (!p) return;
 
-  // Se for Dono, Gerente ou Sócio, altera o atalho OBRIGATÓRIO GLOBAL no Firebase
+  const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+  let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
+
+  // Verifica se quem está clicando é Dono/Sócio ou Gerente
   if (eAdminOuGerenteOuSocio()) {
-    
-    // Se estiver tentando ATIVAR um novo atalho, verifica o limite máximo de 10 itens na tela
-    if (!p.atalho) {
-      let totalAtuais = produtos.filter(prod => eProdutoAtalho(prod)).length;
-      if (totalAtuais >= 10) {
-        alert("⚠️ Limite de 10 atalhos atingido! Remova algum atalho existente antes de adicionar um novo.");
+    const ehDonoSocio = (typeof eAdminOuSocio === 'function') ? eAdminOuSocio() : true;
+    const cargoAtual = ehDonoSocio ? 'dono' : 'gerente';
+
+    // Se o item JÁ É um atalho global da gestão e alguém quer desmarcar
+    if (p.atalho) {
+      // Regra 1: Gerente não pode desmarcar o que o Dono definiu
+      if (p.atalhoPor === 'dono' && !ehDonoSocio) {
+        alert("⚠️ Este atalho foi definido pelo Dono e apenas ele pode alterar.");
         return;
       }
+
+      // Regra 2: Dono ao clicar em item do Gerente, recebe aviso transparente
+      if (p.atalhoPor === 'gerente' && ehDonoSocio) {
+        let confirmar = confirm("ℹ️ Este atalho foi adicionado pelo Gerente. Deseja realmente remover este atalho da gestão?");
+        if (!confirmar) return;
+      }
+
+      // Desmarca o atalho global
+      p.atalho = false;
+      p.atalhoPor = null;
+
+    } else {
+      // Se está tentando ATIVAR um novo atalho global da gestão
+
+      // Regra 3: Limite máximo de 5 atalhos para a GESTÃO (Dono + Gerente)
+      let atalhosGestao = produtos.filter(prod => prod.atalho === true).length;
+      if (atalhosGestao >= 5) {
+        alert("⚠️ Limite da Gestão atingido! A gerência/dono pode definir no máximo 5 atalhos obrigatórios para o caixa.");
+        return;
+      }
+
+      // Regra 4: Limite global de 10 atalhos no Caixa
+      let totalExibidos = produtos.filter(prod => eProdutoAtalho(prod)).length;
+      if (totalExibidos >= 10) {
+        alert("⚠️ Limite total de 10 atalhos no Caixa atingido!");
+        return;
+      }
+
+      // Marca o atalho global registrando quem incluiu
+      p.atalho = true;
+      p.atalhoPor = cargoAtual;
     }
 
-    p.atalho = !p.atalho;
-    
-    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-    let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
-    
+    // Grava alteração no Firebase com rastreamento do autor
     if (user && empresaIdDest) {
       try {
         let docChave = String(p.id || p.nome);
         await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set({
-          atalho: p.atalho
+          atalho: p.atalho,
+          atalhoPor: p.atalhoPor || null
         }, { merge: true });
       } catch (erro) {
         console.error("Erro ao atualizar atalho global:", erro);
       }
     }
-    
+
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
     if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
 
   } else {
-    // Se for Operador, chama o gerenciador de atalhos pessoais do operador
+    // Se for Operador
     await alternarAtalhoProduto(p.id || p.nome);
   }
 }
@@ -3692,7 +3725,7 @@ async function salvarAtalhosOperadorNuvem(listaIds) {
 function eProdutoAtalho(prod) {
   if (!prod) return false;
 
-  // 1. Se o dono/gerente definiu como atalho global, SEMPRE exibe no Caixa
+  // 1. Se o dono ou gerente definiu como atalho global, SEMPRE exibe no Caixa
   if (prod.atalho === true) return true;
 
   const user = typeof auth !== 'undefined' ? auth.currentUser : null;
@@ -3715,9 +3748,10 @@ async function alternarAtalhoProduto(prodIdOuNome) {
   const prodChave = String(prodIdOuNome);
   const prod = produtos.find(p => String(p.id || p.nome) === prodChave);
 
-  // Trava de segurança: impede o operador de remover atalhos obrigatórios da gerência
+  // Trava de segurança: impede o operador de remover atalhos da gestão
   if (prod && prod.atalho === true) {
-    alert("⚠️ Este item foi definido como atalho obrigatório pela gerência e não pode ser removido!");
+    let quemAdicionou = prod.atalhoPor === 'dono' ? 'Dono' : 'Gerente';
+    alert(`⚠️ Este item foi definido como atalho obrigatório pelo ${quemAdicionou} e não pode ser removido!`);
     return;
   }
 
@@ -3727,13 +3761,13 @@ async function alternarAtalhoProduto(prodIdOuNome) {
 
   const idx = atalhosOperadorNuvem.indexOf(prodChave);
   if (idx > -1) {
-    // Removendo atalho existente
+    // Removendo atalho pessoal do operador
     atalhosOperadorNuvem.splice(idx, 1);
   } else {
-    // Adicionando novo atalho: verifica o limite máximo de 10 itens na tela
+    // Adicionando novo atalho pessoal do operador: verifica o limite de 10 no total do Caixa
     let totalAtuais = produtos.filter(p => eProdutoAtalho(p)).length;
     if (totalAtuais >= 10) {
-      alert("⚠️ Limite de 10 atalhos atingido! Remova algum atalho existente antes de adicionar um novo.");
+      alert("⚠️ Limite de 10 atalhos atingido no Caixa! Remova algum atalho existente antes de adicionar um novo.");
       return;
     }
     atalhosOperadorNuvem.push(prodChave);

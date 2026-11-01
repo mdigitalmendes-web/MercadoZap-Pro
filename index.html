@@ -1485,13 +1485,23 @@ async function cadastrarDespesaFixa() {
     return;
   }
   
-  const novaDespesa = { id: Date.now(), descricao: desc, valor: valor, vencimento: venc };
+  // Identifica a empresa antes de montar o registro
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+
+  // Cria o objeto contendo o identificador da empresa
+  const novaDespesa = { 
+    id: Date.now(), 
+    empresaId: empresaIdDest, 
+    descricao: desc, 
+    valor: valor, 
+    vencimento: venc 
+  };
+  
   despesasFixas.push(novaDespesa);
   persistirDadosCompletos();
 
   // Salva no banco de dados nas nuvens (Firebase)
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
   if (user && empresaIdDest) {
     db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(novaDespesa.id)).set(novaDespesa, { merge: true });
   }

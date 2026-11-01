@@ -959,6 +959,7 @@ function iniciarListenersTempoReal(empresaId) {
       produtos = prodsRemotos;
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       renderAba();
+      if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
       verificarAlertasEstoqueValidadeAutomatico();
     }, () => {});
   unsubscribeVendas = db.collection("empresas").doc(empresaId).collection("vendas")
@@ -3549,12 +3550,25 @@ async function salvarAjusteRapidoProduto() {
   p.estoque = parseFloat(document.getElementById('ajuste-prod-qtd').value || 0);
   p.preco = parseFloat(document.getElementById('ajuste-prod-preco').value || 0);
   p.validade = document.getElementById('ajuste-prod-validade').value;
-  persistirDadosCompletos();
+// 1. Grava no Firebase aguardando a resposta da nuvem (await)
   const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).set({ ...p, userId: user.uid }, { merge: true });
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  let docId = p.id ? String(p.id) : p.nome;
+
+  if (user && empresaIdDest) {
+    try {
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docId).set({ ...p, userId: user.uid }, { merge: true });
+    } catch (erro) {
+      console.error("Erro ao ajustar estoque na nuvem:", erro);
+      alert("❌ Erro ao ajustar estoque na nuvem: " + erro.message);
+      return; // Interrompe para não alterar localmente se der erro na nuvem
+    }
+  }
+
+  // 2. Atualiza a memória local e a tela apenas se a nuvem confirmar
+  persistirDadosCompletos();
   fecharModalAjusteRapido();
-  alert("✅ Produto atualizado!");
+  alert("✅ Produto e estoque atualizados com sucesso!");
   renderAbaEstoque();
 }
 function buscarEExibirProdutoEstoque(termo) {
@@ -3597,25 +3611,37 @@ function toggleAtalhoEstoque(index) {
 async function cadastrarOuAtualizarProduto() {
   let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
   if (!vinculadoAtivo) return;
+
   const ean = document.getElementById('cad-prod-ean').value;
   const nome = document.getElementById('cad-prod-nome').value.trim();
   const preco = document.getElementById('cad-prod-preco').value;
-  const qtd = document.getElementById('cad-prod-qtd').value || 1;
+  const qtd = document.getElementById('cad-prod-qtd').value || 0;
   const estMin = document.getElementById('cad-prod-estmin').value || 3;
   const medida = document.getElementById('cad-prod-medida').value;
   const dataEntrada = document.getElementById('cad-prod-entrada').value;
   const validade = document.getElementById('cad-prod-validade').value;
   const alertaDiasInput = document.getElementById('cad-prod-alerta-dias').value;
   const atalho = document.getElementById('cad-prod-atalho').checked;
+  
   let precoCustoInput = 0;
-  if (eAdminOuSocio() && !eModoMei()) precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value || 0);
-  else if (prodEditandoIndex !== null) precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+  if (eAdminOuSocio() && !eMoedaMei()) {
+    precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value) || 0;
+  } else if (prodEditandoIndex !== null && produtos[prodEditandoIndex]) {
+    precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+  }
+
   if (!nome || !preco) {
     alert("Preencha nome e preço!");
     return;
   }
+
+  // Define o ID único do produto (preserva o ID antigo se for edição)
+  let idProd = (prodEditandoIndex !== null && produtos[prodEditandoIndex] && produtos[prodEditandoIndex].id) 
+               ? produtos[prodEditandoIndex].id 
+               : Date.now();
+
   let prodData = {
-    id: prodEditandoIndex !== null ? produtos[prodEditandoIndex].id : Date.now(),
+    id: idProd,
     ean: ean,
     nome: nome,
     precoCusto: precoCustoInput,
@@ -3628,58 +3654,57 @@ async function cadastrarOuAtualizarProduto() {
     alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
     atalho: atalho
   };
-  if (prodEditandoIndex !== null) {
-    produtos[prodEditandoIndex] = prodData;
-    prodEditandoIndex = null;
-  } else {
-    let prodExistente = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
-    if (prodExistente) {
-      prodExistente.ean = ean || prodExistente.ean;
-      if (eAdminOuSocio() && !eModoMei() && precoCustoInput > 0) prodExistente.precoCusto = precoCustoInput;
-      prodExistente.preco = parseFloat(preco);
-      prodExistente.estoque = parseFloat(prodExistente.estoque || 0) + parseFloat(qtd);
-      prodExistente.estMin = parseFloat(estMin);
-      prodExistente.medida = medida;
-      prodExistente.dataEntrada = dataEntrada;
-      prodExistente.validade = validade || '';
-      prodExistente.alertaDias = alertaDiasInput ? parseInt(alertaDiasInput) : prodExistente.alertaDias;
-      prodExistente.atalho = atalho;
-      prodData = prodExistente;
-    } else produtos.push(prodData);
-  }
- // 1. Tenta guardar no Firebase aguardando a resposta da nuvem (await)
+
+  // Reseta a marcação de edição
+  prodEditandoIndex = null;
+
+  // 1. Grava na nuvem aguardando resposta da nuvem (await)
   const user = auth.currentUser;
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
   if (user && empresaIdDest) {
     try {
-      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set(prodData, { merge: true });
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(prodData.id)).set(prodData, { merge: true });
     } catch (erro) {
-      console.error("Erro ao guardar produto na nuvem:", erro);
-      alert("❌ Erro ao guardar na nuvem: " + erro.message);
-      return; // Interrompe para não atualizar localmente se falhar na nuvem
+      console.error("Erro ao salvar produto na nuvem:", erro);
+      alert("❌ Erro ao salvar na nuvem: " + erro.message);
+      return;
     }
   }
 
-  // 2. Guarda na memória local e atualiza a interface apenas se não houver erro
-  persistirDadosCompletos();
+  // 2. Limpa e atualiza a tela
   fecharModalCadastroProduto();
   alert("✅ Produto salvo com sucesso!");
   renderAbaEstoque();
 }
-function excluirProduto(index) {
+async function excluirProduto(index) {
   if (!eAdminOuGerenteOuSocio()) {
     alert("Acesso Restrito.");
     return;
   }
-  if (confirm("Remover este produto permanentemente?")) {
-    let p = produtos[index];
-    produtos.splice(index, 1);
-    persistirDadosCompletos();
-    const user = auth.currentUser;
-    let empresaIdDest = perfilNegocio.empresaId || user.uid;
-    if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).delete().catch(()=>{});
-    renderAbaEstoque();
+  if (!confirm("Remover este produto permanentemente?")) return;
+
+  let p = produtos[index];
+  if (!p) return;
+
+  // 1. Tenta excluir no Firebase aguardando a resposta da nuvem (await)
+  const user = auth.currentUser;
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  let docId = p.id ? String(p.id) : p.nome;
+
+  if (user && empresaIdDest) {
+    try {
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docId).delete();
+    } catch (erro) {
+      console.error("Erro ao excluir produto na nuvem:", erro);
+      alert("❌ Erro ao excluir na nuvem: " + erro.message);
+      return; // Interrompe para não apagar localmente se falhar na nuvem
+    }
   }
+
+  // 2. Remove da lista local e atualiza a interface apenas se a nuvem confirmar
+  produtos.splice(index, 1);
+  persistirDadosCompletos();
+  renderAbaEstoque();
 }
 function renderAbaClientes() {
   const totalFiadoAcumulado = clientes.reduce((acc, c) => acc + parseFloat(c.debito || 0), 0);

@@ -3611,6 +3611,16 @@ async function toggleAtalhoEstoque(index) {
 
   // Se for Dono, Gerente ou Sócio, altera o atalho OBRIGATÓRIO GLOBAL no Firebase
   if (eAdminOuGerenteOuSocio()) {
+    
+    // Se estiver tentando ATIVAR um novo atalho, verifica o limite máximo de 10 itens na tela
+    if (!p.atalho) {
+      let totalAtuais = produtos.filter(prod => eProdutoAtalho(prod)).length;
+      if (totalAtuais >= 10) {
+        alert("⚠️ Limite de 10 atalhos atingido! Remova algum atalho existente antes de adicionar um novo.");
+        return;
+      }
+    }
+
     p.atalho = !p.atalho;
     
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
@@ -3717,8 +3727,15 @@ async function alternarAtalhoProduto(prodIdOuNome) {
 
   const idx = atalhosOperadorNuvem.indexOf(prodChave);
   if (idx > -1) {
+    // Removendo atalho existente
     atalhosOperadorNuvem.splice(idx, 1);
   } else {
+    // Adicionando novo atalho: verifica o limite máximo de 10 itens na tela
+    let totalAtuais = produtos.filter(p => eProdutoAtalho(p)).length;
+    if (totalAtuais >= 10) {
+      alert("⚠️ Limite de 10 atalhos atingido! Remova algum atalho existente antes de adicionar um novo.");
+      return;
+    }
     atalhosOperadorNuvem.push(prodChave);
   }
 

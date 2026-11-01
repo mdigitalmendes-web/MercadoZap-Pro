@@ -3609,72 +3609,82 @@ function toggleAtalhoEstoque(index) {
   renderAbaEstoque();
 }
 async function cadastrarOuAtualizarProduto() {
-  let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
-  if (!vinculadoAtivo) return;
+  try {
+    // 1. Verifica vínculo ativo
+    if (typeof verificarIntegridadeVinculoAtivo === 'function') {
+      let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
+      if (!vinculadoAtivo) return;
+    }
 
-  const ean = document.getElementById('cad-prod-ean').value;
-  const nome = document.getElementById('cad-prod-nome').value.trim();
-  const preco = document.getElementById('cad-prod-preco').value;
-  const qtd = document.getElementById('cad-prod-qtd').value || 0;
-  const estMin = document.getElementById('cad-prod-estmin').value || 3;
-  const medida = document.getElementById('cad-prod-medida').value;
-  const dataEntrada = document.getElementById('cad-prod-entrada').value;
-  const validade = document.getElementById('cad-prod-validade').value;
-  const alertaDiasInput = document.getElementById('cad-prod-alerta-dias').value;
-  const atalho = document.getElementById('cad-prod-atalho').checked;
-  
-  let precoCustoInput = 0;
-  if (eAdminOuSocio() && !eMoedaMei()) {
-    precoCustoInput = parseFloat(document.getElementById('cad-prod-preco-custo').value) || 0;
-  } else if (prodEditandoIndex !== null && produtos[prodEditandoIndex]) {
-    precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
-  }
+    // Leitura 100% segura de campos sem travar a tela
+    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const getChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
 
-  if (!nome || !preco) {
-    alert("Preencha nome e preço!");
-    return;
-  }
+    const ean = getVal('cad-prod-ean');
+    const nome = getVal('cad-prod-nome').trim();
+    const preco = getVal('cad-prod-preco');
+    const qtd = getVal('cad-prod-qtd') || 0;
+    const estMin = getVal('cad-prod-estmin') || 3;
+    const medida = getVal('cad-prod-medida');
+    const dataEntrada = getVal('cad-prod-entrada');
+    const validade = getVal('cad-prod-validade');
+    const alertaDiasInput = getVal('cad-prod-alerta-dias');
+    const atalho = getChecked('cad-prod-atalho');
 
-  // Define o ID único do produto (preserva o ID antigo se for edição)
-  let idProd = (prodEditandoIndex !== null && produtos[prodEditandoIndex] && produtos[prodEditandoIndex].id) 
-               ? produtos[prodEditandoIndex].id 
-               : Date.now();
-
-  let prodData = {
-    id: idProd,
-    ean: ean,
-    nome: nome,
-    precoCusto: precoCustoInput,
-    preco: parseFloat(preco),
-    estoque: parseFloat(qtd),
-    estMin: parseFloat(estMin),
-    medida: medida,
-    dataEntrada: dataEntrada,
-    validade: validade || '',
-    alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
-    atalho: atalho
-  };
-
-  // Reseta a marcação de edição
-  prodEditandoIndex = null;
-
-  // 1. Grava na nuvem aguardando resposta da nuvem (await)
-  const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
-  if (user && empresaIdDest) {
-    try {
-      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(prodData.id)).set(prodData, { merge: true });
-    } catch (erro) {
-      console.error("Erro ao salvar produto na nuvem:", erro);
-      alert("❌ Erro ao salvar na nuvem: " + erro.message);
+    if (!nome || !preco) {
+      alert("⚠️ Preencha pelo menos o Nome e o Preço do produto!");
       return;
     }
-  }
 
-  // 2. Limpa e atualiza a tela
-  fecharModalCadastroProduto();
-  alert("✅ Produto salvo com sucesso!");
-  renderAbaEstoque();
+    let precoCustoInput = 0;
+    const elCusto = document.getElementById('cad-prod-preco-custo');
+    if (elCusto) {
+      precoCustoInput = parseFloat(elCusto.value) || 0;
+    } else if (typeof prodEditandoIndex !== 'undefined' && prodEditandoIndex !== null && produtos[prodEditandoIndex]) {
+      precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+    }
+
+    // Define ID único do produto
+    let idProd = (typeof prodEditandoIndex !== 'undefined' && prodEditandoIndex !== null && produtos[prodEditandoIndex] && produtos[prodEditandoIndex].id) 
+                 ? produtos[prodEditandoIndex].id 
+                 : Date.now();
+
+    let prodData = {
+      id: idProd,
+      ean: ean,
+      nome: nome,
+      precoCusto: precoCustoInput,
+      preco: parseFloat(preco) || 0,
+      estoque: parseFloat(qtd) || 0,
+      estMin: parseFloat(estMin) || 3,
+      medida: medida,
+      dataEntrada: dataEntrada,
+      validade: validade || '',
+      alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
+      atalho: atalho
+    };
+
+    // Reseta a marcação de edição
+    if (typeof prodEditandoIndex !== 'undefined') prodEditandoIndex = null;
+
+    // 2. Grava no Firebase aguardando a nuvem (await)
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
+
+    if (user && empresaIdDest) {
+      let docChave = String(prodData.id || prodData.nome);
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(prodData, { merge: true });
+    }
+
+    // 3. Limpa e atualiza a interface
+    if (typeof fecharModalCadastroProduto === 'function') fecharModalCadastroProduto();
+    alert("✅ Produto salvo com sucesso!");
+    if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+
+  } catch (erro) {
+    console.error("Erro ao salvar produto:", erro);
+    alert("❌ Erro ao salvar produto: " + erro.message);
+  }
 }
 async function excluirProduto(index) {
   if (!eAdminOuGerenteOuSocio()) {

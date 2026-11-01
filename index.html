@@ -3647,12 +3647,23 @@ async function cadastrarOuAtualizarProduto() {
       prodData = prodExistente;
     } else produtos.push(prodData);
   }
-  persistirDadosCompletos();
+ // 1. Tenta guardar no Firebase aguardando a resposta da nuvem (await)
   const user = auth.currentUser;
-  let empresaIdDest = perfilNegocio.empresaId || user.uid;
-  if (user && empresaIdDest) db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set({ ...prodData, userId: user.uid }, { merge: true });
-  fecharModalCadastroproduto();
-  alert("✅ Produto salvo!");
+  let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
+  if (user && empresaIdDest) {
+    try {
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prodData.nome).set(prodData, { merge: true });
+    } catch (erro) {
+      console.error("Erro ao guardar produto na nuvem:", erro);
+      alert("❌ Erro ao guardar na nuvem: " + erro.message);
+      return; // Interrompe para não atualizar localmente se falhar na nuvem
+    }
+  }
+
+  // 2. Guarda na memória local e atualiza a interface apenas se não houver erro
+  persistirDadosCompletos();
+  fecharModalCadastroProduto();
+  alert("✅ Produto salvo com sucesso!");
   renderAbaEstoque();
 }
 function excluirProduto(index) {

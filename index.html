@@ -1541,15 +1541,26 @@ function renderizarListaDespesasModal() {
 }
 async function excluirDespesa(index) {
   const despesa = despesasFixas[index];
-  despesasFixas.splice(index, 1);
-  persistirDadosCompletos();
+  if (!despesa) return;
 
+  if (!confirm("Tem certeza que deseja excluir esta despesa?")) return;
+
+  // 1. Tenta excluir no Firebase aguardando a resposta (await)
   const user = auth.currentUser;
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
-  if (user && empresaIdDest && despesa) {
-    db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(despesa.id)).delete().catch(()=>{});
+  if (user && empresaIdDest && despesa.id) {
+    try {
+      await db.collection("empresas").doc(empresaIdDest).collection("despesas").doc(String(despesa.id)).delete();
+    } catch (erro) {
+      console.error("Erro ao excluir despesa na nuvem:", erro);
+      alert("❌ Erro ao excluir na nuvem: " + erro.message);
+      return; // Interrompe para não apagar localmente se falhar na nuvem
+    }
   }
 
+  // 2. Remove localmente apenas se a exclusão na nuvem tiver sucesso
+  despesasFixas.splice(index, 1);
+  persistirDadosCompletos();
   renderizarListaDespesasModal();
   verificarAlertasEstoqueValidadeAutomatico();
 }

@@ -3810,7 +3810,7 @@ async function cadastrarOuAtualizarProduto() {
     let nome = getVal('cad-prod-nome', 'prodNome').trim();
 let preco = parseFloat(getVal('cad-prod-preco', 'prodPreco')) || 0;
 let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
-let estoque = parseFloat(getVal('cad-prod-estoque', 'prodEstoque')) || 0;
+let estoque = parseFloat(getVal('cad-prod-qtd', 'cad-prod-estoque', 'prodEstoque', 'prodQtd')) || 0;
 let estMin = parseFloat(getVal('cad-prod-estmin', 'prodEstMin')) || 0;
 let medida = getVal('cad-prod-medida', 'prodMedida') || 'un';
 let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
@@ -3850,14 +3850,16 @@ let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
       return;
     }
 
-    let docChave = codBarras ? codBarras : nome;
+    let docChave = (codBarras && String(codBarras).trim() !== '') 
+  ? String(codBarras).trim() 
+  : ((nome && String(nome).trim() !== '') ? String(nome).trim().replace(/\s+/g, '_') : ('prod_' + Date.now()));
 
    let dadosProduto = {
   nome: nome,
   preco: preco,
   custo: custo,
   estoque: estoque,
-  estMin: estMin > 0 ? estMin : (minimosPadrao[medida] || 5),
+  estMin: estMin > 0 ? estMin : 5,
   medida: medida,
   codigoBarras: codBarras,
   atalho: atalhoFinal,

@@ -3373,9 +3373,16 @@ function renderAbaEstoque() {
           Validades ${qtdValidadesAlert > 0 ? `<span class="bg-amber-500 text-white text-[9px] px-1.5 py-0.2 rounded-full ml-0.5">${qtdValidadesAlert}</span>` : ''}
         </button>
       </div>
-      <button onclick="abrirModalNovoProduto()" class="w-full bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition text-xs shadow-md flex items-center justify-center gap-2">
-        <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
-      </button>
+      ${(typeof eAdminOuGerenteOuSocio === 'function' && eAdminOuGerenteOuSocio()) ? `
+  <div class="flex gap-2">
+    <button onclick="abrirModalNovoProduto()" class="flex-1 bg-teal-600 text-white font-extrabold py-3 rounded-xl hover:bg-teal-700 transition flex items-center justify-center gap-2">
+      <i class="fa-solid fa-plus-circle text-base"></i> Cadastrar Novo Produto
+    </button>
+    <button onclick="gerarRelatorioAtalhosGestao()" class="bg-slate-100 text-slate-700 border border-slate-300 font-bold px-3 py-3 rounded-xl text-xs flex items-center gap-1 shadow-sm hover:bg-slate-200">
+      📋 Relatório
+    </button>
+  </div>
+` : ''}
       <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl space-y-1.5">
         <label class="block text-xs font-bold text-teal-900">🔍 Consultar por Nome ou Código:</label>
         <input type="text" id="busca-estoque-input" oninput="buscarEExibirProdutoEstoque(this.value)" placeholder="Digite..." class="w-full p-2.5 border rounded-lg text-xs bg-white shadow-sm font-bold">
@@ -3608,76 +3615,67 @@ function buscarEExibirProdutoEstoque(termo) {
   }).join('');
 }
 async function toggleAtalhoEstoque(index) {
-  let p = produtos[index];
-  if (!p) return;
+  try {
+    let p = produtos[index];
+    if (!p) return;
 
-  const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-  let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
+    let ehGestao = typeof eAdminOuGerenteOuSocio === 'function' && eAdminOuGerenteOuSocio();
+    let ehDono = typeof eAdminOuSocio === 'function' && eAdminOuSocio();
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    let nomeUsuario = (user && user.displayName) ? user.displayName : ((user && user.email) ? user.email : 'Gestão');
 
-  // Verifica se quem está clicando é Dono/Sócio ou Gerente
-  if (eAdminOuGerenteOuSocio()) {
-    const ehDonoSocio = (typeof eAdminOuSocio === 'function') ? eAdminOuSocio() : true;
-    const cargoAtual = ehDonoSocio ? 'dono' : 'gerente';
-
-    // Se o item JÁ É um atalho global da gestão e alguém quer desmarcar
-    if (p.atalho) {
-      // Regra 1: Gerente não pode desmarcar o que o Dono definiu
-      if (p.atalhoPor === 'dono' && !ehDonoSocio) {
-        alert("⚠️ Este atalho foi definido pelo Dono e apenas ele pode alterar.");
-        return;
+    if (ehGestao) {
+      // Se já é atalho da gestão, DESMARCAR é sempre permitido (respeitando a hierarquia do Dono)
+      if (p.atalho === true) {
+        if (p.atalhoPor === 'dono' && !ehDono) {
+          alert("⚠️ Apenas o Dono pode remover um atalho fixado por ele.");
+          return;
+        }
+        p.atalho = false;
+        p.atalhoPor = null;
+        p.atalhoPorNome = null;
+        p.atalhoData = null;
+      } else {
+        // MARCAR novo atalho (Verifica limite de 5)
+        let totalGestao = produtos.filter(prod => prod.atalho === true).length;
+        if (totalGestao >= 5) {
+          alert("⚠️ Limite de 5 atalhos da gestão atingido! Desmarque um item existente para liberar vaga.");
+          return;
+        }
+        p.atalho = true;
+        p.atalhoPor = ehDono ? 'dono' : 'gerente';
+        p.atalhoPorNome = nomeUsuario;
+        p.atalhoData = new Date().toISOString();
       }
 
-      // Regra 2: Dono ao clicar em item do Gerente, recebe aviso transparente
-      if (p.atalhoPor === 'gerente' && ehDonoSocio) {
-        let confirmar = confirm("ℹ️ Este atalho foi adicionado pelo Gerente. Deseja realmente remover este atalho da gestão?");
-        if (!confirmar) return;
-      }
-
-      // Desmarca o atalho global
-      p.atalho = false;
-      p.atalhoPor = null;
-
-    } else {
-      // Se está tentando ATIVAR um novo atalho global da gestão
-
-      // Regra 3: Limite máximo de 5 atalhos para a GESTÃO (Dono + Gerente)
-      let atalhosGestao = produtos.filter(prod => prod.atalho === true).length;
-      if (atalhosGestao >= 5) {
-        alert("⚠️ Limite da Gestão atingido! A gerência/dono pode definir no máximo 5 atalhos obrigatórios para o caixa.");
-        return;
-      }
-
-      // Regra 4: Limite global de 10 atalhos no Caixa
-      let totalExibidos = produtos.filter(prod => eProdutoAtalho(prod)).length;
-      if (totalExibidos >= 10) {
-        alert("⚠️ Limite total de 10 atalhos no Caixa atingido!");
-        return;
-      }
-
-      // Marca o atalho global registrando quem incluiu
-      p.atalho = true;
-      p.atalhoPor = cargoAtual;
-    }
-
-    // Grava alteração no Firebase com rastreamento do autor
-    if (user && empresaIdDest) {
-      try {
-        let docChave = String(p.id || p.nome);
-        await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set({
+      // Salva alteração no Firebase
+      let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
+      let docChave = p.codigoBarras ? p.codigoBarras : p.nome;
+      if (empresaIdDest && docChave) {
+        await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).update({
           atalho: p.atalho,
-          atalhoPor: p.atalhoPor || null
-        }, { merge: true });
-      } catch (erro) {
-        console.error("Erro ao atualizar atalho global:", erro);
+          atalhoPor: p.atalhoPor,
+          atalhoPorNome: p.atalhoPorNome,
+          atalhoData: p.atalhoData
+        });
+      }
+    } else {
+      // Regra para Operadores (atalho pessoal na nuvem)
+      if (typeof toggleAtalhoOperadorNuvem === 'function') {
+        if (p.atalho === true) {
+          alert("🔒 Este atalho foi fixado pela gestão e não pode ser removido pelo operador.");
+          return;
+        }
+        await toggleAtalhoOperadorNuvem(p);
       }
     }
 
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
     if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
 
-  } else {
-    // Se for Operador
-    await alternarAtalhoProduto(p.id || p.nome);
+  } catch (erro) {
+    console.error("Erro ao alterar atalho:", erro);
+    alert("❌ Não foi possível alterar o atalho.");
   }
 }
 
@@ -3793,16 +3791,28 @@ async function cadastrarOuAtualizarProduto() {
       if (!vinculadoAtivo) return;
     }
 
-    // Leitura segura dos campos
-    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
-    const getChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
+    // Leitura inteligente dos campos (suporta cad-prod- e prod)
+    const getVal = (id1, id2) => {
+      const el1 = document.getElementById(id1);
+      if (el1 && el1.value !== undefined) return el1.value;
+      const el2 = document.getElementById(id2);
+      return el2 ? el2.value : '';
+    };
 
-    let nome = getVal('prodNome').trim();
-    let preco = parseFloat(getVal('prodPreco')) || 0;
-    let custo = parseFloat(getVal('prodCusto')) || 0;
-    let estoque = parseFloat(getVal('prodEstoque')) || 0;
-    let codBarras = getVal('prodCodigoBarras').trim();
-    let atalhoDesejado = getChecked('prodAtalho');
+    const getChecked = (id1, id2) => {
+      const el1 = document.getElementById(id1);
+      if (el1 && el1.checked !== undefined) return el1.checked;
+      const el2 = document.getElementById(id2);
+      return el2 ? el2.checked : false;
+    };
+
+    let nome = getVal('cad-prod-nome', 'prodNome').trim();
+    let preco = parseFloat(getVal('cad-prod-preco', 'prodPreco')) || 0;
+    let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
+    let estoque = parseFloat(getVal('cad-prod-estoque', 'prodEstoque')) || 0;
+    let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
+    if (!codBarras) codBarras = getVal('cad-prod-codigo', 'prodCodigoBarras').trim();
+    let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
 
     if (!nome) {
       alert("⚠️ Digite o nome do produto.");
@@ -3811,6 +3821,11 @@ async function cadastrarOuAtualizarProduto() {
 
     let atalhoFinal = false;
     let atalhoPorFinal = null;
+    let atalhoPorNomeFinal = null;
+    let atalhoDataFinal = null;
+
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    let nomeUsuarioLogado = (user && user.displayName) ? user.displayName : ((user && user.email) ? user.email : 'Gestão');
 
     // Regra de atalhos da Gestão no cadastro (Máximo 5)
     if (atalhoDesejado) {
@@ -3818,12 +3833,13 @@ async function cadastrarOuAtualizarProduto() {
       if (totalGestao < 5) {
         atalhoFinal = true;
         atalhoPorFinal = (typeof eAdminOuSocio === 'function' && eAdminOuSocio()) ? 'dono' : 'gerente';
+        atalhoPorNomeFinal = nomeUsuarioLogado;
+        atalhoDataFinal = new Date().toISOString();
       } else {
         alert("⚠️ O produto foi cadastrado, mas a opção de atalho foi desativada pois o limite de 5 atalhos da gestão já foi atingido.");
       }
     }
 
-    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
     let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
 
     if (!user || !empresaIdDest) {
@@ -3841,6 +3857,8 @@ async function cadastrarOuAtualizarProduto() {
       codigoBarras: codBarras,
       atalho: atalhoFinal,
       atalhoPor: atalhoPorFinal,
+      atalhoPorNome: atalhoPorNomeFinal,
+      atalhoData: atalhoDataFinal,
       atualizadoEm: new Date()
     };
 
@@ -3848,12 +3866,17 @@ async function cadastrarOuAtualizarProduto() {
     await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
 
     // Limpa os campos do formulário para o próximo cadastro mantendo a janela aberta
-    if (document.getElementById('prodNome')) document.getElementById('prodNome').value = '';
-    if (document.getElementById('prodPreco')) document.getElementById('prodPreco').value = '';
-    if (document.getElementById('prodCusto')) document.getElementById('prodCusto').value = '';
-    if (document.getElementById('prodEstoque')) document.getElementById('prodEstoque').value = '';
-    if (document.getElementById('prodCodigoBarras')) document.getElementById('prodCodigoBarras').value = '';
-    if (document.getElementById('prodAtalho')) document.getElementById('prodAtalho').checked = false;
+    const limpar = (id) => { const el = document.getElementById(id); if (el) el.value = ''; };
+    limpar('cad-prod-nome'); limpar('prodNome');
+    limpar('cad-prod-preco'); limpar('prodPreco');
+    limpar('cad-prod-custo'); limpar('prodCusto');
+    limpar('cad-prod-estoque'); limpar('prodEstoque');
+    limpar('cad-prod-barras'); limpar('prodCodigoBarras'); limpar('cad-prod-codigo');
+    
+    const boxAtalho1 = document.getElementById('cad-prod-atalho');
+    if (boxAtalho1) boxAtalho1.checked = false;
+    const boxAtalho2 = document.getElementById('prodAtalho');
+    if (boxAtalho2) boxAtalho2.checked = false;
 
     alert("✅ Produto cadastrado com sucesso! A tela continua aberta para cadastrar o próximo item.");
 
@@ -4590,6 +4613,23 @@ function iniciarMonitorConexao() {
 // Liga a verificação de rede ao abrir a aplicação
 iniciarMonitorConexao();
 
+  function gerarRelatorioAtalhosGestao() {
+  let atalhos = produtos.filter(p => p.atalho === true);
+  if (atalhos.length === 0) {
+    alert("ℹ️ Nenhum atalho fixado pela gestão no momento.");
+    return;
+  }
+
+  let texto = "📋 RELATÓRIO DE ATALHOS OBRIGATÓRIOS DA GESTÃO\n\n";
+  atalhos.forEach((p, idx) => {
+    let quem = p.atalhoPor === 'dono' ? '👑 Dono' : '👔 Gerente';
+    let nomeUser = p.atalhoPorNome || 'Não registrado';
+    let dataFormatada = p.atalhoData ? new Date(p.atalhoData).toLocaleString('pt-BR') : 'Data não registrada';
+    texto += `${idx + 1}. ${p.nome}\n   Fixado por: ${quem} (${nomeUser})\n   Data/Hora: ${dataFormatada}\n\n`;
+  });
+
+  alert(texto);
+}
 console.log("Caixa Rápido Móvel Pro - Versão 57.2 Carregada com Sucesso!");
 </script>
 </body>

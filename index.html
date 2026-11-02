@@ -2415,7 +2415,7 @@ function onScanSuccess(decodedText) {
   if (modoScannerDestino === 'caixa') {
     let prod = produtos.find(p => p.ean && p.ean.trim() === decodedText.trim());
     if (prod) {
-      let idxReal = produtos.findIndex(p => p.id === prod.id);
+      let idxReal = produtos.indexOf(prod);
       tocarBeepConfirmacaoBip();
       adicionarAoCarrinhoSilent(idxReal);
       const feedback = document.getElementById('scanner-feedback-box');
@@ -3108,7 +3108,7 @@ function filtrarSugestoesProdutos(texto) {
     return;
   }
   box.innerHTML = filtro.map(p => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
+    let idxReal = produtos.indexOf(p);
     return `
       <div onclick="selecionarProdutoDaBusca(${idxReal})" class="p-2 hover:bg-teal-50 cursor-pointer flex justify-between items-center text-xs">
         <div>
@@ -3484,7 +3484,7 @@ function renderSubAbaMinimos() {
       <div class="space-y-2 max-h-72 overflow-y-auto">
         ${minimos.map(p => {
          let idxReal = produtos.indexOf(p);
-let podeRepor = (typeof eAdminOuSocio === 'function') ? eAdminOuSocio() : true;
+let podeRepor = (typeof eAdminOuGerenteOuSocio === 'function') ? eAdminOuGerenteOuSocio() : true;
 return `
   <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
     <div>
@@ -3849,9 +3849,9 @@ let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
     }
 
     let atalhoFinal = false;
-    let atalhoPorFinal = null;
-    let atalhoPorNomeFinal = null;
-    let atalhoDataFinal = null;
+let atalhoPorFinal = '';
+let atalhoPorNomeFinal = '';
+let atalhoDataFinal = '';
 
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
     let nomeUsuarioLogado = (user && user.displayName) ? user.displayName : ((user && user.email) ? user.email : 'Gestão');

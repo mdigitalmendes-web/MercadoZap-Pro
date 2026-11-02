@@ -3811,6 +3811,8 @@ async function cadastrarOuAtualizarProduto() {
     let preco = parseFloat(getVal('cad-prod-preco', 'prodPreco')) || 0;
     let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
     let estoque = parseFloat(getVal('cad-prod-estoque', 'prodEstoque')) || 0;
+    let estMin = parseFloat(getVal('cad-prod-estmin', 'prodEstMin')) || 0;
+let medida = getVal('cad-prod-medida', 'prodMedida') || 'un';
     let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
     if (!codBarras) codBarras = getVal('cad-prod-codigo', 'prodCodigoBarras').trim();
     let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
@@ -3855,6 +3857,8 @@ async function cadastrarOuAtualizarProduto() {
       preco: preco,
       custo: custo,
       estoque: estoque,
+      estMin: estMin,
+medida: medida,
       codigoBarras: codBarras,
       atalho: atalhoFinal,
       atalhoPor: atalhoPorFinal,

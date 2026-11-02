@@ -2899,7 +2899,7 @@ function renderAbaVendas() {
   const saldoGavetaDinheiro = vendasHoje.filter(v => v.formaPagto === 'Dinheiro').reduce((acc, v) => acc + parseFloat(v.valorTotal || v.valor || 0), 0) - totalSangrias + totalSuprimentos;
   let atalhosProdutos = produtos.filter(p => eProdutoAtalho(p));
   let atalhosProdutosHTML = atalhosProdutos.map((p) => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
+   let idxReal = produtos.indexOf(p);
     let ehFracionado = ['kg', 'g', 'L'].includes(p.medida);
     let itemNoCarrinho = carrinho.find(c => c.nome.toLowerCase() === p.nome.toLowerCase());
     let qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qtd : 0;
@@ -3872,24 +3872,19 @@ let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
     // Salva no Firebase
     await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
 
-   // LIMPEZA INTELIGENTE: Zera apenas o produto anterior e restaura os padrões da loja
-let elNome = document.getElementById('cad-prod-nome') || document.getElementById('prodNome');
-if (elNome) elNome.value = '';
-let elPreco = document.getElementById('cad-prod-preco') || document.getElementById('prodPreco');
-if (elPreco) elPreco.value = '';
-let elCusto = document.getElementById('cad-prod-custo') || document.getElementById('prodCusto');
-if (elCusto) elCusto.value = '';
-let elEstoque = document.getElementById('cad-prod-estoque') || document.getElementById('prodEstoque');
-if (elEstoque) elEstoque.value = '';
-let elBarras = document.getElementById('cad-prod-barras') || document.getElementById('prodCodigoBarras');
-if (elBarras) elBarras.value = '';
+  // LIMPEZA COMPLETA: Apaga dados do produto anterior e restaura padrões da loja
+['cad-prod-nome', 'prodNome', 'cad-prod-preco-custo', 'prodCusto', 'cad-prod-custo', 
+ 'cad-prod-preco', 'prodPreco', 'cad-prod-qtd', 'cad-prod-estoque', 'prodEstoque', 
+ 'cad-prod-barras', 'prodCodigoBarras', 'cad-prod-codigo', 'cad-prod-validade'].forEach(id => {
+  let el = document.getElementById(id);
+  if (el) el.value = '';
+});
 
 // Restaura os padrões automáticos (Estoque Mínimo = 5 e Data de Entrada = Hoje)
 let elEstMin = document.getElementById('cad-prod-estmin') || document.getElementById('prodEstMin');
 if (elEstMin) elEstMin.value = '5';
 let elEntrada = document.getElementById('cad-prod-entrada') || document.getElementById('prodEntrada');
 if (elEntrada) elEntrada.value = new Date().toISOString().split('T')[0];
-
     alert("✅ Produto cadastrado com sucesso! Todos os campos foram limpos para o próximo item.");
 
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();

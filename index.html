@@ -3290,9 +3290,10 @@ async function processarFinalizarVenda(tipoEnvio) {
   renderAba();
 }
 function setSubAbaEstoque(sub) {
-  if (subAbaEstoque === sub) subAbaEstoque = 'none';
-  else subAbaEstoque = sub;
-  renderAbaEstoque();
+  subAbaEstoque = sub;
+  if (typeof renderAbaEstoque === 'function') {
+    renderAbaEstoque();
+  }
 }
 function abrirModalMinimosPadrao() {
   document.getElementById('min-padrao-un').value = minimosPadrao.un || 5;
@@ -3425,8 +3426,8 @@ function renderSubAbaTodosProdutos() {
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque} ${p.medida || 'un'}</b> | Preço: <b>R$ ${p.preco.toFixed(2)}</b></p>
+               <p class="font-bold text-slate-800 text-sm">${p.nome || '⚠️ [Produto Sem Nome]'}</p>
+<p class="text-slate-500">Estoque: <b class="text-teal-700">${p.estoque !== undefined && p.estoque !== null ? p.estoque : 0} ${p.medida || 'un'}</b>
                 ${!eModoMei() && p.precoCusto > 0 ? `<p class="text-[10px] text-slate-400">Custo: R$ ${parseFloat(p.precoCusto).toFixed(2)}</p>` : ''}
               </div>
               <span class="text-xs font-bold ${p.estoque <= (p.estMin || 3) ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200' : 'text-green-600'}">
@@ -3785,16 +3786,16 @@ async function cadastrarOuAtualizarProduto() {
       return;
     }
 
-    // 1. Verifica vínculo ativo
+    // Verifica vínculo ativo
     if (typeof verificarIntegridadeVinculoAtivo === 'function') {
       let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
       if (!vinculadoAtivo) return;
     }
 
-    // Leitura inteligente dos campos (suporta cad-prod- e prod)
+    // Leitura inteligente dos campos
     const getVal = (id1, id2) => {
       const el1 = document.getElementById(id1);
-      if (el1 && el1.value !== undefined) return el1.value;
+      if (el1 && el1.value !== undefined && el1.value !== '') return el1.value;
       const el2 = document.getElementById(id2);
       return el2 ? el2.value : '';
     };
@@ -3829,7 +3830,7 @@ async function cadastrarOuAtualizarProduto() {
 
     // Regra de atalhos da Gestão no cadastro (Máximo 5)
     if (atalhoDesejado) {
-      let totalGestao = produtos.filter(p => p.atalho === true).length;
+      let totalGestao = produtos.filter(p => p && p.atalho === true).length;
       if (totalGestao < 5) {
         atalhoFinal = true;
         atalhoPorFinal = (typeof eAdminOuSocio === 'function' && eAdminOuSocio()) ? 'dono' : 'gerente';
@@ -3865,20 +3866,19 @@ async function cadastrarOuAtualizarProduto() {
     // Salva no Firebase
     await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
 
-    // Limpa os campos do formulário para o próximo cadastro mantendo a janela aberta
-    const limpar = (id) => { const el = document.getElementById(id); if (el) el.value = ''; };
-    limpar('cad-prod-nome'); limpar('prodNome');
-    limpar('cad-prod-preco'); limpar('prodPreco');
-    limpar('cad-prod-custo'); limpar('prodCusto');
-    limpar('cad-prod-estoque'); limpar('prodEstoque');
-    limpar('cad-prod-barras'); limpar('prodCodigoBarras'); limpar('cad-prod-codigo');
-    
-    const boxAtalho1 = document.getElementById('cad-prod-atalho');
-    if (boxAtalho1) boxAtalho1.checked = false;
-    const boxAtalho2 = document.getElementById('prodAtalho');
-    if (boxAtalho2) boxAtalho2.checked = false;
+    // LIMPEZA COMPLETA: Zera TODOS os campos de texto e número dentro da modal de cadastro
+    const modalCad = document.getElementById('modal-cadastro-produto');
+    if (modalCad) {
+      modalCad.querySelectorAll('input').forEach(input => {
+        if (input.type === 'checkbox') {
+          input.checked = false;
+        } else {
+          input.value = '';
+        }
+      });
+    }
 
-    alert("✅ Produto cadastrado com sucesso! A tela continua aberta para cadastrar o próximo item.");
+    alert("✅ Produto cadastrado com sucesso! Todos os campos foram limpos para o próximo item.");
 
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
     if (typeof renderAbaCaixa === 'function') renderAbaCaixa();

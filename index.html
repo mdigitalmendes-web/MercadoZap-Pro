@@ -3483,16 +3483,17 @@ function renderSubAbaMinimos() {
       <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">⚠️ Estoque Baixo (${minimos.length}):</p>
       <div class="space-y-2 max-h-72 overflow-y-auto">
         ${minimos.map(p => {
-          let idxReal = produtos.findIndex(prod => prod.id === p.id);
-          return `
-            <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
-              <div>
-                <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
-                <p class="text-red-700 font-bold mt-0.5">Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500">(Mín: ${p.estMin || 3})</span></p>
-              </div>
-              <button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">⚡ Repor</button>
-            </div>
-          `;
+         let idxReal = produtos.indexOf(p);
+let podeRepor = (typeof eAdminOuSocio === 'function') ? eAdminOuSocio() : true;
+return `
+  <div class="p-3 rounded-2xl border bg-red-50 border-red-300 flex justify-between items-center text-xs alerta-saltando">
+    <div>
+      <p class="font-bold text-slate-800 text-sm">${p.nome}</p>
+      <p class="text-red-700 font-bold mt-0.5">Estoque: <b>${p.estoque}${p.medida || 'un'}</b> <span class="text-slate-500">(Min: ${p.estMin || 3})</span></p>
+    </div>
+    ${podeRepor ? `<button onclick="abrirModalAjusteRapido(${idxReal})" class="bg-red-600 text-white font-extrabold px-3 py-2 rounded-xl text-xs shadow">⚡ Repor</button>` : `<span class="text-slate-400 italic text-[11px]">Apenas consulta</span>`}
+  </div>
+`;
         }).join('')}
       </div>
     </div>
@@ -3722,7 +3723,31 @@ async function salvarAtalhosOperadorNuvem(listaIds) {
     }
   }
 }
-
+// Função para adicionar ou remover atalho do operador (máximo 5)
+async function toggleAtalhoOperadorNuvem(p) {
+  if (!p) return;
+  let chave = (p.codigoBarras && String(p.codigoBarras).trim() !== '') ? String(p.codigoBarras).trim() : String(p.nome).trim();
+  
+  if (!Array.isArray(atalhosOperadorNuvem)) {
+    atalhosOperadorNuvem = [];
+  }
+  
+  let idx = atalhosOperadorNuvem.indexOf(chave);
+  if (idx >= 0) {
+    // Se já existe, remove o atalho
+    atalhosOperadorNuvem.splice(idx, 1);
+  } else {
+    // Se não existe, valida o limite de 5 atalhos
+    if (atalhosOperadorNuvem.length >= 5) {
+      alert("⚠️ Limite de 5 atalhos do operador atingido! Desmarque um item para liberar vaga.");
+      return;
+    }
+    atalhosOperadorNuvem.push(chave);
+  }
+  
+  await salvarAtalhosOperadorNuvem(atalhosOperadorNuvem);
+}
+  
 function eProdutoAtalho(prod) {
   if (!prod) return false;
 
@@ -3739,7 +3764,8 @@ function eProdutoAtalho(prod) {
 
   // 2. Se o operador adicionou aos atalhos pessoais dele, exibe
   if (atalhosOperadorNuvem !== null && Array.isArray(atalhosOperadorNuvem)) {
-    return atalhosOperadorNuvem.includes(String(prod.id || prod.nome));
+   let chave = (prod.codigoBarras && String(prod.codigoBarras).trim() !== '') ? String(prod.codigoBarras).trim() : String(prod.nome).trim();
+return atalhosOperadorNuvem.includes(chave) || atalhosOperadorNuvem.includes(String(prod.nome));
   }
 
   return false;

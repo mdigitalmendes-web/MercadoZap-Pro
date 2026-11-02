@@ -3808,14 +3808,14 @@ async function cadastrarOuAtualizarProduto() {
     };
 
     let nome = getVal('cad-prod-nome', 'prodNome').trim();
-    let preco = parseFloat(getVal('cad-prod-preco', 'prodPreco')) || 0;
-    let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
-    let estoque = parseFloat(getVal('cad-prod-estoque', 'prodEstoque')) || 0;
-    let estMin = parseFloat(getVal('cad-prod-estmin', 'prodEstMin')) || 0;
+let preco = parseFloat(getVal('cad-prod-preco', 'prodPreco')) || 0;
+let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
+let estoque = parseFloat(getVal('cad-prod-estoque', 'prodEstoque')) || 0;
+let estMin = parseFloat(getVal('cad-prod-estmin', 'prodEstMin')) || 0;
 let medida = getVal('cad-prod-medida', 'prodMedida') || 'un';
-    let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
-    if (!codBarras) codBarras = getVal('cad-prod-codigo', 'prodCodigoBarras').trim();
-    let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
+let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
+if (!codBarras) codBarras = getVal('cad-prod-codigo', 'prodCodigoBarras').trim();
+let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
 
     if (!nome) {
       alert("⚠️ Digite o nome do produto.");
@@ -3852,35 +3852,41 @@ let medida = getVal('cad-prod-medida', 'prodMedida') || 'un';
 
     let docChave = codBarras ? codBarras : nome;
 
-    let dadosProduto = {
-      nome: nome,
-      preco: preco,
-      custo: custo,
-      estoque: estoque,
-      estMin: estMin,
-medida: medida,
-      codigoBarras: codBarras,
-      atalho: atalhoFinal,
-      atalhoPor: atalhoPorFinal,
-      atalhoPorNome: atalhoPorNomeFinal,
-      atalhoData: atalhoDataFinal,
-      atualizadoEm: new Date()
-    };
+   let dadosProduto = {
+  nome: nome,
+  preco: preco,
+  custo: custo,
+  estoque: estoque,
+  estMin: estMin > 0 ? estMin : (minimosPadrao[medida] || 5),
+  medida: medida,
+  codigoBarras: codBarras,
+  atalho: atalhoFinal,
+  atalhoPor: atalhoPorFinal,
+  atalhoPorNome: atalhoPorNomeFinal,
+  atalhoData: atalhoDataFinal,
+  atualizadoEm: new Date()
+};
 
     // Salva no Firebase
     await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
 
-    // LIMPEZA COMPLETA: Zera TODOS os campos de texto e número dentro da modal de cadastro
-    const modalCad = document.getElementById('modal-cadastro-produto');
-    if (modalCad) {
-      modalCad.querySelectorAll('input').forEach(input => {
-        if (input.type === 'checkbox') {
-          input.checked = false;
-        } else {
-          input.value = '';
-        }
-      });
-    }
+   // LIMPEZA INTELIGENTE: Zera apenas o produto anterior e restaura os padrões da loja
+let elNome = document.getElementById('cad-prod-nome') || document.getElementById('prodNome');
+if (elNome) elNome.value = '';
+let elPreco = document.getElementById('cad-prod-preco') || document.getElementById('prodPreco');
+if (elPreco) elPreco.value = '';
+let elCusto = document.getElementById('cad-prod-custo') || document.getElementById('prodCusto');
+if (elCusto) elCusto.value = '';
+let elEstoque = document.getElementById('cad-prod-estoque') || document.getElementById('prodEstoque');
+if (elEstoque) elEstoque.value = '';
+let elBarras = document.getElementById('cad-prod-barras') || document.getElementById('prodCodigoBarras');
+if (elBarras) elBarras.value = '';
+
+// Restaura os padrões automáticos (Estoque Mínimo = 5 e Data de Entrada = Hoje)
+let elEstMin = document.getElementById('cad-prod-estmin') || document.getElementById('prodEstMin');
+if (elEstMin) elEstMin.value = '5';
+let elEntrada = document.getElementById('cad-prod-entrada') || document.getElementById('prodEntrada');
+if (elEntrada) elEntrada.value = new Date().toISOString().split('T')[0];
 
     alert("✅ Produto cadastrado com sucesso! Todos os campos foram limpos para o próximo item.");
 

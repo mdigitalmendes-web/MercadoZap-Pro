@@ -3271,23 +3271,31 @@ async function processarFinalizarVenda(tipoEnvio) {
     `==================================-\n` +
     ` OBRIGADO PELA PREFERÊNCIA!\n` +
     `===================================`;
-  if (tipoEnvio === 'whatsapp') {
-    let numLimpo = zapClienteInput ? zapClienteInput.replace(/\D/g, '') : '';
-    if (numLimpo) {
-      window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`, '_blank');
-    } else {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumoTexto)}`, '_blank');
-    }
-  } else if (tipoEnvio === 'imprimir') {
-    let janelaImpressao = window.open('', '_blank');
-    janelaImpressao.document.write(`<html><head><title>Cupom</title></head><body style="font-family:monospace; padding:15px; font-size:12px; white-space:pre-wrap;">${resumoTexto}</body></html>`);
-    janelaImpressao.document.close();
-    janelaImpressao.print();
-  }
-  carrinho = [];
-  clienteAtualVenda = { nome: '', zap: '' };
-  alert("✅ Venda finalizada com sucesso!");
-  renderAba();
+// 1. Limpa o carrinho e reseta a tela PRIMEIRO para sincronização imediata no Firebase
+    carrinho = [];
+    clienteAtualVenda = { nome: '', zap: '' };
+    if (typeof renderCarrinho === 'function') renderCarrinho();
+    if (typeof renderAba === 'function') renderAba();
+
+    // 2. Alerta de sucesso e abertura do WhatsApp/Impressão sem travar a sincronização
+    alert("✅ Venda finalizada com sucesso!");
+
+    setTimeout(() => {
+      if (tipoEnvio === 'whatsapp') {
+        let numLimpo = zapClienteInput ? zapClienteInput.replace(/\D/g, '') : '';
+        let urlZap = numLimpo 
+          ? `https://api.whatsapp.com/send?phone=55${numLimpo}&text=${encodeURIComponent(resumoTexto)}`
+          : `https://api.whatsapp.com/send?text=${encodeURIComponent(resumoTexto)}`;
+        window.open(urlZap, '_blank');
+      } else if (tipoEnvio === 'imprimir') {
+        let janelaImpressao = window.open('', '_blank');
+        if (janelaImpressao) {
+          janelaImpressao.document.write(`<html><head><title>Cupom</title></head><body style="font-family:monospace; padding:10px;">${resumoTexto.replace(/\n/g, '<br>')}</body></html>`);
+          janelaImpressao.document.close();
+          janelaImpressao.print();
+        }
+      }
+    }, 100);
 }
 function setSubAbaEstoque(sub) {
   subAbaEstoque = sub;
@@ -3839,8 +3847,9 @@ let custo = parseFloat(getVal('cad-prod-custo', 'prodCusto')) || 0;
 let estoque = parseFloat(getVal('cad-prod-qtd', 'cad-prod-estoque', 'prodEstoque', 'prodQtd')) || 0;
 let estMin = parseFloat(getVal('cad-prod-estmin', 'prodEstMin')) || 0;
 let medida = getVal('cad-prod-medida', 'prodMedida') || 'un';
-let codBarras = getVal('cad-prod-barras', 'prodCodigoBarras').trim();
+let codBarras = getVal('cad-prod-ean', 'cad-prod-barras', 'prodCodigoBarras').trim();
 if (!codBarras) codBarras = getVal('cad-prod-codigo', 'prodCodigoBarras').trim();
+let ean = codBarras;
 let atalhoDesejado = getChecked('cad-prod-atalho', 'prodAtalho');
 
     if (!nome) {

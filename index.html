@@ -3426,13 +3426,15 @@ function renderSubAbaTodosProdutos() {
                 ${p.estoque <= (p.estMin || 3) ? '⚠️ Mínimo' : 'OK'}
               </span>
             </div>
-            <div class="flex justify-between items-center border-t pt-2 gap-1">
-              <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
-                <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
-              </button>
-              <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
-              ${eAdminOuGerenteOuSocio() ? `<button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
-            </div>
+        <div class="flex justify-between items-center border-t pt-2 gap-1">
+  <button onclick="toggleAtalhoEstoque(${index})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${(typeof eProdutoAtalho === 'function' ? eProdutoAtalho(p) : p.atalho) ? 'border-amber-400 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-600'}">
+    <i class="fa-solid fa-star ${(typeof eProdutoAtalho === 'function' ? eProdutoAtalho(p) : p.atalho) ? 'text-amber-500' : 'text-slate-300'}"></i> ${(typeof eProdutoAtalho === 'function' ? eProdutoAtalho(p) : p.atalho) ? 'No Caixa' : '+ Atalho'}${p.atalho === true ? (p.atalhoPor === 'dono' ? '<span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full ml-1">👑 Dono</span>' : (p.atalhoPor === 'gerente' ? '<span class="text-[10px] font-bold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full ml-1">👔 Gerente</span>' : '')) : ''}
+  </button>
+  ${(typeof eAdminOuGerenteOuSocio === 'function' && eAdminOuGerenteOuSocio()) ? `
+    <button onclick="editarProdutoCompleto(${index})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
+    <button onclick="excluirProduto(${index})" class="py-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded text-[11px] font-bold">Excluir</button>
+  ` : ''}
+</div>
           </div>
         `;
       }).join('')}
@@ -3779,80 +3781,88 @@ async function alternarAtalhoProduto(prodIdOuNome) {
 }
 async function cadastrarOuAtualizarProduto() {
   try {
+    // Trava de Segurança: Apenas Dono, Sócio e Gerente podem cadastrar ou alterar produtos
+    if (typeof eAdminOuGerenteOuSocio === 'function' && !eAdminOuGerenteOuSocio()) {
+      alert("⚠️ Acesso restrito! Apenas a gestão (Dono, Sócio e Gerente) pode cadastrar ou editar produtos.");
+      return;
+    }
+
     // 1. Verifica vínculo ativo
     if (typeof verificarIntegridadeVinculoAtivo === 'function') {
       let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
       if (!vinculadoAtivo) return;
     }
 
-    // Leitura 100% segura de campos sem travar a tela
+    // Leitura segura dos campos
     const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
     const getChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
 
-    const ean = getVal('cad-prod-ean');
-    const nome = getVal('cad-prod-nome').trim();
-    const preco = getVal('cad-prod-preco');
-    const qtd = getVal('cad-prod-qtd') || 0;
-    const estMin = getVal('cad-prod-estmin') || 3;
-    const medida = getVal('cad-prod-medida');
-    const dataEntrada = getVal('cad-prod-entrada');
-    const validade = getVal('cad-prod-validade');
-    const alertaDiasInput = getVal('cad-prod-alerta-dias');
-    const atalho = getChecked('cad-prod-atalho');
+    let nome = getVal('prodNome').trim();
+    let preco = parseFloat(getVal('prodPreco')) || 0;
+    let custo = parseFloat(getVal('prodCusto')) || 0;
+    let estoque = parseFloat(getVal('prodEstoque')) || 0;
+    let codBarras = getVal('prodCodigoBarras').trim();
+    let atalhoDesejado = getChecked('prodAtalho');
 
-    if (!nome || !preco) {
-      alert("⚠️ Preencha pelo menos o Nome e o Preço do produto!");
+    if (!nome) {
+      alert("⚠️ Digite o nome do produto.");
       return;
     }
 
-    let precoCustoInput = 0;
-    const elCusto = document.getElementById('cad-prod-preco-custo');
-    if (elCusto) {
-      precoCustoInput = parseFloat(elCusto.value) || 0;
-    } else if (typeof prodEditandoIndex !== 'undefined' && prodEditandoIndex !== null && produtos[prodEditandoIndex]) {
-      precoCustoInput = produtos[prodEditandoIndex].precoCusto || 0;
+    let atalhoFinal = false;
+    let atalhoPorFinal = null;
+
+    // Regra de atalhos da Gestão no cadastro (Máximo 5)
+    if (atalhoDesejado) {
+      let totalGestao = produtos.filter(p => p.atalho === true).length;
+      if (totalGestao < 5) {
+        atalhoFinal = true;
+        atalhoPorFinal = (typeof eAdminOuSocio === 'function' && eAdminOuSocio()) ? 'dono' : 'gerente';
+      } else {
+        alert("⚠️ O produto foi cadastrado, mas a opção de atalho foi desativada pois o limite de 5 atalhos da gestão já foi atingido.");
+      }
     }
 
-    // Define ID único do produto
-    let idProd = (typeof prodEditandoIndex !== 'undefined' && prodEditandoIndex !== null && produtos[prodEditandoIndex] && produtos[prodEditandoIndex].id) 
-                 ? produtos[prodEditandoIndex].id 
-                 : Date.now();
-
-    let prodData = {
-      id: idProd,
-      ean: ean,
-      nome: nome,
-      precoCusto: precoCustoInput,
-      preco: parseFloat(preco) || 0,
-      estoque: parseFloat(qtd) || 0,
-      estMin: parseFloat(estMin) || 3,
-      medida: medida,
-      dataEntrada: dataEntrada,
-      validade: validade || '',
-      alertaDias: alertaDiasInput ? parseInt(alertaDiasInput) : null,
-      atalho: atalho
-    };
-
-    // Reseta a marcação de edição
-    if (typeof prodEditandoIndex !== 'undefined') prodEditandoIndex = null;
-
-    // 2. Grava no Firebase aguardando a nuvem (await)
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
     let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
 
-    if (user && empresaIdDest) {
-      let docChave = String(prodData.id || prodData.nome);
-      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(prodData, { merge: true });
+    if (!user || !empresaIdDest) {
+      alert("⚠️ Erro ao identificar a empresa. Faça login novamente.");
+      return;
     }
 
-    // 3. Limpa e atualiza a interface
-    if (typeof fecharModalCadastroProduto === 'function') fecharModalCadastroProduto();
-    alert("✅ Produto salvo com sucesso!");
+    let docChave = codBarras ? codBarras : nome;
+
+    let dadosProduto = {
+      nome: nome,
+      preco: preco,
+      custo: custo,
+      estoque: estoque,
+      codigoBarras: codBarras,
+      atalho: atalhoFinal,
+      atalhoPor: atalhoPorFinal,
+      atualizadoEm: new Date()
+    };
+
+    // Salva no Firebase
+    await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
+
+    // Limpa os campos do formulário para o próximo cadastro mantendo a janela aberta
+    if (document.getElementById('prodNome')) document.getElementById('prodNome').value = '';
+    if (document.getElementById('prodPreco')) document.getElementById('prodPreco').value = '';
+    if (document.getElementById('prodCusto')) document.getElementById('prodCusto').value = '';
+    if (document.getElementById('prodEstoque')) document.getElementById('prodEstoque').value = '';
+    if (document.getElementById('prodCodigoBarras')) document.getElementById('prodCodigoBarras').value = '';
+    if (document.getElementById('prodAtalho')) document.getElementById('prodAtalho').checked = false;
+
+    alert("✅ Produto cadastrado com sucesso! A tela continua aberta para cadastrar o próximo item.");
+
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
+    if (typeof renderAbaCaixa === 'function') renderAbaCaixa();
 
   } catch (erro) {
     console.error("Erro ao salvar produto:", erro);
-    alert("❌ Erro ao salvar produto: " + erro.message);
+    alert("❌ Erro ao salvar produto no Firebase.");
   }
 }
 async function excluirProduto(index) {

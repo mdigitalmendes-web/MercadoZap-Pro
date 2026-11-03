@@ -4680,6 +4680,19 @@ iniciarMonitorConexao();
   alert(texto);
 }
 console.log("Caixa Rápido Móvel Pro - Versão 57.2 Carregada com Sucesso!");
+  // Força a atualização instantânea do Firebase ao acender a tela ou reabrir a aba no celular
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (typeof auth !== 'undefined' && auth.currentUser) {
+      if (typeof escutarProdutosEmTempoReal === 'function') {
+        escutarProdutosEmTempoReal();
+      }
+      if (typeof renderAba === 'function') {
+        renderAba();
+      }
+    }
+  }
+});
 </script>
 </body>
 </html>

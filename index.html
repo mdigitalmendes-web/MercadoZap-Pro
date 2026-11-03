@@ -3889,31 +3889,38 @@ let atalhoDataFinal = '';
   ? String(codBarras).trim() 
   : ((nome && String(nome).trim() !== '') ? String(nome).trim().replace(/\s+/g, '_') : ('prod_' + Date.now()));
 
-   let dadosProduto = {
+  let dadosProduto = {
   nome: nome,
   preco: preco,
   custo: custo,
   estoque: estoque,
   estMin: estMin > 0 ? estMin : 5,
   medida: medida,
-  codigoBarras: codBarras,
+  ean: codBarras || '',
+  codigoBarras: codBarras || '',
   atalho: atalhoFinal,
   atalhoPor: atalhoPorFinal,
   atalhoPorNome: atalhoPorNomeFinal,
   atalhoData: atalhoDataFinal,
   atualizadoEm: new Date()
 };
-
     // Salva no Firebase
     await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).set(dadosProduto, { merge: true });
 
   // LIMPEZA COMPLETA: Apaga dados do produto anterior e restaura padrões da loja
-['cad-prod-nome', 'prodNome', 'cad-prod-preco-custo', 'prodCusto', 'cad-prod-custo', 
- 'cad-prod-preco', 'prodPreco', 'cad-prod-qtd', 'cad-prod-estoque', 'prodEstoque', 
- 'cad-prod-barras', 'prodCodigoBarras', 'cad-prod-codigo', 'cad-prod-validade'].forEach(id => {
-  let el = document.getElementById(id);
-  if (el) el.value = '';
-});
+['cad-prod-nome', 'prodNome', 'cad-prod-preco-custo', 'prodCusto', 'cad-prod-custo',
+    'cad-prod-preco', 'prodPreco', 'cad-prod-qtd', 'cad-prod-estoque', 'prodEstoque',
+    'cad-prod-barras', 'prodCodigoBarras', 'cad-prod-codigo', 'cad-prod-ean', 'cad-prod-validade'].forEach(id => {
+      let el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Oculta e limpa o aviso visual do código lido no topo da tela
+    let eanDisp = document.getElementById('cad-prod-ean-display');
+    if (eanDisp) {
+      eanDisp.innerText = '';
+      eanDisp.classList.add('hidden');
+    }
 
 // Restaura os padrões automáticos (Estoque Mínimo = 5 e Data de Entrada = Hoje)
 let elEstMin = document.getElementById('cad-prod-estmin') || document.getElementById('prodEstMin');

@@ -1285,14 +1285,17 @@ async function desvincularContaFuncionarioLocalmente() {
           let nomeDesv = perfilNegocio.nomeUsuario || user.email;
           let arraySlots = dados.slotsFuncionarios || [];
           
-          arraySlots.forEach(s => {
-            if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userUid === user.uid) {
-              nomeDesv = s.nome || nomeDesv;
-              s.ativo = false;
-              s.vinculado = false; // Exige novo PIN no futuro
-              s.userUid = "";
-            }
-          });
+         arraySlots.forEach(s => {
+          if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
+            nomeDesv = s.nome || nomeDesv;
+            s.nome = "";        // Reseta o nome e limpa o slot para o próximo
+            s.email = "";       // Limpa o e-mail do ex-colaborador
+            s.ativo = false;
+            s.vinculado = false;
+            s.userId = "";
+            s.revogado = true;  // Grava a trava de segurança contra re-vínculo
+          }
+        });
           
           let arrNotif = dados.notificacoesDesvinculacao || [];
           arrNotif.push({
@@ -1986,12 +1989,12 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
       let dados = doc.data();
       if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
         // Validação RÍGIDA: E-mail ativo AND PIN exato fornecido pelo Dono
-        let s = dados.slotsFuncionarios.find(item => 
-          item.email && 
-          item.email.trim().toLowerCase() === emailLimpo && 
-          String(item.pin).trim() === pinLimpo && 
-          item.ativo
-        );
+        let s = dados.slotsFuncionarios.find(item =>
+  item.email &&
+  item.email.trim().toLowerCase() === emaillimpo &&
+  String(item.pin).trim() === pinLimpo &&
+  !item.revogado
+);
         if (s) {
           patraoEncontrado = dados;
           empresaIdReal = doc.id;

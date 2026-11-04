@@ -1320,8 +1320,10 @@ async function desvincularContaFuncionarioLocalmente() {
             emailsRevogados: emailsRevogados,
             notificacoesDesvinculacao: arrNotif 
           });
-        } // <--- ESTA CHAVE FALTAVA PARA FECHAR O "if (docPatrao.exists)"
-      } catch(e) {}
+        }
+      } catch(e) {
+        console.error("Erro ao desvincular:", e);
+      }
     }
     
     // ZERA COMPLETAMENTE O ARMAZENAMENTO LOCAL PARA ELIMINAR VENDAS E CAIXA FANTASMA

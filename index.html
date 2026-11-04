@@ -1288,12 +1288,12 @@ async function desvincularContaFuncionarioLocalmente() {
          arraySlots.forEach(s => {
           if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
             nomeDesv = s.nome || nomeDesv;
-            s.nome = "";        // Reseta o nome e limpa o slot para o próximo
-            s.email = "";       // Limpa o e-mail do ex-colaborador
+            s.nome = ""; // Limpa o nome do slot deixando-o vago
+            s.email = user.email ? user.email.trim().toLowerCase() : s.email; // Preserva o e-mail para a trava reconhecer a revogação
             s.ativo = false;
             s.vinculado = false;
             s.userId = "";
-            s.revogado = true;  // Grava a trava de segurança contra re-vínculo
+            s.revogado = true; // Mantém o bloqueio ativo para este e-mail
           }
         });
           
@@ -1981,46 +1981,54 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
 
   try {
     let snapshot = await db.collection("perfis").get();
-    let patraoEncontrado = null;
-    let empresaIdReal = '';
-    let slotMatch = null;
+  let patraoEncontrado = null;
+        let empresaIdReal = '';
+        let slotMatch = null;
+        let revogadoMatch = false;
 
-    snapshot.forEach(doc => {
-      let dados = doc.data();
-      if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-        // Validação RÍGIDA: E-mail ativo AND PIN exato fornecido pelo Dono
-        let s = dados.slotsFuncionarios.find(item =>
-  item.email &&
-  item.email.trim().toLowerCase() === emaillimpo &&
-  String(item.pin).trim() === pinLimpo &&
-  !item.revogado
-);
-        if (s) {
-          patraoEncontrado = dados;
-          empresaIdReal = doc.id;
-          slotMatch = s;
+        snapshot.forEach(doc => {
+          let dados = doc.data();
+          if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
+            let s = dados.slotsFuncionarios.find(item =>
+              item.email &&
+              item.email.trim().toLowerCase() === emaillimpo &&
+              String(item.pin).trim() === pinLimpo
+            );
+            if (s) {
+              if (s.revogado === true) {
+                revogadoMatch = true;
+              } else {
+                patraoEncontrado = dados;
+                empresaIdReal = doc.id;
+                slotMatch = s;
+              }
+            }
+          }
+        });
+
+        if (revogadoMatch) {
+          window.tempPatraoVinculado = null;
+          textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
+          if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este usuário foi desvinculado pelo administrador.</span>`;
+          boxStatus.classList.remove('hidden');
+        } else if (patraoEncontrado && slotMatch) {
+          window.tempPatraoVinculado = {
+            nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
+            empresaId: empresaIdReal,
+            tipo: patraoEncontrado.tipo || "PF",
+            ramo: patraoEncontrado.ramo || "Produtos",
+            modoNegocio: patraoEncontrado.modoNegocio || "completo",
+            nomeFuncionariosSlot: slotMatch.nome || "Membro",
+            funcaoSlot: slotMatch.funcao || "Operador",
+            slotId: slotMatch.id
+          };
+          textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
+          if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
+          boxStatus.classList.remove('hidden');
+        } else {
+          window.tempPatraoVinculado = null;
+          boxStatus.classList.add('hidden');
         }
-      }
-    });
-
-    if (patraoEncontrado && slotMatch) {
-      window.tempPatraoVinculado = {
-        nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
-        empresaId: empresaIdReal,
-        tipo: patraoEncontrado.tipo || "PF",
-        ramo: patraoEncontrado.ramo || "Produtos",
-        modoNegocio: patraoEncontrado.modoNegocio || "completo",
-        nomeFuncionarioSlot: slotMatch.nome || "Membro",
-        funcaoSlot: slotMatch.funcao || "Operador",
-        slotId: slotMatch.id
-      };
-      textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
-      boxStatus.classList.remove('hidden');
-    } else {
-      window.tempPatraoVinculado = null;
-      boxStatus.classList.add('hidden');
-    }
   } catch(err) {
     window.tempPatraoVinculado = null;
     boxStatus.classList.add('hidden');

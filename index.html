@@ -1283,20 +1283,29 @@ async function desvincularContaFuncionarioLocalmente() {
         if (docPatrao.exists) {
           let dados = docPatrao.data();
           let nomeDesv = perfilNegocio.nomeUsuario || user.email;
-          let arraySlots = dados.slotsFuncionarios || [];
-          
-         arraySlots.forEach(s => {
-          if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
-            nomeDesv = s.nome || nomeDesv;
-            s.nome = ""; // Limpa o nome do slot deixando-o vago
-            s.email = user.email ? user.email.trim().toLowerCase() : s.email; // Preserva o e-mail para a trava reconhecer a revogação
-            s.ativo = false;
-            s.vinculado = false;
-            s.userId = "";
-            s.revogado = true; // Mantém o bloqueio ativo para este e-mail
-          }
-        });
-          
+        let arraySlots = dados.slotsFuncionarios || [];
+          let emailsRevogados = dados.emailsRevogados || [];
+
+          arraySlots.forEach(s => {
+            if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
+              nomeDesv = s.nome || nomeDesv;
+              
+              // Guarda o e-mail na lista de bloqueados da empresa
+              let emailBloq = (user.email || s.email || '').trim().toLowerCase();
+              if (emailBloq && !emailsRevogados.includes(emailBloq)) {
+                emailsRevogados.push(emailBloq);
+              }
+
+              // Zeramento total do slot: nome e e-mail ficam vazios no painel
+              s.nome = "";
+              s.email = "";
+              s.ativo = false;
+              s.vinculado = false;
+              s.userId = "";
+              s.revogado = true;
+            }
+          });
+
           let arrNotif = dados.notificacoesDesvinculacao || [];
           arrNotif.push({
             id: Date.now(),
@@ -1305,8 +1314,12 @@ async function desvincularContaFuncionarioLocalmente() {
             data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
             lida: false
           });
-          await refPatrao.update({ slotsFuncionarios: arraySlots, notificacoesDesvinculacao: arrNotif });
-        }
+
+          await refPatrao.update({ 
+            slotsFuncionarios: arraySlots, 
+            emailsRevogados: emailsRevogados,
+            notificacoesDesvinculacao: arrNotif 
+          });
       } catch(e) {}
     }
     
@@ -2040,6 +2053,11 @@ async function handleStep1Cadastro(e) {
   const emailInput = (document.getElementById('cad-email')?.value || '').trim().toLowerCase();
   const passInput = document.getElementById('cad-pass')?.value || '';
   const pinInput = (document.getElementById('cad-pin')?.value || '').trim();
+  // TRAVA DE SEGURANÇA: Impede a criação de empresa se o PIN digitado for de conta revogada ou inválida
+    if (pinInput && pinInput.length >= 4 && !window.tempPatraoVinculado) {
+      alert("❌ Acesso Bloqueado: Este PIN/E-mail foi desvinculado pelo administrador ou é inválido. Você não pode se vincular a esta empresa.");
+      return; // Interrompe a execução para NÃO avançar nem criar uma nova empresa
+    }
 
   if (!emailInput || !passInput) {
     alert("⚠️ Preencha seu e-mail e senha para prosseguir.");

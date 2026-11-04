@@ -1283,7 +1283,7 @@ async function desvincularContaFuncionarioLocalmente() {
         if (docPatrao.exists) {
           let dados = docPatrao.data();
           let nomeDesv = perfilNegocio.nomeUsuario || user.email;
-        let arraySlots = dados.slotsFuncionarios || [];
+          let arraySlots = dados.slotsFuncionarios || [];
           let emailsRevogados = dados.emailsRevogados || [];
 
           arraySlots.forEach(s => {
@@ -1320,6 +1320,7 @@ async function desvincularContaFuncionarioLocalmente() {
             emailsRevogados: emailsRevogados,
             notificacoesDesvinculacao: arrNotif 
           });
+        } // <--- ESTA CHAVE FALTAVA PARA FECHAR O "if (docPatrao.exists)"
       } catch(e) {}
     }
     

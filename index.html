@@ -1290,18 +1290,17 @@ async function desvincularContaFuncionarioLocalmente() {
             if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
               nomeDesv = s.nome || nomeDesv;
               
-              // Guarda o e-mail na lista de bloqueados da empresa
               let emailBloq = (user.email || s.email || '').trim().toLowerCase();
               if (emailBloq && !emailsRevogados.includes(emailBloq)) {
                 emailsRevogados.push(emailBloq);
               }
 
-              // Zeramento total do slot: nome e e-mail ficam vazios no painel
+              // Zeramento visual do slot (apaga nome e e-mail no painel do Patrão)
               s.nome = "";
               s.email = "";
+              s.userId = "";
               s.ativo = false;
               s.vinculado = false;
-              s.userId = "";
               s.revogado = true;
             }
           });
@@ -1321,12 +1320,11 @@ async function desvincularContaFuncionarioLocalmente() {
             notificacoesDesvinculacao: arrNotif 
           });
         }
-      } catch(e) {
+      } catch (e) {
         console.error("Erro ao desvincular:", e);
       }
     }
     
-    // ZERA COMPLETAMENTE O ARMAZENAMENTO LOCAL PARA ELIMINAR VENDAS E CAIXA FANTASMA
     localStorage.clear();
     alert("✅ Desvinculação concluída com sucesso. Dados locais zerados!");
     auth.signOut().then(() => { window.location.reload(); });
@@ -1447,6 +1445,15 @@ function salvarSlotFuncionario(index) {
     alert("Preencha o nome, e-mail válido e um PIN numérico (mín. 4 dígitos).");
     return;
   }
+
+  // Desbloqueia o e-mail da lista de revogados caso esteja a recontratar o funcionário
+  let emailsRevogados = perfilNegocio.emailsRevogados || [];
+  if (emailsRevogados.includes(email)) {
+    emailsRevogados = emailsRevogados.filter(e => e !== email);
+    perfilNegocio.emailsRevogados = emailsRevogados;
+  }
+
+  // Preenche o slot ativo e desliga a marca de revogado
   slotsFuncionarios[index] = {
     id: index + 1,
     nome: nome,
@@ -1455,33 +1462,65 @@ function salvarSlotFuncionario(index) {
     funcao: funcao,
     nascimento: nascimento,
     ativo: true,
-    userUid: slotsFuncionarios[index].userUid || ""
+    vinculado: false,
+    revogado: false,
+    userUid: slotsFuncionarios[index]?.userUid || ""
   };
+
   persistirDadosCompletos();
+
   const user = auth.currentUser;
   if (user && eAdminOuSocio()) {
-    db.collection("perfis").doc(user.uid).set({ ...perfilNegocio, slotsFuncionarios: slotsFuncionarios }, { merge: true }).catch(()=>{});
+    db.collection("perfis").doc(user.uid).set({ 
+      ...perfilNegocio, 
+      slotsFuncionarios: slotsFuncionarios,
+      emailsRevogados: emailsRevogados 
+    }, { merge: true }).catch(()=>{});
   }
+
   renderizarListaSlotsFuncionariosUnificada();
   alert(`✅ Membro ${nome} (${funcao}) salvo com sucesso!`);
 }
+
 function desligarSlotFuncionario(index) {
   let nomeFunc = slotsFuncionarios[index].nome || `Membro ${index+1}`;
+  let emailFunc = (slotsFuncionarios[index].email || '').trim().toLowerCase();
+
   if (confirm(`Deseja realmente desativar ${nomeFunc}? O acesso será revogado imediatamente.`)) {
+    // Registra o e-mail na lista de bloqueados da empresa antes de limpar o slot
+    let emailsRevogados = perfilNegocio.emailsRevogados || [];
+    if (emailFunc && !emailsRevogados.includes(emailFunc)) {
+      emailsRevogados.push(emailFunc);
+      perfilNegocio.emailsRevogados = emailsRevogados;
+    }
+
+    // RESET TOTAL: Zera o nome, e-mail e PIN para deixar a vaga completamente vaga no painel
     slotsFuncionarios[index] = { 
       id: index + 1, 
-      nome: slotsFuncionarios[index].nome || "", 
-      email: slotsFuncionarios[index].email || "", 
-      pin: slotsFuncionarios[index].pin || "", 
-      funcao: slotsFuncionarios[index].funcao || "Operador", 
-      nascimento: slotsFuncionarios[index].nascimento || "", 
+      nome: "", 
+      email: "", 
+      pin: "", 
+      funcao: "Operador", 
+      nascimento: "", 
       ativo: false, 
       vinculado: false, 
+      revogado: true,
       userUid: "" 
     };
+
     persistirDadosCompletos();
+
+    const user = auth.currentUser;
+    if (user && eAdminOuSocio()) {
+      db.collection("perfis").doc(user.uid).set({ 
+        ...perfilNegocio, 
+        slotsFuncionarios: slotsFuncionarios,
+        emailsRevogados: emailsRevogados 
+      }, { merge: true }).catch(()=>{});
+    }
+
     renderizarListaSlotsFuncionariosUnificada();
-    alert("✅ Acesso do colaborador revogado com sucesso!");
+    alert("✅ Acesso do colaborador revogado com sucesso e slot liberado!");
   }
 }
 function abrirModalDespesas() {
@@ -1986,10 +2025,10 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
   const textoOperador = document.getElementById('texto-operador-vinculado');
   if (!boxStatus || !textoLoja) return;
 
-  let emailLimpo = (document.getElementById('cad-email').value || '').trim().toLowerCase();
-  let pinLimpo = (document.getElementById('cad-pin').value || '').trim();
+  let emaillimpo = (document.getElementById('cad-email')?.value || '').trim().toLowerCase();
+  let pinLimpo = (document.getElementById('cad-pin')?.value || '').trim();
 
-  if (!emailLimpo || !pinLimpo || pinLimpo.length < 4) {
+  if (!emaillimpo || !pinLimpo || pinLimpo.length < 4) {
     boxStatus.classList.add('hidden');
     window.tempPatraoVinculado = null;
     return;
@@ -1997,55 +2036,65 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
 
   try {
     let snapshot = await db.collection("perfis").get();
-  let patraoEncontrado = null;
-        let empresaIdReal = '';
-        let slotMatch = null;
-        let revogadoMatch = false;
+    let patraoEncontrado = null;
+    let empresaIdReal = '';
+    let slotMatch = null;
+    let revogadoMatch = false;
 
-        snapshot.forEach(doc => {
-          let dados = doc.data();
-          if (dados.slotsFuncionarios && Array.isArray(dados.slotsFuncionarios)) {
-            let s = dados.slotsFuncionarios.find(item =>
-              item.email &&
-              item.email.trim().toLowerCase() === emaillimpo &&
-              String(item.pin).trim() === pinLimpo
-            );
-            if (s) {
-              if (s.revogado === true) {
-                revogadoMatch = true;
-              } else {
-                patraoEncontrado = dados;
-                empresaIdReal = doc.id;
-                slotMatch = s;
-              }
-            }
-          }
-        });
+    snapshot.forEach(doc => {
+      let dados = doc.data();
+      let arraySlots = dados.slotsFuncionarios || [];
+      let emailsRevogados = dados.emailsRevogados || [];
 
-        if (revogadoMatch) {
-          window.tempPatraoVinculado = null;
-          textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
-          if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este usuário foi desvinculado pelo administrador.</span>`;
-          boxStatus.classList.remove('hidden');
-        } else if (patraoEncontrado && slotMatch) {
-          window.tempPatraoVinculado = {
-            nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
-            empresaId: empresaIdReal,
-            tipo: patraoEncontrado.tipo || "PF",
-            ramo: patraoEncontrado.ramo || "Produtos",
-            modoNegocio: patraoEncontrado.modoNegocio || "completo",
-            nomeFuncionariosSlot: slotMatch.nome || "Membro",
-            funcaoSlot: slotMatch.funcao || "Operador",
-            slotId: slotMatch.id
-          };
-          textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-          if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
-          boxStatus.classList.remove('hidden');
-        } else {
-          window.tempPatraoVinculado = null;
-          boxStatus.classList.add('hidden');
+      // 1. PRIORIDADE: Verifica se o Patrão criou/reativou um Slot válido com este PIN
+      let sAtivo = arraySlots.find(item =>
+        String(item.pin).trim() === pinLimpo &&
+        (item.ativo === true || item.vinculado === true) &&
+        item.revogado !== true &&
+        (!item.email || item.email.trim().toLowerCase() === emaillimpo)
+      );
+
+      if (sAtivo) {
+        patraoEncontrado = dados;
+        empresaIdReal = doc.id;
+        slotMatch = sAtivo;
+      } else {
+        // 2. SE NÃO HÁ SLOT ATIVO: Checa se o e-mail está na lista de revogados
+        if (emailsRevogados.includes(emaillimpo)) {
+          revogadoMatch = true;
         }
-  } catch(err) {
+      }
+    });
+
+    // SE O PATRÃO CRIOU UM SLOT NOVO OU RECONTRATOU
+    if (patraoEncontrado && slotMatch) {
+      window.tempPatraoVinculado = {
+        nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
+        empresaId: empresaIdReal,
+        tipo: patraoEncontrado.tipo || "PF",
+        ramo: patraoEncontrado.ramo || "Produtos",
+        modoNegocio: patraoEncontrado.modoNegocio || "completo",
+        nomeFuncionariosSlot: slotMatch.nome || "Membro",
+        funcaoSlot: slotMatch.funcao || "Operador",
+        slotId: slotMatch.id
+      };
+      textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome || 'Novo Colaborador'} (${slotMatch.funcao || 'Operador'})</b>`;
+      boxStatus.classList.remove('hidden');
+    } 
+    // SE O E-MAIL FOI DESVINCULADO E NÃO FOI RECONTRATADO PELO PATRÃO
+    else if (revogadoMatch) {
+      window.tempPatraoVinculado = null;
+      textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
+      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este acesso foi desvinculado pelo administrador.</span>`;
+      boxStatus.classList.remove('hidden');
+    } 
+    // DADOS INCORRETOS OU NÃO ENCONTRADOS
+    else {
+      window.tempPatraoVinculado = null;
+      boxStatus.classList.add('hidden');
+    }
+  } catch (err) {
     window.tempPatraoVinculado = null;
     boxStatus.classList.add('hidden');
   }

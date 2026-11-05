@@ -1446,14 +1446,12 @@ function salvarSlotFuncionario(index) {
     return;
   }
 
-  // Desbloqueia o e-mail da lista de revogados caso esteja a recontratar o funcionário
-  let emailsRevogados = perfilNegocio.emailsRevogados || [];
-  if (emailsRevogados.includes(email)) {
-    emailsRevogados = emailsRevogados.filter(e => e !== email);
-    perfilNegocio.emailsRevogados = emailsRevogados;
-  }
+  // 1. Remove o e-mail da lista de revogados para permitir a recontratação
+  let listRev = perfilNegocio.emailsRevogados || [];
+  listRev = listRev.filter(e => String(e).trim().toLowerCase() !== email);
+  perfilNegocio.emailsRevogados = listRev;
 
-  // Preenche o slot ativo e desliga a marca de revogado
+  // 2. Define o slot como ativo e limpa a marcação de revogado
   slotsFuncionarios[index] = {
     id: index + 1,
     nome: nome,
@@ -1464,18 +1462,19 @@ function salvarSlotFuncionario(index) {
     ativo: true,
     vinculado: false,
     revogado: false,
-    userUid: slotsFuncionarios[index]?.userUid || ""
+    userUid: ""
   };
 
+  perfilNegocio.slotsFuncionarios = slotsFuncionarios;
   persistirDadosCompletos();
 
   const user = auth.currentUser;
   if (user && eAdminOuSocio()) {
     db.collection("perfis").doc(user.uid).set({ 
-      ...perfilNegocio, 
+      ...perfilNegocio,
       slotsFuncionarios: slotsFuncionarios,
-      emailsRevogados: emailsRevogados 
-    }, { merge: true }).catch(()=>{});
+      emailsRevogados: listRev
+    }, { merge: true }).catch(err => console.error("Erro ao salvar slot:", err));
   }
 
   renderizarListaSlotsFuncionariosUnificada();
@@ -2039,41 +2038,34 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     let patraoEncontrado = null;
     let empresaIdReal = '';
     let slotMatch = null;
-    let emailEhRevogado = false;
-    // Dentro de handleStep1Cadastro, logo após a leitura dos inputs:
-if (pinInput && pinInput.length >= 4) {
-  if (!window.tempPatraoVinculado) {
-    alert("❌ Vínculo Recusado: O PIN digitado é inválido ou foi desativado pelo administrador. Você não pode se vincular a esta empresa.");
-    return; // Interrompe e NUNCA avança para a criação de nova empresa
-  }
-}
+    let revogadoMatch = false;
 
     snapshot.forEach(doc => {
       let dados = doc.data();
       let arraySlots = dados.slotsFuncionarios || [];
       let listRevogados = dados.emailsRevogados || [];
 
-      // 1. Verifica se o e-mail consta na lista de bloqueados desta empresa
-      if (listRevogados.includes(emaillimpo)) {
-        emailEhRevogado = true;
-      }
-
-      // 2. Busca slot ativamente liberado pelo Patrão para este PIN
-      let slotValido = arraySlots.find(item =>
+      // 1. PRIORIDADE MÁXIMA: Verifica se há um slot ATIVO com este PIN
+      let sAtivo = arraySlots.find(item =>
         item.ativo === true &&
         item.revogado !== true &&
         String(item.pin).trim() === pinLimpo &&
         (!item.email || item.email.trim().toLowerCase() === emaillimpo)
       );
 
-      if (slotValido) {
+      if (sAtivo) {
         patraoEncontrado = dados;
         empresaIdReal = doc.id;
-        slotMatch = slotValido;
-        emailEhRevogado = false; // Recontratação válida sobrescreve a revogação anterior
+        slotMatch = sAtivo;
+      } else {
+        // 2. Apenas se NÃO houver slot ativo com esse PIN, verifica se o e-mail está revogado
+        if (listRevogados.includes(emaillimpo)) {
+          revogadoMatch = true;
+        }
       }
     });
 
+    // SE ENCONTROU SLOT ATIVO COM O NOVO PIN (RECONTRATAÇÃO OU NOVO VÍNCULO)
     if (patraoEncontrado && slotMatch) {
       window.tempPatraoVinculado = {
         nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
@@ -2085,15 +2077,19 @@ if (pinInput && pinInput.length >= 4) {
         funcaoSlot: slotMatch.funcao || "Operador",
         slotId: slotMatch.id
       };
-      textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome || 'Novo Colaborador'} (${slotMatch.funcao})</b>`;
+      textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome || 'Novo Colaborador'} (${slotMatch.funcao || 'Operador'})</b>`;
       boxStatus.classList.remove('hidden');
-    } else if (emailEhRevogado) {
+    } 
+    // SE O E-MAIL FOI DESVINCULADO E NÃO HÁ NENHUM SLOT ATIVO PARA O PIN DIGITADO
+    else if (revogadoMatch) {
       window.tempPatraoVinculado = null;
       textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
-      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este PIN/Acesso foi cancelado pelo administrador.</span>`;
+      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este PIN/Acesso foi desativado pelo administrador.</span>`;
       boxStatus.classList.remove('hidden');
-    } else {
+    } 
+    // PIN INCORRETO OU NÃO ENCONTRADO
+    else {
       window.tempPatraoVinculado = null;
       textoLoja.innerHTML = `<span style="color: #f59e0b; font-weight: bold;">⚠️ PIN INVÁLIDO OU EXPIRADO</span>`;
       if (textoOperador) textoOperador.innerHTML = `<span style="color: #6b7280;">Confirme o PIN correto com o administrador.</span>`;

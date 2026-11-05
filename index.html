@@ -1274,46 +1274,58 @@ async function desvincularContaFuncionarioLocalmente() {
     alert("Proprietários e Sócios gerenciadores não usam este botão para desvinculação.");
     return;
   }
+  
   if (confirm("Deseja realmente se desvincular desta empresa? Seu acesso será removido e todos os dados armazenados neste dispositivo serão zerados.")) {
     const user = auth.currentUser;
     if (user && perfilNegocio.empresaId) {
       try {
         let refPatrao = db.collection("perfis").doc(perfilNegocio.empresaId);
         let docPatrao = await refPatrao.get();
+        
         if (docPatrao.exists) {
           let dados = docPatrao.data();
-          let nomeDesv = perfilNegocio.nomeUsuario || user.email;
+          let emailUser = (user.email || '').trim().toLowerCase();
+          let nomeDesv = perfilNegocio.nomeUsuario || emailUser;
           let arraySlots = dados.slotsFuncionarios || [];
           let emailsRevogados = dados.emailsRevogados || [];
 
-          arraySlots.forEach(s => {
-            if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
-              nomeDesv = s.nome || nomeDesv;
-              
-              let emailBloq = (user.email || s.email || '').trim().toLowerCase();
-              if (emailBloq && !emailsRevogados.includes(emailBloq)) {
-                emailsRevogados.push(emailBloq);
-              }
+          // Adiciona o e-mail à lista de revogados
+          if (emailUser && !emailsRevogados.includes(emailUser)) {
+            emailsRevogados.push(emailUser);
+          }
 
-              // Zeramento visual do slot (apaga nome e e-mail no painel do Patrão)
-              s.nome = "";
-              s.email = "";
-              s.userId = "";
-              s.ativo = false;
-              s.vinculado = false;
-              s.revogado = true;
+          // RESET TOTAL DO SLOT NO FIREBASE
+          arraySlots = arraySlots.map(s => {
+            let emailSlot = (s.email || '').trim().toLowerCase();
+            if (emailSlot === emailUser || (s.userUid && s.userUid === user.uid)) {
+              nomeDesv = s.nome || nomeDesv;
+              return {
+                id: s.id,
+                nome: "",
+                email: "",
+                pin: "",
+                funcao: "Operador",
+                nascimento: "",
+                ativo: false,
+                vinculado: false,
+                revogado: true,
+                userUid: ""
+              };
             }
+            return s;
           });
 
+          // Notificação para o Patrão
           let arrNotif = dados.notificacoesDesvinculacao || [];
           arrNotif.push({
             id: Date.now(),
             nomeFunc: nomeDesv,
-            email: user.email,
+            email: emailUser,
             data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
             lida: false
           });
 
+          // Atualiza o documento no Firebase
           await refPatrao.update({ 
             slotsFuncionarios: arraySlots, 
             emailsRevogados: emailsRevogados,
@@ -1321,12 +1333,12 @@ async function desvincularContaFuncionarioLocalmente() {
           });
         }
       } catch (e) {
-        console.error("Erro ao desvincular:", e);
+        console.error("Erro ao processar desvinculação no banco:", e);
       }
     }
     
     localStorage.clear();
-    alert("✅ Desvinculação concluída com sucesso. Dados locais zerados!");
+    alert("✅ Desvinculação concluída com sucesso! Seu acesso a esta empresa foi revogado.");
     auth.signOut().then(() => { window.location.reload(); });
   }
 }
@@ -2129,7 +2141,10 @@ async function handleStep1Cadastro(e) {
     cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
     cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
     cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
-    cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot;
+   // Garantia de substituição do nome antigo pelo novo nome definido pelo Patrão no slot
+    if (window.tempPatraoVinculado && window.tempPatraoVinculado.nomeFuncionariosSlot) {
+      perfilNegocio.nomeUsuario = window.tempPatraoVinculado.nomeFuncionariosSlot;
+    }
     
     criarContaFirebaseFinal();
     return;

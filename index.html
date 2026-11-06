@@ -944,6 +944,19 @@ function iniciarListenersTempoReal(empresaId) {
       if (data.slotsFuncionarios) {
         slotsFuncionarios = data.slotsFuncionarios;
         localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
+        // Exemplo no escutador em tempo real do documento do Patrão no Firebase Firestore:
+db.collection("perfis").doc(user.uid).onSnapshot(doc => {
+  if (doc.exists) {
+    const dadosAtualizados = doc.data();
+    perfilNegocio = dadosAtualizados;
+    slotsFuncionarios = dadosAtualizados.slotsFuncionarios || [];
+
+    // SE O MODAL DE GERENCIAR EQUIPE ESTIVER ABERTO, RE-RENDERIZA A LISTA NA HORA
+    if (typeof renderizarListaSlotsFuncionariosUnificada === 'function') {
+      renderizarListaSlotsFuncionariosUnificada();
+    }
+  }
+});
       }
       if (data.notificacoesDesvinculacao) {
         notificacoesDesvinculacao = data.notificacoesDesvinculacao;
@@ -2039,7 +2052,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
   let emaillimpo = (document.getElementById('cad-email')?.value || '').trim().toLowerCase();
   let pinLimpo = (document.getElementById('cad-pin')?.value || '').trim();
 
-  if (!emaillimpo || !pinLimpo || pinLimpo.length < 4) {
+  if (!pinLimpo || pinLimpo.length < 4) {
     boxStatus.classList.add('hidden');
     window.tempPatraoVinculado = null;
     return;
@@ -2050,34 +2063,39 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     let patraoEncontrado = null;
     let empresaIdReal = '';
     let slotMatch = null;
-    let revogadoMatch = false;
+    let pinRevogadoOuInvalido = false;
 
     snapshot.forEach(doc => {
       let dados = doc.data();
       let arraySlots = dados.slotsFuncionarios || [];
       let listRevogados = dados.emailsRevogados || [];
 
-      // 1. PRIORIDADE MÁXIMA: Verifica se há um slot ATIVO com este PIN
-      let sAtivo = arraySlots.find(item =>
-        item.ativo === true &&
-        item.revogado !== true &&
-        String(item.pin).trim() === pinLimpo &&
-        (!item.email || item.email.trim().toLowerCase() === emaillimpo)
-      );
+      arraySlots.forEach(item => {
+        let pinSlot = String(item.pin || '').trim();
+        let emailSlot = String(item.email || '').trim().toLowerCase();
 
-      if (sAtivo) {
-        patraoEncontrado = dados;
-        empresaIdReal = doc.id;
-        slotMatch = sAtivo;
-      } else {
-        // 2. Apenas se NÃO houver slot ativo com esse PIN, verifica se o e-mail está revogado
-        if (listRevogados.includes(emaillimpo)) {
-          revogadoMatch = true;
+        // 1. SLOT ATIVO COM O NOVO PIN (Patrão recontratou ou criou vaga nova)
+        if (pinSlot === pinLimpo && item.ativo === true && item.revogado !== true) {
+          // Se o e-mail não estiver na lista de revogados OU se for a recontratação explícita deste e-mail
+          if (!listRevogados.includes(emaillimpo) || emailSlot === emaillimpo) {
+            patraoEncontrado = dados;
+            empresaIdReal = doc.id;
+            slotMatch = item;
+          }
+        } 
+        // 2. PIN DE UM SLOT QUE FOI REVOGADO/DESATIVADO
+        else if (pinSlot === pinLimpo && (item.revogado === true || item.ativo === false)) {
+          pinRevogadoOuInvalido = true;
         }
+      });
+
+      // Checa também se o e-mail consta na lista global de revogados desta empresa
+      if (emaillimpo && listRevogados.includes(emaillimpo) && !patraoEncontrado) {
+        pinRevogadoOuInvalido = true;
       }
     });
 
-    // SE ENCONTROU SLOT ATIVO COM O NOVO PIN (RECONTRATAÇÃO OU NOVO VÍNCULO)
+    // RESULTADO 1: ENCONTROU VAGA ATIVA E VÁLIDA
     if (patraoEncontrado && slotMatch) {
       window.tempPatraoVinculado = {
         nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
@@ -2090,20 +2108,20 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         slotId: slotMatch.id
       };
       textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome || 'Novo Colaborador'} (${slotMatch.funcao || 'Operador'})</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
       boxStatus.classList.remove('hidden');
     } 
-    // SE O E-MAIL FOI DESVINCULADO E NÃO HÁ NENHUM SLOT ATIVO PARA O PIN DIGITADO
-    else if (revogadoMatch) {
+    // RESULTADO 2: PIN REVOGADO OU DESATIVADO
+    else if (pinRevogadoOuInvalido) {
       window.tempPatraoVinculado = null;
-      textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
-      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este PIN/Acesso foi desativado pelo administrador.</span>`;
+      textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO / PIN INVALIDADO</span>`;
+      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este PIN foi desativado. Solicite um novo código ao administrador.</span>`;
       boxStatus.classList.remove('hidden');
     } 
-    // PIN INCORRETO OU NÃO ENCONTRADO
+    // RESULTADO 3: PIN NÃO EXISTE
     else {
       window.tempPatraoVinculado = null;
-      textoLoja.innerHTML = `<span style="color: #f59e0b; font-weight: bold;">⚠️ PIN INVÁLIDO OU EXPIRADO</span>`;
+      textoLoja.innerHTML = `<span style="color: #f59e0b; font-weight: bold;">⚠️ PIN INVÁLIDO</span>`;
       if (textoOperador) textoOperador.innerHTML = `<span style="color: #6b7280;">Confirme o PIN correto com o administrador.</span>`;
       boxStatus.classList.remove('hidden');
     }
@@ -2134,16 +2152,18 @@ async function handleStep1Cadastro(e) {
   cadastroTemp.pinOperador = pinInput;
 
   if (window.tempPatraoVinculado && pinInput) {
+   // Força a atualização do nome local para o novo nome atribuído pelo Patrão no Slot
+    let novoNomeDoSlot = window.tempPatraoVinculado.nomeFuncionariosSlot || '';
+    
     cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
-    cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
+    cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || 'Operador';
     cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
-    cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
-    cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
-    cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
     cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
-   // Garantia de substituição do nome antigo pelo novo nome definido pelo Patrão no slot
-    if (window.tempPatraoVinculado && window.tempPatraoVinculado.nomeFuncionariosSlot) {
-      perfilNegocio.nomeUsuario = window.tempPatraoVinculado.nomeFuncionariosSlot;
+    cadastroTemp.nomeUsuario = novoNomeDoSlot; // Garante o novo nome (ex: Zé)
+
+    // Atualiza o perfil global em memória e no cache do navegador
+    perfilNegocio.nomeUsuario = novoNomeDoSlot;
+    localStorage.setItem('mercadozap_nome_usuario', novoNomeDoSlot);
     }
     
     criarContaFirebaseFinal();

@@ -1293,61 +1293,61 @@ async function desvincularContaFuncionarioLocalmente() {
     if (user && perfilNegocio.empresaId) {
       try {
         let refPatrao = db.collection("perfis").doc(perfilNegocio.empresaId);
-        let docPatrao = await refPatrao.get();
-        
-        if (docPatrao.exists) {
-          let dados = docPatrao.data();
-          let emailUser = (user.email || '').trim().toLowerCase();
-          let nomeDesv = perfilNegocio.nomeUsuario || emailUser;
-          let arraySlots = dados.slotsFuncionarios || [];
-          let emailsRevogados = dados.emailsRevogados || [];
+            let docPatrao = await refPatrao.get();
 
-          // Adiciona o e-mail à lista de revogados
-          if (emailUser && !emailsRevogados.includes(emailUser)) {
-            emailsRevogados.push(emailUser);
-          }
+            if (docPatrao.exists()) {
+                let dados = docPatrao.data();
+                let emailUser = (user.email || '').trim().toLowerCase();
+                let nomeDesv = perfilNegocio.nomeUsuario || emailUser;
+                let arraySlots = dados.slotsFuncionarios || [];
+                let emailsRevogados = dados.emailsRevogados || [];
 
-          // RESET TOTAL DO SLOT NO FIREBASE
-          arraySlots = arraySlots.map(s => {
-            let emailSlot = (s.email || '').trim().toLowerCase();
-            if (emailSlot === emailUser || (s.userUid && s.userUid === user.uid)) {
-              nomeDesv = s.nome || nomeDesv;
-              return {
-                id: s.id,
-                nome: "",
-                email: "",
-                pin: "",
-                funcao: "Operador",
-                nascimento: "",
-                ativo: false,
-                vinculado: false,
-                revogado: true,
-                userUid: ""
-              };
+                // 1. Adiciona o e-mail à lista de revogados
+                if (emailUser && !emailsRevogados.includes(emailUser)) {
+                    emailsRevogados.push(emailUser);
+                }
+
+                // 2. RESET COMPLETO DO SLOT DO FUNCIONÁRIO (Limpa PIN, e-mail e UID)
+                arraySlots = arraySlots.map(s => {
+                    let emailSlot = (s.email || '').trim().toLowerCase();
+                    if (emailSlot === emailUser || (s.userUid && s.userUid === user.uid)) {
+                        nomeDesv = s.nome || nomeDesv;
+                        return {
+                            id: s.id,
+                            nome: "",
+                            email: "",
+                            pin: "",
+                            funcao: "Operador",
+                            nascimento: "",
+                            ativo: false,
+                            vinculado: false,
+                            revogado: true,
+                            userUid: ""
+                        };
+                    }
+                    return s;
+                });
+
+                // 3. Notificação para o Patrão
+                let arrNotif = dados.notificacoesDesvinculacao || [];
+                arrNotif.push({
+                    id: Date.now(),
+                    nomeFunc: nomeDesv,
+                    email: emailUser,
+                    data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+                    lida: false
+                });
+
+                // 4. Atualiza no Firebase limpando os dados do slot
+                await refPatrao.update({
+                    slotsFuncionarios: arraySlots,
+                    emailsRevogados: emailsRevogados,
+                    notificacoesDesvinculacao: arrNotif
+                });
             }
-            return s;
-          });
-
-          // Notificação para o Patrão
-          let arrNotif = dados.notificacoesDesvinculacao || [];
-          arrNotif.push({
-            id: Date.now(),
-            nomeFunc: nomeDesv,
-            email: emailUser,
-            data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-            lida: false
-          });
-
-          // Atualiza o documento no Firebase
-          await refPatrao.update({ 
-            slotsFuncionarios: arraySlots, 
-            emailsRevogados: emailsRevogados,
-            notificacoesDesvinculacao: arrNotif 
-          });
+        } catch (e) {
+            console.error("Erro ao processar desvinculação no banco:", e);
         }
-      } catch (e) {
-        console.error("Erro ao processar desvinculação no banco:", e);
-      }
     }
     
     localStorage.clear();

@@ -2185,7 +2185,6 @@ async function handleStep1Cadastro(e) {
     // Atualiza o perfil global em memória e no cache do navegador
     perfilNegocio.nomeUsuario = novoNomeDoSlot;
     localStorage.setItem('mercadozap_nome_usuario', novoNomeDoSlot);
-    }
     
     criarContaFirebaseFinal();
     return;
@@ -3891,7 +3890,6 @@ async function toggleAtalhoOperadorNuvem(p) {
   }
   
   await salvarAtalhosOperadorNuvem(atalhosOperadorNuvem);
-}
   
 function eProdutoAtalho(prod) {
   if (!prod) return false;

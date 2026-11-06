@@ -944,6 +944,19 @@ function iniciarListenersTempoReal(empresaId) {
       if (data.slotsFuncionarios) {
         slotsFuncionarios = data.slotsFuncionarios;
         localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
+        // Exemplo no escutador em tempo real do documento do Patrão no Firebase Firestore:
+db.collection("perfis").doc(user.uid).onSnapshot(doc => {
+  if (doc.exists) {
+    const dadosAtualizados = doc.data();
+    perfilNegocio = dadosAtualizados;
+    slotsFuncionarios = dadosAtualizados.slotsFuncionarios || [];
+
+    // SE O MODAL DE GERENCIAR EQUIPE ESTIVER ABERTO, RE-RENDERIZA A LISTA NA HORA
+    if (typeof renderizarListaSlotsFuncionariosUnificada === 'function') {
+      renderizarListaSlotsFuncionariosUnificada();
+    }
+  }
+});
       }
       if (data.notificacoesDesvinculacao) {
         notificacoesDesvinculacao = data.notificacoesDesvinculacao;
@@ -1274,61 +1287,94 @@ async function desvincularContaFuncionarioLocalmente() {
     alert("Proprietários e Sócios gerenciadores não usam este botão para desvinculação.");
     return;
   }
+  
   if (confirm("Deseja realmente se desvincular desta empresa? Seu acesso será removido e todos os dados armazenados neste dispositivo serão zerados.")) {
     const user = auth.currentUser;
     if (user && perfilNegocio.empresaId) {
       try {
-        let refPatrao = db.collection("perfis").doc(perfilNegocio.empresaId);
-        let docPatrao = await refPatrao.get();
-        if (docPatrao.exists) {
-          let dados = docPatrao.data();
-          let nomeDesv = perfilNegocio.nomeUsuario || user.email;
-          let arraySlots = dados.slotsFuncionarios || [];
-          let emailsRevogados = dados.emailsRevogados || [];
+       // 1. Obtém o ID da empresa direto do perfil do usuário para garantir a busca
+                const userDoc = await db.collection("perfis").doc(user.uid).get();
+                const dadosUser = userDoc.exists() ? userDoc.data() : {};
+                const idEmpresa = dadosUser.empresaId || perfilNegocio.empresaId;
 
-          arraySlots.forEach(s => {
-            if ((s.email && s.email.trim().toLowerCase() === user.email.trim().toLowerCase()) || s.userId === user.uid) {
-              nomeDesv = s.nome || nomeDesv;
-              
-              let emailBloq = (user.email || s.email || '').trim().toLowerCase();
-              if (emailBloq && !emailsRevogados.includes(emailBloq)) {
-                emailsRevogados.push(emailBloq);
-              }
+                if (!idEmpresa) {
+                    alert("Erro: Não foi possível identificar a empresa para desvinculação.");
+                    return;
+                }
 
-              // Zeramento visual do slot (apaga nome e e-mail no painel do Patrão)
-              s.nome = "";
-              s.email = "";
-              s.userId = "";
-              s.ativo = false;
-              s.vinculado = false;
-              s.revogado = true;
+                // 2. Remove o vínculo de empresa do perfil do próprio funcionário
+                await db.collection("perfis").doc(user.uid).update({
+                    empresaId: firebase.firestore.FieldValue.delete(),
+                    cargo: firebase.firestore.FieldValue.delete()
+                });
+
+                // 3. Atualiza o documento da Empresa no Firebase (Destrói o PIN, limpa o slot e notifica o patrão)
+                let refEmpresa = db.collection("perfis").doc(idEmpresa);
+                let docEmpresa = await refEmpresa.get();
+
+                if (docEmpresa.exists()) {
+                    let dadosEmpresa = docEmpresa.data();
+                    let emailUser = (user.email || '').trim().toLowerCase();
+                    let nomeDesv = dadosUser.nomeUsuario || perfilNegocio.nomeUsuario || emailUser || "Colaborador";
+                    let arraySlots = dadosEmpresa.slotsFuncionarios || [];
+                    let emailsRevogados = dadosEmpresa.emailsRevogados || [];
+
+                    // Adiciona o e-mail à lista de revogados
+                    if (emailUser && !emailsRevogados.includes(emailUser)) {
+                        emailsRevogados.push(emailUser);
+                    }
+
+                    // RESET COMPLETO DO SLOT: Apaga o PIN e limpa os dados para deixar o slot vago
+                    arraySlots = arraySlots.map(slot => {
+                        let emailSlot = (slot.email || '').trim().toLowerCase();
+                        let uidSlot = slot.userUid || '';
+
+                        if (uidSlot === user.uid || (emailUser && emailSlot === emailUser)) {
+                            nomeDesv = slot.nome || nomeDesv;
+                            return {
+                                id: slot.id,
+                                nome: "",
+                                email: "",
+                                pin: "", // <--- APAGA O PIN DEFINITIVAMENTE DO FIREBASE
+                                funcao: "Operador",
+                                nascimento: "",
+                                ativo: false,
+                                vinculado: false,
+                                revogado: true,
+                                userUid: ""
+                            };
+                        }
+                        return slot;
+                    });
+
+                    // Cria a notificação de desvinculação para o patrão
+                    let arrNotif = dadosEmpresa.notificacoesDesvinculacao || [];
+                    arrNotif.push({
+                        id: Date.now(),
+                        nomeFunc: nomeDesv,
+                        email: emailUser,
+                        data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+                        lida: false
+                    });
+
+                    // Grava todas as alterações no Firebase de uma só vez
+                    await refEmpresa.update({
+                        slotsFuncionarios: arraySlots,
+                        emailsRevogados: emailsRevogados,
+                        notificacoesDesvinculacao: arrNotif
+                    });
+                }
+
+                // 4. Limpa os dados armazenados localmente e recarrega
+                localStorage.clear();
+                alert("Sua conta foi desvinculada com sucesso.");
+                window.location.reload();
+
+            } catch (erro) {
+                console.error("Erro crítico ao desvincular no Firebase:", erro);
+                alert("Ocorreu um erro ao processar no banco de dados. Tente novamente.");
             }
-          });
-
-          let arrNotif = dados.notificacoesDesvinculacao || [];
-          arrNotif.push({
-            id: Date.now(),
-            nomeFunc: nomeDesv,
-            email: user.email,
-            data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-            lida: false
-          });
-
-          await refPatrao.update({ 
-            slotsFuncionarios: arraySlots, 
-            emailsRevogados: emailsRevogados,
-            notificacoesDesvinculacao: arrNotif 
-          });
-        }
-      } catch (e) {
-        console.error("Erro ao desvincular:", e);
-      }
     }
-    
-    localStorage.clear();
-    alert("✅ Desvinculação concluída com sucesso. Dados locais zerados!");
-    auth.signOut().then(() => { window.location.reload(); });
-  }
 }
 function abrirModalGerenciarFuncionarios() {
   if (!eAdminOuGerenteOuSocio()) return;
@@ -1446,14 +1492,12 @@ function salvarSlotFuncionario(index) {
     return;
   }
 
-  // Desbloqueia o e-mail da lista de revogados caso esteja a recontratar o funcionário
-  let emailsRevogados = perfilNegocio.emailsRevogados || [];
-  if (emailsRevogados.includes(email)) {
-    emailsRevogados = emailsRevogados.filter(e => e !== email);
-    perfilNegocio.emailsRevogados = emailsRevogados;
-  }
+  // 1. Remove o e-mail da lista de revogados para permitir a recontratação
+  let listRev = perfilNegocio.emailsRevogados || [];
+  listRev = listRev.filter(e => String(e).trim().toLowerCase() !== email);
+  perfilNegocio.emailsRevogados = listRev;
 
-  // Preenche o slot ativo e desliga a marca de revogado
+  // 2. Define o slot como ativo e limpa a marcação de revogado
   slotsFuncionarios[index] = {
     id: index + 1,
     nome: nome,
@@ -1464,18 +1508,19 @@ function salvarSlotFuncionario(index) {
     ativo: true,
     vinculado: false,
     revogado: false,
-    userUid: slotsFuncionarios[index]?.userUid || ""
+    userUid: ""
   };
 
+  perfilNegocio.slotsFuncionarios = slotsFuncionarios;
   persistirDadosCompletos();
 
   const user = auth.currentUser;
   if (user && eAdminOuSocio()) {
     db.collection("perfis").doc(user.uid).set({ 
-      ...perfilNegocio, 
+      ...perfilNegocio,
       slotsFuncionarios: slotsFuncionarios,
-      emailsRevogados: emailsRevogados 
-    }, { merge: true }).catch(()=>{});
+      emailsRevogados: listRev
+    }, { merge: true }).catch(err => console.error("Erro ao salvar slot:", err));
   }
 
   renderizarListaSlotsFuncionariosUnificada();
@@ -2028,7 +2073,7 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
   let emaillimpo = (document.getElementById('cad-email')?.value || '').trim().toLowerCase();
   let pinLimpo = (document.getElementById('cad-pin')?.value || '').trim();
 
-  if (!emaillimpo || !pinLimpo || pinLimpo.length < 4) {
+  if (!pinLimpo || pinLimpo.length < 4) {
     boxStatus.classList.add('hidden');
     window.tempPatraoVinculado = null;
     return;
@@ -2039,34 +2084,39 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
     let patraoEncontrado = null;
     let empresaIdReal = '';
     let slotMatch = null;
-    let revogadoMatch = false;
+    let pinRevogadoOuInvalido = false;
 
     snapshot.forEach(doc => {
       let dados = doc.data();
       let arraySlots = dados.slotsFuncionarios || [];
-      let emailsRevogados = dados.emailsRevogados || [];
+      let listRevogados = dados.emailsRevogados || [];
 
-      // 1. PRIORIDADE: Verifica se o Patrão criou/reativou um Slot válido com este PIN
-      let sAtivo = arraySlots.find(item =>
-        String(item.pin).trim() === pinLimpo &&
-        (item.ativo === true || item.vinculado === true) &&
-        item.revogado !== true &&
-        (!item.email || item.email.trim().toLowerCase() === emaillimpo)
-      );
+      arraySlots.forEach(item => {
+        let pinSlot = String(item.pin || '').trim();
+        let emailSlot = String(item.email || '').trim().toLowerCase();
 
-      if (sAtivo) {
-        patraoEncontrado = dados;
-        empresaIdReal = doc.id;
-        slotMatch = sAtivo;
-      } else {
-        // 2. SE NÃO HÁ SLOT ATIVO: Checa se o e-mail está na lista de revogados
-        if (emailsRevogados.includes(emaillimpo)) {
-          revogadoMatch = true;
+        // 1. SLOT ATIVO COM O NOVO PIN (Patrão recontratou ou criou vaga nova)
+        if (pinSlot === pinLimpo && item.ativo === true && item.revogado !== true) {
+          // Se o e-mail não estiver na lista de revogados OU se for a recontratação explícita deste e-mail
+          if (!listRevogados.includes(emaillimpo) || emailSlot === emaillimpo) {
+            patraoEncontrado = dados;
+            empresaIdReal = doc.id;
+            slotMatch = item;
+          }
+        } 
+        // 2. PIN DE UM SLOT QUE FOI REVOGADO/DESATIVADO
+        else if (pinSlot === pinLimpo && (item.revogado === true || item.ativo === false)) {
+          pinRevogadoOuInvalido = true;
         }
+      });
+
+      // Checa também se o e-mail consta na lista global de revogados desta empresa
+      if (emaillimpo && listRevogados.includes(emaillimpo) && !patraoEncontrado) {
+        pinRevogadoOuInvalido = true;
       }
     });
 
-    // SE O PATRÃO CRIOU UM SLOT NOVO OU RECONTRATOU
+    // RESULTADO 1: ENCONTROU VAGA ATIVA E VÁLIDA
     if (patraoEncontrado && slotMatch) {
       window.tempPatraoVinculado = {
         nomeLoja: patraoEncontrado.nomeLoja || "Loja Vinculada",
@@ -2074,25 +2124,27 @@ async function verificarCodigoVinculoEmTempoRealCadastro() {
         tipo: patraoEncontrado.tipo || "PF",
         ramo: patraoEncontrado.ramo || "Produtos",
         modoNegocio: patraoEncontrado.modoNegocio || "completo",
-        nomeFuncionariosSlot: slotMatch.nome || "Membro",
+        nomeFuncionariosSlot: slotMatch.nome || "Novo Membro",
         funcaoSlot: slotMatch.funcao || "Operador",
         slotId: slotMatch.id
       };
       textoLoja.innerHTML = `🏢 Empresa Localizada: <b>${patraoEncontrado.nomeLoja || 'Loja'}</b>`;
-      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome || 'Novo Colaborador'} (${slotMatch.funcao || 'Operador'})</b>`;
+      if (textoOperador) textoOperador.innerHTML = `👤 Membro Validado: <b>${slotMatch.nome} (${slotMatch.funcao})</b>`;
       boxStatus.classList.remove('hidden');
     } 
-    // SE O E-MAIL FOI DESVINCULADO E NÃO FOI RECONTRATADO PELO PATRÃO
-    else if (revogadoMatch) {
+    // RESULTADO 2: PIN REVOGADO OU DESATIVADO
+    else if (pinRevogadoOuInvalido) {
       window.tempPatraoVinculado = null;
-      textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO</span>`;
-      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este acesso foi desvinculado pelo administrador.</span>`;
+      textoLoja.innerHTML = `<span style="color: #ef4444; font-weight: bold;">❌ ACESSO REVOGADO / PIN INVALIDADO</span>`;
+      if (textoOperador) textoOperador.innerHTML = `<span style="color: #ef4444;">Este PIN foi desativado. Solicite um novo código ao administrador.</span>`;
       boxStatus.classList.remove('hidden');
     } 
-    // DADOS INCORRETOS OU NÃO ENCONTRADOS
+    // RESULTADO 3: PIN NÃO EXISTE
     else {
       window.tempPatraoVinculado = null;
-      boxStatus.classList.add('hidden');
+      textoLoja.innerHTML = `<span style="color: #f59e0b; font-weight: bold;">⚠️ PIN INVÁLIDO</span>`;
+      if (textoOperador) textoOperador.innerHTML = `<span style="color: #6b7280;">Confirme o PIN correto com o administrador.</span>`;
+      boxStatus.classList.remove('hidden');
     }
   } catch (err) {
     window.tempPatraoVinculado = null;
@@ -2121,14 +2173,19 @@ async function handleStep1Cadastro(e) {
   cadastroTemp.pinOperador = pinInput;
 
   if (window.tempPatraoVinculado && pinInput) {
+   // Força a atualização do nome local para o novo nome atribuído pelo Patrão no Slot
+    let novoNomeDoSlot = window.tempPatraoVinculado.nomeFuncionariosSlot || '';
+    
     cadastroTemp.empresaPatraoInfo = window.tempPatraoVinculado;
-    cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || "Operador";
+    cadastroTemp.funcaoUsuario = window.tempPatraoVinculado.funcaoSlot || 'Operador';
     cadastroTemp.nomeLoja = window.tempPatraoVinculado.nomeLoja;
-    cadastroTemp.tipo = window.tempPatraoVinculado.tipo;
-    cadastroTemp.ramo = window.tempPatraoVinculado.ramo;
-    cadastroTemp.modoNegocio = window.tempPatraoVinculado.modoNegocio || 'completo';
     cadastroTemp.empresaId = window.tempPatraoVinculado.empresaId;
-    cadastroTemp.nomeUsuario = window.tempPatraoVinculado.nomeFuncionarioSlot;
+    cadastroTemp.nomeUsuario = novoNomeDoSlot; // Garante o novo nome (ex: Zé)
+
+    // Atualiza o perfil global em memória e no cache do navegador
+    perfilNegocio.nomeUsuario = novoNomeDoSlot;
+    localStorage.setItem('mercadozap_nome_usuario', novoNomeDoSlot);
+    }
     
     criarContaFirebaseFinal();
     return;
@@ -2138,7 +2195,7 @@ async function handleStep1Cadastro(e) {
   cadastroTemp.funcaoUsuario = "Proprietário / Gerente";
   showStep2CadastroUsuario();
 }
-
+  
 function showStep2CadastroUsuario() {
   mostrarInterfaceAutenticada(false);
   document.getElementById('slider-container').style.transform = 'translateX(0%)';

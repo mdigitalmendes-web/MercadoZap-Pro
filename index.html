@@ -945,10 +945,6 @@ unsubscribePerfil = db.collection("perfis").doc(empresaId).onSnapshot((doc) => {
         slotsFuncionarios = data.slotsFuncionarios;
         localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
         
-        // Atualiza a lista na tela se o modal de equipe estiver aberto
-        if (typeof renderizarListaSlotsFuncionariosUnificada === 'function' && !document.getElementById('modal-gerenciar-funcionarios').classList.contains('hidden')) {
-          renderizarListaSlotsFuncionariosUnificada();
-        }
       }
       if (data.notificacoesDesvinculacao) {
         notificacoesDesvinculacao = data.notificacoesDesvinculacao;
@@ -1994,7 +1990,7 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     historicoFechamentos = fechCarregados.sort((a, b) => (b.id || 0) - (a.id || 0));
 
   // 7. Carrega e escuta Contas a Pagar Unificadas em tempo real
-db.collection("empresas").doc(empresaId).collection("despesas").onSnapshot((snapshot) => {
+db.collection("empresas").doc(empresaId).collection("despesas").get().then((snapshot) => {
   let despCarregadas = [];
   snapshot.forEach(doc => despCarregadas.push(doc.data()));
   despesasFixas = despCarregadas;

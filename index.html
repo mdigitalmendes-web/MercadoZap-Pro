@@ -938,25 +938,17 @@ function iniciarListenersTempoReal(empresaId) {
   if (unsubscribeFechamentos) unsubscribeFechamentos();
   if (unsubscribePerfil) unsubscribePerfil();
 
-  unsubscribePerfil = db.collection("perfis").doc(empresaId).onSnapshot((doc) => {
+unsubscribePerfil = db.collection("perfis").doc(empresaId).onSnapshot((doc) => {
     if (doc.exists) {
       let data = doc.data();
       if (data.slotsFuncionarios) {
         slotsFuncionarios = data.slotsFuncionarios;
         localStorage.setItem('crm_slots_func', JSON.stringify(slotsFuncionarios));
-        // Exemplo no escutador em tempo real do documento do Patrão no Firebase Firestore:
-db.collection("perfis").doc(user.uid).onSnapshot(doc => {
-  if (doc.exists) {
-    const dadosAtualizados = doc.data();
-    perfilNegocio = dadosAtualizados;
-    slotsFuncionarios = dadosAtualizados.slotsFuncionarios || [];
-
-    // SE O MODAL DE GERENCIAR EQUIPE ESTIVER ABERTO, RE-RENDERIZA A LISTA NA HORA
-    if (typeof renderizarListaSlotsFuncionariosUnificada === 'function') {
-      renderizarListaSlotsFuncionariosUnificada();
-    }
-  }
-});
+        
+        // Atualiza a lista na tela se o modal de equipe estiver aberto
+        if (typeof renderizarListaSlotsFuncionariosUnificada === 'function' && !document.getElementById('modal-gerenciar-funcionarios').classList.contains('hidden')) {
+          renderizarListaSlotsFuncionariosUnificada();
+        }
       }
       if (data.notificacoesDesvinculacao) {
         notificacoesDesvinculacao = data.notificacoesDesvinculacao;

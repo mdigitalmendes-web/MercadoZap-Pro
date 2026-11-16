@@ -3576,9 +3576,25 @@ function renderSubAbaTodosProdutos() {
     </div>
   `;
 }
-function editarProdutoCompleto(index) {
+function editarProdutoCompleto(identificador) {
+  let index = -1;
+
+  // Estratégia Dual-Mode (compatível com índices legados e chaves imutáveis)
+  if (typeof identificador === 'number' && Number.isInteger(identificador) && identificador >= 0 && identificador < produtos.length) {
+    index = identificador;
+  } else {
+    index = obterIndiceMestreProduto(identificador);
+  }
+
+  if (index === -1 || !produtos[index]) {
+    alert("⚠️ Produto não encontrado ou atualizado recentemente. Atualize a lista e tente novamente.");
+    return;
+  }
+
   let p = produtos[index];
   prodEditandoIndex = index;
+  // ... restante do preenchimento dos campos do modal #modal-cadastro-produto permanece intacto
+}
   document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
   document.getElementById('cad-prod-ean').value = p.ean || '';
   let eanDisp = document.getElementById('cad-prod-ean-display');

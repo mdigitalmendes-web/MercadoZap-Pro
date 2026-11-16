@@ -823,6 +823,44 @@ let unsubscribeSangrias = null;
 let unsubscribeFechamentos = null;
 let unsubscribePerfil = null;
 
+// ==========================================
+// SPRINT 1 (ETAPA 1) - RESOLVEDORES MESTRES DE ID (PROB-CRIT-03)
+// ==========================================
+function obterIndiceMestreProduto(identificador) {
+  if (identificador === undefined || identificador === null) return -1;
+  const chave = String(identificador).trim();
+  if (!chave || !Array.isArray(produtos)) return -1;
+
+  // 1. Busca primária por ID único imutável
+  let idx = produtos.findIndex(p => p && p.id !== undefined && p.id !== null && String(p.id).trim() === chave);
+  if (idx !== -1) return idx;
+
+  // 2. Fallback por código de barras (ean ou codigoBarras)
+  idx = produtos.findIndex(p => p && (
+    (p.ean && String(p.ean).trim() === chave) ||
+    (p.codigoBarras && String(p.codigoBarras).trim() === chave)
+  ));
+  if (idx !== -1) return idx;
+
+  // 3. Fallback legado por nome normalizado (itens antigos sem id/ean)
+  const chaveLower = chave.toLowerCase();
+  return produtos.findIndex(p => p && p.nome && String(p.nome).trim().toLowerCase() === chaveLower);
+}
+
+function obterIndiceMestreCliente(identificador) {
+  if (identificador === undefined || identificador === null) return -1;
+  const chave = String(identificador).trim();
+  if (!chave || !Array.isArray(clientes)) return -1;
+
+  // 1. Busca primária por ID único imutável
+  let idx = clientes.findIndex(c => c && c.id !== undefined && c.id !== null && String(c.id).trim() === chave);
+  if (idx !== -1) return idx;
+
+  // 2. Fallback por nome normalizado
+  const chaveLower = chave.toLowerCase();
+  return clientes.findIndex(c => c && c.nome && String(c.nome).trim().toLowerCase() === chaveLower);
+}
+
 function eAdminOuGerenteOuSocio() {
   const f = (perfilNegocio.funcaoUsuario || '').toLowerCase();
   return f.includes('proprietário') || f.includes('gerente') || f.includes('sócio') || f.includes('socio');

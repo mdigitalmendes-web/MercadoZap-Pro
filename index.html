@@ -3712,8 +3712,24 @@ function aplicarDescontoPorcentagem(pct) {
 async function salvarAjusteRapidoProduto() {
   let vinculadoAtivo = await verificarIntegridadeVinculoAtivo();
   if (!vinculadoAtivo) return;
-  let idx = document.getElementById('ajuste-prod-index').value;
-  if (idx === "") return;
+
+  const rawIdentificador = String(document.getElementById('ajuste-prod-index').value || '').trim();
+  if (!rawIdentificador) return;
+
+  let idx = -1;
+
+  // Estratégia Dual-Mode (compatível com índice numérico em string e chaves imutáveis)
+  if (/^\d+$/.test(rawIdentificador) && Number(rawIdentificador) >= 0 && Number(rawIdentificador) < produtos.length) {
+    idx = Number(rawIdentificador);
+  } else {
+    idx = obterIndiceMestreProduto(rawIdentificador);
+  }
+
+  if (idx === -1 || !produtos[idx]) {
+    alert("⚠️ Produto não encontrado ou atualizado recentemente. Feche o modal e tente novamente.");
+    return;
+  }
+
   let p = produtos[idx];
   p.estoque = parseFloat(document.getElementById('ajuste-prod-qtd').value || 0);
   p.preco = parseFloat(document.getElementById('ajuste-prod-preco').value || 0);

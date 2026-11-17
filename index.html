@@ -3674,9 +3674,25 @@ function renderSubAbaValidades() {
     </div>
   `;
 }
-function abrirModalAjusteRapido(index) {
+function abrirModalAjusteRapido(identificador) {
+  let index = -1;
+
+  // Estratégia Dual-Mode (compatível com índices legados e chaves imutáveis)
+  if (typeof identificador === 'number' && Number.isInteger(identificador) && identificador >= 0 && identificador < produtos.length) {
+    index = identificador;
+  } else {
+    index = obterIndiceMestreProduto(identificador);
+  }
+
+  if (index === -1 || !produtos[index]) {
+    alert("⚠️ Produto não encontrado ou atualizado recentemente. Atualize a lista e tente novamente.");
+    return;
+  }
+
   let p = produtos[index];
   document.getElementById('ajuste-prod-index').value = index;
+  // ... restante do preenchimento dos campos do modal de ajuste rápido permanece intacto
+}
   document.getElementById('ajuste-rapido-titulo').innerText = `✏️ Ajuste: ${p.nome}`;
   document.getElementById('ajuste-prod-qtd').value = p.estoque;
   document.getElementById('ajuste-prod-preco').value = p.preco;

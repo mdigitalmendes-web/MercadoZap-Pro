@@ -3691,8 +3691,6 @@ function abrirModalAjusteRapido(identificador) {
 
   let p = produtos[index];
   document.getElementById('ajuste-prod-index').value = index;
-  // ... restante do preenchimento dos campos do modal de ajuste rápido permanece intacto
-  }
   document.getElementById('ajuste-rapido-titulo').innerText = `✏️ Ajuste: ${p.nome}`;
   document.getElementById('ajuste-prod-qtd').value = p.estoque;
   document.getElementById('ajuste-prod-preco').value = p.preco;

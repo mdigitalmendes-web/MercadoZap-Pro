@@ -994,7 +994,7 @@ function iniciarListenersTempoReal(empresaId) {
   unsubscribeProdutos = db.collection("empresas").doc(empresaId).collection("produtos")
     .onSnapshot((snapshot) => {
       let prodsRemotos = [];
-      snapshot.forEach(doc => prodsRemotos.push(doc.data()));
+      snapshot.forEach(doc => prodsRemotos.push({ ...doc.data(), id: doc.id }));
       produtos = prodsRemotos;
       localStorage.setItem('crm_produtos', JSON.stringify(produtos));
       renderAba();
@@ -1967,7 +1967,7 @@ async function puxarDadosIniciaisDaEmpresa(empresaId) {
     // 2. Carrega Produtos Unificados
     let snapProds = await db.collection("empresas").doc(empresaId).collection("produtos").get();
     let prodsCarregados = [];
-    snapProds.forEach(doc => prodsCarregados.push(doc.data()));
+    snapProds.forEach(doc => prodsCarregados.push({ ...doc.data(), id: doc.id }));
     produtos = prodsCarregados;
     
     // 3. Carrega Clientes/Fiados Unificados

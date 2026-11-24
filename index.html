@@ -4126,30 +4126,42 @@ if (elEntrada) elEntrada.value = new Date().toISOString().split('T')[0];
     alert("❌ Erro ao salvar produto no Firebase.");
   }
 }
-async function excluirProduto(index) {
+async function excluirProduto(identificador) {
   if (!eAdminOuGerenteOuSocio()) {
     alert("Acesso Restrito.");
     return;
   }
-  if (!confirm("Remover este produto permanentemente?")) return;
+
+  let index = -1;
+
+  // Estratégia Dual-Mode (compatível com índices legados e chaves imutáveis)
+  if (typeof identificador === 'number' && Number.isInteger(identificador) && identificador >= 0 && identificador < produtos.length) {
+    index = identificador;
+  } else {
+    index = obterIndiceMestreProduto(identificador);
+  }
+
+  if (index === -1 || !produtos[index]) {
+    alert("⚠️ Produto não encontrado ou atualizado recentemente. Atualize a lista e tente novamente.");
+    return;
+  }
 
   let p = produtos[index];
-  if (!p) return;
+  let docChave = p.id ? String(p.id).trim() : String(p.nome || '').trim();
+  if (!docChave) {
+    alert("⚠️ Não foi possível identificar a chave do produto para exclusão.");
+    return;
+  }
+
+  if (!confirm("Remover este produto permanentemente?")) return;
 
   const user = typeof auth !== 'undefined' ? auth.currentUser : null;
   let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
 
   if (user && empresaIdDest) {
     try {
-      // Apaga tanto pelo ID quanto pelo Nome para garantir a remoção de itens antigos e novos da nuvem
-      let promessasExclusao = [];
-      if (p.id) {
-        promessasExclusao.push(db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(String(p.id)).delete());
-      }
-      if (p.nome) {
-        promessasExclusao.push(db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(p.nome).delete());
-      }
-      await Promise.all(promessasExclusao);
+      // Exclusão cirúrgica única pelo firestore_doc_id canônico (sem exclusão cruzada por p.nome)
+      await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).delete();
     } catch (erro) {
       console.error("Erro ao excluir produto na nuvem:", erro);
       alert("❌ Erro ao excluir na nuvem: " + erro.message);
@@ -4157,8 +4169,15 @@ async function excluirProduto(index) {
     }
   }
 
-  // Remove da lista local e atualiza todas as telas (Estoque e Caixa)
-  produtos.splice(index, 1);
+  // Localiza novamente pelo docChave após o await para evitar deslocamento de índice pelo onSnapshot
+  let idxAtual = produtos.findIndex(prod => prod && String(prod.id || '').trim() === docChave);
+  if (idxAtual === -1) {
+    idxAtual = obterIndiceMestreProduto(docChave);
+  }
+  if (idxAtual !== -1) {
+    produtos.splice(idxAtual, 1);
+  }
+
   persistirDadosCompletos();
   if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
   if (typeof renderAbaCaixa === 'function') renderAbaCaixa();

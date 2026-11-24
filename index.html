@@ -3787,10 +3787,23 @@ function buscarEExibirProdutoEstoque(termo) {
     `;
   }).join('');
 }
-async function toggleAtalhoEstoque(index) {
+async function toggleAtalhoEstoque(identificador) {
   try {
+    let index = -1;
+
+    // Estratégia Dual-Mode (compatível com índices legados e chaves imutáveis)
+    if (typeof identificador === 'number' && Number.isInteger(identificador) && identificador >= 0 && identificador < produtos.length) {
+      index = identificador;
+    } else {
+      index = obterIndiceMestreProduto(identificador);
+    }
+
+    if (index === -1 || !produtos[index]) {
+      alert("⚠️ Produto não encontrado ou atualizado recentemente. Atualize a lista e tente novamente.");
+      return;
+    }
+
     let p = produtos[index];
-    if (!p) return;
 
     let ehGestao = typeof eAdminOuGerenteOuSocio === 'function' && eAdminOuGerenteOuSocio();
     let ehDono = typeof eAdminOuSocio === 'function' && eAdminOuSocio();
@@ -3798,16 +3811,21 @@ async function toggleAtalhoEstoque(index) {
     let nomeUsuario = (user && user.displayName) ? user.displayName : ((user && user.email) ? user.email : 'Gestão');
 
     if (ehGestao) {
+      let novoAtalho = false;
+      let novoAtalhoPor = null;
+      let novoAtalhoPorNome = null;
+      let novoAtalhoData = null;
+
       // Se já é atalho da gestão, DESMARCAR é sempre permitido (respeitando a hierarquia do Dono)
       if (p.atalho === true) {
         if (p.atalhoPor === 'dono' && !ehDono) {
           alert("⚠️ Apenas o Dono pode remover um atalho fixado por ele.");
           return;
         }
-        p.atalho = false;
-        p.atalhoPor = null;
-        p.atalhoPorNome = null;
-        p.atalhoData = null;
+        novoAtalho = false;
+        novoAtalhoPor = null;
+        novoAtalhoPorNome = null;
+        novoAtalhoData = null;
       } else {
         // MARCAR novo atalho (Verifica limite de 5)
         let totalGestao = produtos.filter(prod => prod.atalho === true).length;
@@ -3815,23 +3833,31 @@ async function toggleAtalhoEstoque(index) {
           alert("⚠️ Limite de 5 atalhos da gestão atingido! Desmarque um item existente para liberar vaga.");
           return;
         }
-        p.atalho = true;
-        p.atalhoPor = ehDono ? 'dono' : 'gerente';
-        p.atalhoPorNome = nomeUsuario;
-        p.atalhoData = new Date().toISOString();
+        novoAtalho = true;
+        novoAtalhoPor = ehDono ? 'dono' : 'gerente';
+        novoAtalhoPorNome = nomeUsuario;
+        novoAtalhoData = new Date().toISOString();
       }
 
-      // Salva alteração no Firebase
+      // Salva alteração no Firebase usando a chave canônica hidratada (p.id) como prioridade
       let empresaIdDest = (typeof perfilNegocio !== 'undefined' && perfilNegocio.empresaId) ? perfilNegocio.empresaId : (user ? user.uid : '');
-      let docChave = p.codigoBarras ? p.codigoBarras : p.nome;
+      let docChave = p.id ? String(p.id) : (p.codigoBarras ? String(p.codigoBarras).trim() : String(p.nome || '').trim());
+
       if (empresaIdDest && docChave) {
         await db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(docChave).update({
-          atalho: p.atalho,
-          atalhoPor: p.atalhoPor,
-          atalhoPorNome: p.atalhoPorNome,
-          atalhoData: p.atalhoData
+          atalho: novoAtalho,
+          atalhoPor: novoAtalhoPor,
+          atalhoPorNome: novoAtalhoPorNome,
+          atalhoData: novoAtalhoData
         });
       }
+
+      // Atualiza a memória local apenas após confirmação da nuvem
+      p.atalho = novoAtalho;
+      p.atalhoPor = novoAtalhoPor;
+      p.atalhoPorNome = novoAtalhoPorNome;
+      p.atalhoData = novoAtalhoData;
+      if (typeof persistirDadosCompletos === 'function') persistirDadosCompletos();
     } else {
       // Regra para Operadores (atalho pessoal na nuvem)
       if (typeof toggleAtalhoOperadorNuvem === 'function') {

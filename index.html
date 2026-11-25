@@ -3767,8 +3767,16 @@ function buscarEExibirProdutoEstoque(termo) {
     return;
   }
   box.innerHTML = filtro.map(p => {
-    let idxReal = produtos.findIndex(prod => prod.id === p.id);
-    let ehAtalho = p.atalho !== false;
+let chaveCanonica = p.id ? String(p.id).trim() : String(p.nome || '').trim();
+
+let chaveEscapada = chaveCanonica
+  .replace(/\\/g, '\\\\')
+  .replace(/'/g, "\\'")
+  .replace(/"/g, '\\u0022')
+  .replace(/</g, '\\u003C')
+  .replace(/>/g, '\\u003E');
+
+let ehAtalho = p.atalho === true;
     return `
       <div class="bg-white p-3 rounded-xl border border-teal-300 shadow-sm space-y-2 text-xs">
         <div class="flex justify-between items-start">
@@ -3778,10 +3786,10 @@ function buscarEExibirProdutoEstoque(termo) {
           </div>
         </div>
         <div class="flex justify-between items-center border-t pt-2 gap-1">
-          <button onclick="toggleAtalhoEstoque(${idxReal})" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
+          <button onclick="toggleAtalhoEstoque('${chaveEscapada}')" class="flex-1 py-1 px-2 rounded text-[11px] font-bold border ${ehAtalho ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'}">
             <i class="fa-solid fa-star ${ehAtalho ? 'text-amber-500' : 'text-slate-300'}"></i> ${ehAtalho ? 'No Caixa' : '+ Atalhos'}
           </button>
-          <button onclick="editarProdutoCompleto(${idxReal})" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
+          <button onclick="editarProdutoCompleto('${chaveEscapada}')" class="py-1 px-3 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[11px] font-bold">Editar</button>
         </div>
       </div>
     `;

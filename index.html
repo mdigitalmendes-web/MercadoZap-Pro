@@ -808,6 +808,7 @@ let subAbaEstoque = 'none';
 let listaDevedoresAberta = false;
 let prodFracionadoTemp = null;
 let prodEditandoIndex = null;
+let prodEditandoId = null;
 let html5QrcodeScanner = null;
 let modoScannerDestino = 'caixa';
 let alertaSilenciadoSessao = false;
@@ -3521,6 +3522,7 @@ function renderAbaEstoque() {
 }
 function abrirModalNovoProduto() {
   prodEditandoIndex = null;
+  prodEditandoId = null;
   document.getElementById('form-estoque-titulo').innerText = "📦 Cadastrar Novo Produto";
   document.getElementById('cad-prod-ean').value = '';
   document.getElementById('cad-prod-ean-display').innerText = '';
@@ -3592,8 +3594,9 @@ function editarProdutoCompleto(identificador) {
   }
 
   let p = produtos[index];
-  prodEditandoIndex = index;
-  document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
+prodEditandoIndex = index;
+prodEditandoId = p.id ? String(p.id).trim() : String(p.nome || '').trim();
+document.getElementById('form-estoque-titulo').innerText = `✏️ Editar: ${p.nome}`;
   document.getElementById('cad-prod-ean').value = p.ean || '';
   let eanDisp = document.getElementById('cad-prod-ean-display');
   if (p.ean) {
@@ -4023,6 +4026,27 @@ async function cadastrarOuAtualizarProduto() {
       if (!vinculadoAtivo) return;
     }
 
+    // Determinação canônica do modo de edição
+const chaveEdicaoAtiva =
+  (typeof prodEditandoId !== 'undefined' && prodEditandoId !== null)
+    ? String(prodEditandoId).trim()
+    : '';
+
+const emModoEdicao = chaveEdicaoAtiva !== '';
+
+let produtoOriginal = null;
+
+if (emModoEdicao) {
+  const idxAtualCanonico = obterIndiceMestreProduto(chaveEdicaoAtiva);
+
+  if (idxAtualCanonico === -1 || !produtos[idxAtualCanonico]) {
+    alert("⚠️ O produto em edição não foi localizado ou foi excluído recentemente. Feche o formulário e tente novamente.");
+    return;
+  }
+
+  produtoOriginal = produtos[idxAtualCanonico];
+}
+
     // Leitura inteligente dos campos
     const getVal = (id1, id2) => {
       const el1 = document.getElementById(id1);
@@ -4082,11 +4106,44 @@ let atalhoDataFinal = '';
       return;
     }
 
-    let docChave = (codBarras && String(codBarras).trim() !== '') 
-  ? String(codBarras).trim() 
-  : ((nome && String(nome).trim() !== '') ? String(nome).trim().replace(/\s+/g, '_') : ('prod_' + Date.now()));
+   let docChave = '';
 
-  let dadosProduto = {
+if (emModoEdicao) {
+
+  docChave = produtoOriginal.id
+    ? String(produtoOriginal.id).trim()
+    : chaveEdicaoAtiva;
+
+} else {
+
+  docChave = (codBarras && String(codBarras).trim() !== '')
+    ? String(codBarras).trim().replace(/\//g, '_')
+    : ((nome && String(nome).trim() !== '')
+        ? String(nome).trim().replace(/\//g, '_').replace(/\s+/g, '_')
+        : ('prod_' + Date.now()));
+
+  let idxColisao = obterIndiceMestreProduto(docChave);
+
+  if (idxColisao === -1 && codBarras) {
+    idxColisao = obterIndiceMestreProduto(codBarras);
+  }
+
+  if (idxColisao !== -1 && produtos[idxColisao]) {
+
+    let confirmarSobrescrita = confirm(
+      `⚠️ Já existe um produto cadastrado ("${produtos[idxColisao].nome}") com este código/identificador. Deseja atualizar o registro existente?`
+    );
+
+    if (!confirmarSobrescrita) return;
+
+    docChave = produtos[idxColisao].id
+      ? String(produtos[idxColisao].id).trim()
+      : docChave;
+  }
+}
+
+let dadosProduto = {
+  id: docChave,
   nome: nome,
   preco: preco,
   custo: custo,
@@ -4124,7 +4181,13 @@ let elEstMin = document.getElementById('cad-prod-estmin') || document.getElement
 if (elEstMin) elEstMin.value = '5';
 let elEntrada = document.getElementById('cad-prod-entrada') || document.getElementById('prodEntrada');
 if (elEntrada) elEntrada.value = new Date().toISOString().split('T')[0];
-    alert("✅ Produto cadastrado com sucesso! Todos os campos foram limpos para o próximo item.");
+
+if (emModoEdicao) {
+  prodEditandoId = null;
+  prodEditandoIndex = null;
+}
+
+alert("✅ Produto cadastrado com sucesso! Todos os campos foram limpos para o próximo item.");
 
     if (typeof renderAbaEstoque === 'function') renderAbaEstoque();
     if (typeof renderAbaCaixa === 'function') renderAbaCaixa();

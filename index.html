@@ -3334,15 +3334,65 @@ async function processarFinalizarVenda(tipoEnvio) {
   let empresaIdDest = perfilNegocio.empresaId || (user ? user.uid : '');
   let nomeOperadorAtual = perfilNegocio.nomeUsuario || (user ? user.displayName : '') || 'Operador';
   carrinho.forEach(itemCarrinho => {
-    let prod = produtos.find(p => p.nome.toLowerCase() === itemCarrinho.nome.toLowerCase());
-    if (prod) {
-      prod.estoque = Math.max(0, prod.estoque - itemCarrinho.qtd);
-      persistirDadosCompletos();
-      if (user && empresaIdDest) {
-        db.collection("empresas").doc(empresaIdDest).collection("produtos").doc(prod.nome).set({ ...prod, userId: user.uid }, { merge: true });
-      }
+
+  // [A1] Resolução canônica do produto vendido
+  let idxProd = -1;
+
+  const chaveItem = itemCarrinho.id || itemCarrinho.produtoId || '';
+
+  if (chaveItem !== '') {
+    idxProd = obterIndiceMestreProduto(chaveItem);
+  }
+
+  if (idxProd === -1 && itemCarrinho.nome) {
+    idxProd = obterIndiceMestreProduto(itemCarrinho.nome);
+  }
+
+  if (idxProd === -1 && itemCarrinho.nome) {
+    idxProd = produtos.findIndex(
+      p =>
+        p &&
+        p.nome &&
+        p.nome.toLowerCase() ===
+        String(itemCarrinho.nome).trim().toLowerCase()
+    );
+  }
+
+  let prod =
+    (idxProd !== -1 && produtos[idxProd])
+      ? produtos[idxProd]
+      : null;
+
+  if (prod) {
+
+    prod.estoque = Math.max(0, prod.estoque - itemCarrinho.qtd);
+
+    // [A2] Chave canônica do Firestore
+    let docIdCanonico =
+      prod.id
+        ? String(prod.id).trim()
+        : String(prod.nome || '').trim();
+
+    persistirDadosCompletos();
+
+    // [A2 + A3]
+    if (user && empresaIdDest && docIdCanonico) {
+
+      db.collection("empresas")
+        .doc(empresaIdDest)
+        .collection("produtos")
+        .doc(docIdCanonico)
+        .set(
+          {
+            ...prod,
+            id: docIdCanonico,
+            userId: user.uid
+          },
+          { merge: true }
+        );
     }
-  });
+  }
+});
   if (formaPagto === 'Fiado') {
     let prazoFiado = document.getElementById('venda-fiado-prazo').value;
     let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeClienteInput.toLowerCase());
